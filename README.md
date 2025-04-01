@@ -44,11 +44,15 @@ Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下�
 
 ## 版本说明
 
-### 2024.03.01（ver.3.4.10）
+### 2024.04.01（ver.3.8.4）
 
-1. 合入Cline最新更新（2024.02.28,新增MCP市场），详情请查看CHANGELOG.md
-2. 进一步优化汉化质量
-3. 已知问题修复
+    1. Cline Chinese特色功能：新增Dify Provider，感谢@lofyer，代码来自：https://github.com/lofyer/cline-dify/tree/main
+    2. 合入cline 3.8新增特性和问题修复：
+        关键特性：
+        1. 添加到 Cline：在任何文件或终端中右键单击选定的文本，以快速将上下文添加到您当前的任务中！此外，当您看到灯泡图标时，选择“使用Cline 修复”让 Cline 修复您代码中的错误。
+        2. 更快的推理：Cline/OpenRouter用户可以按吞吐量、价格和延迟对使用的底层提供商进行排序。按吞吐量排序将输出更快的生成结果（成本更高）。
+        3. 增强的 MCP 支持：支持 GIF 的动态图像加载，以及一个新的删除按钮来清理失败的服务器。
+        4. 近期新增模型支持，如gemini 2.5 pro, Deepseek-V3-0324，claude 3.7 sonnet-thinking.
 
 ## 欢迎关注我的自媒体账号
 
