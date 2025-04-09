@@ -52,7 +52,7 @@ const McpConfigurationView = ({ onDone }: McpViewProps) => {
 					padding: "10px 17px 5px 20px",
 				}}>
 				<h3 style={{ color: "var(--vscode-foreground)", margin: 0 }}>MCP 服务</h3>
-				<VSCodeButton onClick={onDone}>Done</VSCodeButton>
+				<VSCodeButton onClick={onDone}>确定</VSCodeButton>
 			</div>
 
 			<div style={{ flex: 1, overflow: "auto" }}>

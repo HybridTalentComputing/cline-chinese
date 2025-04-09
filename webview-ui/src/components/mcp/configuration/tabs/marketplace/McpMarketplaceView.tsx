@@ -184,7 +184,7 @@ const McpMarketplaceView = () => {
 							fontWeight: 500,
 							flexShrink: 0,
 						}}>
-						Filter:
+						过滤:
 					</span>
 					<div
 						style={{
@@ -222,7 +222,7 @@ const McpMarketplaceView = () => {
 							fontWeight: 500,
 							marginTop: "3px",
 						}}>
-						Sort:
+						排序:
 					</span>
 					<VSCodeRadioGroup
 						style={{
