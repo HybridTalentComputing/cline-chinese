@@ -138,7 +138,7 @@ const ServerRow = ({
 					<div style={{ display: "flex", alignItems: "center", gap: "4px", marginLeft: "8px" }}>
 						<VSCodeButton
 							appearance="icon"
-							title="Restart Server"
+							title="重启服务"
 							onClick={(e) => {
 								e.stopPropagation()
 								handleRestart()
@@ -149,7 +149,7 @@ const ServerRow = ({
 						{hasTrashIcon && (
 							<VSCodeButton
 								appearance="icon"
-								title="Delete Server"
+								title="删除服务"
 								onClick={(e) => {
 									e.stopPropagation()
 									handleDelete()
@@ -247,14 +247,14 @@ const ServerRow = ({
 							width: "calc(100% - 20px)",
 							margin: "0 10px 10px 10px",
 						}}>
-						{server.status === "connecting" ? "Retrying..." : "Retry Connection"}
+						{server.status === "connecting" ? "重试..." : "重新连接"}
 					</VSCodeButton>
 
 					<DangerButton
 						style={{ width: "calc(100% - 20px)", margin: "0 10px 10px 10px" }}
 						disabled={isDeleting}
 						onClick={handleDelete}>
-						{isDeleting ? "Deleting..." : "Delete Server"}
+						{isDeleting ? "正在删除..." : "删除服务"}
 					</DangerButton>
 				</div>
 			) : (
@@ -290,7 +290,7 @@ const ServerRow = ({
 												checked={server.tools.every((tool) => tool.autoApprove)}
 												onChange={handleAutoApproveChange}
 												data-tool="all-tools">
-												Auto-approve all tools
+												自动批准所有工具
 											</VSCodeCheckbox>
 										)}
 									</div>
@@ -300,7 +300,7 @@ const ServerRow = ({
 											padding: "10px 0",
 											color: "var(--vscode-descriptionForeground)",
 										}}>
-										No tools found
+										未发现工具
 									</div>
 								)}
 							</VSCodePanelView>
@@ -328,7 +328,7 @@ const ServerRow = ({
 											padding: "10px 0",
 											color: "var(--vscode-descriptionForeground)",
 										}}>
-										No resources found
+										未找到可用资源
 									</div>
 								)}
 							</VSCodePanelView>
@@ -352,14 +352,14 @@ const ServerRow = ({
 								width: "calc(100% - 14px)",
 								margin: "0 7px 3px 7px",
 							}}>
-							{server.status === "connecting" ? "Restarting..." : "Restart Server"}
+							{server.status === "connecting" ? "正在重启..." : "重启服务"}
 						</VSCodeButton>
 
 						<DangerButton
 							style={{ width: "calc(100% - 14px)", margin: "5px 7px 3px 7px" }}
 							disabled={isDeleting}
 							onClick={handleDelete}>
-							{isDeleting ? "Deleting..." : "Delete Server"}
+							{isDeleting ? "正在删除..." : "删除服务"}
 						</DangerButton>
 					</div>
 				)

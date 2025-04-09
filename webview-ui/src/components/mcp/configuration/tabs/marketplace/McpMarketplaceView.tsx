@@ -124,7 +124,7 @@ const McpMarketplaceView = () => {
 				<div style={{ color: "var(--vscode-errorForeground)" }}>{error}</div>
 				<VSCodeButton appearance="secondary" onClick={() => fetchMarketplace(true)}>
 					<span className="codicon codicon-refresh" style={{ marginRight: "6px" }} />
-					Retry
+					重试
 				</VSCodeButton>
 			</div>
 		)
@@ -141,7 +141,7 @@ const McpMarketplaceView = () => {
 				{/* Search row */}
 				<VSCodeTextField
 					style={{ width: "100%" }}
-					placeholder="Search MCPs..."
+					placeholder="搜索 MCPs..."
 					value={searchQuery}
 					onInput={(e) => setSearchQuery((e.target as HTMLInputElement).value)}>
 					<div
@@ -155,7 +155,7 @@ const McpMarketplaceView = () => {
 					{searchQuery && (
 						<div
 							className="codicon codicon-close"
-							aria-label="Clear search"
+							aria-label="清除"
 							onClick={() => setSearchQuery("")}
 							slot="end"
 							style={{
@@ -233,9 +233,9 @@ const McpMarketplaceView = () => {
 						value={sortBy}
 						onChange={(e) => setSortBy((e.target as HTMLInputElement).value as typeof sortBy)}>
 						{/* <VSCodeRadio value="downloadCount">Most Installs</VSCodeRadio> */}
-						<VSCodeRadio value="newest">Newest</VSCodeRadio>
+						<VSCodeRadio value="newest">最新</VSCodeRadio>
 						<VSCodeRadio value="stars">GitHub Stars</VSCodeRadio>
-						<VSCodeRadio value="name">Name</VSCodeRadio>
+						<VSCodeRadio value="name">名称</VSCodeRadio>
 					</VSCodeRadioGroup>
 				</div>
 			</div>
@@ -270,9 +270,7 @@ const McpMarketplaceView = () => {
 							padding: "20px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						{searchQuery || selectedCategory
-							? "No matching MCP servers found"
-							: "No MCP servers found in the marketplace"}
+						{searchQuery || selectedCategory ? "未找到匹配的 MCP 服务器" : "在市场上找不到 MCP 服务器"}
 					</div>
 				) : (
 					filteredItems.map((item) => <McpMarketplaceCard key={item.mcpId} item={item} installedServers={mcpServers} />)

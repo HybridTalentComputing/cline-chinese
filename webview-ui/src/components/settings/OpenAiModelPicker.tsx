@@ -129,7 +129,7 @@ const OpenAiModelPicker: React.FC = () => {
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField
 						id="model-search"
-						placeholder="Search and select a model..."
+						placeholder="查找模型..."
 						value={searchTerm}
 						onInput={(e) => {
 							handleModelChange((e.target as HTMLInputElement)?.value?.toLowerCase())
@@ -141,7 +141,7 @@ const OpenAiModelPicker: React.FC = () => {
 						{searchTerm && (
 							<div
 								className="input-icon-button codicon codicon-close"
-								aria-label="Clear search"
+								aria-label="清除"
 								onClick={() => {
 									handleModelChange("")
 									setIsDropdownVisible(true)
@@ -349,7 +349,7 @@ export const ModelDescriptionMarkdown = memo(
 									backgroundColor: "var(--vscode-sideBar-background)",
 								}}
 								onClick={() => setIsExpanded(true)}>
-								See more
+								更多
 							</VSCodeLink>
 						</div>
 					)}

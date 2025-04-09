@@ -64,7 +64,7 @@ export const FirebaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
 		async (token: string) => {
 			try {
 				await signInWithCustomToken(auth, token)
-				console.log("Successfully signed in with custom token")
+				console.log("自定义token登录成功")
 			} catch (error) {
 				console.error("Error signing in with custom token:", error)
 				throw error

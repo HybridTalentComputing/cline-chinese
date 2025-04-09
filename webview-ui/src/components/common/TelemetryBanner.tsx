@@ -44,14 +44,13 @@ const TelemetryBanner = () => {
 	return (
 		<BannerContainer>
 			<div>
-				<strong>Help Improve Cline</strong>
+				<strong>帮助改进 Cline</strong>
 				<div style={{ marginTop: 4 }}>
-					Send anonymous error and usage data to help us fix bugs and improve the extension. No code, prompts, or
-					personal information is ever sent.
+					发送匿名错误和使用数据，以帮助我们修复错误和改进扩展。无代码、提示或 个人信息永远不会发送。
 					<div style={{ marginTop: 4 }}>
-						You can always change this in{" "}
+						你可以在这里更改{" "}
 						<VSCodeLink href="#" onClick={handleOpenSettings}>
-							settings
+							设置
 						</VSCodeLink>
 						.
 					</div>
@@ -59,10 +58,10 @@ const TelemetryBanner = () => {
 			</div>
 			<ButtonContainer>
 				<VSCodeButton appearance="primary" onClick={handleAllow} disabled={hasChosen}>
-					Allow
+					允许
 				</VSCodeButton>
 				<VSCodeButton appearance="secondary" onClick={handleDeny} disabled={hasChosen}>
-					Deny
+					拒绝
 				</VSCodeButton>
 			</ButtonContainer>
 		</BannerContainer>

@@ -51,7 +51,7 @@ const McpConfigurationView = ({ onDone }: McpViewProps) => {
 					alignItems: "center",
 					padding: "10px 17px 5px 20px",
 				}}>
-				<h3 style={{ color: "var(--vscode-foreground)", margin: 0 }}>MCP Servers</h3>
+				<h3 style={{ color: "var(--vscode-foreground)", margin: 0 }}>MCP 服务</h3>
 				<VSCodeButton onClick={onDone}>Done</VSCodeButton>
 			</div>
 
@@ -66,14 +66,14 @@ const McpConfigurationView = ({ onDone }: McpViewProps) => {
 					}}>
 					{mcpMarketplaceEnabled && (
 						<TabButton isActive={activeTab === "marketplace"} onClick={() => handleTabChange("marketplace")}>
-							Marketplace
+							市场
 						</TabButton>
 					)}
 					<TabButton isActive={activeTab === "addRemote"} onClick={() => handleTabChange("addRemote")}>
-						Remote Servers
+						远程服务
 					</TabButton>
 					<TabButton isActive={activeTab === "installed"} onClick={() => handleTabChange("installed")}>
-						Installed
+						已安装
 					</TabButton>
 				</div>
 

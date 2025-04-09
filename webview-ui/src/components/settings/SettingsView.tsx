@@ -165,8 +165,8 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 					marginBottom: "13px",
 					paddingRight: 17,
 				}}>
-				<h3 style={{ color: "var(--vscode-foreground)", margin: 0 }}>Settings</h3>
-				<VSCodeButton onClick={() => handleSubmit(false)}>Done</VSCodeButton>
+				<h3 style={{ color: "var(--vscode-foreground)", margin: 0 }}>设置</h3>
+				<VSCodeButton onClick={() => handleSubmit(false)}>确定</VSCodeButton>
 			</div>
 			<div
 				style={{
@@ -195,10 +195,10 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 								borderBottom: "1px solid var(--vscode-panel-border)",
 							}}>
 							<TabButton isActive={chatSettings.mode === "plan"} onClick={() => handleTabChange("plan")}>
-								Plan Mode
+								计划模式
 							</TabButton>
 							<TabButton isActive={chatSettings.mode === "act"} onClick={() => handleTabChange("act")}>
-								Act Mode
+								执行模式
 							</TabButton>
 						</div>
 
@@ -237,7 +237,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 							marginTop: "5px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						These instructions are added to the end of the system prompt sent with every request.
+						这些说明将添加到随每个请求发送的系统提示符的末尾。
 					</p>
 				</div>
 
@@ -249,7 +249,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 							const checked = e.target.checked === true
 							setPlanActSeparateModelsSetting(checked)
 						}}>
-						Use different models for Plan and Act modes
+						对 计划模式 和 执行模式 模式使用不同的模型
 					</VSCodeCheckbox>
 					<p
 						style={{
@@ -257,8 +257,8 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 							marginTop: "5px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be
-						helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on.
+						在计划和执行模式之间切换将保留之前模式中使用的 API 和模型。这可能是
+						例如，当使用强推理模型来构建更便宜的编码模型计划时，这很有帮助。
 					</p>
 				</div>
 
@@ -270,7 +270,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 							const checked = e.target.checked === true
 							setTelemetrySetting(checked ? "enabled" : "disabled")
 						}}>
-						Allow anonymous error and usage reporting
+						允许匿名错误和使用情况报告
 					</VSCodeCheckbox>
 					<p
 						style={{
@@ -278,16 +278,15 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 							marginTop: "5px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						Help improve Cline by sending anonymous usage data and error reports. No code, prompts, or personal
-						information are ever sent. See our{" "}
+						通过发送匿名使用数据和错误报告来帮助改进 Cline。无代码、提示或个人 信息。查看我们的{" "}
 						<VSCodeLink href="https://docs.cline.bot/more-info/telemetry" style={{ fontSize: "inherit" }}>
-							telemetry overview
+							概述
 						</VSCodeLink>{" "}
-						and{" "}
+						和{" "}
 						<VSCodeLink href="https://cline.bot/privacy" style={{ fontSize: "inherit" }}>
 							privacy policy
 						</VSCodeLink>{" "}
-						for more details.
+						更多信息
 					</p>
 				</div>
 
@@ -307,15 +306,15 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 							margin: "0 0 16px 0",
 						}}>
 						<i className="codicon codicon-settings-gear" />
-						Advanced Settings
+						高级设置
 					</SettingsButton>
 				</div>
 
 				{IS_DEV && (
 					<>
-						<div style={{ marginTop: "10px", marginBottom: "4px" }}>Debug</div>
+						<div style={{ marginTop: "10px", marginBottom: "4px" }}>调试</div>
 						<VSCodeButton onClick={handleResetState} style={{ marginTop: "5px", width: "auto" }}>
-							Reset State
+							重置
 						</VSCodeButton>
 						<p
 							style={{
@@ -323,7 +322,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 								marginTop: "5px",
 								color: "var(--vscode-descriptionForeground)",
 							}}>
-							This will reset all global state and secret storage in the extension.
+							这将重置扩展中的所有全局 state 和 secret 存储。
 						</p>
 					</>
 				)}
@@ -343,7 +342,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 							margin: 0,
 							padding: 0,
 						}}>
-						If you have any questions or feedback, feel free to open an issue at{" "}
+						如果您有任何问题或反馈，请随时在{" "}
 						<VSCodeLink href="https://github.com/cline/cline" style={{ display: "inline" }}>
 							https://github.com/cline/cline
 						</VSCodeLink>

@@ -43,7 +43,7 @@ const ServersToggleModal: React.FC = () => {
 			<div ref={buttonRef} className="inline-flex min-w-0 max-w-full">
 				<VSCodeButton
 					appearance="icon"
-					aria-label="MCP Servers"
+					aria-label="MCP 服务"
 					onClick={() => setIsVisible(!isVisible)}
 					style={{ padding: "0px 0px", height: "20px" }}>
 					<div className="flex items-center gap-1 text-xs whitespace-nowrap min-w-0 w-full">
@@ -73,7 +73,7 @@ const ServersToggleModal: React.FC = () => {
 						}}
 					/>
 
-					<div className="m-0 mb-2.5">MCP Servers</div>
+					<div className="m-0 mb-2.5">MCP 服务</div>
 					<div style={{ marginBottom: "-10px" }}>
 						<ServersToggleList servers={mcpServers} isExpandable={false} hasTrashIcon={false} listGap="small" />
 					</div>

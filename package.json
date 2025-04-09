@@ -1,7 +1,7 @@
 {
-	"name": "claude-dev",
-	"displayName": "Cline",
-	"description": "Autonomous coding agent right in your IDE, capable of creating/editing files, running commands, using the browser, and more with your permission every step of the way.",
+	"name": "ssy-dev",
+	"displayName": "Cline-中文版胜算",
+	"description": "IDE 中的自主编码代理，能够在您的许可下创建/编辑文件、运行命令、使用浏览器等。",
 	"version": "3.10.0",
 	"icon": "assets/icons/icon.png",
 	"engines": {
@@ -63,58 +63,58 @@
 		"commands": [
 			{
 				"command": "cline.plusButtonClicked",
-				"title": "New Task",
+				"title": "新任务",
 				"icon": "$(add)"
 			},
 			{
 				"command": "cline.mcpButtonClicked",
-				"title": "MCP Servers",
+				"title": "MCP 服务",
 				"icon": "$(server)"
 			},
 			{
 				"command": "cline.historyButtonClicked",
-				"title": "History",
+				"title": "历史记录",
 				"icon": "$(history)"
 			},
 			{
 				"command": "cline.popoutButtonClicked",
-				"title": "Open in Editor",
+				"title": "编辑器打开",
 				"icon": "$(link-external)"
 			},
 			{
 				"command": "cline.accountButtonClicked",
-				"title": "Account",
+				"title": "账户",
 				"icon": "$(account)"
 			},
 			{
 				"command": "cline.settingsButtonClicked",
-				"title": "Settings",
+				"title": "设置",
 				"icon": "$(settings-gear)"
 			},
 			{
 				"command": "cline.openInNewTab",
-				"title": "Open In New Tab",
+				"title": "在新标签打开",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.dev.createTestTasks",
-				"title": "Create Test Tasks",
+				"title": "创建测试任务",
 				"category": "Cline",
 				"when": "cline.isDevMode"
 			},
 			{
 				"command": "cline.addToChat",
-				"title": "Add to Cline",
+				"title": "添加到 Cline",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.addTerminalOutputToChat",
-				"title": "Add to Cline",
+				"title": "添加到 Cline",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.fixWithCline",
-				"title": "Fix with Cline",
+				"title": "使用 Cline 修改",
 				"category": "Cline"
 			}
 		],
@@ -215,24 +215,24 @@
 					"properties": {
 						"vendor": {
 							"type": "string",
-							"description": "The vendor of the language model (e.g. copilot)"
+							"description": "语言模型供应商 (e.g. copilot)"
 						},
 						"family": {
 							"type": "string",
-							"description": "The family of the language model (e.g. gpt-4)"
+							"description": "语言模型家族 (e.g. gpt-4)"
 						}
 					},
-					"description": "Settings for VSCode Language Model API"
+					"description": "VSCode 语言模型 API 的设置"
 				},
 				"cline.enableCheckpoints": {
 					"type": "boolean",
 					"default": true,
-					"description": "Enables extension to save checkpoints of workspace throughout the task. Uses git under the hood which may not work well with large workspaces."
+					"description": "启用扩展以保存整个任务中工作区的检查点。在后台使用 git，这可能不适用于大型工作区。"
 				},
 				"cline.disableBrowserTool": {
 					"type": "boolean",
 					"default": false,
-					"description": "Disables extension from spawning browser session."
+					"description": "禁止扩展生成浏览器会话。"
 				},
 				"cline.modelSettings.o3Mini.reasoningEffort": {
 					"type": "string",
@@ -242,12 +242,12 @@
 						"high"
 					],
 					"default": "medium",
-					"description": "Controls the reasoning effort when using the o3-mini model. Higher values may result in more thorough but slower responses."
+					"description": "控制使用 o3-mini 模型时的推理工作量。较高的值可能会导致更彻底的响应，但速度较慢。"
 				},
 				"cline.chromeExecutablePath": {
 					"type": "string",
 					"default": null,
-					"description": "Path to Chrome executable for browser use functionality. If not set, the extension will attempt to find or download it automatically."
+					"description": "用于浏览器使用功能的 Chrome 可执行文件的路径。如果未设置，扩展将尝试自动查找或下载它。"
 				},
 				"cline.preferredLanguage": {
 					"type": "string",
@@ -272,12 +272,12 @@
 						"Turkish - Türkçe"
 					],
 					"default": "English",
-					"description": "The language that Cline should use for communication."
+					"description": "Cline 应该用于通信的语言。"
 				},
 				"cline.mcpMarketplace.enabled": {
 					"type": "boolean",
 					"default": true,
-					"description": "Controls whether the MCP Marketplace is enabled."
+					"description": "控制是否启用 MCP Marketplace。"
 				}
 			}
 		}
