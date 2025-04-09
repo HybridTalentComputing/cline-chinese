@@ -276,7 +276,7 @@ export const BrowserSettingsSection: React.FC = () => {
 						{shouldShowRelaunchButton && (
 							<div style={{ display: "flex", gap: "10px", marginBottom: 8, justifyContent: "center" }}>
 								<VSCodeButton style={{ flex: 1 }} disabled={debugMode} onClick={relaunchChromeDebugMode}>
-									{debugMode ? "重启浏览器..." : "重启浏览器 Debug 模式"}
+									{debugMode ? "重启浏览器..." : "重启浏览器调试模式"}
 								</VSCodeButton>
 							</div>
 						)}

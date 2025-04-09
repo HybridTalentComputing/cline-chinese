@@ -160,7 +160,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						}}>
 						History
 					</h3>
-					<VSCodeButton onClick={onDone}>Done</VSCodeButton>
+					<VSCodeButton onClick={onDone}>确定</VSCodeButton>
 				</div>
 				<div style={{ padding: "5px 17px 6px 17px" }}>
 					<div
@@ -171,7 +171,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						}}>
 						<VSCodeTextField
 							style={{ width: "100%" }}
-							placeholder="Fuzzy search history..."
+							placeholder="查找历史..."
 							value={searchQuery}
 							onInput={(e) => {
 								const newValue = (e.target as HTMLInputElement)?.value
@@ -192,7 +192,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							{searchQuery && (
 								<div
 									className="input-icon-button codicon codicon-close"
-									aria-label="Clear search"
+									aria-label="清除"
 									onClick={() => setSearchQuery("")}
 									slot="end"
 									style={{
@@ -208,12 +208,12 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							style={{ display: "flex", flexWrap: "wrap" }}
 							value={sortOption}
 							onChange={(e) => setSortOption((e.target as HTMLInputElement).value as SortOption)}>
-							<VSCodeRadio value="newest">Newest</VSCodeRadio>
-							<VSCodeRadio value="oldest">Oldest</VSCodeRadio>
-							<VSCodeRadio value="mostExpensive">Most Expensive</VSCodeRadio>
-							<VSCodeRadio value="mostTokens">Most Tokens</VSCodeRadio>
+							<VSCodeRadio value="newest">最新</VSCodeRadio>
+							<VSCodeRadio value="oldest">最早</VSCodeRadio>
+							<VSCodeRadio value="mostExpensive">最贵</VSCodeRadio>
+							<VSCodeRadio value="mostTokens">最多Tokens</VSCodeRadio>
 							<VSCodeRadio value="mostRelevant" disabled={!searchQuery} style={{ opacity: searchQuery ? 1 : 0.5 }}>
-								Most Relevant
+								最相关
 							</VSCodeRadio>
 						</VSCodeRadioGroup>
 					</div>
@@ -445,7 +445,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 															fontWeight: 500,
 															color: "var(--vscode-descriptionForeground)",
 														}}>
-														API Cost:
+														API 费用:
 													</span>
 													<span
 														style={{

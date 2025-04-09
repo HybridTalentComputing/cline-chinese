@@ -126,7 +126,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 									{!!item.totalCost && (
 										<>
 											{" • "}
-											<span>API Cost: ${item.totalCost?.toFixed(4)}</span>
+											<span>API 费用: ${item.totalCost?.toFixed(4)}</span>
 										</>
 									)}
 								</div>

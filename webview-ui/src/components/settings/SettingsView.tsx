@@ -227,9 +227,9 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 						style={{ width: "100%" }}
 						resize="vertical"
 						rows={4}
-						placeholder={'e.g. "Run unit tests at the end", "Use TypeScript with async/await", "Speak in Spanish"'}
+						placeholder={'如： "Run unit tests at the end", "Use TypeScript with async/await", "Speak in Spanish"'}
 						onInput={(e: any) => setCustomInstructions(e.target?.value ?? "")}>
-						<span style={{ fontWeight: "500" }}>Custom Instructions</span>
+						<span style={{ fontWeight: "500" }}>自定义提示词</span>
 					</VSCodeTextArea>
 					<p
 						style={{
@@ -284,9 +284,8 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 						</VSCodeLink>{" "}
 						和{" "}
 						<VSCodeLink href="https://cline.bot/privacy" style={{ fontSize: "inherit" }}>
-							privacy policy
+							隐私政策
 						</VSCodeLink>{" "}
-						更多信息
 					</p>
 				</div>
 

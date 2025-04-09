@@ -97,7 +97,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 						disabled={isSubmitting}
 						className="w-full"
 						placeholder="mcp-server">
-						Server 名称
+						服务名称
 					</VSCodeTextField>
 				</div>
 
@@ -111,7 +111,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 						disabled={isSubmitting}
 						placeholder="https://example.com/mcp-server"
 						className="w-full mr-4">
-						Server URL
+						服务URL
 					</VSCodeTextField>
 				</div>
 
