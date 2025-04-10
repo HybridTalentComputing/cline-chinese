@@ -1488,17 +1488,21 @@ export const shengsuanyunModels = {
 		maxTokens: 128_000,
 		contextWindow: 200_000,
 		supportsImages: false,
-		supportsPromptCache: false, // supports context caching, but not in the way anthropic does it (deepseek reports input tokens and reads/writes in the same usage report) FIXME: we need to show users cache stats how deepseek does it
-		inputPrice: 3, // technically there is no input price, it's all either a cache hit or miss (ApiOptions will not show this)
+		supportsPromptCache: true,
+		inputPrice: 3,
 		outputPrice: 15,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
 	},
 	"anthropic/claude-3.7-sonnet:thinking": {
 		maxTokens: 128_000,
 		contextWindow: 200_000,
 		supportsImages: false,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		inputPrice: 0.3,
 		outputPrice: 15,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
 	},
 	"google/gemini-2.0-flash-001": {
 		maxTokens: 8_000,
