@@ -37,7 +37,8 @@
 		"chatgpt",
 		"sonnet",
 		"ai",
-		"llama"
+		"llama",
+		"shengsuanyun"
 	],
 	"activationEvents": [],
 	"main": "./dist/extension.js",

@@ -198,7 +198,7 @@ const McpMarketplaceView = () => {
 							}}
 							value={selectedCategory || ""}
 							onChange={(e) => setSelectedCategory((e.target as HTMLSelectElement).value || null)}>
-							<VSCodeOption value="">All Categories</VSCodeOption>
+							<VSCodeOption value="">所有类别</VSCodeOption>
 							{categories.map((category) => (
 								<VSCodeOption key={category} value={category}>
 									{category}

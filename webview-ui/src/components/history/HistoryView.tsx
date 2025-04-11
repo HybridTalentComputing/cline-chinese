@@ -53,10 +53,10 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		vscode.postMessage({ type: "deleteTaskWithId", text: id })
 	}
 
-	const formatDate = (timestamp: number) => {
+	const formatDate = (timestamp: number, tz:string = "en-US") => {
 		const date = new Date(timestamp)
 		return date
-			?.toLocaleString("en-US", {
+			?.toLocaleString(tz, {
 				month: "long",
 				day: "numeric",
 				hour: "numeric",
@@ -272,7 +272,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 												fontSize: "0.85em",
 												textTransform: "uppercase",
 											}}>
-											{formatDate(item.ts)}
+											{formatDate(item.ts, 'zh-CN')}
 										</span>
 										<VSCodeButton
 											appearance="icon"

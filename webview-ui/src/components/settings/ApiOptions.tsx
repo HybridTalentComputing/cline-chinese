@@ -1489,7 +1489,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 								})
 							}
 						}}>
-						Sort underlying provider routing
+						对底层提供商路由进行排序
 					</VSCodeCheckbox>
 
 					{providerSortingSelected && (

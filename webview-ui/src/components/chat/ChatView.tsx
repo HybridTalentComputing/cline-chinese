@@ -958,7 +958,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 										marginLeft: isStreaming ? 0 : "6px",
 									}}
 									onClick={() => handleSecondaryButtonClick(inputValue, selectedImages)}>
-									{isStreaming ? "Cancel" : secondaryButtonText}
+									{isStreaming ? "取消" : secondaryButtonText}
 								</VSCodeButton>
 							)}
 						</div>
