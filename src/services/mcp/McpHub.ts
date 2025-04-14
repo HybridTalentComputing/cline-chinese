@@ -95,7 +95,7 @@ export class McpHub {
 	}
 
 	getMode(): McpMode {
-		return vscode.workspace.getConfiguration("cline.mcp").get<McpMode>("mode", "full")
+		return vscode.workspace.getConfiguration("clineShengsuan.mcp").get<McpMode>("mode", "full")
 	}
 
 	async getMcpServersPath(): Promise<string> {
@@ -196,7 +196,7 @@ export class McpHub {
 			// Each MCP server requires its own transport connection and has unique capabilities, configurations, and error handling. Having separate clients also allows proper scoping of resources/tools and independent server management like reconnection.
 			const client = new Client(
 				{
-					name: "Cline",
+					name: "ClineShengsuan",
 					version: this.controllerRef.deref()?.context.extension?.packageJSON?.version ?? "1.0.0",
 				},
 				{

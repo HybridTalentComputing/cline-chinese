@@ -28,7 +28,7 @@ export class ShengsuanyunHandler implements ApiHandler {
 			apiKey: this.options.shengsuanyunApiKey,
 			defaultHeaders: {
 				"HTTP-Referer": "https://cline.bot", // Optional, for including your app on openrouter.ai rankings.
-				"X-Title": "Cline", // Optional. Shows in rankings on openrouter.ai.
+				"X-Title": "ClineShengsuan", // Optional. Shows in rankings on openrouter.ai.
 			},
 		})
 	}
