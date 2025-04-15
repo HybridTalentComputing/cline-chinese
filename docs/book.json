@@ -6,9 +6,7 @@
 		"readme": "README.md",
 		"summary": "SUMMARY.md"
 	},
-	"plugins": [
-		"language-picker"
-	],
+	"plugins": ["language-picker"],
 	"pluginsConfig": {
 		"language-picker": {
 			"grid-columns": 2,
