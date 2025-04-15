@@ -61,6 +61,7 @@ export interface ApiHandlerOptions {
 	deepSeekApiKey?: string
 	requestyApiKey?: string
 	requestyModelId?: string
+	requestyModelInfo?: ModelInfo
 	togetherApiKey?: string
 	togetherModelId?: string
 	qwenApiKey?: string
@@ -74,12 +75,14 @@ export interface ApiHandlerOptions {
 	asksageApiKey?: string
 	xaiApiKey?: string
 	thinkingBudgetTokens?: number
+	reasoningEffort?: string
 	sambanovaApiKey?: string
 	shengsuanyunApiKey?: string
 }
 
 export type ApiConfiguration = ApiHandlerOptions & {
 	apiProvider?: ApiProvider
+	favoritedModelIds?: string[]
 }
 
 // Models
@@ -1166,6 +1169,26 @@ export const doubaoModels = {
 		cacheWritesPrice: 0,
 		cacheReadsPrice: 0,
 	},
+	"deepseek-v3-250324": {
+		maxTokens: 12_288,
+		contextWindow: 128_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.55,
+		outputPrice: 2.19,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+	},
+	"deepseek-r1-250120": {
+		maxTokens: 32_768,
+		contextWindow: 64_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.27,
+		outputPrice: 1.09,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+	},
 } as const satisfies Record<string, ModelInfo>
 
 // Mistral
@@ -1641,3 +1664,19 @@ export const shengsuanyunModels = {
 		outputPrice: 0.3,
 	},
 } as const satisfies Record<string, ModelInfo>
+
+// Requesty
+// https://requesty.ai/models
+export const requestyDefaultModelId = "anthropic/claude-3-7-sonnet-latest"
+export const requestyDefaultModelInfo: ModelInfo = {
+	maxTokens: 8192,
+	contextWindow: 200_000,
+	supportsImages: true,
+	supportsComputerUse: false,
+	supportsPromptCache: true,
+	inputPrice: 3.0,
+	outputPrice: 15.0,
+	cacheWritesPrice: 3.75,
+	cacheReadsPrice: 0.3,
+	description: "Anthropic's most intelligent model. Highest level of intelligence and capability.",
+}

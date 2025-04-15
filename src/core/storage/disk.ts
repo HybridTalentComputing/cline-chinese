@@ -4,14 +4,13 @@ import fs from "fs/promises"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { fileExistsAtPath } from "../../utils/fs"
 import { ClineMessage } from "../../shared/ExtensionMessage"
-import type { TaskMetadata } from "../context-tracking/ContextTrackerTypes"
-
+import { TaskMetadata } from "../context/context-tracking/ContextTrackerTypes"
 export const GlobalFileNames = {
 	apiConversationHistory: "api_conversation_history.json",
 	contextHistory: "context_history.json",
 	uiMessages: "ui_messages.json",
 	openRouterModels: "openrouter_models.json",
-	mcpSettings: "cline_mcp_settings.json",
+	mcpSettings: "cline_shengsuan_mcp_settings.json",
 	clineRules: ".clinerules",
 	taskMetadata: "task_metadata.json",
 }

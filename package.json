@@ -2,7 +2,7 @@
 	"name": "cline-shengsuan",
 	"displayName": "Cline-中文版胜算",
 	"description": "Cline中文胜算版是一款在您的IDE中运行的强大自主编程助手，经您许可后可创建/编辑文件、运行命令、使用浏览器等",
-	"version": "3.10.3",
+	"version": "3.12.1",
 	"icon": "assets/icons/icon.png",
 	"engines": {
 		"vscode": "^1.84.0"
@@ -225,21 +225,6 @@
 						}
 					},
 					"description": "VSCode 语言模型 API 的设置"
-				},
-				"clineShengsuan.mcp.mode": {
-					"type": "string",
-					"enum": [
-						"full",
-						"server-use-only",
-						"off"
-					],
-					"enumDescriptions": [
-						"启用所有 MCP 功能（服务器使用和构建说明）",
-						"仅启用 MCP 服务器使用（不包括有关构建 MCP 服务器的说明）",
-						"禁用所有 MCP 功能"
-					],
-					"default": "full",
-					"description": "控制提示中的 MCP 包含，如果您只需要访问某些功能，则减少令牌的使用。"
 				},
 				"clineShengsuan.enableCheckpoints": {
 					"type": "boolean",

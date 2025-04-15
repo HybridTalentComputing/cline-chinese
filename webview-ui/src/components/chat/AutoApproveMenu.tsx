@@ -1,5 +1,5 @@
 import { VSCodeCheckbox, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AutoApprovalSettings } from "@shared/AutoApprovalSettings"
@@ -27,20 +27,32 @@ const ACTION_METADATA: {
 }[] = [
 	{
 		id: "readFiles",
-		label: "读取文件和目录",
-		shortName: "Read",
-		description: "允许读取计算机上的任何文件。",
+		label: "读取项目文件",
+		shortName: "读取本地文件",
+		description: "允许 Cline 读取你工作目录的文件.",
+	},
+	{
+		id: "readFilesExternally",
+		label: "读取所有文件",
+		shortName: "读取全部",
+		description: "允许 Cline 你计算机上的所有文件.",
 	},
 	{
 		id: "editFiles",
-		label: "编辑文件",
-		shortName: "Edit",
-		description: "允许修改计算机上的任何文件。",
+		label: "编辑项目文件",
+		shortName: "编辑",
+		description: "允许Cline编辑你的项目文件.",
+	},
+	{
+		id: "editFilesExternally",
+		label: "编辑所有文件",
+		shortName: "编辑所有文件",
+		description: "允许 Cline 编辑你计算机上的所有文件.",
 	},
 	{
 		id: "executeSafeCommands",
 		label: "执行安全终端命令",
-		shortName: "Safe Commands",
+		shortName: "安全命令行",
 		description: "允许执行安全终端命令。如果模型确定某个命令具有潜在的破坏性，则仍需要批准。",
 	},
 	{
@@ -70,24 +82,75 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 	// Careful not to use partials to mutate since spread operator only does shallow copy
 
 	const enabledActions = ACTION_METADATA.filter((action) => autoApprovalSettings.actions[action.id])
-	const enabledActionsList = (() => {
-		// "All Commands" is the only label displayed if both are set
-		const safeCommandsEnabled = enabledActions.some((action) => action.id === "executeSafeCommands")
-		const allCommandsEnabled = enabledActions.some((action) => action.id === "executeAllCommands")
+	const enabledActionsList = useMemo(() => {
+		// When nested auto-approve options are used, display the more permissive one (file reads, edits, and commands)
+		const readFilesEnabled = enabledActions.some((action) => action.id === "readFiles")
+		const readFilesExternallyEnabled = enabledActions.some((action) => action.id === "readFilesExternally")
 
+		const editFilesEnabled = enabledActions.some((action) => action.id === "editFiles")
+		const editFilesExternallyEnabled = enabledActions.some((action) => action.id === "editFilesExternally") ?? false
+
+		const safeCommandsEnabled = enabledActions.some((action) => action.id === "executeSafeCommands")
+		const allCommandsEnabled = enabledActions.some((action) => action.id === "executeAllCommands") ?? false
+		// Filter out the potentially nested options so we don't display them twice
 		const otherActions = enabledActions
-			.filter((action) => action.id !== "executeSafeCommands" && action.id !== "executeAllCommands")
+			.filter(
+				(action) =>
+					action.id !== "readFiles" &&
+					action.id !== "readFilesExternally" &&
+					action.id !== "editFiles" &&
+					action.id !== "editFilesExternally" &&
+					action.id !== "executeSafeCommands" &&
+					action.id !== "executeAllCommands",
+			)
 			.map((action) => action.shortName)
 
-		if (allCommandsEnabled) {
-			return ["All Commands", ...otherActions].join(", ")
-		} else if (safeCommandsEnabled) {
-			return ["Safe Commands", ...otherActions].join(", ")
-		} else {
-			return otherActions.join(", ")
+		const labels = []
+
+		// Handle read editing labels
+		if ((readFilesExternallyEnabled ?? false) && readFilesEnabled) {
+			labels.push("Read (All)")
+		} else if (readFilesEnabled) {
+			labels.push("Read")
 		}
-	})()
-	const hasEnabledActions = enabledActions.length > 0
+
+		// Handle file editing labels
+		if ((editFilesExternallyEnabled ?? false) && editFilesEnabled) {
+			labels.push("Edit (All)")
+		} else if (editFilesEnabled) {
+			labels.push("Edit")
+		}
+
+		// Handle command execution labels
+		if ((allCommandsEnabled ?? false) && safeCommandsEnabled) {
+			labels.push("All Commands")
+		} else if (safeCommandsEnabled) {
+			labels.push("Safe Commands")
+		}
+
+		// Add remaining actions
+		return [...labels, ...otherActions].join(", ")
+	}, [enabledActions])
+
+	// This value is used to determine if the auto-approve menu should show 'Auto-approve: None'
+	// Note: we should use better logic to determine the state where no auto approve actions are in effect, regardless of the state of sub-auto-approve options
+	const hasEnabledActions = useMemo(() => {
+		let enabledActionsCount = enabledActions.length
+
+		if (!autoApprovalSettings.actions.readFiles && autoApprovalSettings.actions.readFilesExternally) {
+			enabledActionsCount--
+		}
+
+		if (!autoApprovalSettings.actions.editFiles && autoApprovalSettings.actions.editFilesExternally) {
+			enabledActionsCount--
+		}
+
+		if (!autoApprovalSettings.actions.executeSafeCommands && autoApprovalSettings.actions.executeAllCommands) {
+			enabledActionsCount--
+		}
+
+		return enabledActionsCount > 0
+	}, [enabledActions, autoApprovalSettings.actions])
 
 	const updateEnabled = useCallback(
 		(enabled: boolean) => {
@@ -227,7 +290,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 							overflow: "hidden",
 							textOverflow: "ellipsis",
 						}}>
-						{enabledActions.length === 0 ? "None" : enabledActionsList}
+						{!hasEnabledActions ? "None" : enabledActionsList}
 					</span>
 					<span
 						className={`codicon codicon-chevron-${isExpanded ? "down" : "right"}`}
@@ -249,13 +312,23 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 						自动批准允许 Cline 在不请求权限的情况下执行以下作。请搭配使用 谨慎，并且仅在您了解风险时启用 （Enable）。
 					</div>
 					{ACTION_METADATA.map((action) => {
-						if (action.id === "executeAllCommands") {
+						// Handle readFilesExternally, editFilesExternally, and executeAllCommands as animated sub-options
+						if (
+							action.id === "executeAllCommands" ||
+							action.id === "editFilesExternally" ||
+							action.id === "readFilesExternally"
+						) {
+							const parentAction =
+								action.id === "executeAllCommands"
+									? "executeSafeCommands"
+									: action.id === "readFilesExternally"
+										? "readFiles"
+										: "editFiles"
 							return (
-								// Option to make the "Approve All" option animate into the menu when "Approve Safe" is enabled
-								<SubOptionAnimateIn key={action.id} show={autoApprovalSettings.actions.executeSafeCommands}>
+								<SubOptionAnimateIn key={action.id} show={autoApprovalSettings.actions[parentAction] ?? false}>
 									<div
 										style={{
-											margin: "6px 0",
+											margin: "3px 0",
 											marginLeft: "28px",
 										}}>
 										<VSCodeCheckbox
