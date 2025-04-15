@@ -1586,7 +1586,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 								{reasoningEffortSelected && (
 									<div>
 										<label htmlFor="reasoning-effort-dropdown">
-											<span style={{}}>Reasoning Effort</span>
+											<span style={{}}>推理效果</span>
 										</label>
 										<DropdownContainer className="dropdown-container" zIndex={DROPDOWN_Z_INDEX - 100}>
 											<VSCodeDropdown
@@ -1599,8 +1599,8 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 														reasoningEffort: e.target.value,
 													})
 												}}>
-												<VSCodeOption value="low">low</VSCodeOption>
-												<VSCodeOption value="high">high</VSCodeOption>
+												<VSCodeOption value="low">弱</VSCodeOption>
+												<VSCodeOption value="high">强</VSCodeOption>
 											</VSCodeDropdown>
 										</DropdownContainer>
 										<p
@@ -1610,7 +1610,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 												marginBottom: 0,
 												color: "var(--vscode-descriptionForeground)",
 											}}>
-											High effort may produce more thorough analysis but takes longer and uses more tokens.
+											强推理效果会进行更多的推理分析，但是耗时更久使用token更多。
 										</p>
 									</div>
 								)}

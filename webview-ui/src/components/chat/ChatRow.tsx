@@ -434,9 +434,7 @@ export const ChatRowContent = ({ message, isExpanded, onToggleExpand, lastModifi
 						<div style={headerStyle}>
 							{toolIcon("folder-opened")}
 							<span style={{ fontWeight: "bold" }}>
-								{message.type === "ask"
-									? "Cline wants to view the top level files in this directory:"
-									: "Cline viewed the top level files in this directory:"}
+								{message.type === "ask" ? "Cline 需要查看这个目录:" : "Cline 在这个目录找到的文件:"}
 							</span>
 						</div>
 						<CodeAccordian
@@ -455,8 +453,8 @@ export const ChatRowContent = ({ message, isExpanded, onToggleExpand, lastModifi
 							{toolIcon("folder-opened")}
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
-									? "Cline wants to recursively view all files in this directory:"
-									: "Cline recursively viewed all files in this directory:"}
+									? "Cline 需要迭代列举这个目录的文件:"
+									: "Cline 在这个目录迭代查找到的文件:"}
 							</span>
 						</div>
 						<CodeAccordian
@@ -475,8 +473,8 @@ export const ChatRowContent = ({ message, isExpanded, onToggleExpand, lastModifi
 							{toolIcon("file-code")}
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
-									? "Cline wants to view source code definition names used in this directory:"
-									: "Cline viewed source code definition names used in this directory:"}
+									? "Cline 需要查看此目录中使用的源代码定义名称:"
+									: "Cline 查看此目录中使用的源代码定义名称:"}
 							</span>
 						</div>
 						<CodeAccordian
