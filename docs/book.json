@@ -1,24 +1,27 @@
 {
 	"title": "Cline Chinese Doc",
 	"language": "zh",
-	"root": ".",
+	"root": "./",
 	"structure": {
 		"readme": "README.md",
 		"summary": "SUMMARY.md"
 	},
-	"plugins": ["langselect"],
+	"plugins": [
+		"language-picker"
+	],
 	"pluginsConfig": {
-		"langselect": {
-			"languages": {
-				"en": {
-					"label": "English",
-					"prefix": "en/"
+		"language-picker": {
+			"grid-columns": 2,
+			"languages": [
+				{
+					"code": "zh",
+					"name": "中文"
 				},
-				"zh": {
-					"label": "中文",
-					"prefix": "zh/"
+				{
+					"code": "en",
+					"name": "English"
 				}
-			}
+			]
 		}
 	}
 }
