@@ -21,7 +21,7 @@ https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs/<br>
 ## 功能展示<br>
 
 <video width="100%" controls src="https://github.com/user-attachments/assets/a6db47a9-08d7-4d20-afa0-110d23b71a81"></video><br>
-> 演示视频使用 免费 LLM Coding 大模型API Optimus Alpha 模型，展示了 Cline 中文版的主要功能和使用效果，视频没有加速，推理速度快到飞起。<br>
+> 演示视频使用 免费 LLM Coding 大模型API DeepSeek V3 0324 模型，展示了 Cline 中文版的主要功能和使用效果，视频没有加速，推理速度快到飞起。<br>
 > 本项目推荐使用[胜算云Router](https://router.shengsuanyun.com/)的LLM API进行智能编码推理，中国大陆地区可以免魔法访问世界范围内的最全的人工智能API，超低价格外，同时可以开发票，以及免费的云部署项目，让您的
 AI项目全面得到落地使用。<br>
 中国大陆地区针对DeepSeek官方不提供以下服务，我们则完全支持：<br>
@@ -34,18 +34,24 @@ Cline-中文版胜算已发布到VSCode插件市场，欢迎感兴趣的小伙�
 ## 简介
 
 这个项目是基于 [Cline](https://github.com/cline/cline) 的汉化版本。旨在优化由于英文 prompt 导致 Cline 在中文输入下+免费大模型（如：Optimus Alpha）表现不佳的问题, 并提供更符合中文用户习惯的UI界面和功能。目前已测试[DeepSeek-R1/DeepSeek-V3](https://api-docs.deepseek.com/zh-cn/news/news250325)工作良好，同时，[胜算云Router](https://router.shengsuanyun.com/)提供多种免费/收费模型API<br>
-当前免费模型<br>
-Optimus Alpha<br>
-1,000,000 上下文长度 最大32Ktokens输出 1秒首字延迟，17.22t/s吞吐量<br>
 
-日常使用cline等编程助手时发现使用某些模型推理速度较慢（如deepseek-R1, Claude-3.5-Sonnet），这个项目优先尝试在中文输入下，对轻量化LLM进行实验（如Optimus Alpha），优化上下文prompt, 以提升推理长度，以增加推理输入项目代码或者数据长度。<br>
+日常使用cline等编程助手时发现使用某些模型推理速度较慢（如deepseek-R1, Claude-3.5-Sonnet），这个项目优先尝试在中文输入下，对轻量化LLM进行实验，优化上下文prompt, 以提升推理长度，以增加推理输入项目代码或者数据长度。<br>
 
 > **🚀 重要提示：经过测试，3.10.2版本下，Optimus Alpha 免费模型工作良好，推理速度极快，强烈推荐尝试！**
 
 ## 背景
 
+Cline 中文版「胜算」开发初衷<br>
+我们推出 胜算中文版，旨在为国内开发者提供更便捷、高效的 AI 接入体验。在并行 Cline 主线功能开发的同时，「胜算云 Router」特别开放免费模型 无限制使用，全面支持国内用户免魔法接入，实现真正的即用即连。<br>
 
+核心优势<br>
+	•	✅ 免费模型不限量调用<br>
+	•	✅ 国内直连，免翻墙，极速访问<br>
+	•	✅ 支持快捷充值，到账迅速<br>
+	•	✅ 企业用户可开具正规发票<br>
+	•	✅ 稳定高可用，持续优化体验<br>
 
+「胜算」致力于成为国内 AI 开发者首选工具，让每一个创意都能高效落地，真正实现 开发有胜算，落地有保障。<br>
 
 ## 版本说明
 
@@ -58,12 +64,9 @@ Optimus Alpha<br>
 
 欢迎关注我的自媒体账号，获取更多AI开发和技术分享：
 
-- 知乎：[Cline-中文版](https://router.shengsuanyun.com/)
-- B站：
-- 头条号：
-- 小红书：
-- 公众号：
-- 视频号：
+- 知乎：[胜算云](zhihu.com/people/shengsuanyunrouter)
+- B站： [胜算云](https://space.bilibili.com/3546885937695051)
+
 
 ## 加入社群
 
@@ -76,7 +79,7 @@ Optimus Alpha<br>
 <a href="https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan" target="_blank"><strong>在 VS Marketplace 下载</strong></a>
 </td>
 <td align="center">
-<a href="https://discord.gg/cline" target="_blank"><strong>Discord</strong></a>
+<a href="https://discord.gg/frBHkRKB4x" target="_blank"><strong>Discord</strong></a>
 </td>
 <td align="center">
 <a href="https://www.reddit.com/r/cline/" target="_blank"><strong>r/cline</strong></a>
