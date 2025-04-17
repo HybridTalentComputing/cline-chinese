@@ -82,6 +82,8 @@ export interface WebviewMessage {
 		| "searchFiles"
 		| "toggleFavoriteModel"
 		| "fetchUSDRate"
+		| "accountLoginClickedSSY"
+		| "accountLogoutClickedSSY"
 	// | "relaunchChromeDebugMode"
 	text?: string
 	uris?: string[] // Used for getRelativePaths

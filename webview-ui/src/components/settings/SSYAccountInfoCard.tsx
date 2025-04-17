@@ -10,12 +10,12 @@ export const SSYAccountInfoCard = () => {
 	let user = apiConfiguration?.shengsuanyunToken ? ssyUser || userInfo : undefined
 
 	const handleLogin = () => {
-		vscode.postMessage({ type: "accountLoginClicked" })
+		vscode.postMessage({ type: "accountLoginClickedSSY" })
 	}
 
 	const handleLogout = () => {
 		// First notify extension to clear API keys and state
-		vscode.postMessage({ type: "accountLogoutClicked" })
+		vscode.postMessage({ type: "accountLogoutClickedSSY" })
 		// Then sign out of Firebase
 		handleSignOutSSY()
 	}
@@ -33,7 +33,7 @@ export const SSYAccountInfoCard = () => {
 			) : (
 				<div>
 					<VSCodeButton onClick={handleLogin} className="mt-0">
-						注册 Cline
+						注册 Cline 胜算云
 					</VSCodeButton>
 				</div>
 			)}

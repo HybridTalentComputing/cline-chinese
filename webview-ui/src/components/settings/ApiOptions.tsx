@@ -246,7 +246,6 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 					<ClineAccountInfoCard />
 				</div>
 			)}
-
 			{selectedProvider === "asksage" && (
 				<div>
 					<VSCodeTextField

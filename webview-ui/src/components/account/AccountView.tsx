@@ -212,12 +212,12 @@ export const SSYAccountView = () => {
 	}, [user])
 
 	const handleLogin = () => {
-		vscode.postMessage({ type: "accountLoginClicked" })
+		vscode.postMessage({ type: "accountLoginClickedSSY" })
 	}
 
 	const handleLogout = () => {
 		// First notify extension to clear API keys and state
-		vscode.postMessage({ type: "accountLogoutClicked" })
+		vscode.postMessage({ type: "accountLogoutClickedSSY" })
 		// Then sign out of Firebase
 		handleSignOutSSY()
 	}

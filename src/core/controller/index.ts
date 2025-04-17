@@ -567,6 +567,23 @@ export class Controller {
 				const uriScheme = vscode.env.uriScheme
 
 				const authUrl = vscode.Uri.parse(
+					`https://app.cline.bot/auth?state=${encodeURIComponent(nonce)}&callback_url=${encodeURIComponent(`${uriScheme || "vscode"}://saoudrizwan.claude-dev/auth`)}`,
+				)
+				vscode.env.openExternal(authUrl)
+				break
+			}
+			case "accountLoginClickedSSY": {
+				// Generate nonce for state validation
+				const nonce = crypto.randomBytes(32).toString("hex")
+				await storeSecret(this.context, "authNonce", nonce)
+
+				// Open browser for authentication with state param
+				console.log("Login button clicked in account page")
+				console.log("Opening auth page with state param")
+
+				const uriScheme = vscode.env.uriScheme
+
+				const authUrl = vscode.Uri.parse(
 					`https://router.shengsuanyun.com/auth?callback_url=${encodeURIComponent(`${uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan/ssy`)}`,
 				)
 				vscode.env.openExternal(authUrl)
@@ -1240,7 +1257,7 @@ export class Controller {
 	async handleAuthCallback(customToken: string, apiKey: string) {
 		try {
 			// Store API key for API calls
-			await storeSecret(this.context, "shengsuanyunApiKey", apiKey)
+			await storeSecret(this.context, "clineApiKey", apiKey)
 
 			// Send custom token to webview for Firebase auth
 			await this.postMessageToWebview({
@@ -1248,15 +1265,15 @@ export class Controller {
 				customToken,
 			})
 
-			const shengsuanyunProvider: ApiProvider = "shengsuanyun"
-			await updateGlobalState(this.context, "apiProvider", shengsuanyunProvider)
+			const clineProvider: ApiProvider = "cline"
+			await updateGlobalState(this.context, "apiProvider", clineProvider)
 
 			// Update API configuration with the new provider and API key
 			const { apiConfiguration } = await getAllExtensionState(this.context)
 			const updatedConfig = {
 				...apiConfiguration,
-				apiProvider: shengsuanyunProvider,
-				shengsuanyunApiKey: apiKey,
+				apiProvider: clineProvider,
+				clineApiKey: apiKey,
 			}
 
 			if (this.task) {
@@ -1267,7 +1284,7 @@ export class Controller {
 			// vscode.window.showInformationMessage("Successfully logged in to Cline")
 		} catch (error) {
 			console.error("Failed to handle auth callback:", error)
-			vscode.window.showErrorMessage("Failed to log in to ShengSuanYun")
+			vscode.window.showErrorMessage("Failed to log in to Cline")
 			// Even on login failure, we preserve any existing tokens
 			// Only clear tokens on explicit logout
 		}
@@ -1500,7 +1517,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 		// await this.postMessageToWebview({ type: "action", action: "settingsButtonClicked" }) // bad ux if user is on welcome
 	}
 
-	// shengsuanyun
+	// shengsuanyun Auth
 
 	async handleSSYCallback(code: string) {
 		let apiKey: string
@@ -1533,7 +1550,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 		if (this.task) {
 			this.task.api = buildApiHandler({
 				apiProvider: shengsuanyun,
-				openRouterApiKey: apiKey,
+				shengsuanyunApiKey: apiKey,
 			})
 		}
 		// await this.postMessageToWebview({ type: "action", action: "settingsButtonClicked" }) // bad ux if user is on welcome
