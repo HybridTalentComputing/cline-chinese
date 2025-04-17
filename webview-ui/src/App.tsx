@@ -11,6 +11,7 @@ import { FirebaseAuthProvider } from "./context/FirebaseAuthContext"
 import { vscode } from "./utils/vscode"
 import McpView from "./components/mcp/configuration/McpConfigurationView"
 import { McpViewTab } from "@shared/mcp"
+import { SsyAuthProvider } from "./context/SsyAuthContext"
 
 const AppContent = () => {
 	const { didHydrateState, showWelcome, shouldShowAnnouncement, telemetrySetting, vscMachineId } = useExtensionState()
@@ -119,9 +120,9 @@ const AppContent = () => {
 const App = () => {
 	return (
 		<ExtensionStateContextProvider>
-			<FirebaseAuthProvider>
+			<SsyAuthProvider>
 				<AppContent />
-			</FirebaseAuthProvider>
+			</SsyAuthProvider>
 		</ExtensionStateContextProvider>
 	)
 }

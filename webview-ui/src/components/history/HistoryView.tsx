@@ -211,7 +211,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							<VSCodeRadio value="newest">最新</VSCodeRadio>
 							<VSCodeRadio value="oldest">最早</VSCodeRadio>
 							<VSCodeRadio value="mostExpensive">最贵</VSCodeRadio>
-							<VSCodeRadio value="mostTokens">最多Tokens</VSCodeRadio>
+							<VSCodeRadio value="mostTokens">Tokens最多</VSCodeRadio>
 							<VSCodeRadio value="mostRelevant" disabled={!searchQuery} style={{ opacity: searchQuery ? 1 : 0.5 }}>
 								最相关
 							</VSCodeRadio>
@@ -475,7 +475,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							setDeleteAllDisabled(true)
 							vscode.postMessage({ type: "clearAllTaskHistory" })
 						}}>
-						Delete All History{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
+						删除所有历史{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
 					</DangerButton>
 				</div>
 			</div>

@@ -47,6 +47,7 @@ import {
 	updateGlobalState,
 } from "../storage/state"
 import { Task } from "../task"
+import { SSYAccountService } from "../../services/account/SSYAccountService"
 
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -61,7 +62,7 @@ export class Controller {
 	private task?: Task
 	workspaceTracker: WorkspaceTracker
 	mcpHub: McpHub
-	accountService: ClineAccountService
+	accountService: SSYAccountService
 	private latestAnnouncementId = "april-11-2025" // update to some unique identifier when we add a new announcement
 
 	constructor(
@@ -79,11 +80,11 @@ export class Controller {
 			(msg) => this.postMessageToWebview(msg),
 			this.context.extension?.packageJSON?.version ?? "1.0.0",
 		)
-		this.accountService = new ClineAccountService(
+		this.accountService = new SSYAccountService(
 			(msg) => this.postMessageToWebview(msg),
 			async () => {
 				const { apiConfiguration } = await this.getStateToPostToWebview()
-				return apiConfiguration?.clineApiKey
+				return apiConfiguration?.shengsuanyunToken
 			},
 		)
 
@@ -118,17 +119,17 @@ export class Controller {
 	// Auth methods
 	async handleSignOut() {
 		try {
-			await storeSecret(this.context, "clineApiKey", undefined)
+			await updateGlobalState(this.context, "shengsuanyunToken", undefined)
 			await updateGlobalState(this.context, "userInfo", undefined)
 			await updateGlobalState(this.context, "apiProvider", "openrouter")
 			await this.postStateToWebview()
-			vscode.window.showInformationMessage("Successfully logged out of Cline")
+			vscode.window.showInformationMessage("成功登出 Cline 账户")
 		} catch (error) {
 			vscode.window.showErrorMessage("Logout failed")
 		}
 	}
 
-	async setUserInfo(info?: { displayName: string | null; email: string | null; photoURL: string | null }) {
+	async setUserInfo(info?: Object) {
 		await updateGlobalState(this.context, "userInfo", info)
 	}
 
@@ -566,7 +567,7 @@ export class Controller {
 				const uriScheme = vscode.env.uriScheme
 
 				const authUrl = vscode.Uri.parse(
-					`https://router.shengsuanyun.com/?code=${encodeURIComponent(nonce)}&callback_url=${encodeURIComponent(`${uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan/auth`)}`,
+					`https://router.shengsuanyun.com/auth?callback_url=${encodeURIComponent(`${uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan/ssy`)}`,
 				)
 				vscode.env.openExternal(authUrl)
 				break
@@ -1150,7 +1151,7 @@ export class Controller {
 		try {
 			await fs.mkdir(mcpServersDir, { recursive: true })
 		} catch (error) {
-			return "~/Documents/Cline/MCP" // in case creating a directory in documents fails for whatever reason (e.g. permissions) - this is fine since this path is only ever used in the system prompt
+			return "~/Documents/ClineShengsuan/MCP" // in case creating a directory in documents fails for whatever reason (e.g. permissions) - this is fine since this path is only ever used in the system prompt
 		}
 		return mcpServersDir
 	}
@@ -1216,7 +1217,7 @@ export class Controller {
 	async fetchUserCreditsData() {
 		try {
 			await Promise.all([
-				this.accountService?.fetchBalance(),
+				this.accountService?.fetchRate(),
 				this.accountService?.fetchUsageTransactions(),
 				this.accountService?.fetchPaymentTransactions(),
 			])
@@ -1493,6 +1494,45 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 		if (this.task) {
 			this.task.api = buildApiHandler({
 				apiProvider: openrouter,
+				openRouterApiKey: apiKey,
+			})
+		}
+		// await this.postMessageToWebview({ type: "action", action: "settingsButtonClicked" }) // bad ux if user is on welcome
+	}
+
+	// shengsuanyun
+
+	async handleSSYCallback(code: string) {
+		let apiKey: string
+		let customToken: string
+		try {
+			const response = await axios.post("https://api.shengsuanyun.com/auth/keys", {
+				code: code,
+				callback_url: "vscode://shengsuan-cloud.cline-shengsuan/ssy",
+			})
+			if (response.data && response.data.data && response.data.data.api_key) {
+				apiKey = response.data.data.api_key
+				customToken = response.data.data.jwt_token
+				await this.postMessageToWebview({
+					type: "authCallback",
+					customToken,
+				})
+			} else {
+				throw new Error("Invalid response from Shengsuanyun API")
+			}
+		} catch (error) {
+			console.error("Error exchanging code for API key:", error)
+			throw error
+		}
+
+		const shengsuanyun: ApiProvider = "shengsuanyun"
+		await updateGlobalState(this.context, "apiProvider", shengsuanyun)
+		await updateGlobalState(this.context, "shengsuanyunToken", customToken)
+		await storeSecret(this.context, "shengsuanyunApiKey", apiKey)
+		await this.postStateToWebview()
+		if (this.task) {
+			this.task.api = buildApiHandler({
+				apiProvider: shengsuanyun,
 				openRouterApiKey: apiKey,
 			})
 		}

@@ -120,6 +120,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		reasoningEffort,
 		sambanovaApiKey,
 		shengsuanyunApiKey,
+		shengsuanyunToken,
 		planActSeparateModelsSettingRaw,
 		favoritedModelIds,
 	] = await Promise.all([
@@ -191,6 +192,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "reasoningEffort") as Promise<string | undefined>,
 		getSecret(context, "sambanovaApiKey") as Promise<string | undefined>,
 		getSecret(context, "shengsuanyunApiKey") as Promise<string | undefined>,
+		getGlobalState(context, "shengsuanyunToken") as Promise<string | undefined>,
 		getGlobalState(context, "planActSeparateModelsSetting") as Promise<boolean | undefined>,
 		getGlobalState(context, "favoritedModelIds") as Promise<string[] | undefined>,
 	])
@@ -290,6 +292,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 			xaiApiKey,
 			sambanovaApiKey,
 			shengsuanyunApiKey,
+			shengsuanyunToken,
 			favoritedModelIds,
 		},
 		lastShownAnnouncementId,
@@ -367,6 +370,7 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 		clineApiKey,
 		sambanovaApiKey,
 		shengsuanyunApiKey,
+		shengsuanyunToken,
 		favoritedModelIds,
 	} = apiConfiguration
 	await updateGlobalState(context, "apiProvider", apiProvider)
@@ -423,6 +427,7 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 	await storeSecret(context, "clineApiKey", clineApiKey)
 	await storeSecret(context, "sambanovaApiKey", sambanovaApiKey)
 	await storeSecret(context, "shengsuanyunApiKey", shengsuanyunApiKey)
+	await updateGlobalState(context, "shengsuanyunToken", shengsuanyunToken)
 	await updateGlobalState(context, "favoritedModelIds", favoritedModelIds)
 }
 

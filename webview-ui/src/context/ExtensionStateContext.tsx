@@ -99,6 +99,7 @@ export const ExtensionStateContextProvider: React.FC<{
 							config.xaiApiKey,
 							config.sambanovaApiKey,
 							config.shengsuanyunApiKey,
+							config.shengsuanyunToken,
 						].some((key) => key !== undefined)
 					: false
 				setShowWelcome(!hasKey)

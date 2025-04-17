@@ -224,9 +224,15 @@ export function activate(context: vscode.ExtensionContext) {
 					vscode.window.showErrorMessage("Invalid auth state")
 					return
 				}
-
 				if (token && apiKey) {
 					await visibleWebview?.controller.handleAuthCallback(token, apiKey)
+				}
+				break
+			}
+			case "/ssy": {
+				const code = query.get("code")
+				if (code) {
+					await visibleWebview?.controller.handleSSYCallback(code)
 				}
 				break
 			}

@@ -20,6 +20,7 @@ export type SecretKey =
 	| "xaiApiKey"
 	| "sambanovaApiKey"
 	| "shengsuanyunApiKey"
+
 export type GlobalStateKey =
 	| "apiProvider"
 	| "apiModelId"
@@ -72,3 +73,4 @@ export type GlobalStateKey =
 	| "reasoningEffort"
 	| "planActSeparateModelsSetting"
 	| "favoritedModelIds"
+	| "shengsuanyunToken"

@@ -78,6 +78,7 @@ export interface ApiHandlerOptions {
 	reasoningEffort?: string
 	sambanovaApiKey?: string
 	shengsuanyunApiKey?: string
+	shengsuanyunToken?: string
 }
 
 export type ApiConfiguration = ApiHandlerOptions & {

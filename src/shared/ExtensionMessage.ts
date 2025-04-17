@@ -49,6 +49,7 @@ export interface ExtensionMessage {
 		| "browserRelaunchResult"
 		| "relativePathsResponse" // Handles single and multiple path responses
 		| "fileSearchResults"
+		| "fetchUSDRate"
 	text?: string
 	paths?: (string | null)[] // Used for relativePathsResponse
 	action?:
@@ -87,6 +88,7 @@ export interface ExtensionMessage {
 	}
 	url?: string
 	isImage?: boolean
+	fetchUSDRate?: number
 	userCreditsBalance?: BalanceResponse
 	userCreditsUsage?: UsageTransaction[]
 	userCreditsPayments?: PaymentTransaction[]

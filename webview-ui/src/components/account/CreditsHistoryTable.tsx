@@ -8,9 +8,10 @@ interface CreditsHistoryTableProps {
 	isLoading: boolean
 	usageData: UsageTransaction[]
 	paymentsData: PaymentTransaction[]
+	rateUSD?: number
 }
 
-const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHistoryTableProps) => {
+const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, rateUSD = 0 }: CreditsHistoryTableProps) => {
 	const [activeTab, setActiveTab] = useState<"usage" | "payments">("usage")
 
 	return (
@@ -27,7 +28,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 
 			{/* Content container */}
 			<div className="mt-[15px] mb-[0px] rounded-md overflow-auto flex-grow">
-				{isLoading ? (
+				{isLoading && !rateUSD ? (
 					<div className="flex justify-center items-center p-4">
 						<div className="text-[var(--vscode-descriptionForeground)]">加载中...</div>
 					</div>
@@ -59,7 +60,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 												</VSCodeDataGridCell>
 												<VSCodeDataGridCell grid-column="2">{`${row.modelProvider}/${row.model}`}</VSCodeDataGridCell>
 												{/* <VSCodeDataGridCell grid-column="3">{`${row.promptTokens} → ${row.completionTokens}`}</VSCodeDataGridCell> */}
-												<VSCodeDataGridCell grid-column="3">{`$${Number(row.credits).toFixed(7)}`}</VSCodeDataGridCell>
+												<VSCodeDataGridCell grid-column="3">{`$${Number(row.credits || "0").toFixed(7)}`}</VSCodeDataGridCell>
 											</VSCodeDataGridRow>
 										))}
 									</VSCodeDataGrid>
@@ -80,7 +81,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 												日期
 											</VSCodeDataGridCell>
 											<VSCodeDataGridCell cell-type="columnheader" grid-column="2">
-												总费用
+												充值
 											</VSCodeDataGridCell>
 											<VSCodeDataGridCell cell-type="columnheader" grid-column="3">
 												余额
@@ -92,8 +93,8 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 												<VSCodeDataGridCell grid-column="1">
 													{formatTimestamp(row.paidAt, "zh-CN")}
 												</VSCodeDataGridCell>
-												<VSCodeDataGridCell grid-column="2">{`$${formatDollars(parseInt(row.amountCents))}`}</VSCodeDataGridCell>
-												<VSCodeDataGridCell grid-column="3">{`${row.credits}`}</VSCodeDataGridCell>
+												<VSCodeDataGridCell grid-column="2">{`$${formatDollars(rateUSD * parseInt(row.amountCents || "0"))}`}</VSCodeDataGridCell>
+												<VSCodeDataGridCell grid-column="3">{`${row.credits || ""}`}</VSCodeDataGridCell>
 											</VSCodeDataGridRow>
 										))}
 									</VSCodeDataGrid>

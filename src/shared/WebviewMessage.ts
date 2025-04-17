@@ -81,6 +81,7 @@ export interface WebviewMessage {
 		| "getRelativePaths" // Handles single and multiple URI resolution
 		| "searchFiles"
 		| "toggleFavoriteModel"
+		| "fetchUSDRate"
 	// | "relaunchChromeDebugMode"
 	text?: string
 	uris?: string[] // Used for getRelativePaths
@@ -104,7 +105,7 @@ export interface WebviewMessage {
 	autoApprove?: boolean
 
 	// For auth
-	user?: UserInfo | null
+	user?: Object | null
 	customToken?: string
 	// For openInBrowser
 	url?: string
