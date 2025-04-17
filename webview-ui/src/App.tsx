@@ -120,9 +120,11 @@ const AppContent = () => {
 const App = () => {
 	return (
 		<ExtensionStateContextProvider>
-			<SsyAuthProvider>
-				<AppContent />
-			</SsyAuthProvider>
+			<FirebaseAuthProvider>
+				<SsyAuthProvider>
+					<AppContent />
+				</SsyAuthProvider>
+			</FirebaseAuthProvider>
 		</ExtensionStateContextProvider>
 	)
 }

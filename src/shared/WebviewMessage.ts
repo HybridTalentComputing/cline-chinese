@@ -105,7 +105,8 @@ export interface WebviewMessage {
 	autoApprove?: boolean
 
 	// For auth
-	user?: Object | null
+	user?: UserInfo | null
+	userSSY?: Object | null
 	customToken?: string
 	// For openInBrowser
 	url?: string

@@ -837,7 +837,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 								})
 							}
 						}}>
-						Set Azure API version
+						设置 Azure API 版本
 					</VSCodeCheckbox>
 					{azureApiVersionSelected && (
 						<VSCodeTextField

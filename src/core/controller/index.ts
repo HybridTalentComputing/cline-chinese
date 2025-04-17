@@ -200,7 +200,7 @@ export class Controller {
 				break
 			}
 			case "authStateChanged":
-				await this.setUserInfo(message.user || undefined)
+				await this.setUserInfo(message.user || message.userSSY || undefined)
 				await this.postStateToWebview()
 				break
 			case "webviewDidLaunch":

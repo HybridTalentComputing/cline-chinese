@@ -4,22 +4,22 @@ import axios, { AxiosRequestConfig } from "axios"
 import { vscode } from "@/utils/vscode"
 
 interface SsyAuthContextType {
-	user: any | null
-	isInitialized: boolean
-	signInWithToken: (token: string) => Promise<void>
-	handleSignOut: () => Promise<void>
+	userSSY: any | null
+	isInitSSY: boolean
+	signInWithTokenSSY: (token: string) => Promise<void>
+	handleSignOutSSY: () => Promise<void>
 }
 
 const SsyAuthContext = createContext<SsyAuthContextType | undefined>(undefined)
 export const SsyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	const [user, setUser] = useState<any | null>(null)
-	const [isInitialized, setIsInitialized] = useState(false)
+	const [userSSY, setUser] = useState<any | null>(null)
+	const [isInitSSY, setIsInitialized] = useState(false)
 	const { apiConfiguration } = useExtensionState()
 	useEffect(() => {
-		if (apiConfiguration?.shengsuanyunToken) signInWithToken(apiConfiguration?.shengsuanyunToken)
+		if (apiConfiguration?.shengsuanyunToken) signInWithTokenSSY(apiConfiguration?.shengsuanyunToken)
 	}, [apiConfiguration?.shengsuanyunToken])
 
-	const signInWithToken = async (token: string) => {
+	const signInWithTokenSSY = async (token: string) => {
 		try {
 			const reqConfig: AxiosRequestConfig = {
 				headers: {
@@ -45,7 +45,7 @@ export const SsyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			console.log("onAuthStateChanged user", usi)
 			vscode.postMessage({
 				type: "authStateChanged",
-				user: usi,
+				userSSY: usi,
 			})
 		} catch (error) {
 			console.error("Error signing in with custom token:", error)
@@ -58,15 +58,15 @@ export const SsyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ child
 		const handleMessage = (event: MessageEvent) => {
 			const message = event.data
 			if (message.type === "authCallback" && message.customToken) {
-				signInWithToken(message.customToken)
+				signInWithTokenSSY(message.customToken)
 			}
 		}
 
 		window.addEventListener("message", handleMessage)
 		return () => window.removeEventListener("message", handleMessage)
-	}, [signInWithToken])
+	}, [signInWithTokenSSY])
 
-	const handleSignOut = useCallback(async () => {
+	const handleSignOutSSY = useCallback(async () => {
 		try {
 			// await signOut(auth)
 			console.log("Successfully signed out of ssy")
@@ -77,7 +77,7 @@ export const SsyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ child
 	}, [])
 
 	return (
-		<SsyAuthContext.Provider value={{ user, isInitialized, signInWithToken, handleSignOut }}>
+		<SsyAuthContext.Provider value={{ userSSY, isInitSSY, signInWithTokenSSY, handleSignOutSSY }}>
 			{children}
 		</SsyAuthContext.Provider>
 	)

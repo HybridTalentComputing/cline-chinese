@@ -176,7 +176,7 @@ export const ClineAccountView = () => {
 }
 
 export const SSYAccountView = () => {
-	const { user: ssyUser, handleSignOut } = useSsyAuth()
+	const { userSSY: ssyUser, handleSignOutSSY } = useSsyAuth()
 	const { userInfo, apiConfiguration } = useExtensionState()
 
 	let user = apiConfiguration?.shengsuanyunToken ? ssyUser || userInfo : undefined
@@ -219,7 +219,7 @@ export const SSYAccountView = () => {
 		// First notify extension to clear API keys and state
 		vscode.postMessage({ type: "accountLogoutClicked" })
 		// Then sign out of Firebase
-		handleSignOut()
+		handleSignOutSSY()
 	}
 	return (
 		<div className="h-full flex flex-col">

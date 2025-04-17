@@ -4,7 +4,7 @@ import { useSsyAuth } from "@/context/SsyAuthContext"
 import { vscode } from "@/utils/vscode"
 
 export const SSYAccountInfoCard = () => {
-	const { user: ssyUser, handleSignOut } = useSsyAuth()
+	const { userSSY: ssyUser, handleSignOutSSY } = useSsyAuth()
 	const { userInfo, apiConfiguration } = useExtensionState()
 
 	let user = apiConfiguration?.shengsuanyunToken ? ssyUser || userInfo : undefined
@@ -17,7 +17,7 @@ export const SSYAccountInfoCard = () => {
 		// First notify extension to clear API keys and state
 		vscode.postMessage({ type: "accountLogoutClicked" })
 		// Then sign out of Firebase
-		handleSignOut()
+		handleSignOutSSY()
 	}
 
 	const handleShowAccount = () => {
