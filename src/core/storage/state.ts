@@ -10,6 +10,7 @@ import { BrowserSettings } from "../../shared/BrowserSettings"
 import { ChatSettings } from "../../shared/ChatSettings"
 import { TelemetrySetting } from "../../shared/TelemetrySetting"
 import { UserInfo } from "../../shared/UserInfo"
+import { ClineRulesToggles } from "../../shared/cline-rules"
 /*
 	Storage
 	https://dev.to/kompotkot/how-to-use-secretstorage-in-your-vscode-extensions-2hco
@@ -72,6 +73,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		openAiApiKey,
 		openAiModelId,
 		openAiModelInfo,
+		openAiHeaders,
 		ollamaModelId,
 		ollamaBaseUrl,
 		ollamaApiOptionsCtxNum,
@@ -123,6 +125,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		shengsuanyunToken,
 		planActSeparateModelsSettingRaw,
 		favoritedModelIds,
+		globalClineRulesToggles,
 	] = await Promise.all([
 		getGlobalState(context, "apiProvider") as Promise<ApiProvider | undefined>,
 		getGlobalState(context, "apiModelId") as Promise<string | undefined>,
@@ -144,6 +147,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getSecret(context, "openAiApiKey") as Promise<string | undefined>,
 		getGlobalState(context, "openAiModelId") as Promise<string | undefined>,
 		getGlobalState(context, "openAiModelInfo") as Promise<ModelInfo | undefined>,
+		getGlobalState(context, "openAiHeaders") as Promise<Record<string, string> | undefined>,
 		getGlobalState(context, "ollamaModelId") as Promise<string | undefined>,
 		getGlobalState(context, "ollamaBaseUrl") as Promise<string | undefined>,
 		getGlobalState(context, "ollamaApiOptionsCtxNum") as Promise<string | undefined>,
@@ -195,6 +199,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "shengsuanyunToken") as Promise<string | undefined>,
 		getGlobalState(context, "planActSeparateModelsSetting") as Promise<boolean | undefined>,
 		getGlobalState(context, "favoritedModelIds") as Promise<string[] | undefined>,
+		getGlobalState(context, "globalClineRulesToggles") as Promise<ClineRulesToggles | undefined>,
 	])
 
 	let apiProvider: ApiProvider
@@ -210,6 +215,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 			apiProvider = "openrouter"
 		}
 	}
+
+	const localClineRulesToggles = (await getWorkspaceState(context, "localClineRulesToggles")) as ClineRulesToggles
 
 	const o3MiniReasoningEffort = vscode.workspace
 		.getConfiguration("clineShengsuan.modelSettings.o3Mini")
@@ -257,6 +264,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 			openAiApiKey,
 			openAiModelId,
 			openAiModelInfo,
+			openAiHeaders: openAiHeaders || {},
 			ollamaModelId,
 			ollamaBaseUrl,
 			ollamaApiOptionsCtxNum,
@@ -299,6 +307,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		customInstructions,
 		taskHistory,
 		autoApprovalSettings: autoApprovalSettings || DEFAULT_AUTO_APPROVAL_SETTINGS, // default value can be 0 or empty string
+		globalClineRulesToggles: globalClineRulesToggles || {},
+		localClineRulesToggles: localClineRulesToggles || {},
 		browserSettings: { ...DEFAULT_BROWSER_SETTINGS, ...browserSettings }, // this will ensure that older versions of browserSettings (e.g. before remoteBrowserEnabled was added) are merged with the default values (false for remoteBrowserEnabled)
 		chatSettings: chatSettings || DEFAULT_CHAT_SETTINGS,
 		userInfo,
@@ -335,6 +345,7 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 		openAiApiKey,
 		openAiModelId,
 		openAiModelInfo,
+		openAiHeaders,
 		ollamaModelId,
 		ollamaBaseUrl,
 		ollamaApiOptionsCtxNum,
@@ -392,6 +403,7 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 	await storeSecret(context, "openAiApiKey", openAiApiKey)
 	await updateGlobalState(context, "openAiModelId", openAiModelId)
 	await updateGlobalState(context, "openAiModelInfo", openAiModelInfo)
+	await updateGlobalState(context, "openAiHeaders", openAiHeaders || {})
 	await updateGlobalState(context, "ollamaModelId", ollamaModelId)
 	await updateGlobalState(context, "ollamaBaseUrl", ollamaBaseUrl)
 	await updateGlobalState(context, "ollamaApiOptionsCtxNum", ollamaApiOptionsCtxNum)

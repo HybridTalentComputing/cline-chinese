@@ -390,19 +390,40 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Register the command handler
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineShengsuan.fixWithCline", async (range: vscode.Range, diagnostics: any[]) => {
-			const editor = vscode.window.activeTextEditor
-			if (!editor) {
-				return
+		vscode.commands.registerCommand(
+			"clineShengsuan.fixWithCline",
+			async (range: vscode.Range, diagnostics: vscode.Diagnostic[]) => {
+				const editor = vscode.window.activeTextEditor
+				if (!editor) {
+					return
+				}
+
+				const selectedText = editor.document.getText(range)
+				const filePath = editor.document.uri.fsPath
+				const languageId = editor.document.languageId
+
+				// Send to sidebar provider with diagnostics
+				const visibleWebview = WebviewProvider.getVisibleInstance()
+				await visibleWebview?.controller.fixWithCline(selectedText, filePath, languageId, diagnostics)
+			},
+		),
+	)
+
+	// Register the focusChatInput command handler
+	context.subscriptions.push(
+		vscode.commands.registerCommand("cline.focusChatInput", () => {
+			let visibleWebview = WebviewProvider.getVisibleInstance()
+			if (!visibleWebview) {
+				vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
+				visibleWebview = WebviewProvider.getSidebarInstance()
+				// showing the extension will call didBecomeVisible which focuses it already
+				// but it doesn't focus if a tab is selected which focusChatInput accounts for
 			}
 
-			const selectedText = editor.document.getText(range)
-			const filePath = editor.document.uri.fsPath
-			const languageId = editor.document.languageId
-
-			// Send to sidebar provider with diagnostics
-			const visibleWebview = WebviewProvider.getVisibleInstance()
-			await visibleWebview?.controller.fixWithCline(selectedText, filePath, languageId, diagnostics)
+			visibleWebview?.controller.postMessageToWebview({
+				type: "action",
+				action: "focusChatInput",
+			})
 		}),
 	)
 
