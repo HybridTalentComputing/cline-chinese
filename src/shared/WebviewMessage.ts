@@ -84,7 +84,8 @@ export interface WebviewMessage {
 		| "fetchUSDRate"
 		| "accountLoginClickedSSY"
 		| "accountLogoutClickedSSY"
-	// | "relaunchChromeDebugMode"
+		// | "relaunchChromeDebugMode"
+		| "ssyModels"
 	text?: string
 	uris?: string[] // Used for getRelativePaths
 	disabled?: boolean

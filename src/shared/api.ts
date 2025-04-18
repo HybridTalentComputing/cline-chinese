@@ -79,6 +79,7 @@ export interface ApiHandlerOptions {
 	sambanovaApiKey?: string
 	shengsuanyunApiKey?: string
 	shengsuanyunToken?: string
+	ssyModelId?: string
 }
 
 export type ApiConfiguration = ApiHandlerOptions & {

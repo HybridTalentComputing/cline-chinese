@@ -883,7 +883,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 										openAiModelInfo: modelInfo,
 									})
 								}}>
-								Supports Images
+								支持图片
 							</VSCodeCheckbox>
 							<VSCodeCheckbox
 								checked={!!apiConfiguration?.openAiModelInfo?.supportsComputerUse}

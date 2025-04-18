@@ -50,6 +50,7 @@ export interface ExtensionMessage {
 		| "relativePathsResponse" // Handles single and multiple path responses
 		| "fileSearchResults"
 		| "fetchUSDRate"
+		| "ssyModels"
 	text?: string
 	paths?: (string | null)[] // Used for relativePathsResponse
 	action?:
@@ -111,6 +112,7 @@ export interface ExtensionMessage {
 		error?: string
 	}
 	tab?: McpViewTab
+	ssyModels?: Record<string, ModelInfo>
 }
 
 export type Invoke = "sendMessage" | "primaryButtonClick" | "secondaryButtonClick"
