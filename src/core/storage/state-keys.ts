@@ -37,6 +37,7 @@ export type GlobalStateKey =
 	| "openAiBaseUrl"
 	| "openAiModelId"
 	| "openAiModelInfo"
+	| "openAiHeaders"
 	| "ollamaModelId"
 	| "ollamaBaseUrl"
 	| "ollamaApiOptionsCtxNum"
@@ -48,6 +49,7 @@ export type GlobalStateKey =
 	| "openRouterModelInfo"
 	| "openRouterProviderSorting"
 	| "autoApprovalSettings"
+	| "globalClineRulesToggles"
 	| "browserSettings"
 	| "chatSettings"
 	| "vsCodeLmModelSelector"
@@ -72,3 +74,5 @@ export type GlobalStateKey =
 	| "reasoningEffort"
 	| "planActSeparateModelsSetting"
 	| "favoritedModelIds"
+
+export type LocalStateKey = "localClineRulesToggles"
