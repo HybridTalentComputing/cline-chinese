@@ -17,7 +17,7 @@ export class SSYAccountService {
 	private async authenticatedRequest<T>(endpoint: string, config: AxiosRequestConfig = {}): Promise<T> {
 		const ssyApiKey = await this.getSSYApiKey()
 		if (!ssyApiKey) {
-			throw new Error("SSY API key not found")
+			throw new Error("未找到胜算云 API key ")
 		}
 		const reqConfig: AxiosRequestConfig = {
 			...config,
@@ -53,20 +53,20 @@ export class SSYAccountService {
 	async fetchUsageTransactions(): Promise<UsageTransaction[] | undefined> {
 		try {
 			const dqs = this.dateQueryString()
-			const res: any = await this.authenticatedRequest(`/modelrouter/userusage?${dqs}`)
-			if (!res || !Array.isArray(res.usages)) {
+			const res: any = await this.authenticatedRequest(`/modelrouter/userlog?page=1&pageSize=1000&${dqs}`)
+			if (!res || !Array.isArray(res.logs)) {
 				return undefined
 			}
-			const utl = res.usages.flatMap((it: any) =>
-				it.details.map((detail: any) => {
-					return {
-						spentAt: it.date,
-						modelProvider: "胜算云",
-						model: detail.model,
-						totalTokens: detail.total_amount,
-					}
-				}),
-			)
+			const utl = res.logs.map((it: any) => ({
+				spentAt: it.request_time,
+				modelProvider: "胜算云",
+				model: `${it.model.company}/${it.model.name}`,
+				credits: it.total_amount / 10000000,
+				totalTokens: it.total_amount,
+				promptTokens: it.input_tokens,
+				completionTokens: it.output_tokens,
+			}))
+
 			await this.postMessageToWebview({
 				type: "userCreditsUsage",
 				userCreditsUsage: utl,
@@ -79,13 +79,13 @@ export class SSYAccountService {
 	}
 	async fetchPaymentTransactions(): Promise<PaymentTransaction[] | undefined> {
 		try {
-			const res = await this.authenticatedRequest<PaymentTransaction[]>("/base/recharglist")
-			if (!Array.isArray(res)) {
+			const res = await this.authenticatedRequest<any>("/modelrouter/listrecharge?page=1&pageSize=10000")
+			if (!res || !Array.isArray(res.records)) {
 				return undefined
 			}
 			const cpl = res.map((it: any) => ({
-				paidAt: it.CreatedAt,
-				amountCents: (it.Amount / 10000).toString(),
+				paidAt: it.create_at,
+				amountCents: (it.price / 10000).toString(),
 			}))
 			await this.postMessageToWebview({
 				type: "userCreditsPayments",

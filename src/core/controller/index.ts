@@ -424,6 +424,9 @@ export class Controller {
 			case "refreshRequestyModels":
 				await this.refreshRequestyModels()
 				break
+			case "refreshSSYModels":
+				await this.refreshSSYModels()
+				break
 			case "refreshOpenAiModels":
 				const { apiConfiguration } = await getAllExtensionState(this.context)
 				const openAiModels = await this.getOpenAiModels(apiConfiguration.openAiBaseUrl, apiConfiguration.openAiApiKey)
@@ -520,7 +523,8 @@ export class Controller {
 				vscode.env.openExternal(authUrl)
 				break
 			}
-			case "accountLogoutClicked": {
+			case "accountLogoutClicked":
+			case "accountLogoutClickedSSY": {
 				await this.handleSignOut()
 				break
 			}
@@ -1665,7 +1669,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 		return models
 	}
 
-	async getShengSuanModels() {
+	async refreshSSYModels() {
 		const parsePrice = (price: any) => {
 			if (price) {
 				return parseInt(price) / 10_000
@@ -1698,6 +1702,9 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 				})
 				const results = await Promise.all(promises)
 				for (const model of results) {
+					if (!model) {
+						continue
+					}
 					const modelInfo: ModelInfo = {
 						maxTokens: model.max_output_tokens || undefined,
 						contextWindow: model.context,
@@ -1741,7 +1748,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 	// 'Add to Cline' context menu in editor and code action
 	async addSelectedCodeToChat(code: string, filePath: string, languageId: string, diagnostics?: vscode.Diagnostic[]) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
+		await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		// Post message to webview with the selected code
@@ -1764,7 +1771,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 	// 'Add to Cline' context menu in Terminal
 	async addSelectedTerminalOutputToChat(output: string, terminalName: string) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
+		await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		// Post message to webview with the selected terminal output
@@ -1785,7 +1792,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 	// 'Fix with Cline' in code actions
 	async fixWithCline(code: string, filePath: string, languageId: string, diagnostics: vscode.Diagnostic[]) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
+		await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		const fileMention = this.getFileMentionFromPath(filePath)

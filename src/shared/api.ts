@@ -83,6 +83,7 @@ export interface ApiHandlerOptions {
 	shengsuanyunApiKey?: string
 	shengsuanyunToken?: string
 	ssyModelId?: string
+	ssyModelInfo?: ModelInfo
 }
 
 export type ApiConfiguration = ApiHandlerOptions & {
@@ -1627,106 +1628,14 @@ export const requestyDefaultModelInfo: ModelInfo = {
 
 // ShengSuanYun
 // https://router.shengsuanyun.com/model
-export type ShengSuanYunModelId = keyof typeof shengsuanyunModels
-export const shengsuanyunDefaultModelId: ShengSuanYunModelId = "deepseek/deepseek-v3"
-export const shengsuanyunModels = {
-	"anthropic/claude-3.7-sonnet": {
-		maxTokens: 128_000,
-		contextWindow: 200_000,
-		supportsImages: false,
-		supportsPromptCache: true,
-		inputPrice: 3,
-		outputPrice: 15,
-		cacheWritesPrice: 0,
-		cacheReadsPrice: 0,
-	},
-	"anthropic/claude-3.7-sonnet:thinking": {
-		maxTokens: 128_000,
-		contextWindow: 200_000,
-		supportsImages: false,
-		supportsPromptCache: true,
-		inputPrice: 0.3,
-		outputPrice: 15,
-		cacheWritesPrice: 0,
-		cacheReadsPrice: 0,
-	},
-	"google/gemini-2.0-flash-001": {
-		maxTokens: 8_000,
-		contextWindow: 1000_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.1,
-		outputPrice: 0.4,
-	},
-	"google/gemini-2.5-pro-preview-03-25": {
-		maxTokens: 66_000,
-		contextWindow: 1000_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 1.25,
-		outputPrice: 10,
-	},
-	"openai/gpt-4o-2024-11-20": {
-		maxTokens: 16_000,
-		contextWindow: 128_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 5,
-		outputPrice: 15,
-	},
-	"openai/gpt-4o-mini": {
-		maxTokens: 16_000,
-		contextWindow: 128_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.15,
-		outputPrice: 0.6,
-	},
-	"doubao/doubao-pro-256k": {
-		maxTokens: 4_000,
-		contextWindow: 33_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.68,
-		outputPrice: 1.22,
-	},
-	"deepseek/deepseek-v3": {
-		maxTokens: 164_000,
-		contextWindow: 164_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.4,
-		outputPrice: 0.89,
-	},
-	"deepseek/deepseek-r1": {
-		maxTokens: 16_000,
-		contextWindow: 64_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.55,
-		outputPrice: 1.1,
-	},
-	"qwen/qwen-plus": {
-		maxTokens: 8_000,
-		contextWindow: 33_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.48,
-		outputPrice: 0.96,
-	},
-	"qwen/qvq-72b": {
-		maxTokens: 8_000,
-		contextWindow: 131_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		outputPrice: 4.94,
-	},
-	"meta-llama/llama-3.3-70b-instruct": {
-		maxTokens: 131_000,
-		contextWindow: 131_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.12,
-		outputPrice: 0.3,
-	},
-} as const satisfies Record<string, ModelInfo>
+export const ssyDefaultModelId: string = "anthropic/claude-3.7-sonnet"
+export const ssyDefaultModelInfo: ModelInfo = {
+	maxTokens: 128_000,
+	contextWindow: 200_000,
+	supportsImages: false,
+	supportsPromptCache: true,
+	inputPrice: 3,
+	outputPrice: 15,
+	cacheWritesPrice: 0,
+	cacheReadsPrice: 0,
+}

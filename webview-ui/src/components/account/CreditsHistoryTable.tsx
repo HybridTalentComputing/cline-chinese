@@ -60,7 +60,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, rateUSD = 0 }
 												</VSCodeDataGridCell>
 												<VSCodeDataGridCell grid-column="2">{`${row.modelProvider}/${row.model}`}</VSCodeDataGridCell>
 												{/* <VSCodeDataGridCell grid-column="3">{`${row.promptTokens} → ${row.completionTokens}`}</VSCodeDataGridCell> */}
-												<VSCodeDataGridCell grid-column="3">{`$${Number(row.credits || "0").toFixed(7)}`}</VSCodeDataGridCell>
+												<VSCodeDataGridCell grid-column="3">{`$${(rateUSD * Number(row.credits || "0")).toFixed(7)}`}</VSCodeDataGridCell>
 											</VSCodeDataGridRow>
 										))}
 									</VSCodeDataGrid>

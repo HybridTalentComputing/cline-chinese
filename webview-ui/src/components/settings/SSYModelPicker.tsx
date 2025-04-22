@@ -2,32 +2,49 @@ import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
 import { useRemark } from "react-remark"
+import { useMount } from "react-use"
 import styled from "styled-components"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { vscode } from "@/utils/vscode"
+import { ssyDefaultModelId } from "../../../../src/shared/api"
+import { useExtensionState } from "../../context/ExtensionStateContext"
+import { vscode } from "../../utils/vscode"
 import { highlight } from "../history/HistoryView"
+import { ModelInfoView, normalizeApiConfiguration } from "./ApiOptions"
+import { CODE_BLOCK_BG_COLOR } from "../common/CodeBlock"
+import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
 
-const SSYModelPicker: React.FC = () => {
-	const { apiConfiguration, setApiConfiguration, openAiModels } = useExtensionState()
-	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.ssyModelId || "")
+export interface SSYModelPickerProps {
+	isPopup?: boolean
+}
+
+const SSYModelPicker: React.FC<SSYModelPickerProps> = ({ isPopup }) => {
+	const { apiConfiguration, setApiConfiguration, ssyModels } = useExtensionState()
+	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.ssyModelId || ssyDefaultModelId)
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
 	const dropdownRef = useRef<HTMLDivElement>(null)
 	const itemRefs = useRef<(HTMLDivElement | null)[]>([])
+	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 	const dropdownListRef = useRef<HTMLDivElement>(null)
 
 	const handleModelChange = (newModelId: string) => {
 		// could be setting invalid model id/undefined info but validation will catch it
 		setApiConfiguration({
 			...apiConfiguration,
-			ssyModelId: newModelId,
+			...{
+				ssyModelId: newModelId,
+				ssyModelInfo: ssyModels[newModelId],
+			},
 		})
 		setSearchTerm(newModelId)
 	}
 
-	useEffect(() => {
-		vscode.postMessage({ type: "ssyModels" })
-	}, [apiConfiguration?.openAiBaseUrl, apiConfiguration?.openAiApiKey])
+	const { selectedModelId, selectedModelInfo } = useMemo(() => {
+		return normalizeApiConfiguration(apiConfiguration)
+	}, [apiConfiguration])
+
+	useMount(() => {
+		vscode.postMessage({ type: "refreshSSYModels" })
+	})
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -43,8 +60,8 @@ const SSYModelPicker: React.FC = () => {
 	}, [])
 
 	const modelIds = useMemo(() => {
-		return openAiModels.sort((a, b) => a.localeCompare(b))
-	}, [openAiModels])
+		return Object.keys(ssyModels).sort((a, b) => a.localeCompare(b))
+	}, [ssyModels])
 
 	const searchableItems = useMemo(() => {
 		return modelIds.map((id) => ({
@@ -66,7 +83,7 @@ const SSYModelPicker: React.FC = () => {
 	}, [searchableItems])
 
 	const modelSearchResults = useMemo(() => {
-		const results: { id: string; html: string }[] = searchTerm
+		let results: { id: string; html: string }[] = searchTerm
 			? highlight(fuse.search(searchTerm), "model-item-highlight")
 			: searchableItems
 		// results.sort((a, b) => a.id.localeCompare(b.id)) NOTE: sorting like this causes ids in objects to be reordered and mismatched
@@ -99,6 +116,14 @@ const SSYModelPicker: React.FC = () => {
 		}
 	}
 
+	const hasInfo = useMemo(() => {
+		try {
+			return modelIds.some((id) => id.toLowerCase() === searchTerm.toLowerCase())
+		} catch {
+			return false
+		}
+	}, [modelIds, searchTerm])
+
 	useEffect(() => {
 		setSelectedIndex(-1)
 		if (dropdownListRef.current) {
@@ -115,8 +140,12 @@ const SSYModelPicker: React.FC = () => {
 		}
 	}, [selectedIndex])
 
+	const showBudgetSlider = useMemo(() => {
+		return selectedModelId?.includes("claude-3-7-sonnet")
+	}, [selectedModelId])
+
 	return (
-		<>
+		<div style={{ width: "100%" }}>
 			<style>
 				{`
 				.model-item-highlight {
@@ -125,11 +154,14 @@ const SSYModelPicker: React.FC = () => {
 				}
 				`}
 			</style>
-			<div>
+			<div style={{ display: "flex", flexDirection: "column" }}>
+				<label htmlFor="model-search">
+					<span style={{ fontWeight: 500 }}>模型</span>
+				</label>
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField
 						id="model-search"
-						placeholder="查找模型..."
+						placeholder="Search and select a model..."
 						value={searchTerm}
 						onInput={(e) => {
 							handleModelChange((e.target as HTMLInputElement)?.value?.toLowerCase())
@@ -137,11 +169,15 @@ const SSYModelPicker: React.FC = () => {
 						}}
 						onFocus={() => setIsDropdownVisible(true)}
 						onKeyDown={handleKeyDown}
-						style={{ width: "100%", zIndex: OPENAI_MODEL_PICKER_Z_INDEX, position: "relative" }}>
+						style={{
+							width: "100%",
+							zIndex: REQUESTY_MODEL_PICKER_Z_INDEX,
+							position: "relative",
+						}}>
 						{searchTerm && (
 							<div
 								className="input-icon-button codicon codicon-close"
-								aria-label="清除"
+								aria-label="Clear search"
 								onClick={() => {
 									handleModelChange("")
 									setIsDropdownVisible(true)
@@ -177,7 +213,45 @@ const SSYModelPicker: React.FC = () => {
 					)}
 				</DropdownWrapper>
 			</div>
-		</>
+
+			{hasInfo ? (
+				<>
+					{showBudgetSlider && (
+						<ThinkingBudgetSlider apiConfiguration={apiConfiguration} setApiConfiguration={setApiConfiguration} />
+					)}
+					<ModelInfoView
+						selectedModelId={selectedModelId}
+						modelInfo={selectedModelInfo}
+						isDescriptionExpanded={isDescriptionExpanded}
+						setIsDescriptionExpanded={setIsDescriptionExpanded}
+						isPopup={isPopup}
+					/>
+				</>
+			) : (
+				<p
+					style={{
+						fontSize: "12px",
+						marginTop: 0,
+						color: "var(--vscode-descriptionForeground)",
+					}}>
+					<>
+						该扩展会自动获取胜算云上可用的最新模型列表{" "}
+						<VSCodeLink
+							style={{ display: "inline", fontSize: "inherit" }}
+							href="https://router.shengsuanyun.com/model">
+							胜算云
+						</VSCodeLink>
+						如果你不确定使用哪个模型, Cline 可以和{" "}
+						<VSCodeLink
+							style={{ display: "inline", fontSize: "inherit" }}
+							onClick={() => handleModelChange("anthropic/claude-3.7-sonnet")}>
+							anthropic/claude-3.7-sonnet.
+						</VSCodeLink>
+						很好的工作
+					</>
+				</p>
+			)}
+		</div>
 	)
 }
 
@@ -190,7 +264,7 @@ const DropdownWrapper = styled.div`
 	width: 100%;
 `
 
-export const OPENAI_MODEL_PICKER_Z_INDEX = 1_000
+export const REQUESTY_MODEL_PICKER_Z_INDEX = 1_000
 
 const DropdownList = styled.div`
 	position: absolute;
@@ -201,7 +275,7 @@ const DropdownList = styled.div`
 	overflow-y: auto;
 	background-color: var(--vscode-dropdown-background);
 	border: 1px solid var(--vscode-list-activeSelectionBackground);
-	z-index: ${OPENAI_MODEL_PICKER_Z_INDEX - 1};
+	z-index: ${REQUESTY_MODEL_PICKER_Z_INDEX - 1};
 	border-bottom-left-radius: 3px;
 	border-bottom-right-radius: 3px;
 `
@@ -272,11 +346,13 @@ export const ModelDescriptionMarkdown = memo(
 		key,
 		isExpanded,
 		setIsExpanded,
+		isPopup,
 	}: {
 		markdown?: string
 		key: string
 		isExpanded: boolean
 		setIsExpanded: (isExpanded: boolean) => void
+		isPopup?: boolean
 	}) => {
 		const [reactContent, setMarkdown] = useRemark()
 		// const [isExpanded, setIsExpanded] = useState(false)
@@ -346,10 +422,10 @@ export const ModelDescriptionMarkdown = memo(
 									fontSize: "inherit",
 									paddingRight: 0,
 									paddingLeft: 3,
-									backgroundColor: "var(--vscode-sideBar-background)",
+									backgroundColor: isPopup ? CODE_BLOCK_BG_COLOR : "var(--vscode-sideBar-background)",
 								}}
 								onClick={() => setIsExpanded(true)}>
-								更多
+								查看更多
 							</VSCodeLink>
 						</div>
 					)}

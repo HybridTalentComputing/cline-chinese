@@ -68,7 +68,6 @@ export const SsyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
 	const handleSignOutSSY = useCallback(async () => {
 		try {
-			// await signOut(auth)
 			console.log("Successfully signed out of ssy")
 		} catch (error) {
 			console.error("Error signing out of ssy:", error)

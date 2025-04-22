@@ -88,6 +88,7 @@ export interface WebviewMessage {
 		| "accountLoginClickedSSY"
 		| "accountLogoutClickedSSY"
 		| "ssyModels"
+		| "refreshSSYModels"
 	text?: string
 	uris?: string[] // Used for getRelativePaths
 	disabled?: boolean

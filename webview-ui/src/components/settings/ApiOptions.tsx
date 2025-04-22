@@ -51,8 +51,8 @@ import {
 	doubaoModels,
 	doubaoDefaultModelId,
 	liteLlmModelInfoSaneDefaults,
-	shengsuanyunModels,
-	shengsuanyunDefaultModelId,
+	ssyDefaultModelId,
+	ssyDefaultModelInfo,
 } from "@shared/api"
 import { ExtensionMessage } from "@shared/ExtensionMessage"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -62,6 +62,7 @@ import VSCodeButtonLink from "@/components/common/VSCodeButtonLink"
 import OpenRouterModelPicker, { ModelDescriptionMarkdown, OPENROUTER_MODEL_PICKER_Z_INDEX } from "./OpenRouterModelPicker"
 import { ClineAccountInfoCard } from "./ClineAccountInfoCard"
 import RequestyModelPicker from "./RequestyModelPicker"
+import SSYModelPicker from "./SSYModelPicker"
 
 interface ApiOptionsProps {
 	showModelOptions: boolean
@@ -1513,7 +1514,6 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 					</p>
 				</div>
 			)}
-
 			{selectedProvider === "shengsuanyun" && (
 				<div>
 					<VSCodeTextField
@@ -1522,26 +1522,9 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 						type="password"
 						onInput={handleInputChange("shengsuanyunApiKey")}
 						placeholder="输入 API Key...">
-						<span style={{ fontWeight: 500 }}>胜算云 API Key</span>
+						<span style={{ fontWeight: 500 }}>API Key</span>
 					</VSCodeTextField>
-					<p
-						style={{
-							fontSize: "12px",
-							marginTop: 3,
-							color: "var(--vscode-descriptionForeground)",
-						}}>
-						API key 保存在本地，只会被本插件用来请求API.
-						{!apiConfiguration?.shengsuanyunApiKey && (
-							<VSCodeLink
-								href="https://router.shengsuanyun.com/"
-								style={{
-									display: "inline",
-									fontSize: "inherit",
-								}}>
-								注册获取胜算云 API key.
-							</VSCodeLink>
-						)}
-					</p>
+					{!apiConfiguration?.shengsuanyunApiKey && <a href="https://router.shengsuanyun.com/">获取 API Key</a>}
 				</div>
 			)}
 
@@ -1615,6 +1598,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 				selectedProvider !== "vscode-lm" &&
 				selectedProvider !== "litellm" &&
 				selectedProvider !== "requesty" &&
+				selectedProvider !== "shengsuanyun" &&
 				showModelOptions && (
 					<>
 						<DropdownContainer zIndex={DROPDOWN_Z_INDEX - 2} className="dropdown-container">
@@ -1636,7 +1620,6 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 							{selectedProvider === "asksage" && createDropdown(askSageModels)}
 							{selectedProvider === "xai" && createDropdown(xaiModels)}
 							{selectedProvider === "sambanova" && createDropdown(sambanovaModels)}
-							{selectedProvider === "shengsuanyun" && createDropdown(shengsuanyunModels)}
 						</DropdownContainer>
 
 						{((selectedProvider === "anthropic" && selectedModelId === "claude-3-7-sonnet-20250219") ||
@@ -1711,7 +1694,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 				<OpenRouterModelPicker isPopup={isPopup} />
 			)}
 			{selectedProvider === "requesty" && showModelOptions && <RequestyModelPicker isPopup={isPopup} />}
-
+			{selectedProvider === "shengsuanyun" && showModelOptions && <SSYModelPicker isPopup={isPopup} />}
 			{modelIdErrorMessage && (
 				<p
 					style={{
@@ -2014,7 +1997,11 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 		case "sambanova":
 			return getProviderData(sambanovaModels, sambanovaDefaultModelId)
 		case "shengsuanyun":
-			return getProviderData(shengsuanyunModels, shengsuanyunDefaultModelId)
+			return {
+				selectedProvider: provider,
+				selectedModelId: apiConfiguration?.ssyModelId || ssyDefaultModelId,
+				selectedModelInfo: apiConfiguration?.ssyModelInfo || ssyDefaultModelInfo,
+			}
 		default:
 			return getProviderData(anthropicModels, anthropicDefaultModelId)
 	}
