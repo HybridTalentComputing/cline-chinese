@@ -1632,8 +1632,9 @@ export const ssyDefaultModelId: string = "anthropic/claude-3.7-sonnet"
 export const ssyDefaultModelInfo: ModelInfo = {
 	maxTokens: 128_000,
 	contextWindow: 200_000,
-	supportsImages: false,
+	supportsImages: true,
 	supportsPromptCache: true,
+	supportsComputerUse: true,
 	inputPrice: 3,
 	outputPrice: 15,
 	cacheWritesPrice: 0,

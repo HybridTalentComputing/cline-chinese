@@ -1,5 +1,6 @@
 
 ## Cline-中文版 (胜算) 
+
 <p align="center">
 
 [![Cline-中文版文档](https://img.shields.io/badge/Cline%20中文版-文档-blue)](https://github.com/SSYCloud/cline-chinese-ssy) [![Discord](https://img.shields.io/badge/Discord-加入讨论-7289DA)](https://discord.gg/frBHkRKB4x) 
@@ -20,7 +21,7 @@ https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs/<br>
 
 ## 功能展示<br>
 
-<video width="100%" controls src="https://github.com/user-attachments/assets/a6db47a9-08d7-4d20-afa0-110d23b71a81"></video><br>
+<video width="100%" controls src="https://github.com/user-attachments/assets/51bcf657-99aa-453c-be04-9c58bb308081"></video><br>
 > 演示视频使用 免费 LLM Coding 大模型API DeepSeek V3 0324 模型，展示了 Cline 中文版的主要功能和使用效果，视频没有加速，推理速度快到飞起。<br>
 > 本项目推荐使用[胜算云Router](https://router.shengsuanyun.com/)的LLM API进行智能编码推理，中国大陆地区可以免魔法访问世界范围内的最全的人工智能API，超低价格外，同时可以开发票，以及免费的云部署项目，让您的
 AI项目全面得到落地使用。<br>
@@ -54,10 +55,10 @@ Cline 中文版「胜算」开发初衷<br>
 
 ## 版本说明
 
-### 2025.04.01（ver.3.8.4）
+### 2025.04.22（ver.3.12.4）
 
-    1. Cline-中文版胜算特色：增加默认免费模型，上来就无尽编码，您可以先用claude 3.7 sonnet-thinking 或者高上下文模型设计好您的项目，然后让免费模型进行act选项撰写代码。
-    2. 
+    1. Cline-中文版胜算特色：您可以先用claude 3.7 sonnet-thinking 或者高上下文模型设计好您的项目，然后让经济型模型进行act选项撰写代码。
+    2. 模型自动更新
 
 ## 欢迎关注我的自媒体账号
 
@@ -91,8 +92,10 @@ Cline 中文版「胜算」开发初衷<br>
 </td>
 </tbody>
 </table>
-  <img src="./assets/icons/orgwechat.jpg" alt="微信群二维码" width="250" />
+Cline-中文版讨论群<br>
+  <img src="https://github.com/user-attachments/assets/6e973157-2fd9-4b41-b87a-d13acf8d51e6" alt="微信群二维码" width="250" />
 </div>
+
 
 Discord 频道：[SSYRouter API](https://discord.gg/fhj9hqy89t) <br>
 Telegram ：
@@ -103,14 +106,14 @@ Telegram ：
 
 <div align="center" style="display: flex; justify-content: center; gap: 20px;">
 
-进群交流<br>（如果无法加群，请加企业微信客服）<br>
-  <img src="./assets/icons/orgwechat.jpg" alt="支付宝赞赏" width="250" /> <br>
+APIRouter进群交流<br>（如果无法加群，请加企业微信客服）<br>
+  <img src="https://github.com/user-attachments/assets/b068a473-444e-49bf-bf75-8cc2f281441a" alt="企业微信群" width="250" /> <br>
 </div>
 
 <div align="center" style="display: flex; justify-content: center; gap: 20px;">
 
-客服咨询<br>
-  <img src="./assets/icons/kefujiangzhen.jpg" alt="微信赞赏" width="250" />
+企业客服咨询<br>
+  <img src="https://github.com/user-attachments/assets/6205a75b-d356-4368-8255-3d372cf8a16d" alt="企业微信客服" width="250" />
 </div>
 
 ## 免责声明
@@ -135,4 +138,3 @@ Telegram ：
 ---
 
 > 注：本项目是小型团队维护的汉化版本，与原版 Cline 团队无关。如果您喜欢这个项目，也请给原版 [Cline](https://github.com/cline/cline) 一个 star ⭐️
-
