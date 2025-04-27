@@ -29,7 +29,7 @@ export const SsyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			}
 			const uri = "https://api.shengsuanyun.com/user/info"
 			const res = await axios.get(uri, reqConfig)
-			if (!res.data || !res.data.data) {
+			if (!res.data || !res.data.data || res.data.code != 0) {
 				throw new Error(`Invalid response from ${uri} API`)
 			}
 			const usi = {
@@ -42,7 +42,7 @@ export const SsyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			}
 			setUser(usi)
 			setIsInitialized(true)
-			console.log("onAuthStateChanged user", usi)
+			console.log("SsyAuthProvider onAuthStateChanged user", usi)
 			vscode.postMessage({
 				type: "authStateChanged",
 				userSSY: usi,

@@ -161,7 +161,7 @@ const SSYModelPicker: React.FC<SSYModelPickerProps> = ({ isPopup }) => {
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField
 						id="model-search"
-						placeholder="Search and select a model..."
+						placeholder="搜索模型..."
 						value={searchTerm}
 						onInput={(e) => {
 							handleModelChange((e.target as HTMLInputElement)?.value?.toLowerCase())
