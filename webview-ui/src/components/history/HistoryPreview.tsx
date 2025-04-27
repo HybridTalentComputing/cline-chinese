@@ -14,10 +14,10 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 		vscode.postMessage({ type: "showTaskWithId", text: id })
 	}
 
-	const formatDate = (timestamp: number) => {
+	const formatDate = (timestamp: number, tz: string = "en-US") => {
 		const date = new Date(timestamp)
 		return date
-			?.toLocaleString("en-US", {
+			?.toLocaleString(tz, {
 				month: "long",
 				day: "numeric",
 				hour: "numeric",
@@ -69,7 +69,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 						fontSize: "0.85em",
 						textTransform: "uppercase",
 					}}>
-					Recent Tasks
+					近期任务
 				</span>
 			</div>
 
@@ -88,7 +88,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 											fontSize: "0.85em",
 											textTransform: "uppercase",
 										}}>
-										{formatDate(item.ts)}
+										{formatDate(item.ts, "zh-CN")}
 									</span>
 								</div>
 								<div
@@ -126,7 +126,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 									{!!item.totalCost && (
 										<>
 											{" • "}
-											<span>API Cost: ${item.totalCost?.toFixed(4)}</span>
+											<span>API 费用: ${item.totalCost?.toFixed(4)}</span>
 										</>
 									)}
 								</div>
@@ -150,7 +150,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 								fontSize: "var(--vscode-font-size)",
 								color: "var(--vscode-descriptionForeground)",
 							}}>
-							View all history
+							查看全部历史
 						</div>
 					</VSCodeButton>
 				</div>

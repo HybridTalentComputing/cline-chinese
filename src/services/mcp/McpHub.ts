@@ -191,7 +191,7 @@ export class McpHub {
 			// Each MCP server requires its own transport connection and has unique capabilities, configurations, and error handling. Having separate clients also allows proper scoping of resources/tools and independent server management like reconnection.
 			const client = new Client(
 				{
-					name: "Cline",
+					name: "ClineShengsuan",
 					version: this.clientVersion,
 				},
 				{
@@ -584,9 +584,7 @@ export class McpHub {
 			if (error instanceof Error) {
 				console.error("Error details:", error.message, error.stack)
 			}
-			vscode.window.showErrorMessage(
-				`Failed to update server state: ${error instanceof Error ? error.message : String(error)}`,
-			)
+			vscode.window.showErrorMessage(`更新服务状态失败: ${error instanceof Error ? error.message : String(error)}`)
 			throw error
 		}
 	}
@@ -594,7 +592,7 @@ export class McpHub {
 	async readResource(serverName: string, uri: string): Promise<McpResourceResponse> {
 		const connection = this.connections.find((conn) => conn.server.name === serverName)
 		if (!connection) {
-			throw new Error(`No connection found for server: ${serverName}`)
+			throw new Error(`未找到服务的连接: ${serverName}`)
 		}
 		if (connection.server.disabled) {
 			throw new Error(`Server "${serverName}" is disabled`)
@@ -614,13 +612,11 @@ export class McpHub {
 	async callTool(serverName: string, toolName: string, toolArguments?: Record<string, unknown>): Promise<McpToolCallResponse> {
 		const connection = this.connections.find((conn) => conn.server.name === serverName)
 		if (!connection) {
-			throw new Error(
-				`No connection found for server: ${serverName}. Please make sure to use MCP servers available under 'Connected MCP Servers'.`,
-			)
+			throw new Error(`连接: ${serverName}服务失败. 请确保使用“连接的 MCP 服务器”下提供的 MCP 服务器'.`)
 		}
 
 		if (connection.server.disabled) {
-			throw new Error(`Server "${serverName}" is disabled and cannot be used`)
+			throw new Error(`服务 "${serverName}" 未启用`)
 		}
 
 		let timeout = secondsToMs(DEFAULT_MCP_TIMEOUT_SECONDS) // sdk expects ms
@@ -630,7 +626,7 @@ export class McpHub {
 			const parsedConfig = ServerConfigSchema.parse(config)
 			timeout = secondsToMs(parsedConfig.timeout)
 		} catch (error) {
-			console.error(`Failed to parse timeout configuration for server ${serverName}: ${error}`)
+			console.error(`无法解析服务器的超时配置 ${serverName}: ${error}`)
 		}
 
 		return await connection.client.request(
@@ -695,16 +691,16 @@ export class McpHub {
 		try {
 			const settings = await this.readAndValidateMcpSettingsFile()
 			if (!settings) {
-				throw new Error("Failed to read MCP settings")
+				throw new Error("无法读取 MCP 设置")
 			}
 
 			if (settings.mcpServers[serverName]) {
-				throw new Error(`An MCP server with the name "${serverName}" already exists`)
+				throw new Error(`名称为 "${serverName}" MCP server 已经存在。`)
 			}
 
 			const urlValidation = z.string().url().safeParse(serverUrl)
 			if (!urlValidation.success) {
-				throw new Error(`Invalid server URL: ${serverUrl}. Please provide a valid URL.`)
+				throw new Error(`无效的服务 URL: ${serverUrl}. 请提供有效的 URL.`)
 			}
 
 			const serverConfig = {
@@ -730,7 +726,7 @@ export class McpHub {
 
 			await this.updateServerConnections(settings.mcpServers)
 
-			vscode.window.showInformationMessage(`Added ${serverName} MCP server`)
+			vscode.window.showInformationMessage(`添加 ${serverName} MCP 服务`)
 		} catch (error) {
 			console.error("Failed to add remote MCP server:", error)
 
@@ -753,14 +749,12 @@ export class McpHub {
 				}
 				await fs.writeFile(settingsPath, JSON.stringify(updatedConfig, null, 2))
 				await this.updateServerConnections(config.mcpServers)
-				vscode.window.showInformationMessage(`Deleted ${serverName} MCP server`)
+				vscode.window.showInformationMessage(`删除 ${serverName} MCP 服务`)
 			} else {
-				vscode.window.showWarningMessage(`${serverName} not found in MCP configuration`)
+				vscode.window.showWarningMessage(`${serverName} 在 MCP 配置中找不到`)
 			}
 		} catch (error) {
-			vscode.window.showErrorMessage(
-				`Failed to delete MCP server: ${error instanceof Error ? error.message : String(error)}`,
-			)
+			vscode.window.showErrorMessage(`删除 MCP 服务失败: ${error instanceof Error ? error.message : String(error)}`)
 			throw error
 		}
 	}
@@ -778,7 +772,7 @@ export class McpHub {
 			const config = JSON.parse(content)
 
 			if (!config.mcpServers?.[serverName]) {
-				throw new Error(`Server "${serverName}" not found in settings`)
+				throw new Error(`服务 "${serverName}" 在设置中未找到`)
 			}
 
 			config.mcpServers[serverName] = {
@@ -818,7 +812,7 @@ export class McpHub {
 			try {
 				await this.deleteConnection(connection.server.name)
 			} catch (error) {
-				console.error(`Failed to close connection for ${connection.server.name}:`, error)
+				console.error(`关闭连接失败 ${connection.server.name}:`, error)
 			}
 		}
 		this.connections = []

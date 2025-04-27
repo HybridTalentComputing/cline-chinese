@@ -96,22 +96,22 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							setTextAreaDisabled(true)
 							setClineAsk("api_req_failed")
 							setEnableButtons(true)
-							setPrimaryButtonText("Retry")
-							setSecondaryButtonText("Start New Task")
+							setPrimaryButtonText("重试")
+							setSecondaryButtonText("开始新任务")
 							break
 						case "mistake_limit_reached":
 							setTextAreaDisabled(false)
 							setClineAsk("mistake_limit_reached")
 							setEnableButtons(true)
-							setPrimaryButtonText("Proceed Anyways")
-							setSecondaryButtonText("Start New Task")
+							setPrimaryButtonText("总是继续")
+							setSecondaryButtonText("开始新任务")
 							break
 						case "auto_approval_max_req_reached":
 							setTextAreaDisabled(true)
 							setClineAsk("auto_approval_max_req_reached")
 							setEnableButtons(true)
-							setPrimaryButtonText("Proceed")
-							setSecondaryButtonText("Start New Task")
+							setPrimaryButtonText("继续")
+							setSecondaryButtonText("开始新任务")
 							break
 						case "followup":
 							setTextAreaDisabled(isPartial)
@@ -135,12 +135,12 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							switch (tool.tool) {
 								case "editedExistingFile":
 								case "newFileCreated":
-									setPrimaryButtonText("Save")
-									setSecondaryButtonText("Reject")
+									setPrimaryButtonText("保存")
+									setSecondaryButtonText("拒绝")
 									break
 								default:
-									setPrimaryButtonText("Approve")
-									setSecondaryButtonText("Reject")
+									setPrimaryButtonText("批准")
+									setSecondaryButtonText("拒绝")
 									break
 							}
 							break
@@ -148,43 +148,43 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							setTextAreaDisabled(isPartial)
 							setClineAsk("browser_action_launch")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Approve")
-							setSecondaryButtonText("Reject")
+							setPrimaryButtonText("批准")
+							setSecondaryButtonText("拒绝")
 							break
 						case "command":
 							setTextAreaDisabled(isPartial)
 							setClineAsk("command")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Run Command")
-							setSecondaryButtonText("Reject")
+							setPrimaryButtonText("执行")
+							setSecondaryButtonText("拒绝")
 							break
 						case "command_output":
 							setTextAreaDisabled(false)
 							setClineAsk("command_output")
 							setEnableButtons(true)
-							setPrimaryButtonText("Proceed While Running")
+							setPrimaryButtonText("运行中处理")
 							setSecondaryButtonText(undefined)
 							break
 						case "use_mcp_server":
 							setTextAreaDisabled(isPartial)
 							setClineAsk("use_mcp_server")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Approve")
-							setSecondaryButtonText("Reject")
+							setPrimaryButtonText("批准")
+							setSecondaryButtonText("拒绝")
 							break
 						case "completion_result":
 							// extension waiting for feedback. but we can just present a new task button
 							setTextAreaDisabled(isPartial)
 							setClineAsk("completion_result")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Start New Task")
+							setPrimaryButtonText("开始新任务")
 							setSecondaryButtonText(undefined)
 							break
 						case "resume_task":
 							setTextAreaDisabled(false)
 							setClineAsk("resume_task")
 							setEnableButtons(true)
-							setPrimaryButtonText("Resume Task")
+							setPrimaryButtonText("重启任务")
 							setSecondaryButtonText(undefined)
 							setDidClickCancel(false) // special case where we reset the cancel button state
 							break
@@ -192,7 +192,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							setTextAreaDisabled(false)
 							setClineAsk("resume_completed_task")
 							setEnableButtons(true)
-							setPrimaryButtonText("Start New Task")
+							setPrimaryButtonText("开始新任务")
 							setSecondaryButtonText(undefined)
 							setDidClickCancel(false)
 							break
@@ -200,7 +200,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							setTextAreaDisabled(isPartial)
 							setClineAsk("new_task")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Start New Task with Context")
+							setPrimaryButtonText("带上下文开始新任务")
 							setSecondaryButtonText(undefined)
 							break
 						case "condense":
@@ -259,8 +259,8 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			setTextAreaDisabled(false)
 			setClineAsk(undefined)
 			setEnableButtons(false)
-			setPrimaryButtonText("Approve")
-			setSecondaryButtonText("Reject")
+			setPrimaryButtonText("批准")
+			setSecondaryButtonText("拒绝")
 		}
 	}, [messages.length])
 
@@ -783,7 +783,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	useEvent("wheel", handleWheel, window, { passive: true }) // passive improves scrolling performance
 
 	const placeholderText = useMemo(() => {
-		const text = task ? "Type a message..." : "Type your task here..."
+		const text = task ? "输入消息..." : "输入任务..."
 		return text
 	}, [task])
 
@@ -866,16 +866,16 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					{showAnnouncement && <Announcement version={version} hideAnnouncement={hideAnnouncement} />}
 
 					<div style={{ padding: "0 20px", flexShrink: 0 }}>
-						<h2>What can I do for you?</h2>
+						<h2>我能为您做什么？</h2>
 						<p>
-							Thanks to{" "}
+							谢谢{" "}
 							<VSCodeLink href="https://www.anthropic.com/claude/sonnet" style={{ display: "inline" }}>
 								Claude 3.7 Sonnet's
 							</VSCodeLink>
-							agentic coding capabilities, I can handle complex software development tasks step-by-step. With tools
-							that let me create & edit files, explore complex projects, use a browser, and execute terminal
-							commands (after you grant permission), I can assist you in ways that go beyond code completion or tech
-							support. I can even use MCP to create new tools and extend my own capabilities.
+							代理编码能力，我可以一步一步地处理复杂的软件开发任务。带工具
+							这让我可以创建和编辑文件，探索复杂的项目，使用浏览器，并执行终端
+							命令（在您授予权限后），我可以以代码完成或技术之外的方式为您提供帮助 支持。我甚至可以使用 MCP
+							创建新工具并扩展我自己的功能。
 						</p>
 					</div>
 					{taskHistory.length > 0 && <HistoryPreview showHistoryView={showHistoryView} />}
@@ -987,7 +987,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 										marginLeft: isStreaming ? 0 : "6px",
 									}}
 									onClick={() => handleSecondaryButtonClick(inputValue, selectedImages)}>
-									{isStreaming ? "Cancel" : secondaryButtonText}
+									{isStreaming ? "取消" : secondaryButtonText}
 								</VSCodeButton>
 							)}
 						</div>

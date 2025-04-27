@@ -1422,7 +1422,7 @@ export class Task {
 			console.error("MCP servers failed to connect in time")
 		})
 
-		const disableBrowserTool = vscode.workspace.getConfiguration("cline").get<boolean>("disableBrowserTool") ?? false
+		const disableBrowserTool = vscode.workspace.getConfiguration("clineShengsuan").get<boolean>("disableBrowserTool") ?? false
 		// cline browser tool uses image recognition for navigation (requires model image support).
 		const modelSupportsBrowserUse = this.api.getModel().info.supportsImages ?? false
 
@@ -1432,7 +1432,7 @@ export class Task {
 
 		let settingsCustomInstructions = this.customInstructions?.trim()
 		const preferredLanguage = getLanguageKey(
-			vscode.workspace.getConfiguration("cline").get<LanguageDisplay>("preferredLanguage"),
+			vscode.workspace.getConfiguration("clineShengsuan").get<LanguageDisplay>("preferredLanguage"),
 		)
 		const preferredLanguageInstructions =
 			preferredLanguage && preferredLanguage !== DEFAULT_LANGUAGE_SETTINGS
@@ -3393,14 +3393,14 @@ export class Task {
 			if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 				showSystemNotification({
 					subtitle: "Error",
-					message: "Cline is having trouble. Would you like to continue the task?",
+					message: "Cline 发生了错误. 你要继续任务吗?",
 				})
 			}
 			const { response, text, images } = await this.ask(
 				"mistake_limit_reached",
 				this.api.getModel().id.includes("claude")
-					? `This may indicate a failure in his thought process or inability to use a tool properly, which can be mitigated with some user guidance (e.g. "Try breaking down the task into smaller steps").`
-					: "Cline uses complex prompts and iterative task execution that may be challenging for less capable models. For best results, it's recommended to use Claude 3.7 Sonnet for its advanced agentic coding capabilities.",
+					? `选择的模型推理过程失败或无法正确使用工具，这可以通过一些用户指南来缓解（例如，“尝试将任务分解成更小的步骤”）。`
+					: "Cline 使用复杂的提示和迭代任务执行，这对于功能较弱的模型可能具有挑战性。为获得最佳效果，建议使用 Claude 3.7 Sonnet 的高级代理编码功能。",
 			)
 			if (response === "messageResponse") {
 				userContent.push(

@@ -47,9 +47,9 @@ import {
 	updateWorkspaceState,
 } from "../storage/state"
 import { Task, cwd } from "../task"
-import { ClineRulesToggles } from "@shared/cline-rules"
+import { ClineRulesToggles } from "../../shared/cline-rules"
 import { createRuleFile, deleteRuleFile, refreshClineRulesToggles } from "../context/instructions/user-instructions/cline-rules"
-
+import { SSYAccountService } from "../../services/account/SSYAccountService"
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
 
@@ -63,7 +63,7 @@ export class Controller {
 	task?: Task
 	workspaceTracker: WorkspaceTracker
 	mcpHub: McpHub
-	accountService: ClineAccountService
+	accountService: SSYAccountService
 	private latestAnnouncementId = "april-18-2025_21:15::00" // update to some unique identifier when we add a new announcement
 
 	constructor(
@@ -81,11 +81,11 @@ export class Controller {
 			(msg) => this.postMessageToWebview(msg),
 			this.context.extension?.packageJSON?.version ?? "1.0.0",
 		)
-		this.accountService = new ClineAccountService(
+		this.accountService = new SSYAccountService(
 			(msg) => this.postMessageToWebview(msg),
 			async () => {
 				const { apiConfiguration } = await this.getStateToPostToWebview()
-				return apiConfiguration?.clineApiKey
+				return apiConfiguration?.shengsuanyunToken
 			},
 		)
 
@@ -120,17 +120,17 @@ export class Controller {
 	// Auth methods
 	async handleSignOut() {
 		try {
-			await storeSecret(this.context, "clineApiKey", undefined)
+			await updateGlobalState(this.context, "shengsuanyunToken", undefined)
 			await updateGlobalState(this.context, "userInfo", undefined)
 			await updateGlobalState(this.context, "apiProvider", "openrouter")
 			await this.postStateToWebview()
-			vscode.window.showInformationMessage("Successfully logged out of Cline")
+			vscode.window.showInformationMessage("成功登出 Cline 账户")
 		} catch (error) {
 			vscode.window.showErrorMessage("Logout failed")
 		}
 	}
 
-	async setUserInfo(info?: { displayName: string | null; email: string | null; photoURL: string | null }) {
+	async setUserInfo(info?: Object) {
 		await updateGlobalState(this.context, "userInfo", info)
 	}
 
@@ -209,7 +209,7 @@ export class Controller {
 				break
 			}
 			case "authStateChanged":
-				await this.setUserInfo(message.user || undefined)
+				await this.setUserInfo(message.user || message.userSSY || undefined)
 				await this.postStateToWebview()
 				break
 			case "webviewDidLaunch":
@@ -383,6 +383,9 @@ export class Controller {
 			case "refreshRequestyModels":
 				await this.refreshRequestyModels()
 				break
+			case "refreshSSYModels":
+				await this.refreshSSYModels()
+				break
 			case "refreshOpenAiModels":
 				const { apiConfiguration } = await getAllExtensionState(this.context)
 				const openAiModels = await this.getOpenAiModels(apiConfiguration.openAiBaseUrl, apiConfiguration.openAiApiKey)
@@ -445,7 +448,22 @@ export class Controller {
 			case "getLatestState":
 				await this.postStateToWebview()
 				break
-			case "accountLogoutClicked": {
+
+			case "accountLoginClickedSSY": {
+				// Open browser for authentication with state param
+				console.log("Login button clicked in account page")
+				console.log("Opening auth page with state param")
+
+				const uriScheme = vscode.env.uriScheme
+
+				const authUrl = vscode.Uri.parse(
+					`https://router.shengsuanyun.com/auth?callback_url=${encodeURIComponent(`${uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan/ssy`)}`,
+				)
+				vscode.env.openExternal(authUrl)
+				break
+			}
+			case "accountLogoutClicked":
+			case "accountLogoutClickedSSY": {
 				await this.handleSignOut()
 				break
 			}
@@ -627,7 +645,7 @@ export class Controller {
 				const settingsFilter = message.text || ""
 				await vscode.commands.executeCommand(
 					"workbench.action.openSettings",
-					`@ext:saoudrizwan.claude-dev ${settingsFilter}`.trim(), // trim whitespace if no settings filter
+					`@ext:shengsuan-cloud.cline-shengsuan ${settingsFilter}`.trim(), // trim whitespace if no settings filter
 				)
 				break
 			}
@@ -847,6 +865,7 @@ export class Controller {
 				case "qwen":
 				case "deepseek":
 				case "xai":
+				case "shengsuanyun":
 					await updateGlobalState(this.context, "previousModeModelId", apiConfiguration.apiModelId)
 					break
 				case "openrouter":
@@ -901,7 +920,7 @@ export class Controller {
 					case "openai-native":
 					case "qwen":
 					case "deepseek":
-					case "xai":
+					case "shengsuanyun":
 						await updateGlobalState(this.context, "apiModelId", newModelId)
 						break
 					case "openrouter":
@@ -1050,7 +1069,7 @@ export class Controller {
 	async fetchUserCreditsData() {
 		try {
 			await Promise.all([
-				this.accountService?.fetchBalance(),
+				this.accountService?.fetchRate(),
 				this.accountService?.fetchUsageTransactions(),
 				this.accountService?.fetchPaymentTransactions(),
 			])
@@ -1237,9 +1256,9 @@ export class Controller {
 			// Create task with context from README and added guidelines for MCP server installation
 			const task = `Set up the MCP server from ${mcpDetails.githubUrl} while adhering to these MCP server installation rules:
 - Start by loading the MCP documentation.
-- Use "${mcpDetails.mcpId}" as the server name in cline_mcp_settings.json.
+- Use "${mcpDetails.mcpId}" as the server name in cline_shengsuan_mcp_settings.json.
 - Create the directory for the new MCP server before starting installation.
-- Make sure you read the user's existing cline_mcp_settings.json file before editing it with this new mcp, to not overwrite any existing servers.
+- Make sure you read the user's existing cline_shengsuan_mcp_settings.json file before editing it with this new mcp, to not overwrite any existing servers.
 - Use commands aligned with the user's shell and operating system best practices.
 - The following README may contain instructions that conflict with the user's OS, in which case proceed thoughtfully.
 - Once installed, demonstrate the server's capabilities by using one of its tools.
@@ -1328,6 +1347,45 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 			this.task.api = buildApiHandler({
 				apiProvider: openrouter,
 				openRouterApiKey: apiKey,
+			})
+		}
+		// await this.postMessageToWebview({ type: "action", action: "settingsButtonClicked" }) // bad ux if user is on welcome
+	}
+
+	// shengsuanyun Auth
+
+	async handleSSYCallback(code: string) {
+		let apiKey: string
+		let customToken: string
+		try {
+			const response = await axios.post("https://api.shengsuanyun.com/auth/keys", {
+				code: code,
+				callback_url: "vscode://shengsuan-cloud.cline-shengsuan/ssy",
+			})
+			if (response.data && response.data.data && response.data.data.api_key) {
+				apiKey = response.data.data.api_key
+				customToken = response.data.data.jwt_token
+				await this.postMessageToWebview({
+					type: "authCallback",
+					customToken,
+				})
+			} else {
+				throw new Error("Invalid response from Shengsuanyun API")
+			}
+		} catch (error) {
+			console.error("Error exchanging code for API key:", error)
+			throw error
+		}
+
+		const shengsuanyun: ApiProvider = "shengsuanyun"
+		await updateGlobalState(this.context, "apiProvider", shengsuanyun)
+		await updateGlobalState(this.context, "shengsuanyunToken", customToken)
+		await storeSecret(this.context, "shengsuanyunApiKey", apiKey)
+		await this.postStateToWebview()
+		if (this.task) {
+			this.task.api = buildApiHandler({
+				apiProvider: shengsuanyun,
+				shengsuanyunApiKey: apiKey,
 			})
 		}
 		// await this.postMessageToWebview({ type: "action", action: "settingsButtonClicked" }) // bad ux if user is on welcome
@@ -1523,6 +1581,70 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 		return models
 	}
 
+	async refreshSSYModels() {
+		const parsePrice = (price: any) => {
+			if (price) {
+				return parseInt(price) / 10_000
+			}
+			return undefined
+		}
+
+		let models: Record<string, ModelInfo> = {}
+		try {
+			const uri = "https://api.shengsuanyun.com"
+			const xToken = await getGlobalState(this.context, "shengsuanyunToken")
+			const headers: any = {
+				"content-type": "application/json",
+				"x-token": xToken,
+			}
+			const res = await axios.get(`${uri}/modelrouter/list?page=1&pageSize=1000`, { headers })
+			if (res.data?.data && Array.isArray(res.data?.data.infos)) {
+				const promises = res.data?.data.infos.map(async (it: any) => {
+					if (it.currency !== "USD") {
+						return
+					}
+					try {
+						const resd: any = await axios.get(`${uri}/modelrouter/${it.id}`, { headers })
+						if (resd.data.data) {
+							return resd.data.data
+						}
+					} catch (error) {
+						console.error(`${it.api_name} 请求失败:`, error)
+					}
+				})
+				const results = await Promise.all(promises)
+				for (const model of results) {
+					if (!model) {
+						continue
+					}
+					const modelInfo: ModelInfo = {
+						maxTokens: model.max_output_tokens || undefined,
+						contextWindow: model.context,
+						supportsImages: model.supports_vision || undefined,
+						supportsPromptCache: model.supports_caching || undefined,
+						inputPrice: parsePrice(model.input_price),
+						outputPrice: parsePrice(model.output_price),
+						cacheWritesPrice: parsePrice(model.caching_price),
+						cacheReadsPrice: parsePrice(model.cached_price),
+						description: model.description,
+					}
+					models[model.api_name] = modelInfo
+				}
+				console.log("ShengSuanYun models fetched", models)
+			} else {
+				console.error("Invalid response from ShengSuanYun API")
+			}
+		} catch (error) {
+			console.error("Error fetching ShengSuanYun models:", error)
+		}
+
+		await this.postMessageToWebview({
+			type: "ssyModels",
+			ssyModels: models,
+		})
+		return models
+	}
+
 	// Context menus and code actions
 
 	getFileMentionFromPath(filePath: string) {
@@ -1537,7 +1659,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 	// 'Add to Cline' context menu in editor and code action
 	async addSelectedCodeToChat(code: string, filePath: string, languageId: string, diagnostics?: vscode.Diagnostic[]) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
+		await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		// Post message to webview with the selected code
@@ -1560,7 +1682,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 	// 'Add to Cline' context menu in Terminal
 	async addSelectedTerminalOutputToChat(output: string, terminalName: string) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
+		await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		// Post message to webview with the selected terminal output
@@ -1581,7 +1703,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 	// 'Fix with Cline' in code actions
 	async fixWithCline(code: string, filePath: string, languageId: string, diagnostics: vscode.Diagnostic[]) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
+		await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		const fileMention = this.getFileMentionFromPath(filePath)

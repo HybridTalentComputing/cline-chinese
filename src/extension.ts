@@ -27,7 +27,7 @@ let outputChannel: vscode.OutputChannel
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	outputChannel = vscode.window.createOutputChannel("Cline")
+	outputChannel = vscode.window.createOutputChannel("ClineShengsuan")
 	context.subscriptions.push(outputChannel)
 
 	ErrorService.initialize()
@@ -39,7 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// Initialize test mode and add disposables to context
 	context.subscriptions.push(...initializeTestMode(context, sidebarWebview))
 
-	vscode.commands.executeCommand("setContext", "cline.isDevMode", IS_DEV && IS_DEV === "true")
+	vscode.commands.executeCommand("setContext", "clineShengsuan.isDevMode", IS_DEV && IS_DEV === "true")
 
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(WebviewProvider.sideBarId, sidebarWebview, {
@@ -48,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.plusButtonClicked", async (webview: any) => {
+		vscode.commands.registerCommand("clineShengsuan.plusButtonClicked", async (webview: any) => {
 			const openChat = async (instance?: WebviewProvider) => {
 				await instance?.controller.clearTask()
 				await instance?.controller.postStateToWebview()
@@ -67,7 +67,7 @@ export function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.mcpButtonClicked", (webview: any) => {
+		vscode.commands.registerCommand("clineShengsuan.mcpButtonClicked", (webview: any) => {
 			const openMcp = (instance?: WebviewProvider) =>
 				instance?.controller.postMessageToWebview({
 					type: "action",
@@ -97,7 +97,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		const targetCol = hasVisibleEditors ? Math.max(lastCol + 1, 1) : vscode.ViewColumn.Two
 
-		const panel = vscode.window.createWebviewPanel(WebviewProvider.tabPanelId, "Cline", targetCol, {
+		const panel = vscode.window.createWebviewPanel(WebviewProvider.tabPanelId, "ClineShengsuan", targetCol, {
 			enableScripts: true,
 			retainContextWhenHidden: true,
 			localResourceRoots: [context.extensionUri],
@@ -115,11 +115,11 @@ export function activate(context: vscode.ExtensionContext) {
 		await vscode.commands.executeCommand("workbench.action.lockEditorGroup")
 	}
 
-	context.subscriptions.push(vscode.commands.registerCommand("cline.popoutButtonClicked", openClineInNewTab))
-	context.subscriptions.push(vscode.commands.registerCommand("cline.openInNewTab", openClineInNewTab))
+	context.subscriptions.push(vscode.commands.registerCommand("clineShengsuan.popoutButtonClicked", openClineInNewTab))
+	context.subscriptions.push(vscode.commands.registerCommand("clineShengsuan.openInNewTab", openClineInNewTab))
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.settingsButtonClicked", (webview: any) => {
+		vscode.commands.registerCommand("clineShengsuan.settingsButtonClicked", (webview: any) => {
 			WebviewProvider.getAllInstances().forEach((instance) => {
 				const openSettings = async (instance?: WebviewProvider) => {
 					instance?.controller.postMessageToWebview({
@@ -138,7 +138,7 @@ export function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.historyButtonClicked", (webview: any) => {
+		vscode.commands.registerCommand("clineShengsuan.historyButtonClicked", (webview: any) => {
 			WebviewProvider.getAllInstances().forEach((instance) => {
 				const openHistory = async (instance?: WebviewProvider) => {
 					instance?.controller.postMessageToWebview({
@@ -157,7 +157,7 @@ export function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.accountButtonClicked", (webview: any) => {
+		vscode.commands.registerCommand("clineShengsuan.accountButtonClicked", (webview: any) => {
 			WebviewProvider.getAllInstances().forEach((instance) => {
 				const openAccount = async (instance?: WebviewProvider) => {
 					instance?.controller.postMessageToWebview({
@@ -227,9 +227,15 @@ export function activate(context: vscode.ExtensionContext) {
 					vscode.window.showErrorMessage("Invalid auth state")
 					return
 				}
-
 				if (token && apiKey) {
 					await visibleWebview?.controller.handleAuthCallback(token, apiKey)
+				}
+				break
+			}
+			case "/ssy": {
+				const code = query.get("code")
+				if (code) {
+					await visibleWebview?.controller.handleSSYCallback(code)
 				}
 				break
 			}
@@ -254,37 +260,40 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.addToChat", async (range?: vscode.Range, diagnostics?: vscode.Diagnostic[]) => {
-			const editor = vscode.window.activeTextEditor
-			if (!editor) {
-				return
-			}
+		vscode.commands.registerCommand(
+			"clineShengsuan.addToChat",
+			async (range?: vscode.Range, diagnostics?: vscode.Diagnostic[]) => {
+				const editor = vscode.window.activeTextEditor
+				if (!editor) {
+					return
+				}
 
-			// Use provided range if available, otherwise use current selection
-			// (vscode command passes an argument in the first param by default, so we need to ensure it's a Range object)
-			const textRange = range instanceof vscode.Range ? range : editor.selection
-			const selectedText = editor.document.getText(textRange)
+				// Use provided range if available, otherwise use current selection
+				// (vscode command passes an argument in the first param by default, so we need to ensure it's a Range object)
+				const textRange = range instanceof vscode.Range ? range : editor.selection
+				const selectedText = editor.document.getText(textRange)
 
-			if (!selectedText) {
-				return
-			}
+				if (!selectedText) {
+					return
+				}
 
-			// Get the file path and language ID
-			const filePath = editor.document.uri.fsPath
-			const languageId = editor.document.languageId
+				// Get the file path and language ID
+				const filePath = editor.document.uri.fsPath
+				const languageId = editor.document.languageId
 
-			const visibleWebview = WebviewProvider.getVisibleInstance()
-			await visibleWebview?.controller.addSelectedCodeToChat(
-				selectedText,
-				filePath,
-				languageId,
-				Array.isArray(diagnostics) ? diagnostics : undefined,
-			)
-		}),
+				const visibleWebview = WebviewProvider.getVisibleInstance()
+				await visibleWebview?.controller.addSelectedCodeToChat(
+					selectedText,
+					filePath,
+					languageId,
+					Array.isArray(diagnostics) ? diagnostics : undefined,
+				)
+			},
+		),
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.addTerminalOutputToChat", async () => {
+		vscode.commands.registerCommand("clineShengsuan.addTerminalOutputToChat", async () => {
 			const terminal = vscode.window.activeTerminal
 			if (!terminal) {
 				return
@@ -356,14 +365,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 					const addAction = new vscode.CodeAction("Add to Cline", vscode.CodeActionKind.QuickFix)
 					addAction.command = {
-						command: "cline.addToChat",
+						command: "clineShengsuan.addToChat",
 						title: "Add to Cline",
 						arguments: [expandedRange, context.diagnostics],
 					}
 
 					const fixAction = new vscode.CodeAction("Fix with Cline", vscode.CodeActionKind.QuickFix)
 					fixAction.command = {
-						command: "cline.fixWithCline",
+						command: "clineShengsuan.fixWithCline",
 						title: "Fix with Cline",
 						arguments: [expandedRange, context.diagnostics],
 					}
@@ -384,32 +393,35 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Register the command handler
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.fixWithCline", async (range: vscode.Range, diagnostics: vscode.Diagnostic[]) => {
-			// Add this line to focus the chat input first
-			await vscode.commands.executeCommand("cline.focusChatInput")
-			// Wait for a webview instance to become visible after focusing
-			await pWaitFor(() => !!WebviewProvider.getVisibleInstance())
-			const editor = vscode.window.activeTextEditor
-			if (!editor) {
-				return
-			}
+		vscode.commands.registerCommand(
+			"clineShengsuan.fixWithCline",
+			async (range: vscode.Range, diagnostics: vscode.Diagnostic[]) => {
+				// Add this line to focus the chat input first
+				await vscode.commands.executeCommand("clineShengsuan.focusChatInput")
+				// Wait for a webview instance to become visible after focusing
+				await pWaitFor(() => !!WebviewProvider.getVisibleInstance())
+				const editor = vscode.window.activeTextEditor
+				if (!editor) {
+					return
+				}
 
-			const selectedText = editor.document.getText(range)
-			const filePath = editor.document.uri.fsPath
-			const languageId = editor.document.languageId
+				const selectedText = editor.document.getText(range)
+				const filePath = editor.document.uri.fsPath
+				const languageId = editor.document.languageId
 
-			// Send to sidebar provider with diagnostics
-			const visibleWebview = WebviewProvider.getVisibleInstance()
-			await visibleWebview?.controller.fixWithCline(selectedText, filePath, languageId, diagnostics)
-		}),
+				// Send to sidebar provider with diagnostics
+				const visibleWebview = WebviewProvider.getVisibleInstance()
+				await visibleWebview?.controller.fixWithCline(selectedText, filePath, languageId, diagnostics)
+			},
+		),
 	)
 
 	// Register the focusChatInput command handler
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.focusChatInput", () => {
+		vscode.commands.registerCommand("clineShengsuan.focusChatInput", () => {
 			let visibleWebview = WebviewProvider.getVisibleInstance()
 			if (!visibleWebview) {
-				vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
+				vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
 				visibleWebview = WebviewProvider.getSidebarInstance()
 				// showing the extension will call didBecomeVisible which focuses it already
 				// but it doesn't focus if a tab is selected which focusChatInput accounts for

@@ -9,6 +9,8 @@ import {
 	openRouterDefaultModelInfo,
 	requestyDefaultModelId,
 	requestyDefaultModelInfo,
+	ssyDefaultModelId,
+	ssyDefaultModelInfo,
 } from "../../../src/shared/api"
 import { findLastIndex } from "@shared/array"
 import { McpMarketplaceCatalog, McpServer } from "../../../src/shared/mcp"
@@ -25,6 +27,7 @@ interface ExtensionStateContextType extends ExtensionState {
 	openRouterModels: Record<string, ModelInfo>
 	openAiModels: string[]
 	requestyModels: Record<string, ModelInfo>
+	ssyModels: Record<string, ModelInfo>
 	mcpServers: McpServer[]
 	mcpMarketplaceCatalog: McpMarketplaceCatalog
 	filePaths: string[]
@@ -70,6 +73,9 @@ export const ExtensionStateContextProvider: React.FC<{
 	const [requestyModels, setRequestyModels] = useState<Record<string, ModelInfo>>({
 		[requestyDefaultModelId]: requestyDefaultModelInfo,
 	})
+	const [ssyModels, setSsyModels] = useState<Record<string, ModelInfo>>({
+		[ssyDefaultModelId]: ssyDefaultModelInfo,
+	})
 	const [mcpServers, setMcpServers] = useState<McpServer[]>([])
 	const [mcpMarketplaceCatalog, setMcpMarketplaceCatalog] = useState<McpMarketplaceCatalog>({ items: [] })
 	const handleMessage = useCallback((event: MessageEvent) => {
@@ -113,6 +119,8 @@ export const ExtensionStateContextProvider: React.FC<{
 							config.asksageApiKey,
 							config.xaiApiKey,
 							config.sambanovaApiKey,
+							config.shengsuanyunApiKey,
+							config.shengsuanyunToken,
 						].some((key) => key !== undefined)
 					: false
 				setShowWelcome(!hasKey)
@@ -165,6 +173,14 @@ export const ExtensionStateContextProvider: React.FC<{
 				})
 				break
 			}
+			case "ssyModels": {
+				const updatedModels = message.ssyModels ?? {}
+				setSsyModels({
+					[ssyDefaultModelId]: ssyDefaultModelInfo,
+					...updatedModels,
+				})
+				break
+			}
 			case "mcpServers": {
 				setMcpServers(message.mcpServers ?? [])
 				break
@@ -196,6 +212,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		openRouterModels,
 		openAiModels,
 		requestyModels,
+		ssyModels,
 		mcpServers,
 		mcpMarketplaceCatalog,
 		filePaths,

@@ -72,8 +72,12 @@ export interface WebviewMessage {
 		| "grpc_request"
 		| "toggleClineRule"
 		| "deleteClineRule"
-
-	// | "relaunchChromeDebugMode"
+		// | "relaunchChromeDebugMode"
+		| "fetchUSDRate"
+		| "accountLoginClickedSSY"
+		| "accountLogoutClickedSSY"
+		| "ssyModels"
+		| "refreshSSYModels"
 	text?: string
 	uris?: string[] // Used for getRelativePaths
 	disabled?: boolean
@@ -97,6 +101,7 @@ export interface WebviewMessage {
 
 	// For auth
 	user?: UserInfo | null
+	userSSY?: Object | null
 	customToken?: string
 	// For openInBrowser
 	url?: string

@@ -23,15 +23,15 @@ const ConnectionStatusIndicator = ({
 			{isChecking ? (
 				<>
 					<Spinner />
-					<StatusText>Checking connection...</StatusText>
+					<StatusText>检查连接...</StatusText>
 				</>
 			) : isConnected === true ? (
 				<>
 					<CheckIcon className="codicon codicon-check" />
-					<StatusText style={{ color: "var(--vscode-terminal-ansiGreen)" }}>Connected</StatusText>
+					<StatusText style={{ color: "var(--vscode-terminal-ansiGreen)" }}>已连接</StatusText>
 				</>
 			) : isConnected === false ? (
-				<StatusText style={{ color: "var(--vscode-errorForeground)" }}>Not connected</StatusText>
+				<StatusText style={{ color: "var(--vscode-errorForeground)" }}>未连接</StatusText>
 			) : null}
 		</StatusContainer>
 	)
@@ -265,10 +265,10 @@ export const BrowserSettingsSection: React.FC = () => {
 		<div
 			id="browser-settings-section"
 			style={{ marginBottom: 20, borderTop: "1px solid var(--vscode-panel-border)", paddingTop: 15 }}>
-			<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 10px 0", fontSize: "14px" }}>Browser Settings</h3>
+			<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 10px 0", fontSize: "14px" }}>浏览器设置</h3>
 			<div style={{ marginBottom: 15 }}>
 				<div style={{ marginBottom: 8 }}>
-					<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>Viewport size</label>
+					<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>视窗大小</label>
 					<VSCodeDropdown
 						style={{ width: "100%" }}
 						value={
@@ -294,7 +294,7 @@ export const BrowserSettingsSection: React.FC = () => {
 						color: "var(--vscode-descriptionForeground)",
 						margin: 0,
 					}}>
-					Set the size of the browser viewport for screenshots and interactions.
+					设置屏幕截图和交互的浏览器视区大小。
 				</p>
 			</div>
 
@@ -303,7 +303,7 @@ export const BrowserSettingsSection: React.FC = () => {
 					<VSCodeCheckbox
 						checked={browserSettings.remoteBrowserEnabled}
 						onChange={(e) => updateRemoteBrowserEnabled((e.target as HTMLInputElement).checked)}>
-						Use remote browser connection
+						使用远程浏览器连接
 					</VSCodeCheckbox>
 					<ConnectionStatusIndicator
 						isChecking={isCheckingConnection}
@@ -317,14 +317,14 @@ export const BrowserSettingsSection: React.FC = () => {
 						color: "var(--vscode-descriptionForeground)",
 						margin: "0 0 6px 0px",
 					}}>
-					Enable Cline to use your Chrome
-					{isBundled ? "(not detected on your machine)" : detectedChromePath ? ` (${detectedChromePath})` : ""}. This
-					requires starting Chrome in debug mode
+					允许 Cline 使用你的 Chrome 浏览器
+					{isBundled ? "(未找到)" : detectedChromePath ? ` (${detectedChromePath})` : ""}. 要求你的 Chrome 启用 debug
+					模式
 					{browserSettings.remoteBrowserEnabled ? (
 						<>
 							{" "}
-							manually (<code>--remote-debugging-port=9222</code>) or using the button below. Enter the host address
-							or leave it blank for automatic discovery.
+							手动设置 (<code>--remote-debugging-port=9222</code>)
+							或使用下面的按钮。输入主机地址或将其留空以便自动发现。
 						</>
 					) : (
 						"."
@@ -343,7 +343,7 @@ export const BrowserSettingsSection: React.FC = () => {
 						{shouldShowRelaunchButton && (
 							<div style={{ display: "flex", gap: "10px", marginBottom: 8, justifyContent: "center" }}>
 								<VSCodeButton style={{ flex: 1 }} disabled={debugMode} onClick={relaunchChromeDebugMode}>
-									{debugMode ? "Relaunching Browser..." : "Relaunch Browser with Debug Mode"}
+									{debugMode ? "重启浏览器..." : "重启浏览器调试模式"}
 								</VSCodeButton>
 							</div>
 						)}

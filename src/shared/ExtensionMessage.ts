@@ -49,6 +49,8 @@ export interface ExtensionMessage {
 		| "relativePathsResponse" // Handles single and multiple path responses
 		| "fileSearchResults"
 		| "grpc_response" // New type for gRPC responses
+		| "fetchUSDRate"
+		| "ssyModels"
 	text?: string
 	paths?: (string | null)[] // Used for relativePathsResponse
 	action?:
@@ -87,6 +89,7 @@ export interface ExtensionMessage {
 	}
 	url?: string
 	isImage?: boolean
+	fetchUSDRate?: number
 	userCreditsBalance?: BalanceResponse
 	userCreditsUsage?: UsageTransaction[]
 	userCreditsPayments?: PaymentTransaction[]
@@ -114,6 +117,7 @@ export interface ExtensionMessage {
 		request_id: string // Same ID as the request
 		error?: string // Optional error message
 	}
+	ssyModels?: Record<string, ModelInfo>
 }
 
 export type Invoke = "sendMessage" | "primaryButtonClick" | "secondaryButtonClick"
@@ -139,11 +143,7 @@ export interface ExtensionState {
 	taskHistory: HistoryItem[]
 	telemetrySetting: TelemetrySetting
 	uriScheme?: string
-	userInfo?: {
-		displayName: string | null
-		email: string | null
-		photoURL: string | null
-	}
+	userInfo?: any
 	version: string
 	vscMachineId: string
 	globalClineRulesToggles: ClineRulesToggles

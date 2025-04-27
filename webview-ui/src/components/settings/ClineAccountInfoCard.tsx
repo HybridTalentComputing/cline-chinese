@@ -32,7 +32,7 @@ export const ClineAccountInfoCard = () => {
 		<div className="max-w-[600px]">
 			{user ? (
 				<VSCodeButton appearance="secondary" onClick={handleShowAccount}>
-					View Billing & Usage
+					查看账单与使用记录
 				</VSCodeButton>
 			) : (
 				// <div className="p-2 rounded-[2px] bg-[var(--vscode-dropdown-background)]">
@@ -69,7 +69,7 @@ export const ClineAccountInfoCard = () => {
 				// </div>
 				<div>
 					<VSCodeButton onClick={handleLogin} className="mt-0">
-						Sign Up with Cline
+						注册 Cline
 					</VSCodeButton>
 				</div>
 			)}
