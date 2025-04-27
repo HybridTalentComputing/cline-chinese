@@ -2,4 +2,4 @@
 "claude-dev": patch
 ---
 
-fix vertexai token count
+fix cost calculation

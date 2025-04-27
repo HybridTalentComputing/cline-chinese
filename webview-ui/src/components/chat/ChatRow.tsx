@@ -17,6 +17,7 @@ import { COMMAND_OUTPUT_STRING, COMMAND_REQ_APP_STRING } from "@shared/combineCo
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { findMatchingResourceOrTemplate, getMcpServerDisplayName } from "@/utils/mcp"
 import { vscode } from "@/utils/vscode"
+import { FileServiceClient } from "@/services/grpc-client"
 import { CheckmarkControl } from "@/components/common/CheckmarkControl"
 import { CheckpointControls, CheckpointOverlay } from "../common/CheckpointControls"
 import CodeAccordian, { cleanPathPrefix } from "../common/CodeAccordian"
@@ -27,7 +28,7 @@ import McpToolRow from "@/components/mcp/configuration/tabs/installed/server-row
 import McpResponseDisplay from "@/components/mcp/chat-display/McpResponseDisplay"
 import CreditLimitError from "@/components/chat/CreditLimitError"
 import { OptionsButtons } from "@/components/chat/OptionsButtons"
-import { highlightMentions } from "./TaskHeader"
+import { highlightText } from "./TaskHeader"
 import SuccessButton from "@/components/common/SuccessButton"
 import TaskFeedbackButtons from "@/components/chat/TaskFeedbackButtons"
 import NewTaskPreview from "./NewTaskPreview"
@@ -361,7 +362,8 @@ export const ChatRowContent = ({
 					<>
 						<div style={headerStyle}>
 							{toolIcon("edit")}
-							{!tool.operationIsLocatedInWorkspace && toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
+							{tool.operationIsLocatedInWorkspace === false &&
+								toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
 							<span style={{ fontWeight: "bold" }}>Cline 需要编辑这个文件:</span>
 						</div>
 						<CodeAccordian
@@ -378,7 +380,8 @@ export const ChatRowContent = ({
 					<>
 						<div style={headerStyle}>
 							{toolIcon("new-file")}
-							{!tool.operationIsLocatedInWorkspace && toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
+							{tool.operationIsLocatedInWorkspace === false &&
+								toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
 							<span style={{ fontWeight: "bold" }}>Cline 需要创建新文件:</span>
 						</div>
 						<CodeAccordian
@@ -395,7 +398,8 @@ export const ChatRowContent = ({
 					<>
 						<div style={headerStyle}>
 							{toolIcon("file-code")}
-							{!tool.operationIsLocatedInWorkspace && toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
+							{tool.operationIsLocatedInWorkspace === false &&
+								toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
 							<span style={{ fontWeight: "bold" }}>
 								{/* {message.type === "ask" ? "" : "Cline read this file:"} */}
 								Cline 需要读取这个文件:
@@ -421,10 +425,9 @@ export const ChatRowContent = ({
 									msUserSelect: "none",
 								}}
 								onClick={() => {
-									vscode.postMessage({
-										type: "openFile",
-										text: tool.content,
-									})
+									FileServiceClient.openFile({ value: tool.content }).catch((err) =>
+										console.error("Failed to open file:", err),
+									)
 								}}>
 								{tool.path?.startsWith(".") && <span>.</span>}
 								<span
@@ -454,7 +457,8 @@ export const ChatRowContent = ({
 					<>
 						<div style={headerStyle}>
 							{toolIcon("folder-opened")}
-							{!tool.operationIsLocatedInWorkspace && toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
+							{tool.operationIsLocatedInWorkspace === false &&
+								toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask" ? "Cline 需要查看这个目录:" : "Cline 在这个目录找到的文件:"}
 							</span>
@@ -473,7 +477,8 @@ export const ChatRowContent = ({
 					<>
 						<div style={headerStyle}>
 							{toolIcon("folder-opened")}
-							{!tool.operationIsLocatedInWorkspace && toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
+							{tool.operationIsLocatedInWorkspace === false &&
+								toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
 									? "Cline 需要迭代列举这个目录的文件:"
@@ -494,7 +499,8 @@ export const ChatRowContent = ({
 					<>
 						<div style={headerStyle}>
 							{toolIcon("file-code")}
-							{!tool.operationIsLocatedInWorkspace && toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
+							{tool.operationIsLocatedInWorkspace === false &&
+								toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
 									? "Cline 需要查看此目录中使用的源代码定义名称:"
@@ -514,7 +520,8 @@ export const ChatRowContent = ({
 					<>
 						<div style={headerStyle}>
 							{toolIcon("search")}
-							{!tool.operationIsLocatedInWorkspace && toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
+							{tool.operationIsLocatedInWorkspace === false &&
+								toolIcon("sign-out", "yellow", -90, "该文件不在你的工作目录")}
 							<span style={{ fontWeight: "bold" }}>
 								Cline 需要查找这个目录 <code>{tool.regex}</code>:
 							</span>
@@ -1255,6 +1262,23 @@ export const ChatRowContent = ({
 										marginBottom: "-1.5px",
 									}}></span>
 								<span style={{ color: normalColor, fontWeight: "bold" }}>Cline 需要开始一个新任务:</span>
+							</div>
+							<NewTaskPreview context={message.text || ""} />
+						</>
+					)
+				case "condense":
+					return (
+						<>
+							<div style={headerStyle}>
+								<span
+									className="codicon codicon-new-file"
+									style={{
+										color: normalColor,
+										marginBottom: "-1.5px",
+									}}></span>
+								<span style={{ color: normalColor, fontWeight: "bold" }}>
+									Cline wants to condense your conversation:
+								</span>
 							</div>
 							<NewTaskPreview context={message.text || ""} />
 						</>

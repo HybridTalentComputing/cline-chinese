@@ -1,10 +1,10 @@
 import path from "path"
-import { ensureRulesDirectoryExists, GlobalFileNames } from "../../../storage/disk"
-import { fileExistsAtPath, isDirectory, readDirectory } from "../../../../utils/fs"
-import { formatResponse } from "../../../prompts/responses"
+import { ensureRulesDirectoryExists, GlobalFileNames } from "@core/storage/disk"
+import { fileExistsAtPath, isDirectory, readDirectory } from "@utils/fs"
+import { formatResponse } from "@core/prompts/responses"
 import fs from "fs/promises"
-import { ClineRulesToggles } from "../../../../shared/cline-rules"
-import { getGlobalState, getWorkspaceState, updateGlobalState, updateWorkspaceState } from "../../../storage/state"
+import { ClineRulesToggles } from "@shared/cline-rules"
+import { getGlobalState, getWorkspaceState, updateGlobalState, updateWorkspaceState } from "@core/storage/state"
 import * as vscode from "vscode"
 
 export const getGlobalClineRules = async (globalClineRulesFilePath: string, toggles: ClineRulesToggles) => {
@@ -171,6 +171,32 @@ export async function refreshClineRulesToggles(
 	return {
 		globalToggles: updatedGlobalToggles,
 		localToggles: updatedLocalToggles,
+	}
+}
+
+export const createRuleFile = async (isGlobal: boolean, filename: string, cwd: string) => {
+	try {
+		let filePath: string
+		if (isGlobal) {
+			const globalClineRulesFilePath = await ensureRulesDirectoryExists()
+			filePath = path.join(globalClineRulesFilePath, filename)
+		} else {
+			const localClineRulesFilePath = path.resolve(cwd, GlobalFileNames.clineRules)
+			await fs.mkdir(localClineRulesFilePath, { recursive: true })
+			filePath = path.join(localClineRulesFilePath, filename)
+		}
+
+		const fileExists = await fileExistsAtPath(filePath)
+
+		if (fileExists) {
+			return { filePath, fileExists }
+		}
+
+		await fs.writeFile(filePath, "", "utf8")
+
+		return { filePath, fileExists: false }
+	} catch (error) {
+		return { filePath: null, fileExists: false }
 	}
 }
 

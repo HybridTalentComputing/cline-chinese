@@ -250,7 +250,10 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 				{IS_DEV && (
 					<>
 						<div className="mt-[10px] mb-1">调试</div>
-						<VSCodeButton onClick={handleResetState} className="mt-[5px] w-auto">
+						<VSCodeButton
+							onClick={handleResetState}
+							className="mt-[5px] w-auto"
+							style={{ backgroundColor: "var(--vscode-errorForeground)", color: "black" }}>
 							重置
 						</VSCodeButton>
 						<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">

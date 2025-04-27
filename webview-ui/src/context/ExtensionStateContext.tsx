@@ -19,7 +19,7 @@ import { vscode } from "../utils/vscode"
 import { DEFAULT_BROWSER_SETTINGS } from "@shared/BrowserSettings"
 import { DEFAULT_CHAT_SETTINGS } from "@shared/ChatSettings"
 import { TelemetrySetting } from "@shared/TelemetrySetting"
-import { ClineRulesToggles } from "@shared/cline-rules"
+
 interface ExtensionStateContextType extends ExtensionState {
 	didHydrateState: boolean
 	showWelcome: boolean
@@ -37,6 +37,7 @@ interface ExtensionStateContextType extends ExtensionState {
 	setTelemetrySetting: (value: TelemetrySetting) => void
 	setShowAnnouncement: (value: boolean) => void
 	setPlanActSeparateModelsSetting: (value: boolean) => void
+	setMcpServers: (value: McpServer[]) => void
 }
 
 const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -81,7 +82,19 @@ export const ExtensionStateContextProvider: React.FC<{
 		const message: ExtensionMessage = event.data
 		switch (message.type) {
 			case "state": {
-				setState(message.state!)
+				setState((prevState) => {
+					const incoming = message.state!
+					// Versioning logic for autoApprovalSettings
+					const incomingVersion = incoming.autoApprovalSettings?.version ?? 1
+					const currentVersion = prevState.autoApprovalSettings?.version ?? 1
+					const shouldUpdateAutoApproval = incomingVersion > currentVersion
+					return {
+						...incoming,
+						autoApprovalSettings: shouldUpdateAutoApproval
+							? incoming.autoApprovalSettings
+							: prevState.autoApprovalSettings,
+					}
+				})
 				const config = message.state?.apiConfiguration
 				const hasKey = config
 					? [
@@ -231,6 +244,7 @@ export const ExtensionStateContextProvider: React.FC<{
 				...prevState,
 				shouldShowAnnouncement: value,
 			})),
+		setMcpServers: (mcpServers: McpServer[]) => setMcpServers(mcpServers),
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

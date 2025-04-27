@@ -60,6 +60,7 @@ export interface ApiHandlerOptions {
 	lmStudioModelId?: string
 	lmStudioBaseUrl?: string
 	geminiApiKey?: string
+	geminiBaseUrl?: string
 	openAiNativeApiKey?: string
 	deepSeekApiKey?: string
 	requestyApiKey?: string
@@ -102,12 +103,16 @@ export interface ModelInfo {
 	maxTokens?: number
 	contextWindow?: number
 	supportsImages?: boolean
-	supportsComputerUse?: boolean
 	supportsPromptCache: boolean // this value is hardcoded for now
 	inputPrice?: number // Keep for non-tiered input models
 	inputPriceTiers?: PriceTier[] // Add for tiered input pricing
 	outputPrice?: number // Keep for non-tiered output models
 	outputPriceTiers?: PriceTier[] // Add for tiered output pricing
+	thinkingConfig?: {
+		maxBudget?: number // Max allowed thinking budget tokens
+		outputPrice?: number // Output price per million tokens when budget > 0
+		outputPriceTiers?: PriceTier[] // Optional: Tiered output price when budget > 0
+	}
 	cacheWritesPrice?: number
 	cacheReadsPrice?: number
 	description?: string
@@ -127,7 +132,7 @@ export const anthropicModels = {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
+
 		supportsPromptCache: true,
 		inputPrice: 3.0,
 		outputPrice: 15.0,
@@ -138,7 +143,7 @@ export const anthropicModels = {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
+
 		supportsPromptCache: true,
 		inputPrice: 3.0, // $3 per million input tokens
 		outputPrice: 15.0, // $15 per million output tokens
@@ -186,7 +191,7 @@ export const bedrockModels = {
 		maxTokens: 5000,
 		contextWindow: 300_000,
 		supportsImages: true,
-		supportsComputerUse: false,
+
 		supportsPromptCache: false,
 		inputPrice: 0.8,
 		outputPrice: 3.2,
@@ -195,7 +200,7 @@ export const bedrockModels = {
 		maxTokens: 5000,
 		contextWindow: 300_000,
 		supportsImages: true,
-		supportsComputerUse: false,
+
 		supportsPromptCache: false,
 		inputPrice: 0.06,
 		outputPrice: 0.24,
@@ -204,7 +209,7 @@ export const bedrockModels = {
 		maxTokens: 5000,
 		contextWindow: 128_000,
 		supportsImages: false,
-		supportsComputerUse: false,
+
 		supportsPromptCache: false,
 		inputPrice: 0.035,
 		outputPrice: 0.14,
@@ -213,7 +218,7 @@ export const bedrockModels = {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
+
 		supportsPromptCache: true,
 		inputPrice: 3.0,
 		outputPrice: 15.0,
@@ -224,7 +229,7 @@ export const bedrockModels = {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
+
 		supportsPromptCache: true,
 		inputPrice: 3.0,
 		outputPrice: 15.0,
@@ -290,7 +295,7 @@ export const openRouterDefaultModelInfo: ModelInfo = {
 	maxTokens: 8192,
 	contextWindow: 200_000,
 	supportsImages: true,
-	supportsComputerUse: true,
+
 	supportsPromptCache: true,
 	inputPrice: 3.0,
 	outputPrice: 15.0,
@@ -309,7 +314,7 @@ export const vertexModels = {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
+
 		supportsPromptCache: true,
 		inputPrice: 3.0,
 		outputPrice: 15.0,
@@ -318,7 +323,7 @@ export const vertexModels = {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
+
 		supportsPromptCache: true,
 		inputPrice: 3.0,
 		outputPrice: 15.0,
@@ -412,6 +417,18 @@ export const vertexModels = {
 			{ tokenLimit: 200000, price: 10.0 }, // Output price for <= 200k input tokens
 			{ tokenLimit: Infinity, price: 15.0 }, // Output price for > 200k input tokens
 		],
+	},
+	"gemini-2.5-flash-preview-04-17": {
+		maxTokens: 65536,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.15,
+		outputPrice: 0.6,
+		thinkingConfig: {
+			maxBudget: 24576,
+			outputPrice: 3.5,
+		},
 	},
 	"gemini-2.0-flash-thinking-exp-01-21": {
 		maxTokens: 65_536,
@@ -508,6 +525,18 @@ export const geminiModels = {
 			{ tokenLimit: 200000, price: 10.0 }, // Output price for <= 200k input tokens
 			{ tokenLimit: Infinity, price: 15.0 }, // Output price for > 200k input tokens
 		],
+	},
+	"gemini-2.5-flash-preview-04-17": {
+		maxTokens: 65536,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.15,
+		outputPrice: 0.6,
+		thinkingConfig: {
+			maxBudget: 24576,
+			outputPrice: 3.5,
+		},
 	},
 	"gemini-2.0-flash-001": {
 		maxTokens: 8192,
@@ -1617,7 +1646,7 @@ export const requestyDefaultModelInfo: ModelInfo = {
 	maxTokens: 8192,
 	contextWindow: 200_000,
 	supportsImages: true,
-	supportsComputerUse: false,
+
 	supportsPromptCache: true,
 	inputPrice: 3.0,
 	outputPrice: 15.0,
@@ -1634,7 +1663,6 @@ export const ssyDefaultModelInfo: ModelInfo = {
 	contextWindow: 200_000,
 	supportsImages: true,
 	supportsPromptCache: true,
-	supportsComputerUse: true,
 	inputPrice: 3,
 	outputPrice: 15,
 	cacheWritesPrice: 0,

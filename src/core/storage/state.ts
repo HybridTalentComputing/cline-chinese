@@ -1,16 +1,16 @@
 import * as vscode from "vscode"
-import { DEFAULT_CHAT_SETTINGS } from "../../shared/ChatSettings"
-import { DEFAULT_BROWSER_SETTINGS } from "../../shared/BrowserSettings"
-import { DEFAULT_AUTO_APPROVAL_SETTINGS } from "../../shared/AutoApprovalSettings"
+import { DEFAULT_CHAT_SETTINGS } from "@shared/ChatSettings"
+import { DEFAULT_BROWSER_SETTINGS } from "@shared/BrowserSettings"
+import { DEFAULT_AUTO_APPROVAL_SETTINGS } from "@shared/AutoApprovalSettings"
 import { GlobalStateKey, SecretKey } from "./state-keys"
-import { ApiConfiguration, ApiProvider, ModelInfo } from "../../shared/api"
-import { HistoryItem } from "../../shared/HistoryItem"
-import { AutoApprovalSettings } from "../../shared/AutoApprovalSettings"
-import { BrowserSettings } from "../../shared/BrowserSettings"
-import { ChatSettings } from "../../shared/ChatSettings"
-import { TelemetrySetting } from "../../shared/TelemetrySetting"
-import { UserInfo } from "../../shared/UserInfo"
-import { ClineRulesToggles } from "../../shared/cline-rules"
+import { ApiConfiguration, ApiProvider, ModelInfo } from "@shared/api"
+import { HistoryItem } from "@shared/HistoryItem"
+import { AutoApprovalSettings } from "@shared/AutoApprovalSettings"
+import { BrowserSettings } from "@shared/BrowserSettings"
+import { ChatSettings } from "@shared/ChatSettings"
+import { TelemetrySetting } from "@shared/TelemetrySetting"
+import { UserInfo } from "@shared/UserInfo"
+import { ClineRulesToggles } from "@shared/cline-rules"
 /*
 	Storage
 	https://dev.to/kompotkot/how-to-use-secretstorage-in-your-vscode-extensions-2hco
@@ -81,6 +81,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		lmStudioBaseUrl,
 		anthropicBaseUrl,
 		geminiApiKey,
+		geminiBaseUrl,
 		openAiNativeApiKey,
 		deepSeekApiKey,
 		requestyApiKey,
@@ -155,6 +156,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "lmStudioBaseUrl") as Promise<string | undefined>,
 		getGlobalState(context, "anthropicBaseUrl") as Promise<string | undefined>,
 		getSecret(context, "geminiApiKey") as Promise<string | undefined>,
+		getGlobalState(context, "geminiBaseUrl") as Promise<string | undefined>,
 		getSecret(context, "openAiNativeApiKey") as Promise<string | undefined>,
 		getSecret(context, "deepSeekApiKey") as Promise<string | undefined>,
 		getSecret(context, "requestyApiKey") as Promise<string | undefined>,
@@ -272,6 +274,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 			lmStudioBaseUrl,
 			anthropicBaseUrl,
 			geminiApiKey,
+			geminiBaseUrl,
 			openAiNativeApiKey,
 			deepSeekApiKey,
 			requestyApiKey,
@@ -353,6 +356,7 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 		lmStudioBaseUrl,
 		anthropicBaseUrl,
 		geminiApiKey,
+		geminiBaseUrl,
 		openAiNativeApiKey,
 		deepSeekApiKey,
 		requestyApiKey,
@@ -411,6 +415,7 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 	await updateGlobalState(context, "lmStudioBaseUrl", lmStudioBaseUrl)
 	await updateGlobalState(context, "anthropicBaseUrl", anthropicBaseUrl)
 	await storeSecret(context, "geminiApiKey", geminiApiKey)
+	await updateGlobalState(context, "geminiBaseUrl", geminiBaseUrl)
 	await storeSecret(context, "openAiNativeApiKey", openAiNativeApiKey)
 	await storeSecret(context, "deepSeekApiKey", deepSeekApiKey)
 	await storeSecret(context, "requestyApiKey", requestyApiKey)

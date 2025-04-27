@@ -1,5 +1,6 @@
 import { vscode } from "@/utils/vscode"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { FileServiceClient } from "@/services/grpc-client"
 
 const RuleRow: React.FC<{
 	rulePath: string
@@ -11,10 +12,7 @@ const RuleRow: React.FC<{
 	const displayName = rulePath.split("/").pop() || rulePath
 
 	const handleEditClick = () => {
-		vscode.postMessage({
-			type: "openFile",
-			text: rulePath,
-		})
+		FileServiceClient.openFile({ value: rulePath }).catch((err) => console.error("Failed to open file:", err))
 	}
 
 	const handleDeleteClick = () => {
@@ -28,7 +26,7 @@ const RuleRow: React.FC<{
 	return (
 		<div className="mb-2.5">
 			<div
-				className={`flex items-center p-2 rounded bg-[var(--vscode-textCodeBlock-background)] ${
+				className={`flex items-center p-2 rounded bg-[var(--vscode-textCodeBlock-background)] h-[18px] ${
 					enabled ? "opacity-100" : "opacity-60"
 				}`}>
 				<span className="flex-1 overflow-hidden break-all whitespace-normal flex items-center mr-1" title={rulePath}>
