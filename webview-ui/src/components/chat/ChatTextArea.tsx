@@ -1347,11 +1347,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 				<ControlsContainer>
 					<ButtonGroup>
-						<Tooltip tipText="Add Context" style={{ left: 0 }}>
+						<Tooltip tipText="添加上下文" style={{ left: 0 }}>
 							<VSCodeButton
 								data-testid="context-button"
 								appearance="icon"
-								aria-label="Add Context"
+								aria-label="添加上下文"
 								disabled={textAreaDisabled}
 								onClick={handleContextButtonClick}
 								style={{ padding: "0px 0px", height: "20px" }}>
@@ -1364,11 +1364,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							</VSCodeButton>
 						</Tooltip>
 
-						<Tooltip tipText="Add Images">
+						<Tooltip tipText="添加图片">
 							<VSCodeButton
 								data-testid="images-button"
 								appearance="icon"
-								aria-label="Add Images"
+								aria-label="添加图片"
 								disabled={shouldDisableImages}
 								onClick={() => {
 									if (!shouldDisableImages) {
@@ -1393,7 +1393,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									role="button"
 									isActive={showModelSelector}
 									disabled={false}
-									title="Select Model / API Provider"
+									title="选择模型 / API 供应商"
 									onClick={handleModelButtonClick}
 									// onKeyDown={(e) => {
 									// 	if (e.key === "Enter" || e.key === " ") {
@@ -1426,8 +1426,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					<Tooltip
 						style={{ zIndex: 1000 }}
 						visible={shownTooltipMode !== null}
-						tipText={`In ${shownTooltipMode === "act" ? "执行" : "计划"}  模式, Cline 会 ${shownTooltipMode === "act" ? "立即完成任务" : "收集信息以构建计划"}`}
-						hintText={`Toggle w/ ${metaKeyChar}+Shift+A`}>
+						tipText={`在 ${shownTooltipMode === "act" ? "执行" : "计划"}  模式, Cline 会 ${shownTooltipMode === "act" ? "立即完成任务" : "收集信息以构建计划"}`}
+						hintText={`切换 w/ ${metaKeyChar}+Shift+A`}>
 						<SwitchContainer data-testid="mode-switch" disabled={false} onClick={onModeToggle}>
 							<Slider isAct={chatSettings.mode === "act"} isPlan={chatSettings.mode === "plan"} />
 							<SwitchOption

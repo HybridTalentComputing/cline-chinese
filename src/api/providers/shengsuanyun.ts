@@ -154,8 +154,6 @@ export class ShengsuanyunHandler implements ApiHandler {
 	}
 
 	getModel(): { id: string; info: ModelInfo } {
-		console.log(this.options, "++++++++++++++++++")
-
 		const modelId = this.options.ssyModelId
 		const modelInfo = this.options.ssyModelInfo
 		if (modelId && modelInfo) {

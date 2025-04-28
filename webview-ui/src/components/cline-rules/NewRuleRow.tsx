@@ -48,7 +48,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal }) => {
 			const extension = getExtension(trimmedFilename)
 
 			if (!isValidExtension(extension)) {
-				setError("Only .md, .txt, or no file extension allowed")
+				setError("支持的文件后缀 .md, .txt, 或无后缀文件。")
 				return
 			}
 
@@ -114,13 +114,13 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal }) => {
 				) : (
 					<>
 						<span className="flex-1 text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-input-background)] italic text-xs">
-							New rule file...
+							新规则文件...
 						</span>
 						<div className="flex items-center ml-2 space-x-2">
 							<VSCodeButton
 								appearance="icon"
-								aria-label="New rule file"
-								title="New rule file"
+								aria-label="新规则文件"
+								title="新规则文件"
 								onClick={(e) => {
 									e.stopPropagation()
 									setIsExpanded(true)

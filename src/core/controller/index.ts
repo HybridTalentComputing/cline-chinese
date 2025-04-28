@@ -934,7 +934,6 @@ export class Controller {
 						await updateGlobalState(this.context, "apiModelId", newModelId)
 						break
 					case "shengsuanyun":
-						await updateGlobalState(this.context, "apiModelId", newModelId)
 						await updateGlobalState(this.context, "ssyModelId", newModelId)
 						await updateGlobalState(this.context, "ssyModelInfo", newModelInfo)
 						break
@@ -1617,41 +1616,18 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 
 		let models: Record<string, ModelInfo> = {}
 		try {
-			const uri = "https://api.shengsuanyun.com"
-			const xToken = await getGlobalState(this.context, "shengsuanyunToken")
-			const headers: any = {
-				"content-type": "application/json",
-				"x-token": xToken,
-			}
-			const res = await axios.get(`${uri}/modelrouter/list?page=1&pageSize=1000`, { headers })
-			if (res.data?.data && Array.isArray(res.data?.data.infos)) {
-				const promises = res.data?.data.infos.map(async (it: any) => {
-					if (it.currency !== "USD") {
-						return
-					}
-					try {
-						const resd: any = await axios.get(`${uri}/modelrouter/${it.id}`, { headers })
-						if (resd.data.data) {
-							return resd.data.data
-						}
-					} catch (error) {
-						console.error(`${it.api_name} 请求失败:`, error)
-					}
-				})
-				const results = await Promise.all(promises)
-				for (const model of results) {
-					if (!model) {
-						continue
-					}
+			const res = await axios.get("https://router.shengsuanyun.com/api/v1/models/")
+			if (res.data?.data && Array.isArray(res.data?.data)) {
+				for (const model of res.data?.data) {
 					const modelInfo: ModelInfo = {
-						maxTokens: model.max_output_tokens || undefined,
-						contextWindow: model.context,
-						supportsImages: model.supports_vision || undefined,
-						supportsPromptCache: model.supports_caching || undefined,
-						inputPrice: parsePrice(model.input_price),
-						outputPrice: parsePrice(model.output_price),
-						cacheWritesPrice: parsePrice(model.caching_price),
-						cacheReadsPrice: parsePrice(model.cached_price),
+						maxTokens: model.max_tokens || undefined,
+						contextWindow: model.context_window,
+						supportsImages: model.architecture?.input.includes("image") || undefined,
+						supportsPromptCache: model.supports_prompt_cache || undefined,
+						inputPrice: parsePrice(model.pricing.prompt),
+						outputPrice: parsePrice(model.pricing.completion),
+						cacheWritesPrice: parsePrice(model.pricing.cache),
+						cacheReadsPrice: parsePrice(model.pricing.cache),
 						description: model.description,
 					}
 					models[model.api_name] = modelInfo
