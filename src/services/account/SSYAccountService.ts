@@ -83,7 +83,7 @@ export class SSYAccountService {
 			if (!res || !Array.isArray(res.records)) {
 				return undefined
 			}
-			const cpl = res.map((it: any) => ({
+			const cpl = res.records.map((it: any) => ({
 				paidAt: it.create_at,
 				amountCents: (it.price / 10000).toString(),
 			}))

@@ -13,7 +13,6 @@ interface CreditsHistoryTableProps {
 
 const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, rateUSD = 0 }: CreditsHistoryTableProps) => {
 	const [activeTab, setActiveTab] = useState<"usage" | "payments">("usage")
-
 	return (
 		<div className="flex flex-col flex-grow h-full">
 			{/* Tabs container */}
@@ -93,7 +92,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, rateUSD = 0 }
 												<VSCodeDataGridCell grid-column="1">
 													{formatTimestamp(row.paidAt, "zh-CN")}
 												</VSCodeDataGridCell>
-												<VSCodeDataGridCell grid-column="2">{`$${formatDollars(rateUSD * parseInt(row.amountCents || "0"))}`}</VSCodeDataGridCell>
+												<VSCodeDataGridCell grid-column="2">{`$${(rateUSD * Number(row.amountCents || "0")).toFixed(2)}`}</VSCodeDataGridCell>
 												<VSCodeDataGridCell grid-column="3">{`${row.credits || ""}`}</VSCodeDataGridCell>
 											</VSCodeDataGridRow>
 										))}
