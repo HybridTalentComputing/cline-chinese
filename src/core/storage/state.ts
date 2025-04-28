@@ -127,6 +127,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		planActSeparateModelsSettingRaw,
 		favoritedModelIds,
 		globalClineRulesToggles,
+		ssyModelId,
+		ssyModelInfo,
 	] = await Promise.all([
 		getGlobalState(context, "apiProvider") as Promise<ApiProvider | undefined>,
 		getGlobalState(context, "apiModelId") as Promise<string | undefined>,
@@ -202,6 +204,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "planActSeparateModelsSetting") as Promise<boolean | undefined>,
 		getGlobalState(context, "favoritedModelIds") as Promise<string[] | undefined>,
 		getGlobalState(context, "globalClineRulesToggles") as Promise<ClineRulesToggles | undefined>,
+		getGlobalState(context, "ssyModelId") as Promise<string | undefined>,
+		getGlobalState(context, "ssyModelInfo") as Promise<ModelInfo | undefined>,
 	])
 
 	let apiProvider: ApiProvider
@@ -305,6 +309,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 			shengsuanyunApiKey,
 			shengsuanyunToken,
 			favoritedModelIds,
+			ssyModelId,
+			ssyModelInfo,
 		},
 		lastShownAnnouncementId,
 		customInstructions,
@@ -387,6 +393,8 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 		shengsuanyunApiKey,
 		shengsuanyunToken,
 		favoritedModelIds,
+		ssyModelId,
+		ssyModelInfo,
 	} = apiConfiguration
 	await updateGlobalState(context, "apiProvider", apiProvider)
 	await updateGlobalState(context, "apiModelId", apiModelId)
@@ -446,6 +454,8 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 	await storeSecret(context, "shengsuanyunApiKey", shengsuanyunApiKey)
 	await updateGlobalState(context, "shengsuanyunToken", shengsuanyunToken)
 	await updateGlobalState(context, "favoritedModelIds", favoritedModelIds)
+	await updateGlobalState(context, "ssyModelId", ssyModelId)
+	await updateGlobalState(context, "ssyModelInfo", ssyModelInfo)
 }
 
 export async function resetExtensionState(context: vscode.ExtensionContext) {

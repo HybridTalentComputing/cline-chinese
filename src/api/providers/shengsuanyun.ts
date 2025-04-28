@@ -81,6 +81,9 @@ export class ShengsuanyunHandler implements ApiHandler {
 					console.log("Provider:", chunkWithProvider.provider)
 				}
 				console.log("Model:", chunk.model)
+				if (chunkWithProvider.usage) {
+					console.log("Usage:", chunkWithProvider.usage)
+				}
 				const inputTokens = chunk.usage.prompt_tokens || 0
 				const outputTokens = chunk.usage.completion_tokens || 0
 				const cacheWriteTokens = 0
