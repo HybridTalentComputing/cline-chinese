@@ -77,4 +77,6 @@ export type GlobalStateKey =
 	| "planActSeparateModelsSetting"
 	| "favoritedModelIds"
 	| "shengsuanyunToken"
+	| "ssyModelId"
+	| "ssyModelInfo"
 export type LocalStateKey = "localClineRulesToggles"
