@@ -16,9 +16,7 @@ const WelcomeView = memo(() => {
 	const disableLetsGoButton = apiErrorMessage != null
 
 	const handleLogin = () => {
-		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
-			console.error("Failed to get login URL:", err),
-		)
+		vscode.postMessage({ type: "accountLoginClickedSSY" })
 	}
 
 	const handleSubmit = () => {
