@@ -38,7 +38,7 @@ const RulesToggleList = ({
 			) : (
 				<>
 					<div className="flex flex-col items-center gap-3 my-3 text-[var(--vscode-descriptionForeground)]">
-						No rules found
+						没有设置规则
 					</div>
 					<NewRuleRow isGlobal={isGlobal} />
 				</>
