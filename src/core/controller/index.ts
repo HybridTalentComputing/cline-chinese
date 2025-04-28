@@ -873,8 +873,11 @@ export class Controller {
 				case "qwen":
 				case "deepseek":
 				case "xai":
-				case "shengsuanyun":
 					await updateGlobalState(this.context, "previousModeModelId", apiConfiguration.apiModelId)
+					break
+				case "shengsuanyun":
+					await updateGlobalState(this.context, "previousModeModelId", apiConfiguration.ssyModelId)
+					await updateGlobalState(this.context, "previousModeModelInfo", apiConfiguration.ssyModelInfo)
 					break
 				case "openrouter":
 				case "cline":
@@ -928,8 +931,12 @@ export class Controller {
 					case "openai-native":
 					case "qwen":
 					case "deepseek":
+						await updateGlobalState(this.context, "apiModelId", newModelId)
+						break
 					case "shengsuanyun":
 						await updateGlobalState(this.context, "apiModelId", newModelId)
+						await updateGlobalState(this.context, "ssyModelId", newModelId)
+						await updateGlobalState(this.context, "ssyModelInfo", newModelInfo)
 						break
 					case "openrouter":
 					case "cline":
