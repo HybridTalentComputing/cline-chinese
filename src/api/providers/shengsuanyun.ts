@@ -5,7 +5,7 @@ import OpenAI from "openai"
 import { ApiHandler } from "../"
 import { ApiHandlerOptions, ModelInfo, ssyDefaultModelId, ssyDefaultModelInfo } from "../../shared/api"
 import { withRetry } from "../retry"
-import { createOpenRouterStream } from "../transform/openrouter-stream"
+import { createShengsuanyunStream } from "../transform/shengsuanyun-stream"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { OpenRouterErrorResponse } from "./types"
 import { calculateApiCostOpenAI } from "../../utils/cost"
@@ -31,7 +31,7 @@ export class ShengsuanyunHandler implements ApiHandler {
 	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		this.lastGenerationId = undefined
 		const model = this.getModel()
-		const stream = await createOpenRouterStream(
+		const stream = await createShengsuanyunStream(
 			this.client,
 			systemPrompt,
 			messages,
@@ -75,15 +75,25 @@ export class ShengsuanyunHandler implements ApiHandler {
 			}
 
 			if (!didOutputUsage && chunk.usage) {
+				// 最后一个chunk判断provider和model
+				const chunkWithProvider = chunk as any
+				if (chunkWithProvider.provider) {
+					console.log("Provider:", chunkWithProvider.provider)
+				}
+				console.log("Model:", chunk.model)
 				const inputTokens = chunk.usage.prompt_tokens || 0
 				const outputTokens = chunk.usage.completion_tokens || 0
+				const cacheWriteTokens = 0
+				const cacheReadTokens = chunk.usage.prompt_tokens_details?.cached_tokens || 0
 				yield {
 					type: "usage",
 					inputTokens: inputTokens,
 					outputTokens: outputTokens,
+					cacheReadTokens: cacheReadTokens,
+					cacheWriteTokens: cacheWriteTokens,
 					// @ts-ignore-next-line
 					// totalCost: chunk.usage.cost || 0,
-					totalCost: calculateApiCostOpenAI(model.info, inputTokens, outputTokens),
+					totalCost: calculateApiCostOpenAI(model.info, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens),
 				}
 				didOutputUsage = true
 			}
