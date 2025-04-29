@@ -76,6 +76,7 @@ export type GlobalStateKey =
 	| "reasoningEffort"
 	| "planActSeparateModelsSetting"
 	| "favoritedModelIds"
+	| "requestTimeoutMs"
 	| "shengsuanyunToken"
 	| "ssyModelId"
 	| "ssyModelInfo"

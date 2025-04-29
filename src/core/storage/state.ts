@@ -127,6 +127,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		planActSeparateModelsSettingRaw,
 		favoritedModelIds,
 		globalClineRulesToggles,
+		requestTimeoutMs,
 		ssyModelId,
 		ssyModelInfo,
 	] = await Promise.all([
@@ -204,6 +205,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "planActSeparateModelsSetting") as Promise<boolean | undefined>,
 		getGlobalState(context, "favoritedModelIds") as Promise<string[] | undefined>,
 		getGlobalState(context, "globalClineRulesToggles") as Promise<ClineRulesToggles | undefined>,
+		getGlobalState(context, "requestTimeoutMs") as Promise<number | undefined>,
 		getGlobalState(context, "ssyModelId") as Promise<string | undefined>,
 		getGlobalState(context, "ssyModelInfo") as Promise<ModelInfo | undefined>,
 	])
@@ -309,6 +311,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 			shengsuanyunApiKey,
 			shengsuanyunToken,
 			favoritedModelIds,
+			requestTimeoutMs,
 			ssyModelId,
 			ssyModelInfo,
 		},
@@ -454,6 +457,7 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 	await storeSecret(context, "shengsuanyunApiKey", shengsuanyunApiKey)
 	await updateGlobalState(context, "shengsuanyunToken", shengsuanyunToken)
 	await updateGlobalState(context, "favoritedModelIds", favoritedModelIds)
+	await updateGlobalState(context, "requestTimeoutMs", apiConfiguration.requestTimeoutMs)
 	await updateGlobalState(context, "ssyModelId", ssyModelId)
 	await updateGlobalState(context, "ssyModelInfo", ssyModelInfo)
 }

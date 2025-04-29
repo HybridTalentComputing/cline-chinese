@@ -81,6 +81,7 @@ export interface ApiHandlerOptions {
 	thinkingBudgetTokens?: number
 	reasoningEffort?: string
 	sambanovaApiKey?: string
+	requestTimeoutMs?: number
 	shengsuanyunApiKey?: string
 	shengsuanyunToken?: string
 	ssyModelId?: string
