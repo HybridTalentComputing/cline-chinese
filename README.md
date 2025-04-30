@@ -107,7 +107,7 @@ Telegram ：
 <div align="center" style="display: flex; justify-content: center; gap: 20px;">
 
 APIRouter进群交流<br>（如果无法加群，请加企业微信客服）<br>
-  <img src="https://github.com/user-attachments/assets/3e32825f-6a99-4132-a917-6de11a378465" alt="企业微信群" width="250" /> <br>
+  <img src="https://github.com/user-attachments/assets/41e6dc76-07c9-4dbf-ac35-d2494ebc9a41" alt="APIRouter企业微信群" width="250" /> <br>
 </div>
 
 <div align="center" style="display: flex; justify-content: center; gap: 20px;">
