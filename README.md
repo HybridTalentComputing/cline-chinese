@@ -58,8 +58,11 @@ Cline 中文版「胜算」开发初衷<br>
 
 ### 2025.04.22（ver.3.12.4）
 
-    1. Cline-中文版胜算特色：您可以先用claude 3.7 sonnet-thinking 或者高上下文模型设计好您的项目，然后让经济型模型进行act选项撰写代码。
-    2. 模型自动更新
+🔸同步cline官方最新版本
+🔸重构胜算云供应商模型列表获取方式
+🔸优化Deepseek系列模型Cache
+🔸优化任务显示，增加Cache Token
+🔸增加谷歌Gemini Caching Tokens
 
 ## 欢迎关注我的自媒体账号
 
