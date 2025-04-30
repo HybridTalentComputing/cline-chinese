@@ -32,7 +32,7 @@ AI项目全面得到落地使用。<br>
 
 ## 安装使用<br>
 Cline-中文版胜算已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下载体验。<br>
-
+<a href="https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan" target="_blank"><strong>在 VS Marketplace 下载</strong></a>
 ## 简介
 
 这个项目是基于 [Cline](https://github.com/cline/cline) 的汉化版本。旨在优化由于英文 prompt 导致 Cline 在中文输入下+免费大模型（如：Optimus Alpha）表现不佳的问题, 并提供更符合中文用户习惯的UI界面和功能。目前已测试[DeepSeek-R1/DeepSeek-V3](https://api-docs.deepseek.com/zh-cn/news/news250325)工作良好，同时，[胜算云Router](https://router.shengsuanyun.com/)提供多种免费/收费模型API<br>
@@ -86,7 +86,7 @@ Cline 中文版「胜算」开发初衷<br>
 <a href="https://www.reddit.com/r/cline/" target="_blank"><strong>r/cline</strong></a>
 </td>
 <td align="center">
-<a href="https://github.com/cline/cline/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><strong>功能请求</strong></a>
+<a href="https://github.com/SSYCloud/cline-chinese-ssy/issues?utm_source=vsmp&utm_medium=ms%20web&utm_campaign=mpdetails" target="_blank"><strong>功能请求</strong></a>
 </td>
 <td align="center">
 <a href="https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs" target="_blank"><strong>新手上路</strong></a>
@@ -97,7 +97,7 @@ Cline-中文版讨论群<br>
   <img src="https://github.com/user-attachments/assets/1c08215e-9f99-4a13-98b9-85807bda3af9" alt="微信群二维码" width="250" />
 </div>
 
-Discord 频道：[SSYRouter API](https://discord.gg/fhj9hqy89t) <br>
+Discord 频道：[SSYRouter API](https://discord.gg/frBHkRKB4x) <br>
 Telegram ：
 ## 赞赏支持
 
