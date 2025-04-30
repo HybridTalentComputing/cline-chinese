@@ -58,11 +58,11 @@ Cline 中文版「胜算」开发初衷<br>
 
 ### 2025.04.22（ver.3.12.4）
 
-🔸同步cline官方最新版本
-🔸重构胜算云供应商模型列表获取方式
-🔸优化Deepseek系列模型Cache
-🔸优化任务显示，增加Cache Token
-🔸增加谷歌Gemini Caching Tokens
+🔸同步cline官方最新版本<br>
+🔸重构胜算云供应商模型列表获取方式<br>
+🔸优化Deepseek系列模型Cache<br>
+🔸优化任务显示，增加Cache Token<br>
+🔸增加谷歌Gemini Caching Tokens<br>
 
 ## 欢迎关注我的自媒体账号
 
