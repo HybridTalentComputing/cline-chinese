@@ -2,7 +2,7 @@
 
 <p align="center">
 
-[![Cline-中文版文档](https://img.shields.io/badge/Cline%20中文版-文档-blue)](https://github.com/SSYCloud/cline-chinese-ssy) [![Discord](https://img.shields.io/badge/Discord-加入讨论-7289DA)](https://discord.gg/frBHkRKB4x) 
+[![Cline-中文版文档](https://img.shields.io/badge/Cline%20中文版-文档-blue)](https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs) [![Discord](https://img.shields.io/badge/Discord-加入讨论-7289DA)](https://discord.gg/frBHkRKB4x) 
 
 </p>
 
@@ -20,7 +20,9 @@ https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs/<br>
 
 ## 功能展示<br>
 
-<video width="100%" controls src="https://github.com/user-attachments/assets/51bcf657-99aa-453c-be04-9c58bb308081"></video><br>
+<video width="100%" controls src="https://github.com/user-attachments/assets/f3b49926-ce1f-45a1-9ef6-a735b2f1e268"></video><br>
+
+
 > 演示视频使用 免费 LLM Coding 大模型API DeepSeek V3 0324 模型，展示了 Cline 中文版的主要功能和使用效果，视频没有加速，推理速度快到飞起。<br>
 > 本项目推荐使用[胜算云Router](https://router.shengsuanyun.com/)的LLM API进行智能编码推理，中国大陆地区可以免魔法访问世界范围内的最全的人工智能API，超低价格外，同时可以开发票，以及免费的云部署项目，让您的
 AI项目全面得到落地使用。<br>
@@ -63,7 +65,7 @@ Cline 中文版「胜算」开发初衷<br>
 
 欢迎关注我的自媒体账号，获取更多AI开发和技术分享：
 
-- 知乎：[胜算云](zhihu.com/people/shengsuanyunrouter)
+- 知乎：[胜算云](https://zhihu.com/people/shengsuanyunrouter)
 - B站： [胜算云](https://space.bilibili.com/3546885937695051)
 
 
@@ -87,14 +89,13 @@ Cline 中文版「胜算」开发初衷<br>
 <a href="https://github.com/cline/cline/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><strong>功能请求</strong></a>
 </td>
 <td align="center">
-<a href="https://docs.cline.bot/getting-started/for-new-coders" target="_blank"><strong>新手上路</strong></a>
+<a href="https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs" target="_blank"><strong>新手上路</strong></a>
 </td>
 </tbody>
 </table>
 Cline-中文版讨论群<br>
-  <img src="https://github.com/user-attachments/assets/6e973157-2fd9-4b41-b87a-d13acf8d51e6" alt="微信群二维码" width="250" />
+  <img src="https://github.com/user-attachments/assets/1c08215e-9f99-4a13-98b9-85807bda3af9" alt="微信群二维码" width="250" />
 </div>
-
 
 Discord 频道：[SSYRouter API](https://discord.gg/fhj9hqy89t) <br>
 Telegram ：
@@ -106,13 +107,13 @@ Telegram ：
 <div align="center" style="display: flex; justify-content: center; gap: 20px;">
 
 APIRouter进群交流<br>（如果无法加群，请加企业微信客服）<br>
-  <img src="https://github.com/user-attachments/assets/b068a473-444e-49bf-bf75-8cc2f281441a" alt="企业微信群" width="250" /> <br>
+  <img src="https://github.com/user-attachments/assets/3e32825f-6a99-4132-a917-6de11a378465" alt="企业微信群" width="250" /> <br>
 </div>
 
 <div align="center" style="display: flex; justify-content: center; gap: 20px;">
 
 企业客服咨询<br>
-  <img src="https://github.com/user-attachments/assets/6205a75b-d356-4368-8255-3d372cf8a16d" alt="企业微信客服" width="250" />
+  <img src="https://github.com/user-attachments/assets/9031c4bd-7f6a-4209-a0d8-8d1fd9ca4722" alt="企业微信客服" width="250" />
 </div>
 
 ## 免责声明
