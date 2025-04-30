@@ -62,7 +62,7 @@ Cline 中文版「胜算」开发初衷<br>
 🔸重构胜算云供应商模型列表获取方式<br>
 🔸优化Deepseek系列模型Cache<br>
 🔸优化任务显示，增加Cache Token<br>
-🔸增加谷歌Gemini Caching Tokens<br>
+🔸增加谷歌 与胜算云供应商 与OpenRouter供应商的 Gemini 模型的 Caching Tokens<br>
 
 ## 欢迎关注我的自媒体账号
 
