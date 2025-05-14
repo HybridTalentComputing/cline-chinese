@@ -5,107 +5,112 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 		switch (apiConfiguration.apiProvider) {
 			case "anthropic":
 				if (!apiConfiguration.apiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "bedrock":
 				if (!apiConfiguration.awsRegion) {
-					return "You must choose a region to use with AWS Bedrock."
+					return "您必须选择一个区域以使用 AWS Bedrock。"
 				}
 				break
 			case "openrouter":
 				if (!apiConfiguration.openRouterApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "vertex":
 				if (!apiConfiguration.vertexProjectId || !apiConfiguration.vertexRegion) {
-					return "You must provide a valid Google Cloud Project ID and Region."
+					return "您必须提供有效的 Google Cloud 项目 ID 和区域。"
 				}
 				break
 			case "gemini":
 				if (!apiConfiguration.geminiApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "openai-native":
 				if (!apiConfiguration.openAiNativeApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "deepseek":
 				if (!apiConfiguration.deepSeekApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "xai":
 				if (!apiConfiguration.xaiApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "qwen":
 				if (!apiConfiguration.qwenApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "doubao":
 				if (!apiConfiguration.doubaoApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "mistral":
 				if (!apiConfiguration.mistralApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "cline":
 				if (!apiConfiguration.clineApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "openai":
 				if (!apiConfiguration.openAiBaseUrl || !apiConfiguration.openAiApiKey || !apiConfiguration.openAiModelId) {
-					return "You must provide a valid base URL, API key, and model ID."
+					return "您必须提供一个有效的基本网址、API 密钥和模型 ID。"
 				}
 				break
 			case "requesty":
 				if (!apiConfiguration.requestyApiKey || !apiConfiguration.requestyModelId) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
+				}
+				break
+			case "fireworks":
+				if (!apiConfiguration.fireworksApiKey || !apiConfiguration.fireworksModelId) {
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "together":
 				if (!apiConfiguration.togetherApiKey || !apiConfiguration.togetherModelId) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "ollama":
 				if (!apiConfiguration.ollamaModelId) {
-					return "You must provide a valid model ID."
+					return "您必须提供一个有效的模型ID。"
 				}
 				break
 			case "lmstudio":
 				if (!apiConfiguration.lmStudioModelId) {
-					return "You must provide a valid model ID."
+					return "您必须提供一个有效的模型ID。"
 				}
 				break
 			case "vscode-lm":
 				if (!apiConfiguration.vsCodeLmModelSelector) {
-					return "You must provide a valid model selector."
+					return "您必须提供一个有效的模型选择器。"
 				}
 				break
 			case "asksage":
 				if (!apiConfiguration.asksageApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "sambanova":
 				if (!apiConfiguration.sambanovaApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "shengsuanyun":
 				if (!apiConfiguration.shengsuanyunApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 		}

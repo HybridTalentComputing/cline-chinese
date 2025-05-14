@@ -9,6 +9,8 @@ import "common.proto";
 service McpService {
   rpc toggleMcpServer(ToggleMcpServerRequest) returns (McpServers);
   rpc updateMcpTimeout(UpdateMcpTimeoutRequest) returns (McpServers);
+  rpc addRemoteMcpServer(AddRemoteMcpServerRequest) returns (McpServers);
+  rpc downloadMcp(StringRequest) returns (Empty);
 }
 
 message ToggleMcpServerRequest {
@@ -21,6 +23,12 @@ message UpdateMcpTimeoutRequest {
   Metadata metadata = 1;
   string server_name = 2;
   int32 timeout = 3;
+}
+
+message AddRemoteMcpServerRequest {
+  Metadata metadata = 1;
+  string server_name = 2;
+  string server_url = 3;
 }
 
 message McpTool {

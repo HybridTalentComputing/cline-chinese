@@ -28,16 +28,12 @@ export interface ExtensionMessage {
 		| "requestyModels"
 		| "mcpServers"
 		| "relinquishControl"
-		| "vsCodeLmModels"
-		| "requestVsCodeLmModels"
 		| "authCallback"
 		| "mcpMarketplaceCatalog"
 		| "mcpDownloadDetails"
 		| "commitSearchResults"
 		| "openGraphData"
-		| "isImageUrlResult"
 		| "didUpdateSettings"
-		| "addRemoteServerResult"
 		| "userCreditsBalance"
 		| "userCreditsUsage"
 		| "userCreditsPayments"
@@ -46,13 +42,12 @@ export interface ExtensionMessage {
 		| "browserConnectionResult"
 		| "scrollToSettings"
 		| "browserRelaunchResult"
-		| "relativePathsResponse" // Handles single and multiple path responses
 		| "fileSearchResults"
 		| "grpc_response" // New type for gRPC responses
+		| "setActiveQuote"
 		| "fetchUSDRate"
-		| "ssyModels"
+		| "shengSuanYunModels"
 	text?: string
-	paths?: (string | null)[] // Used for relativePathsResponse
 	action?:
 		| "chatButtonClicked"
 		| "mcpButtonClicked"
@@ -106,18 +101,15 @@ export interface ExtensionMessage {
 		type: "file" | "folder"
 		label?: string
 	}>
-	addRemoteServerResult?: {
-		success: boolean
-		serverName: string
-		error?: string
-	}
 	tab?: McpViewTab
 	grpc_response?: {
 		message?: any // JSON serialized protobuf message
 		request_id: string // Same ID as the request
 		error?: string // Optional error message
+		is_streaming?: boolean // Whether this is part of a streaming response
+		sequence_number?: number // For ordering chunks in streaming responses
 	}
-	ssyModels?: Record<string, ModelInfo>
+	shengSuanYunModels?: Record<string, ModelInfo>
 }
 
 export type Invoke = "sendMessage" | "primaryButtonClick" | "secondaryButtonClick"
@@ -142,12 +134,15 @@ export interface ExtensionState {
 	shouldShowAnnouncement: boolean
 	taskHistory: HistoryItem[]
 	telemetrySetting: TelemetrySetting
+	shellIntegrationTimeout: number
 	uriScheme?: string
 	userInfo?: any
 	version: string
 	vscMachineId: string
 	globalClineRulesToggles: ClineRulesToggles
 	localClineRulesToggles: ClineRulesToggles
+	localCursorRulesToggles: ClineRulesToggles
+	localWindsurfRulesToggles: ClineRulesToggles
 }
 
 export interface ClineMessage {
@@ -182,6 +177,7 @@ export type ClineAsk =
 	| "use_mcp_server"
 	| "new_task"
 	| "condense"
+	| "report_bug"
 
 export type ClineSay =
 	| "task"

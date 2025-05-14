@@ -3,7 +3,7 @@ import axios from "axios"
 import { setTimeout as setTimeoutPromise } from "node:timers/promises"
 import OpenAI from "openai"
 import { ApiHandler } from "../"
-import { ApiHandlerOptions, ModelInfo, ssyDefaultModelId, ssyDefaultModelInfo } from "../../shared/api"
+import { ApiHandlerOptions, ModelInfo, shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "../../shared/api"
 import { withRetry } from "../retry"
 import { createShengsuanyunStream } from "../transform/shengsuanyun-stream"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
@@ -154,11 +154,11 @@ export class ShengsuanyunHandler implements ApiHandler {
 	}
 
 	getModel(): { id: string; info: ModelInfo } {
-		const modelId = this.options.ssyModelId
-		const modelInfo = this.options.ssyModelInfo
+		const modelId = this.options.shengSuanYunModelId
+		const modelInfo = this.options.shengSuanYunModelInfo
 		if (modelId && modelInfo) {
 			return { id: modelId, info: modelInfo }
 		}
-		return { id: ssyDefaultModelId, info: ssyDefaultModelInfo }
+		return { id: shengSuanYunDefaultModelId, info: shengSuanYunDefaultModelInfo }
 	}
 }

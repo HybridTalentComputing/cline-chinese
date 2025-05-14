@@ -8,7 +8,7 @@
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire"
 import { Empty, Int64Request, Metadata } from "./common"
 
-export const protobufPackage = "cline"
+export const protobufPackage = "clineShengsuan"
 
 export interface CheckpointRestoreRequest {
 	metadata?: Metadata | undefined
@@ -129,7 +129,7 @@ export const CheckpointRestoreRequest: MessageFns<CheckpointRestoreRequest> = {
 export type CheckpointsServiceDefinition = typeof CheckpointsServiceDefinition
 export const CheckpointsServiceDefinition = {
 	name: "CheckpointsService",
-	fullName: "cline.CheckpointsService",
+	fullName: "clineShengsuan.CheckpointsService",
 	methods: {
 		checkpointDiff: {
 			name: "checkpointDiff",

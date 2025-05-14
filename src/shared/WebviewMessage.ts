@@ -9,28 +9,18 @@ import { McpViewTab } from "./mcp"
 
 export interface WebviewMessage {
 	type:
-		| "addRemoteServer"
 		| "apiConfiguration"
 		| "webviewDidLaunch"
 		| "newTask"
 		| "condense"
+		| "reportBug"
 		| "askResponse"
 		| "didShowAnnouncement"
 		| "selectImages"
-		| "exportCurrentTask"
-		| "showTaskWithId"
-		| "deleteTaskWithId"
-		| "exportTaskWithId"
 		| "resetState"
-		| "requestOllamaModels"
-		| "requestLmStudioModels"
 		| "openInBrowser"
-		| "createRuleFile"
 		| "openMention"
 		| "showChatView"
-		| "refreshOpenRouterModels"
-		| "refreshRequestyModels"
-		| "refreshOpenAiModels"
 		| "refreshClineRules"
 		| "openMcpSettings"
 		| "restartMcpServer"
@@ -42,21 +32,17 @@ export interface WebviewMessage {
 		| "openExtensionSettings"
 		| "requestVsCodeLmModels"
 		| "toggleToolAutoApprove"
-		| "getLatestState"
 		| "accountLogoutClicked"
 		| "showAccountViewClicked"
 		| "authStateChanged"
 		| "authCallback"
 		| "fetchMcpMarketplace"
-		| "downloadMcp"
 		| "silentlyRefreshMcpMarketplace"
 		| "searchCommits"
-		| "showMcpView"
 		| "fetchLatestMcpServersFromHub"
 		| "telemetrySetting"
 		| "openSettings"
 		| "fetchOpenGraphData"
-		| "checkIsImageUrl"
 		| "invoke"
 		| "updateSettings"
 		| "clearAllTaskHistory"
@@ -66,21 +52,21 @@ export interface WebviewMessage {
 		| "relaunchChromeDebugMode"
 		| "taskFeedback"
 		| "scrollToSettings"
-		| "getRelativePaths" // Handles single and multiple URI resolution
 		| "searchFiles"
-		| "toggleFavoriteModel"
 		| "grpc_request"
+		| "grpc_request_cancel"
 		| "toggleClineRule"
+		| "toggleCursorRule"
+		| "toggleWindsurfRule"
 		| "deleteClineRule"
 		| "copyToClipboard"
-		// | "relaunchChromeDebugMode"
+		| "updateTerminalConnectionTimeout"
+		| "setActiveQuote"
 		| "fetchUSDRate"
 		| "accountLoginClickedSSY"
 		| "accountLogoutClickedSSY"
-		| "ssyModels"
-		| "refreshSSYModels"
+	// | "relaunchChromeDebugMode"
 	text?: string
-	uris?: string[] // Used for getRelativePaths
 	disabled?: boolean
 	askResponse?: ClineAskResponse
 	apiConfiguration?: ApiConfiguration
@@ -120,6 +106,10 @@ export interface WebviewMessage {
 		method: string
 		message: any // JSON serialized protobuf message
 		request_id: string // For correlating requests and responses
+		is_streaming?: boolean // Whether this is a streaming request
+	}
+	grpc_request_cancel?: {
+		request_id: string // ID of the request to cancel
 	}
 	// For cline rules
 	isGlobal?: boolean
@@ -128,6 +118,7 @@ export interface WebviewMessage {
 	filename?: string
 
 	offset?: number
+	shellIntegrationTimeout?: number
 }
 
 export type ClineAskResponse = "yesButtonClicked" | "noButtonClicked" | "messageResponse"

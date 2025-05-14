@@ -12,6 +12,26 @@ const BannerContainer = styled.div`
 	gap: 10px;
 	flex-shrink: 0;
 	margin-bottom: 6px;
+	position: relative;
+`
+
+const CloseButton = styled.button`
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	background: none;
+	border: none;
+	color: var(--vscode-foreground);
+	cursor: pointer;
+	font-size: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px;
+	opacity: 0.7;
+	&:hover {
+		opacity: 1;
+	}
 `
 
 const ButtonContainer = styled.div`
@@ -25,30 +45,30 @@ const ButtonContainer = styled.div`
 `
 
 const TelemetryBanner = () => {
-	const [hasChosen, setHasChosen] = useState(false)
-
-	const handleAllow = () => {
-		setHasChosen(true)
-		vscode.postMessage({ type: "telemetrySetting", telemetrySetting: "enabled" satisfies TelemetrySetting })
-	}
-
-	const handleDeny = () => {
-		setHasChosen(true)
-		vscode.postMessage({ type: "telemetrySetting", telemetrySetting: "disabled" satisfies TelemetrySetting })
-	}
-
 	const handleOpenSettings = () => {
+		handleClose()
 		vscode.postMessage({ type: "openSettings" })
+	}
+
+	const handleClose = () => {
+		vscode.postMessage({ type: "telemetrySetting", telemetrySetting: "enabled" satisfies TelemetrySetting })
 	}
 
 	return (
 		<BannerContainer>
+			<CloseButton onClick={handleClose} aria-label="Close banner and enable telemetry">
+				✕
+			</CloseButton>
 			<div>
-				<strong>帮助改进 Cline</strong>
+				<strong>帮助改进 Cline 胜算云增强版</strong>
+				<i>
+					<br />
+					(and access experimental features)
+				</i>
 				<div style={{ marginTop: 4 }}>
-					发送匿名错误和使用数据，以帮助我们修复错误和改进扩展。无代码、提示或 个人信息永远不会发送。
+					Cline 胜算云增强版收集匿名错误和使用数据，以帮助我们修复错误并改进扩展。绝不会发送任何代码、提示或个人信息。
 					<div style={{ marginTop: 4 }}>
-						你可以在这里更改{" "}
+						您可以在此关闭该设置{" "}
 						<VSCodeLink href="#" onClick={handleOpenSettings}>
 							设置
 						</VSCodeLink>
@@ -56,14 +76,6 @@ const TelemetryBanner = () => {
 					</div>
 				</div>
 			</div>
-			<ButtonContainer>
-				<VSCodeButton appearance="primary" onClick={handleAllow} disabled={hasChosen}>
-					允许
-				</VSCodeButton>
-				<VSCodeButton appearance="secondary" onClick={handleDeny} disabled={hasChosen}>
-					拒绝
-				</VSCodeButton>
-			</ButtonContainer>
 		</BannerContainer>
 	)
 }

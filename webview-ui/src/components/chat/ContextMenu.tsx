@@ -82,19 +82,22 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	const renderOptionContent = (option: ContextMenuQueryItem) => {
 		switch (option.type) {
 			case ContextMenuOptionType.Problems:
-				return <span>Problems</span>
+				return <span>问题</span>
 			case ContextMenuOptionType.Terminal:
-				return <span>Terminal</span>
+				return <span>终端</span>
 			case ContextMenuOptionType.URL:
-				return <span>Paste URL to fetch contents</span>
+				return <span>粘贴 URL 获取内容</span>
 			case ContextMenuOptionType.NoResults:
-				return <span>No results found</span>
+				return <span>没有发现内容</span>
 			case ContextMenuOptionType.Git:
 				if (option.value) {
 					return (
 						<div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-							<span style={{ lineHeight: "1.2" }}>{option.label}</span>
+							<span className="ph-no-capture" style={{ lineHeight: "1.2" }}>
+								{option.label}
+							</span>
 							<span
+								className="ph-no-capture"
 								style={{
 									fontSize: "0.85em",
 									opacity: 0.7,
@@ -118,6 +121,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							<span>/</span>
 							{option.value?.startsWith("/.") && <span>.</span>}
 							<span
+								className="ph-no-capture"
 								style={{
 									whiteSpace: "nowrap",
 									overflow: "hidden",
@@ -130,7 +134,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						</>
 					)
 				} else {
-					return <span>Add {option.type === ContextMenuOptionType.File ? "File" : "Folder"}</span>
+					return <span>添加 {option.type === ContextMenuOptionType.File ? "文件" : "目录"}</span>
 				}
 		}
 	}
@@ -194,7 +198,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							opacity: 0.7,
 						}}>
 						<i className="codicon codicon-loading codicon-modifier-spin" style={{ fontSize: "14px" }} />
-						<span>Searching...</span>
+						<span>搜索...</span>
 					</div>
 				)}
 				{filteredOptions.map((option, index) => (

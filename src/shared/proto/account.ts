@@ -7,13 +7,13 @@
 /* eslint-disable */
 import { EmptyRequest, String } from "./common"
 
-export const protobufPackage = "cline"
+export const protobufPackage = "clineShengsuan"
 
 /** Service for account-related operations */
 export type AccountServiceDefinition = typeof AccountServiceDefinition
 export const AccountServiceDefinition = {
 	name: "AccountService",
-	fullName: "cline.AccountService",
+	fullName: "clineShengsuan.AccountService",
 	methods: {
 		/**
 		 * Handles the user clicking the login link in the UI.

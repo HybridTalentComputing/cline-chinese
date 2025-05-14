@@ -18,26 +18,49 @@ import { combineCommandSequences } from "@shared/combineCommandSequences"
 import { getApiMetrics } from "@shared/getApiMetrics"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { vscode } from "@/utils/vscode"
-import { TaskServiceClient } from "@/services/grpc-client"
+import { TaskServiceClient, SlashServiceClient } from "@/services/grpc-client"
 import HistoryPreview from "@/components/history/HistoryPreview"
 import { normalizeApiConfiguration } from "@/components/settings/ApiOptions"
 import Announcement from "@/components/chat/Announcement"
-import AutoApproveMenu from "@/components/chat/AutoApproveMenu"
+import AutoApproveMenu from "@/components/chat/auto-approve-menu/AutoApproveMenu"
 import BrowserSessionRow from "@/components/chat/BrowserSessionRow"
 import ChatRow from "@/components/chat/ChatRow"
 import ChatTextArea from "@/components/chat/ChatTextArea"
+import QuotedMessagePreview from "@/components/chat/QuotedMessagePreview"
 import TaskHeader from "@/components/chat/TaskHeader"
 import TelemetryBanner from "@/components/common/TelemetryBanner"
 import { unified } from "unified"
 import remarkStringify from "remark-stringify"
 import rehypeRemark from "rehype-remark"
 import rehypeParse from "rehype-parse"
+import HomeHeader from "../welcome/HomeHeader"
 
 interface ChatViewProps {
 	isHidden: boolean
 	showAnnouncement: boolean
 	hideAnnouncement: () => void
 	showHistoryView: () => void
+}
+
+// Function to clean up markdown escape characters
+function cleanupMarkdownEscapes(markdown: string): string {
+	return (
+		markdown
+			// Handle underscores and asterisks (single or multiple)
+			.replace(/\\([_*]+)/g, "$1")
+
+			// Handle angle brackets (for generics and XML)
+			.replace(/\\([<>])/g, "$1")
+
+			// Handle backticks (for code)
+			.replace(/\\(`)/g, "$1")
+
+			// Handle other common markdown special characters
+			.replace(/\\([[\]()#.!])/g, "$1")
+
+			// Fix multiple consecutive backslashes
+			.replace(/\\{2,}([_*`<>[\]()#.!])/g, "$1")
+	)
 }
 
 async function convertHtmlToMarkdown(html: string) {
@@ -54,10 +77,14 @@ async function convertHtmlToMarkdown(html: string) {
 			rule: "-", // Use - for horizontal rules
 			ruleSpaces: false, // No spaces in horizontal rules
 			fences: true,
+			escape: false,
+			entities: false,
 		})
 		.process(html)
 
-	return String(result)
+	const md = String(result)
+	// Apply comprehensive cleanup of escape characters
+	return cleanupMarkdownEscapes(md)
 }
 
 export const MAX_IMAGES_PER_MESSAGE = 20 // Anthropic limits to 20 images
@@ -86,8 +113,10 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	}, [modifiedMessages])
 
 	const [inputValue, setInputValue] = useState("")
+	const [activeQuote, setActiveQuote] = useState<string | null>(null)
+	const [isTextAreaFocused, setIsTextAreaFocused] = useState(false)
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
-	const [textAreaDisabled, setTextAreaDisabled] = useState(false)
+	const [sendingDisabled, setSendingDisabled] = useState(false)
 	const [selectedImages, setSelectedImages] = useState<string[]>([])
 
 	// we need to hold on to the ask because useEffect > lastMessage will always let us know when an ask comes in and handle it, but by the time handleMessage is called, the last message might not be the ask anymore (it could be a say that followed)
@@ -105,21 +134,75 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 	useEffect(() => {
 		const handleCopy = async (e: ClipboardEvent) => {
+			const targetElement = e.target as HTMLElement | null
+			// If the copy event originated from an input or textarea,
+			// let the default browser behavior handle it.
+			if (
+				targetElement &&
+				(targetElement.tagName === "INPUT" || targetElement.tagName === "TEXTAREA" || targetElement.isContentEditable)
+			) {
+				return
+			}
+
 			if (window.getSelection) {
 				const selection = window.getSelection()
 				if (selection && selection.rangeCount > 0) {
-					// Get the selected HTML content
 					const range = selection.getRangeAt(0)
-					const clonedSelection = range.cloneContents()
-					const div = document.createElement("div")
-					div.appendChild(clonedSelection)
-					const selectedHtml = div.innerHTML
+					const commonAncestor = range.commonAncestorContainer
+					let textToCopy: string | null = null
 
-					// Convert HTML to Markdown
-					const markdown = await convertHtmlToMarkdown(selectedHtml)
+					// Check if the selection is inside an element where plain text copy is preferred
+					let currentElement =
+						commonAncestor.nodeType === Node.ELEMENT_NODE
+							? (commonAncestor as HTMLElement)
+							: commonAncestor.parentElement
+					let preferPlainTextCopy = false
+					while (currentElement) {
+						if (currentElement.tagName === "PRE" && currentElement.querySelector("code")) {
+							preferPlainTextCopy = true
+							break
+						}
+						// Check computed white-space style
+						const computedStyle = window.getComputedStyle(currentElement)
+						if (
+							computedStyle.whiteSpace === "pre" ||
+							computedStyle.whiteSpace === "pre-wrap" ||
+							computedStyle.whiteSpace === "pre-line"
+						) {
+							// If the element itself or an ancestor has pre-like white-space,
+							// and the selection is likely contained within it, prefer plain text.
+							// This helps with elements like the TaskHeader's text display.
+							preferPlainTextCopy = true
+							break
+						}
 
-					vscode.postMessage({ type: "copyToClipboard", text: markdown })
-					e.preventDefault()
+						// Stop searching if we reach a known chat message boundary or body
+						if (
+							currentElement.classList.contains("chat-row-assistant-message-container") ||
+							currentElement.classList.contains("chat-row-user-message-container") ||
+							currentElement.tagName === "BODY"
+						) {
+							break
+						}
+						currentElement = currentElement.parentElement
+					}
+
+					if (preferPlainTextCopy) {
+						// For code blocks or elements with pre-formatted white-space, get plain text.
+						textToCopy = selection.toString()
+					} else {
+						// For other content, use the existing HTML-to-Markdown conversion
+						const clonedSelection = range.cloneContents()
+						const div = document.createElement("div")
+						div.appendChild(clonedSelection)
+						const selectedHtml = div.innerHTML
+						textToCopy = await convertHtmlToMarkdown(selectedHtml)
+					}
+
+					if (textToCopy !== null) {
+						vscode.postMessage({ type: "copyToClipboard", text: textToCopy })
+						e.preventDefault()
+					}
 				}
 			}
 		}
@@ -144,42 +227,42 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					const isPartial = lastMessage.partial === true
 					switch (lastMessage.ask) {
 						case "api_req_failed":
-							setTextAreaDisabled(true)
+							setSendingDisabled(true)
 							setClineAsk("api_req_failed")
 							setEnableButtons(true)
 							setPrimaryButtonText("重试")
 							setSecondaryButtonText("开始新任务")
 							break
 						case "mistake_limit_reached":
-							setTextAreaDisabled(false)
+							setSendingDisabled(false)
 							setClineAsk("mistake_limit_reached")
 							setEnableButtons(true)
 							setPrimaryButtonText("总是继续")
 							setSecondaryButtonText("开始新任务")
 							break
 						case "auto_approval_max_req_reached":
-							setTextAreaDisabled(true)
+							setSendingDisabled(true)
 							setClineAsk("auto_approval_max_req_reached")
 							setEnableButtons(true)
 							setPrimaryButtonText("继续")
 							setSecondaryButtonText("开始新任务")
 							break
 						case "followup":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("followup")
 							setEnableButtons(false)
 							// setPrimaryButtonText(undefined)
 							// setSecondaryButtonText(undefined)
 							break
 						case "plan_mode_respond":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("plan_mode_respond")
 							setEnableButtons(false)
 							// setPrimaryButtonText(undefined)
 							// setSecondaryButtonText(undefined)
 							break
 						case "tool":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("tool")
 							setEnableButtons(!isPartial)
 							const tool = JSON.parse(lastMessage.text || "{}") as ClineSayTool
@@ -196,28 +279,28 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							}
 							break
 						case "browser_action_launch":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("browser_action_launch")
 							setEnableButtons(!isPartial)
 							setPrimaryButtonText("批准")
 							setSecondaryButtonText("拒绝")
 							break
 						case "command":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("command")
 							setEnableButtons(!isPartial)
 							setPrimaryButtonText("执行")
 							setSecondaryButtonText("拒绝")
 							break
 						case "command_output":
-							setTextAreaDisabled(false)
+							setSendingDisabled(false)
 							setClineAsk("command_output")
 							setEnableButtons(true)
 							setPrimaryButtonText("运行中处理")
 							setSecondaryButtonText(undefined)
 							break
 						case "use_mcp_server":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("use_mcp_server")
 							setEnableButtons(!isPartial)
 							setPrimaryButtonText("批准")
@@ -225,14 +308,14 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							break
 						case "completion_result":
 							// extension waiting for feedback. but we can just present a new task button
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("completion_result")
 							setEnableButtons(!isPartial)
 							setPrimaryButtonText("开始新任务")
 							setSecondaryButtonText(undefined)
 							break
 						case "resume_task":
-							setTextAreaDisabled(false)
+							setSendingDisabled(false)
 							setClineAsk("resume_task")
 							setEnableButtons(true)
 							setPrimaryButtonText("重启任务")
@@ -240,7 +323,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							setDidClickCancel(false) // special case where we reset the cancel button state
 							break
 						case "resume_completed_task":
-							setTextAreaDisabled(false)
+							setSendingDisabled(false)
 							setClineAsk("resume_completed_task")
 							setEnableButtons(true)
 							setPrimaryButtonText("开始新任务")
@@ -248,17 +331,24 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							setDidClickCancel(false)
 							break
 						case "new_task":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("new_task")
 							setEnableButtons(!isPartial)
 							setPrimaryButtonText("带上下文开始新任务")
 							setSecondaryButtonText(undefined)
 							break
 						case "condense":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("condense")
 							setEnableButtons(!isPartial)
 							setPrimaryButtonText("Condense Conversation")
+							setSecondaryButtonText(undefined)
+							break
+						case "report_bug":
+							setSendingDisabled(isPartial)
+							setClineAsk("report_bug")
+							setEnableButtons(!isPartial)
+							setPrimaryButtonText("Report GitHub issue")
 							setSecondaryButtonText(undefined)
 							break
 					}
@@ -270,7 +360,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							if (secondLastMessage?.ask === "command_output") {
 								// if the last ask is a command_output, and we receive an api_req_started, then that means the command has finished and we don't need input from the user anymore (in every other case, the user has to interact with input field or buttons to continue, which does the following automatically)
 								setInputValue("")
-								setTextAreaDisabled(true)
+								setSendingDisabled(true)
 								setSelectedImages([])
 								setClineAsk(undefined)
 								setEnableButtons(false)
@@ -307,7 +397,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 	useEffect(() => {
 		if (messages.length === 0) {
-			setTextAreaDisabled(false)
+			setSendingDisabled(false)
 			setClineAsk(undefined)
 			setEnableButtons(false)
 			setPrimaryButtonText("批准")
@@ -345,10 +435,21 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 	const handleSendMessage = useCallback(
 		async (text: string, images: string[]) => {
-			text = text.trim()
-			if (text || images.length > 0) {
+			let messageToSend = text.trim()
+			const hasContent = messageToSend || images.length > 0
+
+			// Prepend the active quote if it exists
+			if (activeQuote && hasContent) {
+				const prefix = "[context] \n> "
+				const formattedQuote = activeQuote
+				const suffix = "\n[/context] \n\n"
+				messageToSend = `${prefix} ${formattedQuote} ${suffix} ${messageToSend}`
+			}
+
+			if (hasContent) {
+				console.log("[ChatView] handleSendMessage - Sending message:", messageToSend)
 				if (messages.length === 0) {
-					await TaskServiceClient.newTask({ text, images })
+					await TaskServiceClient.newTask({ text: messageToSend, images })
 				} else if (clineAsk) {
 					switch (clineAsk) {
 						case "followup":
@@ -366,7 +467,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							vscode.postMessage({
 								type: "askResponse",
 								askResponse: "messageResponse",
-								text,
+								text: messageToSend,
 								images,
 							})
 							break
@@ -374,7 +475,15 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							vscode.postMessage({
 								type: "askResponse",
 								askResponse: "messageResponse",
-								text,
+								text: messageToSend,
+								images,
+							})
+							break
+						case "report_bug":
+							vscode.postMessage({
+								type: "askResponse",
+								askResponse: "messageResponse",
+								text: messageToSend,
 								images,
 							})
 							break
@@ -382,7 +491,8 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					}
 				}
 				setInputValue("")
-				setTextAreaDisabled(true)
+				setActiveQuote(null) // Clear quote when sending message
+				setSendingDisabled(true)
 				setSelectedImages([])
 				setClineAsk(undefined)
 				setEnableButtons(false)
@@ -391,10 +501,11 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				disableAutoScrollRef.current = false
 			}
 		},
-		[messages.length, clineAsk],
+		[messages.length, clineAsk, activeQuote],
 	)
 
 	const startNewTask = useCallback(async () => {
+		setActiveQuote(null) // Clear the active quote state
 		await TaskServiceClient.clearTask({})
 	}, [])
 
@@ -429,6 +540,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					}
 					// Clear input state after sending
 					setInputValue("")
+					setActiveQuote(null) // Clear quote when using primary button
 					setSelectedImages([])
 					break
 				case "completion_result":
@@ -444,13 +556,13 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					})
 					break
 				case "condense":
-					vscode.postMessage({
-						type: "condense",
-						text: lastMessage?.text,
-					})
+					await SlashServiceClient.condense({ value: lastMessage?.text }).catch((err) => console.error(err))
+					break
+				case "report_bug":
+					await SlashServiceClient.reportBug({ value: lastMessage?.text }).catch((err) => console.error(err))
 					break
 			}
-			setTextAreaDisabled(true)
+			setSendingDisabled(true)
 			setClineAsk(undefined)
 			setEnableButtons(false)
 			// setPrimaryButtonText(undefined)
@@ -495,10 +607,11 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					}
 					// Clear input state after sending
 					setInputValue("")
+					setActiveQuote(null) // Clear quote when using secondary button
 					setSelectedImages([])
 					break
 			}
-			setTextAreaDisabled(true)
+			setSendingDisabled(true)
 			setClineAsk(undefined)
 			setEnableButtons(false)
 			// setPrimaryButtonText(undefined)
@@ -512,6 +625,10 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		startNewTask()
 	}, [startNewTask])
 
+	const handleFocusChange = useCallback((isFocused: boolean) => {
+		setIsTextAreaFocused(isFocused)
+	}, [])
+
 	const { selectedModelInfo } = useMemo(() => {
 		return normalizeApiConfiguration(apiConfiguration)
 	}, [apiConfiguration])
@@ -520,8 +637,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		vscode.postMessage({ type: "selectImages" })
 	}, [])
 
-	const shouldDisableImages =
-		!selectedModelInfo.supportsImages || textAreaDisabled || selectedImages.length >= MAX_IMAGES_PER_MESSAGE
+	const shouldDisableImages = !selectedModelInfo.supportsImages || selectedImages.length >= MAX_IMAGES_PER_MESSAGE
 
 	const handleMessage = useCallback(
 		(e: MessageEvent) => {
@@ -530,7 +646,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				case "action":
 					switch (message.action!) {
 						case "didBecomeVisible":
-							if (!isHidden && !textAreaDisabled && !enableButtons) {
+							if (!isHidden && !sendingDisabled && !enableButtons) {
 								textAreaRef.current?.focus()
 							}
 							break
@@ -579,7 +695,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			}
 			// textAreaRef.current is not explicitly required here since react guarantees that ref will be stable across re-renders, and we're not using its value but its reference.
 		},
-		[isHidden, textAreaDisabled, enableButtons, handleSendMessage, handlePrimaryButtonClick, handleSecondaryButtonClick],
+		[isHidden, sendingDisabled, enableButtons, handleSendMessage, handlePrimaryButtonClick, handleSecondaryButtonClick],
 	)
 
 	useEvent("message", handleMessage)
@@ -591,14 +707,14 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
-			if (!isHidden && !textAreaDisabled && !enableButtons) {
+			if (!isHidden && !sendingDisabled && !enableButtons) {
 				textAreaRef.current?.focus()
 			}
 		}, 50)
 		return () => {
 			clearTimeout(timer)
 		}
-	}, [isHidden, textAreaDisabled, enableButtons])
+	}, [isHidden, sendingDisabled, enableButtons])
 
 	const visibleMessages = useMemo(() => {
 		return modifiedMessages.filter((message) => {
@@ -856,6 +972,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 								[messageTs]: !prev[messageTs],
 							}))
 						}}
+						onSetQuote={setActiveQuote}
 					/>
 				)
 			}
@@ -872,10 +989,19 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					onHeightChange={handleRowHeightChange}
 					inputValue={inputValue}
 					sendMessageFromChatRow={handleSendMessage}
+					onSetQuote={setActiveQuote}
 				/>
 			)
 		},
-		[expandedRows, modifiedMessages, groupedMessages.length, toggleRowExpansion, handleRowHeightChange, inputValue],
+		[
+			expandedRows,
+			modifiedMessages,
+			groupedMessages.length,
+			toggleRowExpansion,
+			handleRowHeightChange,
+			inputValue,
+			setActiveQuote,
+		],
 	)
 
 	return (
@@ -916,47 +1042,12 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 					{showAnnouncement && <Announcement version={version} hideAnnouncement={hideAnnouncement} />}
 
-					<div style={{ padding: "0 20px", flexShrink: 0 }}>
-						<h2>我能为您做什么？</h2>
-						<p>
-							谢谢{" "}
-							<VSCodeLink href="https://www.anthropic.com/claude/sonnet" style={{ display: "inline" }}>
-								Claude 3.7 Sonnet's
-							</VSCodeLink>
-							代理编码能力，我可以一步一步地处理复杂的软件开发任务。带工具
-							这让我可以创建和编辑文件，探索复杂的项目，使用浏览器，并执行终端
-							命令（在您授予权限后），我可以以代码完成或技术之外的方式为您提供帮助 支持。我甚至可以使用 MCP
-							创建新工具并扩展我自己的功能。
-						</p>
-					</div>
+					<HomeHeader />
 					{taskHistory.length > 0 && <HistoryPreview showHistoryView={showHistoryView} />}
 				</div>
 			)}
 
-			{/* 
-			// Flex layout explanation:
-			// 1. Content div above uses flex: "1 1 0" to:
-			//    - Grow to fill available space (flex-grow: 1) 
-			//    - Shrink when AutoApproveMenu needs space (flex-shrink: 1)
-			//    - Start from zero size (flex-basis: 0) to ensure proper distribution
-			//    minHeight: 0 allows it to shrink below its content height
-			//
-			// 2. AutoApproveMenu uses flex: "0 1 auto" to:
-			//    - Not grow beyond its content (flex-grow: 0)
-			//    - Shrink when viewport is small (flex-shrink: 1) 
-			//    - Use its content size as basis (flex-basis: auto)
-			//    This ensures it takes its natural height when there's space
-			//    but becomes scrollable when the viewport is too small
-			*/}
-			{!task && (
-				<AutoApproveMenu
-					style={{
-						marginBottom: -2,
-						flex: "0 1 auto", // flex-grow: 0, flex-shrink: 1, flex-basis: auto
-						minHeight: 0,
-					}}
-				/>
-			)}
+			{!task && <AutoApproveMenu />}
 
 			{task && (
 				<>
@@ -1045,11 +1136,25 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					)}
 				</>
 			)}
+			{(() => {
+				return activeQuote ? (
+					<div style={{ marginBottom: "-12px", marginTop: "10px" }}>
+						<QuotedMessagePreview
+							text={activeQuote}
+							onDismiss={() => setActiveQuote(null)}
+							isFocused={isTextAreaFocused}
+						/>
+					</div>
+				) : null
+			})()}
+
 			<ChatTextArea
 				ref={textAreaRef}
+				onFocusChange={handleFocusChange}
+				activeQuote={activeQuote}
 				inputValue={inputValue}
 				setInputValue={setInputValue}
-				textAreaDisabled={textAreaDisabled}
+				sendingDisabled={sendingDisabled}
 				placeholderText={placeholderText}
 				selectedImages={selectedImages}
 				setSelectedImages={setSelectedImages}

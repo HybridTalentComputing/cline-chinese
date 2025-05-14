@@ -1,8 +1,8 @@
 {
 	"name": "cline-shengsuan",
-	"displayName": "Cline-中文版胜算",
-	"description": "Cline中文胜算版是一款在您的IDE中运行的强大自主编程助手，经您许可后可创建/编辑文件、运行命令、使用浏览器等",
-	"version": "3.12.7",
+	"displayName": "Cline 胜算云增强版",
+	"description": "Cline 胜算云增强版是一款在您的IDE中运行的强大自主编程助手，经您许可后可创建/编辑文件、运行命令、使用浏览器等",
+	"version": "3.15.2",
 	"icon": "assets/icons/icon.png",
 	"engines": {
 		"vscode": "^1.84.0"
@@ -42,6 +42,8 @@
 		"shengsuanyun-router"
 	],
 	"activationEvents": [
+		"onLanguage",
+		"onStartupFinished",
 		"workspaceContains:evals.env"
 	],
 	"main": "./dist/extension.js",
@@ -50,7 +52,7 @@
 			"activitybar": [
 				{
 					"id": "cline-shengsuan-ActivityBar",
-					"title": "Cline-中文版胜算",
+					"title": "Cline 胜算云增强版",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
@@ -120,6 +122,12 @@
 				"command": "clineShengsuan.focusChatInput",
 				"title": "跳转到对话窗口",
 				"category": "ClineShengsuan"
+			},
+			{
+				"command": "clineShengsuan.generateGitCommitMessage",
+				"title": "生成带有Cline的提交消息",
+				"category": "ClineShengsuan",
+				"icon": "$(robot)"
 			}
 		],
 		"keybindings": [
@@ -130,6 +138,10 @@
 				"win": "ctrl+'",
 				"linux": "ctrl+'",
 				"when": "editorHasSelection"
+			},
+			{
+				"command": "clineShengsuan.generateGitCommitMessage",
+				"when": "scmProvider == git"
 			}
 		],
 		"menus": {
@@ -209,49 +221,28 @@
 					"command": "clineShengsuan.addTerminalOutputToChat",
 					"group": "navigation"
 				}
+			],
+			"scm/title": [
+				{
+					"command": "clineShengsuan.generateGitCommitMessage",
+					"group": "navigation",
+					"when": "scmProvider == git"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "clineShengsuan.generateGitCommitMessage",
+					"when": "scmProvider == git"
+				}
 			]
 		},
 		"configuration": {
-			"title": "Cline-中文版胜算",
+			"title": "Cline 胜算云增强版",
 			"properties": {
-				"clineShengsuan.vsCodeLmModelSelector": {
-					"type": "object",
-					"properties": {
-						"vendor": {
-							"type": "string",
-							"description": "语言模型供应商 (e.g. copilot)"
-						},
-						"family": {
-							"type": "string",
-							"description": "语言模型家族 (e.g. gpt-4)"
-						}
-					},
-					"description": "VSCode 语言模型 API 的设置"
-				},
 				"clineShengsuan.enableCheckpoints": {
 					"type": "boolean",
 					"default": true,
 					"description": "启用扩展以保存整个任务中工作区的检查点。在后台使用 git，这可能不适用于大型工作区。"
-				},
-				"clineShengsuan.disableBrowserTool": {
-					"type": "boolean",
-					"default": false,
-					"description": "禁止扩展生成浏览器会话。"
-				},
-				"clineShengsuan.modelSettings.o3Mini.reasoningEffort": {
-					"type": "string",
-					"enum": [
-						"low",
-						"medium",
-						"high"
-					],
-					"default": "medium",
-					"description": "控制使用 o3-mini 模型时的推理工作量。较高的值可能会导致更彻底的响应，但速度较慢。"
-				},
-				"clineShengsuan.chromeExecutablePath": {
-					"type": "string",
-					"default": null,
-					"description": "用于浏览器使用功能的 Chrome 可执行文件的路径。如果未设置，扩展将尝试自动查找或下载它。"
 				},
 				"clineShengsuan.preferredLanguage": {
 					"type": "string",
@@ -293,8 +284,8 @@
 		"watch:esbuild": "node esbuild.js --watch",
 		"watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
 		"package": "npm run build:webview && npm run check-types && npm run lint && node esbuild.js --production",
-		"protos": "node proto/build-proto.js && prettier src/shared/proto --write && prettier src/core/controller --write",
-		"compile-tests": "tsc -p ./tsconfig.test.json --outDir out",
+		"protos": "node proto/build-proto.js && prettier src/shared/proto src/core/controller webview-ui/src/services --write",
+		"compile-tests": "node ./scripts/build-tests.js",
 		"watch-tests": "tsc -p . -w --outDir out",
 		"pretest": "npm run compile-tests && npm run compile && npm run lint",
 		"check-types": "tsc --noEmit",
@@ -314,7 +305,11 @@
 		"publish:marketplace:prerelease": "vsce publish --pre-release && ovsx publish --pre-release",
 		"prepare": "husky",
 		"changeset": "changeset",
-		"version-packages": "changeset version"
+		"version-packages": "changeset version",
+		"docs": "cd docs && mintlify dev",
+		"docs:check-links": "cd docs && mintlify broken-links",
+		"docs:rename-file": "cd docs && mintlify rename",
+		"report-issue": "node scripts/report-issue.js"
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.27.12",
@@ -340,6 +335,7 @@
 		"eslint": "^8.57.0",
 		"grpc-tools": "^1.13.0",
 		"husky": "^9.1.7",
+		"mintlify": "^4.0.515",
 		"npm-run-all": "^4.1.5",
 		"prettier": "^3.3.3",
 		"protoc-gen-ts": "^0.8.7",
@@ -385,6 +381,7 @@
 		"globby": "^14.0.2",
 		"iconv-lite": "^0.6.3",
 		"ignore": "^7.0.3",
+		"image-size": "^2.0.2",
 		"isbinaryfile": "^5.0.2",
 		"jschardet": "^3.1.4",
 		"mammoth": "^1.8.0",

@@ -21,7 +21,7 @@ export async function createOpenRouterStream(
 
 	// prompt caching: https://openrouter.ai/docs/prompt-caching
 	// this was initially specifically for claude models (some models may 'support prompt caching' automatically without this)
-	// gemini models only use the last breakpoint for caching, so the others will be ignored
+	// handles direct model.id match logic
 	switch (model.id) {
 		case "anthropic/claude-3.7-sonnet":
 		case "anthropic/claude-3.7-sonnet:beta":
@@ -40,10 +40,6 @@ export async function createOpenRouterStream(
 		case "anthropic/claude-3-haiku:beta":
 		case "anthropic/claude-3-opus":
 		case "anthropic/claude-3-opus:beta":
-		case "google/gemini-2.5-pro-preview-03-25":
-		case "google/gemini-2.0-flash-001":
-		case "google/gemini-flash-1.5":
-		case "google/gemini-pro-1.5":
 			openAiMessages[0] = {
 				role: "system",
 				content: [
@@ -148,7 +144,7 @@ export async function createOpenRouterStream(
 		stream_options: { include_usage: true },
 		transforms: shouldApplyMiddleOutTransform ? ["middle-out"] : undefined,
 		include_reasoning: true,
-		...(model.id === "openai/o3-mini" ? { reasoning_effort: o3MiniReasoningEffort || "medium" } : {}),
+		...(model.id.startsWith("openai/o") ? { reasoning_effort: o3MiniReasoningEffort || "medium" } : {}),
 		...(reasoning ? { reasoning } : {}),
 		...(openRouterProviderSorting ? { provider: { sort: openRouterProviderSorting } } : {}),
 	})

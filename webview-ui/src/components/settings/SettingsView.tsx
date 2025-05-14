@@ -9,7 +9,8 @@ import { TabButton } from "../mcp/configuration/McpConfigurationView"
 import { useEvent } from "react-use"
 import { ExtensionMessage } from "@shared/ExtensionMessage"
 import BrowserSettingsSection from "./BrowserSettingsSection"
-
+import TerminalSettingsSection from "./TerminalSettingsSection"
+import { FEATURE_FLAGS } from "@shared/services/feature-flags/feature-flags"
 const { IS_DEV } = process.env
 
 type SettingsViewProps = {
@@ -81,16 +82,16 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 
 	// validate as soon as the component is mounted
 	/*
-    useEffect will use stale values of variables if they are not included in the dependency array. 
-    so trying to use useEffect with a dependency array of only one value for example will use any 
-    other variables' old values. In most cases you don't want this, and should opt to use react-use 
-    hooks.
+	useEffect will use stale values of variables if they are not included in the dependency array. 
+	so trying to use useEffect with a dependency array of only one value for example will use any 
+	other variables' old values. In most cases you don't want this, and should opt to use react-use 
+	hooks.
     
-        // uses someVar and anotherVar
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [someVar])
+		// uses someVar and anotherVar
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [someVar])
 	If we only want to run code once on mount we can use react-use's useEffectOnce or useMount
-    */
+	*/
 
 	const handleMessage = useCallback(
 		(event: MessageEvent) => {
@@ -237,6 +238,9 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 
 				{/* Browser Settings Section */}
 				<BrowserSettingsSection />
+
+				{/* Terminal Settings Section */}
+				<TerminalSettingsSection />
 
 				<div className="mt-auto pr-2 flex justify-center">
 					<SettingsButton

@@ -1,6 +1,7 @@
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { CSSProperties, memo } from "react"
 import { getAsVar, VSC_DESCRIPTION_FOREGROUND, VSC_INACTIVE_SELECTION_BACKGROUND } from "@/utils/vscStyles"
+import { Accordion, AccordionItem } from "@heroui/react"
 
 interface AnnouncementProps {
 	version: string
@@ -43,79 +44,55 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 			</h3>
 			<ul style={ulStyle}>
 				<li>
-					<b>全局 Cline 规则:</b> 存储在 Documents/Cline/Rules 的多个文件中，在所有项目中共享。
+					<b>Task Timeline:</b> See the history of your coding journey with a visual timeline of checkpoints, letting
+					you understand what Cline did at a glance.
 				</li>
 				<li>
-					<b>Cline 规则对话框:</b> 聊天区域中的新按钮，用于查看工作区和要插入的全局 cline 规则文件并针对任务应用特定规则
+					<b>UX Improvements:</b> Type while Cline works, smarter auto-scrolling, new copy buttons for task headers and
+					messages, and a simplified home interface for a smoother experience.
 				</li>
 				<li>
-					<b>Slash 命令:</b> 对话窗口插入 <code>/</code> 查看快捷命令列表, 例如：开启新任务 (更多功能!)
+					<b>Commit Message Generation:</b> Let Cline help craft meaningful commit messages based on your changes.
 				</li>
 				<li>
-					<b>编辑消息:</b> 可以通过单击之前发送的消息来编辑它。（可选）恢复发送消息时的项目！
+					<b>Quote Replies:</b> Easily reference previous messages with new quote reply support for clearer
+					conversations.
+				</li>
+				<li>
+					<b>Auto Caching for Gemini:</b> Native support for Gemini's recently released Implicit Caching.
 				</li>
 			</ul>
-			<h4 style={{ margin: "5px 0 5px" }}>以前的更新:</h4>
-			<ul style={ulStyle}>
-				<li>
-					<b>模型收藏夹:</b> 您现在可以在使用Cline和OpenRouter提供商时标记您最喜欢的模型，快速访问它!
-				</li>
-				<li>
-					<b>快速差别编辑:</b> 改进了大文件的动画性能，并在聊天中添加了新的提示，显示 Cline 所做的编辑次数.
-				</li>
-				<li>
-					<b>新的自动批准选项:</b> 关闭 Cline 读取和编辑项目文件夹外文件的能力.
-				</li>
-			</ul>
-			{/*
-			// Leave this here for an example of how to structure the announcement
-			<ul style={{ margin: "0 0 8px", paddingLeft: "12px" }}>
-				 <li>
-					OpenRouter now supports prompt caching! They also have much higher rate limits than other providers,
-					so I recommend trying them out.
-					<br />
-					{!apiConfiguration?.openRouterApiKey && (
-						<VSCodeButtonLink
-							href={getOpenRouterAuthUrl(vscodeUriScheme)}
-							style={{
-								transform: "scale(0.85)",
-								transformOrigin: "left center",
-								margin: "4px -30px 2px 0",
-							}}>
-							Get OpenRouter API Key
-						</VSCodeButtonLink>
-					)}
-					{apiConfiguration?.openRouterApiKey && apiConfiguration?.apiProvider !== "openrouter" && (
-						<VSCodeButton
-							onClick={() => {
-								vscode.postMessage({
-									type: "apiConfiguration",
-									apiConfiguration: { ...apiConfiguration, apiProvider: "openrouter" },
-								})
-							}}
-							style={{
-								transform: "scale(0.85)",
-								transformOrigin: "left center",
-								margin: "4px -30px 2px 0",
-							}}>
-							Switch to OpenRouter
-						</VSCodeButton>
-					)}
-				</li>
-				<li>
-					<b>Edit Cline's changes before accepting!</b> When he creates or edits a file, you can modify his
-					changes directly in the right side of the diff view (+ hover over the 'Revert Block' arrow button in
-					the center to undo "<code>{"// rest of code here"}</code>" shenanigans)
-				</li>
-				<li>
-					New <code>search_files</code> tool that lets Cline perform regex searches in your project, letting
-					him refactor code, address TODOs and FIXMEs, remove dead code, and more!
-				</li>
-				<li>
-					When Cline runs commands, you can now type directly in the terminal (+ support for Python
-					environments)
-				</li>
-			</ul>*/}
+			<Accordion isCompact className="pl-0">
+				<AccordionItem
+					key="1"
+					aria-label="Previous Updates"
+					title="Previous Updates:"
+					classNames={{
+						trigger: "bg-transparent border-0 pl-0 pb-0 w-fit",
+						title: "font-bold text-[var(--vscode-foreground)]",
+						indicator:
+							"text-[var(--vscode-foreground)] mb-0.5 -rotate-180 data-[open=true]:-rotate-90 rtl:rotate-0 rtl:data-[open=true]:-rotate-90",
+					}}>
+					<ul style={ulStyle}>
+						<li>
+							<b>Gemini prompt caching:</b> Gemini and Vertex providers now support prompt caching and price
+							tracking for Gemini models.
+						</li>
+						<li>
+							<b>Copy Buttons:</b> Buttons were added to Markdown and Code blocks that allow you to copy their
+							contents easily.
+						</li>
+						<li>
+							<b>Global Cline Rules:</b> Store multiple rules files in Documents/Cline/Rules to share between
+							projects.
+						</li>
+						<li>
+							<b>Slash Commands:</b> Type <code>/</code> in chat to see the list of quick actions, like starting a
+							new task.
+						</li>
+					</ul>
+				</AccordionItem>
+			</Accordion>
 			<div style={hrStyle} />
 			<p style={linkContainerStyle}>
 				加入我们{" "}

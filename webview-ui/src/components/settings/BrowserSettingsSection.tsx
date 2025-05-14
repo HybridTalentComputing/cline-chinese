@@ -37,8 +37,22 @@ const ConnectionStatusIndicator = ({
 	)
 }
 
+const CollapsibleContent = styled.div<{ isOpen: boolean }>`
+	overflow: hidden;
+	transition:
+		max-height 0.3s ease-in-out,
+		opacity 0.3s ease-in-out,
+		margin-top 0.3s ease-in-out,
+		visibility 0.3s ease-in-out;
+	max-height: ${({ isOpen }) => (isOpen ? "1000px" : "0")}; // Sufficiently large height
+	opacity: ${({ isOpen }) => (isOpen ? 1 : 0)};
+	margin-top: ${({ isOpen }) => (isOpen ? "15px" : "0")};
+	visibility: ${({ isOpen }) => (isOpen ? "visible" : "hidden")};
+`
+
 export const BrowserSettingsSection: React.FC = () => {
 	const { browserSettings } = useExtensionState()
+	const [localChromePath, setLocalChromePath] = useState(browserSettings.chromeExecutablePath || "")
 	const [isCheckingConnection, setIsCheckingConnection] = useState(false)
 	const [connectionStatus, setConnectionStatus] = useState<boolean | null>(null)
 	const [relaunchResult, setRelaunchResult] = useState<{ success: boolean; message: string } | null>(null)
@@ -90,6 +104,14 @@ export const BrowserSettingsSection: React.FC = () => {
 				console.error("Error getting detected Chrome path:", error)
 			})
 	}, [])
+
+	// Sync localChromePath with global state
+	useEffect(() => {
+		if (browserSettings.chromeExecutablePath !== localChromePath) {
+			setLocalChromePath(browserSettings.chromeExecutablePath || "")
+		}
+		// Removed sync for local disableToolUse state
+	}, [browserSettings.chromeExecutablePath, browserSettings.disableToolUse])
 
 	// Debounced connection check function
 	const debouncedCheckConnection = useCallback(
@@ -147,6 +169,8 @@ export const BrowserSettingsSection: React.FC = () => {
 				},
 				remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
 				remoteBrowserHost: browserSettings.remoteBrowserHost,
+				chromeExecutablePath: browserSettings.chromeExecutablePath,
+				disableToolUse: browserSettings.disableToolUse,
 			})
 				.then((response) => {
 					if (!response.value) {
@@ -169,6 +193,8 @@ export const BrowserSettingsSection: React.FC = () => {
 			remoteBrowserEnabled: enabled,
 			// If disabling, also clear the host
 			remoteBrowserHost: enabled ? browserSettings.remoteBrowserHost : undefined,
+			chromeExecutablePath: browserSettings.chromeExecutablePath,
+			disableToolUse: browserSettings.disableToolUse,
 		})
 			.then((response) => {
 				if (!response.value) {
@@ -189,6 +215,55 @@ export const BrowserSettingsSection: React.FC = () => {
 			},
 			remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
 			remoteBrowserHost: host,
+			chromeExecutablePath: browserSettings.chromeExecutablePath,
+			disableToolUse: browserSettings.disableToolUse,
+		})
+			.then((response) => {
+				if (!response.value) {
+					console.error("Failed to update browser settings")
+				}
+			})
+			.catch((error) => {
+				console.error("Error updating browser settings:", error)
+			})
+	}
+
+	const debouncedUpdateChromePath = useCallback(
+		debounce((newPath: string | undefined) => {
+			BrowserServiceClient.updateBrowserSettings({
+				metadata: {},
+				viewport: {
+					width: browserSettings.viewport.width,
+					height: browserSettings.viewport.height,
+				},
+				remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
+				remoteBrowserHost: browserSettings.remoteBrowserHost,
+				chromeExecutablePath: newPath,
+				disableToolUse: browserSettings.disableToolUse,
+			})
+				.then((response) => {
+					if (!response.value) {
+						console.error("Failed to update browser settings for chromeExecutablePath")
+					}
+				})
+				.catch((error) => {
+					console.error("Error updating browser settings for chromeExecutablePath:", error)
+				})
+		}, 500),
+		[browserSettings],
+	)
+
+	const updateChromeExecutablePath = (path: string | undefined) => {
+		BrowserServiceClient.updateBrowserSettings({
+			metadata: {},
+			viewport: {
+				width: browserSettings.viewport.width,
+				height: browserSettings.viewport.height,
+			},
+			remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
+			remoteBrowserHost: browserSettings.remoteBrowserHost,
+			chromeExecutablePath: path,
+			disableToolUse: browserSettings.disableToolUse,
 		})
 			.then((response) => {
 				if (!response.value) {
@@ -247,6 +322,28 @@ export const BrowserSettingsSection: React.FC = () => {
 		return () => clearInterval(pollInterval)
 	}, [browserSettings.remoteBrowserEnabled, checkConnectionOnce])
 
+	const updateDisableToolUse = (disabled: boolean) => {
+		BrowserServiceClient.updateBrowserSettings({
+			metadata: {},
+			viewport: {
+				width: browserSettings.viewport.width,
+				height: browserSettings.viewport.height,
+			},
+			remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
+			remoteBrowserHost: browserSettings.remoteBrowserHost,
+			chromeExecutablePath: browserSettings.chromeExecutablePath,
+			disableToolUse: disabled,
+		})
+			.then((response) => {
+				if (!response.value) {
+					console.error("Failed to update disableToolUse setting")
+				}
+			})
+			.catch((error) => {
+				console.error("Error updating disableToolUse setting:", error)
+			})
+	}
+
 	const relaunchChromeDebugMode = () => {
 		setDebugMode(true)
 		setRelaunchResult(null)
@@ -260,121 +357,169 @@ export const BrowserSettingsSection: React.FC = () => {
 	// Determine if we should show the relaunch button
 	const isRemoteEnabled = Boolean(browserSettings.remoteBrowserEnabled)
 	const shouldShowRelaunchButton = isRemoteEnabled && connectionStatus === false
+	const isSubSettingsOpen = !(browserSettings.disableToolUse || false)
 
 	return (
 		<div
 			id="browser-settings-section"
 			style={{ marginBottom: 20, borderTop: "1px solid var(--vscode-panel-border)", paddingTop: 15 }}>
-			<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 10px 0", fontSize: "14px" }}>浏览器设置</h3>
-			<div style={{ marginBottom: 15 }}>
-				<div style={{ marginBottom: 8 }}>
-					<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>视窗大小</label>
-					<VSCodeDropdown
-						style={{ width: "100%" }}
-						value={
-							Object.entries(BROWSER_VIEWPORT_PRESETS).find(([_, size]) => {
-								const typedSize = size as { width: number; height: number }
-								return (
-									typedSize.width === browserSettings.viewport.width &&
-									typedSize.height === browserSettings.viewport.height
-								)
-							})?.[0]
-						}
-						onChange={(event) => handleViewportChange(event as Event)}>
-						{Object.entries(BROWSER_VIEWPORT_PRESETS).map(([name]) => (
-							<VSCodeOption key={name} value={name}>
-								{name}
-							</VSCodeOption>
-						))}
-					</VSCodeDropdown>
-				</div>
+			<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 10px 0", fontSize: "14px" }}>Browser Settings</h3>
+
+			{/* Master Toggle */}
+			<div style={{ marginBottom: isSubSettingsOpen ? 0 : 10 }}>
+				<VSCodeCheckbox
+					checked={browserSettings.disableToolUse || false}
+					onChange={(e) => updateDisableToolUse((e.target as HTMLInputElement).checked)}>
+					禁用浏览器工具
+				</VSCodeCheckbox>
 				<p
 					style={{
 						fontSize: "12px",
 						color: "var(--vscode-descriptionForeground)",
-						margin: 0,
+						margin: "4px 0 0 0px",
 					}}>
-					设置屏幕截图和交互的浏览器视区大小。
+					禁止 Cline 使用浏览器操作 (e.g. launch, click, type).
 				</p>
 			</div>
 
-			<div style={{ marginBottom: 0 }}>
-				<div style={{ marginBottom: 4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-					<VSCodeCheckbox
-						checked={browserSettings.remoteBrowserEnabled}
-						onChange={(e) => updateRemoteBrowserEnabled((e.target as HTMLInputElement).checked)}>
-						使用远程浏览器连接
-					</VSCodeCheckbox>
-					<ConnectionStatusIndicator
-						isChecking={isCheckingConnection}
-						isConnected={connectionStatus}
-						remoteBrowserEnabled={browserSettings.remoteBrowserEnabled}
-					/>
+			<CollapsibleContent isOpen={isSubSettingsOpen}>
+				<div style={{ marginBottom: 15 }}>
+					<div style={{ marginBottom: 8 }}>
+						<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>窗口大小</label>
+						<VSCodeDropdown
+							style={{ width: "100%" }}
+							value={
+								Object.entries(BROWSER_VIEWPORT_PRESETS).find(([_, size]) => {
+									const typedSize = size as { width: number; height: number }
+									return (
+										typedSize.width === browserSettings.viewport.width &&
+										typedSize.height === browserSettings.viewport.height
+									)
+								})?.[0]
+							}
+							onChange={(event) => handleViewportChange(event as Event)}>
+							{Object.entries(BROWSER_VIEWPORT_PRESETS).map(([name]) => (
+								<VSCodeOption key={name} value={name}>
+									{name}
+								</VSCodeOption>
+							))}
+						</VSCodeDropdown>
+					</div>
+					<p
+						style={{
+							fontSize: "12px",
+							color: "var(--vscode-descriptionForeground)",
+							margin: 0,
+						}}>
+						设置浏览器视口的大小以进行截图和交互。
+					</p>
 				</div>
-				<p
-					style={{
-						fontSize: "12px",
-						color: "var(--vscode-descriptionForeground)",
-						margin: "0 0 6px 0px",
-					}}>
-					允许 Cline 使用你的 Chrome 浏览器
-					{isBundled ? "(未找到)" : detectedChromePath ? ` (${detectedChromePath})` : ""}. 要求你的 Chrome 启用 debug
-					模式
-					{browserSettings.remoteBrowserEnabled ? (
-						<>
-							{" "}
-							手动设置 (<code>--remote-debugging-port=9222</code>)
-							或使用下面的按钮。输入主机地址或将其留空以便自动发现。
-						</>
-					) : (
-						"."
-					)}
-				</p>
 
-				{browserSettings.remoteBrowserEnabled && (
-					<div style={{ marginLeft: 0 }}>
-						<VSCodeTextField
-							value={browserSettings.remoteBrowserHost || ""}
-							placeholder="http://localhost:9222"
-							style={{ width: "100%", marginBottom: 8 }}
-							onChange={(e: any) => updateRemoteBrowserHost(e.target.value || undefined)}
+				<div style={{ marginBottom: 0 }}>
+					{" "}
+					{/* This div now contains Remote Connection & Chrome Path */}
+					<div style={{ marginBottom: 4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+						<VSCodeCheckbox
+							checked={browserSettings.remoteBrowserEnabled}
+							onChange={(e) => updateRemoteBrowserEnabled((e.target as HTMLInputElement).checked)}>
+							Use remote browser connection
+						</VSCodeCheckbox>
+						<ConnectionStatusIndicator
+							isChecking={isCheckingConnection}
+							isConnected={connectionStatus}
+							remoteBrowserEnabled={browserSettings.remoteBrowserEnabled}
 						/>
-
-						{shouldShowRelaunchButton && (
-							<div style={{ display: "flex", gap: "10px", marginBottom: 8, justifyContent: "center" }}>
-								<VSCodeButton style={{ flex: 1 }} disabled={debugMode} onClick={relaunchChromeDebugMode}>
-									{debugMode ? "重启浏览器..." : "重启浏览器调试模式"}
-								</VSCodeButton>
-							</div>
+					</div>
+					<p
+						style={{
+							fontSize: "12px",
+							color: "var(--vscode-descriptionForeground)",
+							margin: "0 0 6px 0px",
+						}}>
+						启用 Cline 使用 Chrome
+						{isBundled ? "(未安装)" : detectedChromePath ? ` (${detectedChromePath})` : ""}.
+						您可以在下面指定自定义路径。使用远程浏览器连接需要以调试模式启动 Chrome。
+						{browserSettings.remoteBrowserEnabled ? (
+							<>
+								{" "}
+								手动 (<code>--remote-debugging-port=9222</code>)
+								或者使用下面的按钮。输入主机地址，或者留空以进行自动发现。
+							</>
+						) : (
+							"."
 						)}
+					</p>
+					{/* Moved remote-specific settings to appear directly after enabling remote connection */}
+					{browserSettings.remoteBrowserEnabled && (
+						<div style={{ marginLeft: 0, marginTop: 8 }}>
+							<VSCodeTextField
+								value={browserSettings.remoteBrowserHost || ""}
+								placeholder="http://localhost:9222"
+								style={{ width: "100%", marginBottom: 8 }}
+								onChange={(e: any) => updateRemoteBrowserHost(e.target.value || undefined)}
+							/>
 
-						{relaunchResult && (
-							<div
+							{shouldShowRelaunchButton && (
+								<div style={{ display: "flex", gap: "10px", marginBottom: 8, justifyContent: "center" }}>
+									<VSCodeButton style={{ flex: 1 }} disabled={debugMode} onClick={relaunchChromeDebugMode}>
+										{debugMode ? "重启浏览器..." : "Debug 模式重启浏览器"}
+									</VSCodeButton>
+								</div>
+							)}
+
+							{relaunchResult && (
+								<div
+									style={{
+										padding: "8px",
+										marginBottom: "8px",
+										backgroundColor: relaunchResult.success ? "rgba(0, 128, 0, 0.1)" : "rgba(255, 0, 0, 0.1)",
+										color: relaunchResult.success
+											? "var(--vscode-terminal-ansiGreen)"
+											: "var(--vscode-terminal-ansiRed)",
+										borderRadius: "3px",
+										fontSize: "11px",
+										whiteSpace: "pre-wrap",
+										wordBreak: "break-word",
+									}}>
+									{relaunchResult.message}
+								</div>
+							)}
+
+							<p
 								style={{
-									padding: "8px",
-									marginBottom: "8px",
-									backgroundColor: relaunchResult.success ? "rgba(0, 128, 0, 0.1)" : "rgba(255, 0, 0, 0.1)",
-									color: relaunchResult.success
-										? "var(--vscode-terminal-ansiGreen)"
-										: "var(--vscode-terminal-ansiRed)",
-									borderRadius: "3px",
-									fontSize: "11px",
-									whiteSpace: "pre-wrap",
-									wordBreak: "break-word",
-								}}>
-								{relaunchResult.message}
-							</div>
-						)}
-
+									fontSize: "12px",
+									color: "var(--vscode-descriptionForeground)",
+									margin: 0,
+								}}></p>
+						</div>
+					)}
+					{/* Chrome Executable Path section now follows remote-specific settings */}
+					<div style={{ marginBottom: 8, marginTop: 8 }}>
+						<label htmlFor="chrome-executable-path" style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>
+							Chrome 安装路径 (可选)
+						</label>
+						<VSCodeTextField
+							id="chrome-executable-path"
+							value={localChromePath}
+							placeholder="e.g., /usr/bin/google-chrome or C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+							style={{ width: "100%" }}
+							onChange={(e: any) => {
+								const newValue = e.target.value || ""
+								setLocalChromePath(newValue)
+								debouncedUpdateChromePath(newValue) // Send "" if empty, not undefined
+							}}
+						/>
 						<p
 							style={{
 								fontSize: "12px",
 								color: "var(--vscode-descriptionForeground)",
-								margin: 0,
-							}}></p>
+								margin: "4px 0 0 0",
+							}}>
+							留空以自动检测。
+						</p>
 					</div>
-				)}
-			</div>
+				</div>
+			</CollapsibleContent>
 		</div>
 	)
 }
