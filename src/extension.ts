@@ -84,8 +84,8 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 	)
 
-	const openClineInNewTab = async () => {
-		Logger.log("Opening Cline in new tab")
+	const openclineShengsuanInNewTab = async () => {
+		Logger.log("Opening openclineShengsuanInNewTab in new tab")
 		// (this example uses webviewProvider activation event which is necessary to deserialize cached webview, but since we use retainContextWhenHidden, we don't need to use that event)
 		// https://github.com/microsoft/vscode-extension-samples/blob/main/webview-sample/src/extension.ts
 		const tabWebview = new WebviewProvider(context, outputChannel)
@@ -117,8 +117,8 @@ export function activate(context: vscode.ExtensionContext) {
 		await vscode.commands.executeCommand("workbench.action.lockEditorGroup")
 	}
 
-	context.subscriptions.push(vscode.commands.registerCommand("clineShengsuan.popoutButtonClicked", openClineInNewTab))
-	context.subscriptions.push(vscode.commands.registerCommand("clineShengsuan.openInNewTab", openClineInNewTab))
+	context.subscriptions.push(vscode.commands.registerCommand("clineShengsuan.popoutButtonClicked", openclineShengsuanInNewTab))
+	context.subscriptions.push(vscode.commands.registerCommand("clineShengsuan.openInNewTab", openclineShengsuanInNewTab))
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand("clineShengsuan.settingsButtonClicked", (webview: any) => {
@@ -438,7 +438,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Register the generateGitCommitMessage command handler
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.generateGitCommitMessage", async () => {
+		vscode.commands.registerCommand("clineShengsuan.generateGitCommitMessage", async () => {
 			// Get the controller from any instance, without activating the view
 			const controller = WebviewProvider.getAllInstances()[0]?.controller
 

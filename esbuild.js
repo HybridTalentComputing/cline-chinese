@@ -136,7 +136,6 @@ const extensionConfig = {
 			setup(build) {
 				build.onResolve({ filter: /^pkce-challenge$/ }, () => ({
 					path: require.resolve("pkce-challenge"),
-					external: true,
 				}))
 			},
 		},

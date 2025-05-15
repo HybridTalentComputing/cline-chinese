@@ -29,78 +29,77 @@ export interface ActionMetadata {
 const ACTION_METADATA: ActionMetadata[] = [
 	{
 		id: "enableAll",
-		label: "Enable all",
-		shortName: "All",
-		description: "Enable all actions.",
+		label: "所有操作",
+		shortName: "所有",
+		description: "自动批准所有操作",
 		icon: "codicon-checklist",
 	},
 	{
 		id: "readFiles",
-		label: "Read project files",
-		shortName: "Read",
-		description: "Allows Cline to read files within your workspace.",
+		label: "读取项目文件",
+		shortName: "读",
+		description: "自动批准读取项目中的所有文件。",
 		icon: "codicon-search",
 		subAction: {
 			id: "readFilesExternally",
-			label: "Read all files",
+			label: "读取所有文件",
 			shortName: "Read (all)",
-			description: "Allows Cline to read any file on your computer.",
+			description: "自动批准读取计算机上的所有文件。",
 			icon: "codicon-folder-opened",
 			parentActionId: "readFiles",
 		},
 	},
 	{
 		id: "editFiles",
-		label: "Edit project files",
-		shortName: "Edit",
-		description: "Allows Cline to modify files within your workspace.",
+		label: "编辑项目文件",
+		shortName: "写",
+		description: "自动批准修改项目中的所有文件",
 		icon: "codicon-edit",
 		subAction: {
 			id: "editFilesExternally",
-			label: "Edit all files",
+			label: "编辑所有文件",
 			shortName: "Edit (all)",
-			description: "Allows Cline to modify any file on your computer.",
+			description: "自动批准修改计算机上的所有文件。",
 			icon: "codicon-files",
 			parentActionId: "editFiles",
 		},
 	},
 	{
 		id: "executeSafeCommands",
-		label: "Execute safe commands",
-		shortName: "Safe Commands",
-		description:
-			"Allows Cline to execute safe terminal commands. If the model determines a command is potentially destructive, it will still require approval.",
+		label: "执行安全命令",
+		shortName: "安全命令",
+		description: "自动批准执行命令行的安全命令。 如果模型判断一个命令可能具有破坏性，它仍然需要得到批准。",
 		icon: "codicon-terminal",
 		subAction: {
 			id: "executeAllCommands",
-			label: "Execute all commands",
-			shortName: "All Commands",
-			description: "Allows Cline to execute all terminal commands. Use at your own risk.",
+			label: "所有命令",
+			shortName: "所有命令",
+			description: "自动批准执行所有终端命令。请自担风险使用。",
 			icon: "codicon-terminal-bash",
 			parentActionId: "executeSafeCommands",
 		},
 	},
 	{
 		id: "useBrowser",
-		label: "Use the browser",
-		shortName: "Browser",
-		description: "Allows Cline to launch and interact with any website in a browser.",
+		label: "使用浏览器",
+		shortName: "浏览器",
+		description: "自动批准在浏览器中启动并与任何网站交互。",
 		icon: "codicon-globe",
 	},
 	{
 		id: "useMcp",
-		label: "Use MCP servers",
+		label: "使用 MCP 服务",
 		shortName: "MCP",
-		description: "Allows Cline to use configured MCP servers which may modify filesystem or interact with APIs.",
+		description: "自动批准使用配置的MCP服务器，这些服务器可能会修改文件系统或与API交互。",
 		icon: "codicon-server",
 	},
 ]
 
 const NOTIFICATIONS_SETTING: ActionMetadata = {
 	id: "enableNotifications",
-	label: "Enable notifications",
-	shortName: "Notifications",
-	description: "Receive system notifications when Cline requires approval to proceed or when a task is completed.",
+	label: "启用通知",
+	shortName: "通知",
+	description: "自动批准接收系统通知以继续完成任务。",
 	icon: "codicon-bell",
 }
 
@@ -336,7 +335,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 		<div
 			ref={menuRef}
 			style={{
-				padding: "0 10px",
+				padding: "0 4px 0 10px",
 				margin: "0 5px",
 				userSelect: "none",
 				borderTop: `0.5px solid color-mix(in srgb, ${getAsVar(VSC_TITLEBAR_INACTIVE_FOREGROUND)} 20%, transparent)`,
@@ -352,6 +351,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 					style={{
 						cursor: "pointer",
 						paddingTop: "6px",
+						paddingRight: "2px",
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "space-between",
@@ -369,6 +369,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 							gap: "4px",
 							whiteSpace: "nowrap", // Prevent text wrapping
 						}}>
+						<span>自动批准:</span>
 						{getQuickAccessItems()}
 					</div>
 					<span className="codicon codicon-chevron-right" />
@@ -393,17 +394,17 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 								display: "flex",
 								justifyContent: "space-between",
 								alignItems: "center",
-								padding: "8px 0",
+								padding: "8px 4px 8px 0",
 								cursor: "pointer",
 								position: "relative", // Added for positioning context
 							}}
 							onClick={() => setIsExpanded(false)}>
 							<HeroTooltip
-								content="Auto-approve allows Cline to perform the following actions without asking for permission. Please use with caution and only enable if you understand the risks."
+								content="自动批准允许Cline在不请求许可的情况下执行以下操作。请谨慎使用，仅在您理解风险时启用。"
 								placement="top">
-								<span style={{ color: getAsVar(VSC_FOREGROUND) }}>Auto-approve</span>
+								<span style={{ color: getAsVar(VSC_FOREGROUND), fontWeight: 500 }}>自动批准:</span>
 							</HeroTooltip>
-							<span className="codicon codicon-chevron-down" style={{ paddingRight: "4px" }} />
+							<span className="codicon codicon-chevron-down" />
 						</div>
 
 						<div
@@ -411,7 +412,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 							style={{
 								columnCount: containerWidth > breakpoint ? 2 : 1,
 								columnGap: "4px",
-								margin: "4px 0 8px 0",
+								margin: "4px 0 16px 0",
 								position: "relative", // For absolute positioning of the separator
 							}}>
 							{/* Vertical separator line - only visible in two-column mode */}
@@ -442,14 +443,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 								/>
 							))}
 						</div>
-						<div
-							style={{
-								height: "0.5px",
-								background: getAsVar(VSC_TITLEBAR_INACTIVE_FOREGROUND),
-								margin: "8px 0",
-								opacity: 0.2,
-							}}
-						/>
+						<span style={{ color: getAsVar(VSC_FOREGROUND), marginBottom: 4, fontWeight: 500 }}>快速设置:</span>
 						<AutoApproveMenuItem
 							key={NOTIFICATIONS_SETTING.id}
 							action={NOTIFICATIONS_SETTING}
@@ -458,19 +452,17 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 							onToggle={updateAction}
 							onToggleFavorite={toggleFavorite}
 						/>
-						<HeroTooltip
-							content="Cline will automatically make this many API requests before asking for approval to proceed with the task."
-							placement="top">
+						<HeroTooltip content="将自动发出这么多 API 请求，然后再请求批准继续执行任务。" placement="top">
 							<div
 								style={{
-									margin: "2px 10px 10px 5px",
+									margin: "2px 10px 20px 5px",
 									display: "flex",
 									alignItems: "center",
 									gap: "8px",
 									width: "100%",
 								}}>
 								<span className="codicon codicon-settings" style={{ color: "#CCCCCC", fontSize: "14px" }} />
-								<span style={{ color: "#CCCCCC", fontSize: "12px", fontWeight: 500 }}>Max Requests:</span>
+								<span style={{ color: "#CCCCCC", fontSize: "12px", fontWeight: 500 }}>最多请求数:</span>
 								<VSCodeTextField
 									style={{ flex: "1", width: "100%", paddingRight: "35px" }}
 									value={autoApprovalSettings.maxRequests.toString()}
@@ -500,7 +492,13 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 				{isExpanded && (
 					<span
 						className="codicon codicon-chevron-up"
-						style={{ paddingBottom: "4px", marginLeft: "auto", marginTop: "-20px", cursor: "pointer" }}
+						style={{
+							paddingBottom: "4px",
+							paddingRight: "3px",
+							marginLeft: "auto",
+							marginTop: "-20px",
+							cursor: "pointer",
+						}}
 						onClick={() => setIsExpanded(false)}
 					/>
 				)}

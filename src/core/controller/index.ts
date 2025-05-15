@@ -350,6 +350,14 @@ export class Controller {
 				}
 				break
 			}
+			case "accountLoginClickedSSY": {
+				const uriScheme = vscode.env.uriScheme
+				const authUrl = vscode.Uri.parse(
+					`https://router.shengsuanyun.com/auth?callback_url=${encodeURIComponent(`${uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan/ssy`)}`,
+				)
+				vscode.env.openExternal(authUrl)
+				break
+			}
 			case "accountLogoutClicked":
 			case "accountLogoutClickedSSY": {
 				await this.handleSignOut()
@@ -572,18 +580,18 @@ export class Controller {
 			}
 			case "clearAllTaskHistory": {
 				const answer = await vscode.window.showWarningMessage(
-					"What would you like to delete?",
+					"删除哪些内容?",
 					{ modal: true },
-					"Delete All Except Favorites",
-					"Delete Everything",
-					"Cancel",
+					"除了收藏，删除所有",
+					"删除所有",
+					"取消",
 				)
 
-				if (answer === "Delete All Except Favorites") {
+				if (answer === "除了收藏，删除所有") {
 					await this.deleteNonFavoriteTaskHistory()
 					await this.postStateToWebview()
 					this.refreshTotalTasksSize()
-				} else if (answer === "Delete Everything") {
+				} else if (answer === "删除所有") {
 					await this.deleteAllTaskHistory()
 					await this.postStateToWebview()
 					this.refreshTotalTasksSize()

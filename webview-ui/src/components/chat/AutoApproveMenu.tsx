@@ -112,23 +112,23 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 
 		// Handle read editing labels
 		if ((readFilesExternallyEnabled ?? false) && readFilesEnabled) {
-			labels.push("Read (All)")
+			labels.push("读取所有")
 		} else if (readFilesEnabled) {
-			labels.push("Read")
+			labels.push("读取")
 		}
 
 		// Handle file editing labels
 		if ((editFilesExternallyEnabled ?? false) && editFilesEnabled) {
-			labels.push("Edit (All)")
+			labels.push("编辑所有")
 		} else if (editFilesEnabled) {
-			labels.push("Edit")
+			labels.push("编辑")
 		}
 
 		// Handle command execution labels
 		if ((allCommandsEnabled ?? false) && safeCommandsEnabled) {
-			labels.push("All Commands")
+			labels.push("所有命令")
 		} else if (safeCommandsEnabled) {
-			labels.push("Safe Commands")
+			labels.push("安全命令")
 		}
 
 		// Add remaining actions
