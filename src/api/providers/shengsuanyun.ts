@@ -10,7 +10,7 @@ import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { OpenRouterErrorResponse } from "./types"
 import { calculateApiCostOpenAI } from "../../utils/cost"
 
-export class ShengsuanyunHandler implements ApiHandler {
+export class ShengSuanYunHandler implements ApiHandler {
 	private options: ApiHandlerOptions
 	private client: OpenAI
 	lastGenerationId?: string

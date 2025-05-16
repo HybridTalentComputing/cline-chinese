@@ -23,7 +23,7 @@ import { FireworksHandler } from "./providers/fireworks"
 import { AskSageHandler } from "./providers/asksage"
 import { XAIHandler } from "./providers/xai"
 import { SambanovaHandler } from "./providers/sambanova"
-import { ShengsuanyunHandler } from "./providers/shengsuanyun"
+import { ShengSuanYunHandler } from "./providers/shengsuanyun"
 
 export interface ApiHandler {
 	createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream
@@ -83,7 +83,7 @@ export function buildApiHandler(configuration: ApiConfiguration): ApiHandler {
 		case "sambanova":
 			return new SambanovaHandler(options)
 		case "shengsuanyun":
-			return new ShengsuanyunHandler(options)
+			return new ShengSuanYunHandler(options)
 		default:
 			return new AnthropicHandler(options)
 	}
