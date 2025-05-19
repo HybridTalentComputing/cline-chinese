@@ -1,4 +1,4 @@
-![微信图片_20250520004735](https://github.com/user-attachments/assets/753d3b10-fa87-4c1e-9278-1c55b15e897f)# Cline-Chinese (Cline中文汉化版) 🌏
+# Cline-Chinese (Cline中文汉化版) 🌏
 
 > 🎉 截止到2025.05.19，Cline Chinese在VS Code插件市场的下载量突破58k啦！感谢大家的支持！
 
