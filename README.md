@@ -1,4 +1,4 @@
-# Cline-Chinese (Cline中文汉化版) 🌏
+![微信图片_20250520004735](https://github.com/user-attachments/assets/753d3b10-fa87-4c1e-9278-1c55b15e897f)# Cline-Chinese (Cline中文汉化版) 🌏
 
 > 🎉 截止到2025.05.19，Cline Chinese在VS Code插件市场的下载量突破58k啦！感谢大家的支持！
 
@@ -75,7 +75,7 @@ Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下�
 感兴趣的可以扫码加入微信社群，一起交流学习AI（如果二维码失效，请查看github项目中的首页中，相同位置的群二维码, 或者加入Discord频道）：
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/703e3581-1d38-4293-b73a-f8dc0ed2e51f" alt="微信群二维码" width="250" />
+  <img src="https://github.com/user-attachments/assets/cda3053d-14d0-47e3-b663-74e2808ca219" alt="微信群二维码" width="250" />
 </div>
 
 GitHub 项目地址：https://github.com/HybridTalentComputing/cline-chinese
@@ -116,5 +116,4 @@ Discord 频道：https://discord.gg/fhj9hqy89t
 ---
 
 > 注：本项目是个人维护的汉化版本，与原版 Cline 团队无关。如果您喜欢这个项目，也请给原版 [Cline](https://github.com/cline/cline) 一个 star ⭐️
-
 
