@@ -1,235 +1,233 @@
-import { VSCodeButton, VSCodeCheckbox, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
-import React, { useRef, useState } from "react"
-import { useClickAway } from "react-use"
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { useEffect, useRef, useState } from "react"
 import styled from "styled-components"
-import { BROWSER_VIEWPORT_PRESETS } from "../../../../src/shared/BrowserSettings"
-import { useExtensionState } from "../../context/ExtensionStateContext"
-import { vscode } from "../../utils/vscode"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { vscode } from "@/utils/vscode"
 import { CODE_BLOCK_BG_COLOR } from "../common/CodeBlock"
+import { BrowserServiceClient } from "../../services/grpc-client"
 
-interface BrowserSettingsMenuProps {
-	disabled?: boolean
-	maxWidth?: number
+interface ConnectionInfo {
+	isConnected: boolean
+	isRemote: boolean
+	host?: string
 }
 
-export const BrowserSettingsMenu: React.FC<BrowserSettingsMenuProps> = ({ disabled = false, maxWidth }) => {
+export const BrowserSettingsMenu = () => {
 	const { browserSettings } = useExtensionState()
-	const [showMenu, setShowMenu] = useState(false)
-	const [hasMouseEntered, setHasMouseEntered] = useState(false)
 	const containerRef = useRef<HTMLDivElement>(null)
-	const menuRef = useRef<HTMLDivElement>(null)
-
-	useClickAway(containerRef, () => {
-		if (showMenu) {
-			setShowMenu(false)
-			setHasMouseEntered(false)
-		}
+	const [showInfoPopover, setShowInfoPopover] = useState(false)
+	const [connectionInfo, setConnectionInfo] = useState<ConnectionInfo>({
+		isConnected: false,
+		isRemote: !!browserSettings.remoteBrowserEnabled,
+		host: browserSettings.remoteBrowserHost,
 	})
+	const popoverRef = useRef<HTMLDivElement>(null)
 
-	const handleMouseEnter = () => {
-		setHasMouseEntered(true)
-	}
+	// 使用 gRPC 从浏览器会话中获取实际连接信息
+	useEffect(() => {
+		// 获取连接信息的函数
+		;(async () => {
+			try {
+				console.log("[DEBUG] SENDING BROWSER CONNECTION INFO REQUEST")
+				const info = await BrowserServiceClient.getBrowserConnectionInfo({})
+				console.log("[DEBUG] GOT BROWSER REPLY:", info, typeof info)
+				setConnectionInfo({
+					isConnected: info.isConnected,
+					isRemote: info.isRemote,
+					host: info.host,
+				})
+			} catch (error) {
+				console.error("Error fetching browser connection info:", error)
+			}
+		})()
 
-	const handleMouseLeave = () => {
-		if (hasMouseEntered) {
-			setShowMenu(false)
-			setHasMouseEntered(false)
-		}
-	}
+		// 不再需要消息事件监听器！
+	}, [browserSettings.remoteBrowserHost, browserSettings.remoteBrowserEnabled])
 
-	const handleControlsMouseLeave = (e: React.MouseEvent) => {
-		const menuElement = menuRef.current
-
-		if (menuElement && showMenu) {
-			const menuRect = menuElement.getBoundingClientRect()
-
-			// If mouse is moving towards the menu, don't close it
+	// 点击外部时关闭弹出框
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
 			if (
-				e.clientY >= menuRect.top &&
-				e.clientY <= menuRect.bottom &&
-				e.clientX >= menuRect.left &&
-				e.clientX <= menuRect.right
+				popoverRef.current &&
+				!popoverRef.current.contains(event.target as Node) &&
+				!event.composedPath().some((el) => (el as HTMLElement).classList?.contains("browser-info-icon"))
 			) {
-				return
+				setShowInfoPopover(false)
 			}
 		}
 
-		setShowMenu(false)
-		setHasMouseEntered(false)
+		if (showInfoPopover) {
+			document.addEventListener("mousedown", handleClickOutside)
+		}
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside)
+		}
+	}, [showInfoPopover])
+
+	const openBrowserSettings = () => {
+		// 首先打开设置面板
+		vscode.postMessage({
+			type: "openSettings",
+		})
+
+		// 短暂延迟后，发送消息以滚动到浏览器设置
+		setTimeout(() => {
+			vscode.postMessage({
+				type: "scrollToSettings",
+				text: "browser-settings-section", // 这是一个ID，保持英文
+			})
+		}, 300) // 给设置面板打开的时间
 	}
 
-	const handleViewportChange = (event: Event) => {
-		const target = event.target as HTMLSelectElement
-		const selectedSize = BROWSER_VIEWPORT_PRESETS[target.value as keyof typeof BROWSER_VIEWPORT_PRESETS]
-		if (selectedSize) {
-			vscode.postMessage({
-				type: "browserSettings",
-				browserSettings: {
-					...browserSettings,
-					viewport: selectedSize,
-				},
-			})
+	const toggleInfoPopover = () => {
+		setShowInfoPopover(!showInfoPopover)
+
+		// 使用 gRPC 打开弹出框时请求更新连接信息
+		if (!showInfoPopover) {
+			const fetchConnectionInfo = async () => {
+				try {
+					const info = await BrowserServiceClient.getBrowserConnectionInfo({})
+					setConnectionInfo({
+						isConnected: info.isConnected,
+						isRemote: info.isRemote,
+						host: info.host,
+					})
+				} catch (error) {
+					console.error("Error fetching browser connection info:", error)
+				}
+			}
+
+			fetchConnectionInfo()
 		}
 	}
 
-	const updateHeadless = (headless: boolean) => {
-		vscode.postMessage({
-			type: "browserSettings",
-			browserSettings: {
-				...browserSettings,
-				headless,
-			},
-		})
+	// 根据连接状态确定图标
+	const getIconClass = () => {
+		if (connectionInfo.isRemote) {
+			return "codicon-remote"
+		} else {
+			return connectionInfo.isConnected ? "codicon-vm-running" : "codicon-info"
+		}
 	}
 
-	// const updateChromeType = (chromeType: BrowserSettings["chromeType"]) => {
-	// 	vscode.postMessage({
-	// 		type: "browserSettings",
-	// 		browserSettings: {
-	// 			...browserSettings,
-	// 			chromeType,
-	// 		},
-	// 	})
-	// }
+	// 根据连接状态确定图标颜色
+	const getIconColor = () => {
+		if (connectionInfo.isRemote) {
+			return connectionInfo.isConnected ? "var(--vscode-charts-blue)" : "var(--vscode-foreground)"
+		} else if (connectionInfo.isConnected) {
+			return "var(--vscode-charts-green)"
+		} else {
+			return "var(--vscode-foreground)"
+		}
+	}
 
-	// const relaunchChromeDebugMode = () => {
-	// 	vscode.postMessage({
-	// 		type: "relaunchChromeDebugMode",
-	// 	})
-	// }
+	// 每秒检查连接状态以使用 gRPC 保持图标同步
+	useEffect(() => {
+		// 获取连接信息的函数
+		const fetchConnectionInfo = async () => {
+			try {
+				const info = await BrowserServiceClient.getBrowserConnectionInfo({})
+				setConnectionInfo({
+					isConnected: info.isConnected,
+					isRemote: info.isRemote,
+					host: info.host,
+				})
+			} catch (error) {
+				console.error("Error fetching browser connection info:", error)
+			}
+		}
+
+		// 立即请求连接信息
+		fetchConnectionInfo()
+
+		// 设置每秒刷新一次的间隔
+		const intervalId = setInterval(fetchConnectionInfo, 1000)
+
+		return () => clearInterval(intervalId)
+	}, [])
 
 	return (
-		<div ref={containerRef} style={{ position: "relative", marginTop: "-1px" }} onMouseLeave={handleControlsMouseLeave}>
-			<VSCodeButton appearance="icon" onClick={() => setShowMenu(!showMenu)} disabled={disabled}>
+		<div ref={containerRef} style={{ position: "relative", marginTop: "-1px", display: "flex" }}>
+			<VSCodeButton
+				appearance="icon"
+				className="browser-info-icon"
+				onClick={toggleInfoPopover}
+				title="浏览器连接信息"
+				style={{ marginRight: "4px" }}>
+				<i
+					className={`codicon ${getIconClass()}`}
+					style={{
+						fontSize: "14.5px",
+						color: getIconColor(),
+					}}
+				/>
+			</VSCodeButton>
+
+			{showInfoPopover && (
+				<InfoPopover ref={popoverRef}>
+					<h4 style={{ margin: "0 0 8px 0" }}>浏览器连接</h4>
+					<InfoRow>
+						<InfoLabel>状态:</InfoLabel>
+						<InfoValue
+							style={{
+								color: connectionInfo.isConnected
+									? "var(--vscode-charts-green)"
+									: "var(--vscode-errorForeground)",
+							}}>
+							{connectionInfo.isConnected ? "已连接" : "已断开"}
+						</InfoValue>
+					</InfoRow>
+					{connectionInfo.isConnected && (
+						<InfoRow>
+							<InfoLabel>类型:</InfoLabel>
+							<InfoValue>{connectionInfo.isRemote ? "远程" : "本地"}</InfoValue>
+						</InfoRow>
+					)}
+					{connectionInfo.isConnected && connectionInfo.isRemote && connectionInfo.host && (
+						<InfoRow>
+							<InfoLabel>远程主机:</InfoLabel>
+							<InfoValue>{connectionInfo.host}</InfoValue>
+						</InfoRow>
+					)}
+				</InfoPopover>
+			)}
+
+			<VSCodeButton appearance="icon" onClick={openBrowserSettings}>
 				<i className="codicon codicon-settings-gear" style={{ fontSize: "14.5px" }} />
 			</VSCodeButton>
-			{showMenu && (
-				<SettingsMenu ref={menuRef} maxWidth={maxWidth} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-					<SettingsGroup>
-						{/* <SettingsHeader>Headless Mode</SettingsHeader> */}
-						<VSCodeCheckbox
-							style={{ marginBottom: "8px", marginTop: -1 }}
-							checked={browserSettings.headless}
-							onChange={(e) => updateHeadless((e.target as HTMLInputElement).checked)}>
-							Run in headless mode
-						</VSCodeCheckbox>
-						<SettingsDescription>When enabled, Chrome will run in the background.</SettingsDescription>
-					</SettingsGroup>
-
-					{/* <SettingsGroup>
-						<SettingsHeader>Chrome Executable</SettingsHeader>
-						<VSCodeDropdown
-							style={{ width: "100%", marginBottom: "8px" }}
-							value={browserSettings.chromeType}
-							onChange={(e) =>
-								updateChromeType((e.target as HTMLSelectElement).value as BrowserSettings["chromeType"])
-							}>
-							<VSCodeOption value="chromium">Chromium (Auto-downloaded)</VSCodeOption>
-							<VSCodeOption value="system">System Chrome</VSCodeOption>
-						</VSCodeDropdown>
-						<SettingsDescription>
-							{browserSettings.chromeType === "system" ? (
-								<>
-									Cline will use your personal browser. You must{" "}
-									<VSCodeLink
-										href="#"
-										style={{ fontSize: "inherit" }}
-										onClick={(e: React.MouseEvent) => {
-											e.preventDefault()
-											relaunchChromeDebugMode()
-										}}>
-										relaunch Chrome in debug mode
-									</VSCodeLink>{" "}
-									to use this setting.
-								</>
-							) : (
-								"Cline will use a Chromium browser bundled with the extension."
-							)}
-						</SettingsDescription>
-					</SettingsGroup> */}
-
-					<SettingsGroup>
-						<SettingsHeader>Viewport Size</SettingsHeader>
-						<VSCodeDropdown
-							style={{ width: "100%" }}
-							value={
-								Object.entries(BROWSER_VIEWPORT_PRESETS).find(
-									([_, size]) =>
-										size.width === browserSettings.viewport.width &&
-										size.height === browserSettings.viewport.height,
-								)?.[0]
-							}
-							onChange={(event) => handleViewportChange(event as Event)}>
-							{Object.entries(BROWSER_VIEWPORT_PRESETS).map(([name]) => (
-								<VSCodeOption key={name} value={name}>
-									{name}
-								</VSCodeOption>
-							))}
-						</VSCodeDropdown>
-					</SettingsGroup>
-				</SettingsMenu>
-			)}
 		</div>
 	)
 }
 
-const SettingsMenu = styled.div<{ maxWidth?: number }>`
+const InfoPopover = styled.div`
 	position: absolute;
-	top: calc(100% + 8px);
-	right: -2px;
-	background: ${CODE_BLOCK_BG_COLOR};
-	border: 1px solid var(--vscode-editorGroup-border);
-	padding: 8px;
-	border-radius: 3px;
-	z-index: 1000;
-	width: calc(100vw - 57px);
-	min-width: 0px;
-	max-width: ${(props) => (props.maxWidth ? `${props.maxWidth - 23}px` : "100vw")};
-
-	// Add invisible padding to create a safe hover zone
-	&::before {
-		content: "";
-		position: absolute;
-		top: -14px; // Same as margin-top in the parent's top property
-		left: 0;
-		right: -6px;
-		height: 14px;
-	}
-
-	&::after {
-		content: "";
-		position: absolute;
-		top: -6px;
-		right: 6px;
-		width: 10px;
-		height: 10px;
-		background: ${CODE_BLOCK_BG_COLOR};
-		border-left: 1px solid var(--vscode-editorGroup-border);
-		border-top: 1px solid var(--vscode-editorGroup-border);
-		transform: rotate(45deg);
-		z-index: 1; // Ensure arrow stays above the padding
-	}
+	top: 30px;
+	right: 0;
+	background-color: var(--vscode-editorWidget-background);
+	border: 1px solid var(--vscode-widget-border);
+	border-radius: 4px;
+	padding: 10px;
+	z-index: 100;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	width: 60dvw;
+	max-width: 250px;
 `
 
-const SettingsGroup = styled.div`
-	&:not(:last-child) {
-		margin-bottom: 8px;
-		// padding-bottom: 8px;
-		border-bottom: 1px solid var(--vscode-editorGroup-border);
-	}
+const InfoRow = styled.div`
+	display: flex;
+	margin-bottom: 4px;
+	flex-wrap: wrap;
+	white-space: nowrap;
 `
 
-const SettingsHeader = styled.div`
-	font-size: 11px;
-	font-weight: 600;
-	margin-bottom: 6px;
-	color: var(--vscode-foreground);
+const InfoLabel = styled.div`
+	flex: 0 0 90px;
+	font-weight: 500;
 `
 
-const SettingsDescription = styled.div<{ isLast?: boolean }>`
-	font-size: 11px;
-	color: var(--vscode-descriptionForeground);
-	margin-bottom: ${(props) => (props.isLast ? "0" : "8px")};
+const InfoValue = styled.div`
+	flex: 1;
+	word-break: break-word;
 `
 
 export default BrowserSettingsMenu

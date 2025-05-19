@@ -11,23 +11,29 @@ import {
 	ClineSayBrowserAction,
 	ClineSayTool,
 	ExtensionMessage,
-} from "../../../../src/shared/ExtensionMessage"
-import { findLast } from "../../../../src/shared/array"
-import { combineApiRequests } from "../../../../src/shared/combineApiRequests"
-import { combineCommandSequences } from "../../../../src/shared/combineCommandSequences"
-import { getApiMetrics } from "../../../../src/shared/getApiMetrics"
-import { useExtensionState } from "../../context/ExtensionStateContext"
-import { vscode } from "../../utils/vscode"
-import HistoryPreview from "../history/HistoryPreview"
-import { normalizeApiConfiguration } from "../settings/ApiOptions"
-import Announcement from "./Announcement"
-import AutoApproveMenu from "./AutoApproveMenu"
-import BrowserSessionRow from "./BrowserSessionRow"
-import ChatRow from "./ChatRow"
-import ChatTextArea from "./ChatTextArea"
-import TaskHeader from "./TaskHeader"
-import TelemetryBanner from "../common/TelemetryBanner"
-
+} from "@shared/ExtensionMessage"
+import { findLast } from "@shared/array"
+import { combineApiRequests } from "@shared/combineApiRequests"
+import { combineCommandSequences } from "@shared/combineCommandSequences"
+import { getApiMetrics } from "@shared/getApiMetrics"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { vscode } from "@/utils/vscode"
+import { TaskServiceClient, SlashServiceClient, FileServiceClient } from "@/services/grpc-client"
+import HistoryPreview from "@/components/history/HistoryPreview"
+import { normalizeApiConfiguration } from "@/components/settings/ApiOptions"
+import Announcement from "@/components/chat/Announcement"
+import BrowserSessionRow from "@/components/chat/BrowserSessionRow"
+import ChatRow from "@/components/chat/ChatRow"
+import ChatTextArea from "@/components/chat/ChatTextArea"
+import QuotedMessagePreview from "@/components/chat/QuotedMessagePreview"
+import TaskHeader from "@/components/chat/TaskHeader"
+import TelemetryBanner from "@/components/common/TelemetryBanner"
+import { unified } from "unified"
+import remarkStringify from "remark-stringify"
+import rehypeRemark from "rehype-remark"
+import rehypeParse from "rehype-parse"
+import HomeHeader from "../welcome/HomeHeader"
+import AutoApproveBar from "./auto-approve-menu/AutoApproveBar"
 interface ChatViewProps {
 	isHidden: boolean
 	showAnnouncement: boolean
@@ -35,15 +41,60 @@ interface ChatViewProps {
 	showHistoryView: () => void
 }
 
-export const MAX_IMAGES_PER_MESSAGE = 20 // Anthropic limits to 20 images
+// 清理 Markdown 转义字符的函数
+function cleanupMarkdownEscapes(markdown: string): string {
+	return (
+		markdown
+			// 处理下划线和星号（单个或多个）
+			.replace(/\\([_*]+)/g, "$1")
+
+			// 处理尖括号（用于泛型和 XML）
+			.replace(/\\([<>])/g, "$1")
+
+			// 处理反引号（用于代码）
+			.replace(/\\(`)/g, "$1")
+
+			// 处理其他常见的 Markdown 特殊字符
+			.replace(/\\([[\]()#.!])/g, "$1")
+
+			// 修复多个连续的反斜杠
+			.replace(/\\{2,}([_*`<>[\]()#.!])/g, "$1")
+	)
+}
+
+async function convertHtmlToMarkdown(html: string) {
+	// 处理 HTML 到 Markdown
+	const result = await unified()
+		.use(rehypeParse as any, { fragment: true }) // 解析 HTML 片段
+		.use(rehypeRemark as any) // 将 HTML 转换为 Markdown AST
+		.use(remarkStringify as any, {
+			// 将 Markdown AST 转换为文本
+			bullet: "-", // 无序列表使用 -
+			emphasis: "*", // 强调使用 *
+			strong: "_", // 加粗使用 _
+			listItemIndent: "one", // 列表缩进使用一个空格
+			rule: "-", // 水平线使用 -
+			ruleSpaces: false, // 水平线不带空格
+			fences: true,
+			escape: false,
+			entities: false,
+		})
+		.process(html)
+
+	const md = String(result)
+	// 应用全面的转义字符清理
+	return cleanupMarkdownEscapes(md)
+}
+
+export const MAX_IMAGES_PER_MESSAGE = 20 // Anthropic 限制每个消息最多 20 张图片
 
 const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryView }: ChatViewProps) => {
 	const { version, clineMessages: messages, taskHistory, apiConfiguration, telemetrySetting } = useExtensionState()
 
 	//const task = messages.length > 0 ? (messages[0].say === "task" ? messages[0] : undefined) : undefined) : undefined
-	const task = useMemo(() => messages.at(0), [messages]) // leaving this less safe version here since if the first message is not a task, then the extension is in a bad state and needs to be debugged (see Cline.abort)
+	const task = useMemo(() => messages.at(0), [messages]) // 保留这个不太安全的版本，因为如果第一条消息不是任务，则扩展处于不良状态，需要调试（参见 Cline.abort）
 	const modifiedMessages = useMemo(() => combineApiRequests(combineCommandSequences(messages.slice(1))), [messages])
-	// has to be after api_req_finished are all reduced into api_req_started messages
+	// 必须在所有 api_req_finished 都被缩减为 api_req_started 消息之后
 	const apiMetrics = useMemo(() => getApiMetrics(modifiedMessages), [modifiedMessages])
 
 	const lastApiReqTotalTokens = useMemo(() => {
@@ -61,15 +112,17 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	}, [modifiedMessages])
 
 	const [inputValue, setInputValue] = useState("")
+	const [activeQuote, setActiveQuote] = useState<string | null>(null)
+	const [isTextAreaFocused, setIsTextAreaFocused] = useState(false)
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
-	const [textAreaDisabled, setTextAreaDisabled] = useState(false)
+	const [sendingDisabled, setSendingDisabled] = useState(false)
 	const [selectedImages, setSelectedImages] = useState<string[]>([])
 
-	// we need to hold on to the ask because useEffect > lastMessage will always let us know when an ask comes in and handle it, but by the time handleMessage is called, the last message might not be the ask anymore (it could be a say that followed)
+	// 我们需要保留 ask，因为 useEffect > lastMessage 总会让我们知道 ask 何时传入并处理它，但是当 handleMessage 被调用时，最后一条消息可能不再是 ask（它可能是一个紧随其后的 say）
 	const [clineAsk, setClineAsk] = useState<ClineAsk | undefined>(undefined)
 	const [enableButtons, setEnableButtons] = useState<boolean>(false)
-	const [primaryButtonText, setPrimaryButtonText] = useState<string | undefined>("Approve")
-	const [secondaryButtonText, setSecondaryButtonText] = useState<string | undefined>("Reject")
+	const [primaryButtonText, setPrimaryButtonText] = useState<string | undefined>("批准")
+	const [secondaryButtonText, setSecondaryButtonText] = useState<string | undefined>("拒绝")
 	const [didClickCancel, setDidClickCancel] = useState(false)
 	const virtuosoRef = useRef<VirtuosoHandle>(null)
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
@@ -78,133 +131,235 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 	const [isAtBottom, setIsAtBottom] = useState(false)
 
-	// UI layout depends on the last 2 messages
-	// (since it relies on the content of these messages, we are deep comparing. i.e. the button state after hitting button sets enableButtons to false, and this effect otherwise would have to true again even if messages didn't change
+	useEffect(() => {
+		const handleCopy = async (e: ClipboardEvent) => {
+			const targetElement = e.target as HTMLElement | null
+			// 如果复制事件源自 input 或 textarea，
+			// 让浏览器默认行为处理它。
+			if (
+				targetElement &&
+				(targetElement.tagName === "INPUT" || targetElement.tagName === "TEXTAREA" || targetElement.isContentEditable)
+			) {
+				return
+			}
+
+			if (window.getSelection) {
+				const selection = window.getSelection()
+				if (selection && selection.rangeCount > 0) {
+					const range = selection.getRangeAt(0)
+					const commonAncestor = range.commonAncestorContainer
+					let textToCopy: string | null = null
+
+					// 检查选区是否在首选纯文本复制的元素内
+					let currentElement =
+						commonAncestor.nodeType === Node.ELEMENT_NODE
+							? (commonAncestor as HTMLElement)
+							: commonAncestor.parentElement
+					let preferPlainTextCopy = false
+					while (currentElement) {
+						if (currentElement.tagName === "PRE" && currentElement.querySelector("code")) {
+							preferPlainTextCopy = true
+							break
+						}
+						// 检查计算出的 white-space 样式
+						const computedStyle = window.getComputedStyle(currentElement)
+						if (
+							computedStyle.whiteSpace === "pre" ||
+							computedStyle.whiteSpace === "pre-wrap" ||
+							computedStyle.whiteSpace === "pre-line"
+						) {
+							// 如果元素本身或其祖先元素具有类似 pre 的 white-space，
+							// 并且选区可能包含在其中，则首选纯文本。
+							// 这有助于处理像 TaskHeader 文本显示这样的元素。
+							preferPlainTextCopy = true
+							break
+						}
+
+						// 如果到达已知的聊天消息边界或 body，则停止搜索
+						if (
+							currentElement.classList.contains("chat-row-assistant-message-container") ||
+							currentElement.classList.contains("chat-row-user-message-container") ||
+							currentElement.tagName === "BODY"
+						) {
+							break
+						}
+						currentElement = currentElement.parentElement
+					}
+
+					if (preferPlainTextCopy) {
+						// 对于代码块或具有预格式化 white-space 的元素，获取纯文本。
+						textToCopy = selection.toString()
+					} else {
+						// 对于其他内容，使用现有的 HTML 到 Markdown 转换
+						const clonedSelection = range.cloneContents()
+						const div = document.createElement("div")
+						div.appendChild(clonedSelection)
+						const selectedHtml = div.innerHTML
+						textToCopy = await convertHtmlToMarkdown(selectedHtml)
+					}
+
+					if (textToCopy !== null) {
+						vscode.postMessage({ type: "copyToClipboard", text: textToCopy })
+						e.preventDefault()
+					}
+				}
+			}
+		}
+		document.addEventListener("copy", handleCopy)
+
+		return () => {
+			document.removeEventListener("copy", handleCopy)
+		}
+	}, [])
+
+	// UI 布局取决于最后两条消息
+	// （因为它依赖于这些消息的内容，所以我们进行深度比较。例如，按下按钮后的按钮状态会将 enableButtons 设置为 false，否则即使消息没有更改，此效果也必须再次变为 true
 	const lastMessage = useMemo(() => messages.at(-1), [messages])
 	const secondLastMessage = useMemo(() => messages.at(-2), [messages])
 	useDeepCompareEffect(() => {
-		// if last message is an ask, show user ask UI
-		// if user finished a task, then start a new task with a new conversation history since in this moment that the extension is waiting for user response, the user could close the extension and the conversation history would be lost.
-		// basically as long as a task is active, the conversation history will be persisted
+		// 如果最后一条消息是 ask，则显示用户 ask UI
+		// 如果用户完成了任务，则启动一个新任务并使用新的对话历史记录，因为在扩展等待用户响应的这一刻，用户可能会关闭扩展，对话历史记录将会丢失。
+		// 基本上，只要任务处于活动状态，对话历史记录就会被持久化
 		if (lastMessage) {
 			switch (lastMessage.type) {
 				case "ask":
 					const isPartial = lastMessage.partial === true
 					switch (lastMessage.ask) {
 						case "api_req_failed":
-							setTextAreaDisabled(true)
+							setSendingDisabled(true)
 							setClineAsk("api_req_failed")
 							setEnableButtons(true)
-							setPrimaryButtonText("Retry")
-							setSecondaryButtonText("Start New Task")
+							setPrimaryButtonText("重试")
+							setSecondaryButtonText("开始新任务")
 							break
 						case "mistake_limit_reached":
-							setTextAreaDisabled(false)
+							setSendingDisabled(false)
 							setClineAsk("mistake_limit_reached")
 							setEnableButtons(true)
-							setPrimaryButtonText("Proceed Anyways")
-							setSecondaryButtonText("Start New Task")
+							setPrimaryButtonText("仍然继续")
+							setSecondaryButtonText("开始新任务")
 							break
 						case "auto_approval_max_req_reached":
-							setTextAreaDisabled(true)
+							setSendingDisabled(true)
 							setClineAsk("auto_approval_max_req_reached")
 							setEnableButtons(true)
-							setPrimaryButtonText("Proceed")
-							setSecondaryButtonText("Start New Task")
+							setPrimaryButtonText("继续")
+							setSecondaryButtonText("开始新任务")
 							break
 						case "followup":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("followup")
 							setEnableButtons(false)
 							// setPrimaryButtonText(undefined)
 							// setSecondaryButtonText(undefined)
 							break
 						case "plan_mode_respond":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("plan_mode_respond")
 							setEnableButtons(false)
 							// setPrimaryButtonText(undefined)
 							// setSecondaryButtonText(undefined)
 							break
 						case "tool":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("tool")
 							setEnableButtons(!isPartial)
 							const tool = JSON.parse(lastMessage.text || "{}") as ClineSayTool
 							switch (tool.tool) {
 								case "editedExistingFile":
 								case "newFileCreated":
-									setPrimaryButtonText("Save")
-									setSecondaryButtonText("Reject")
+									setPrimaryButtonText("保存")
+									setSecondaryButtonText("拒绝")
 									break
 								default:
-									setPrimaryButtonText("Approve")
-									setSecondaryButtonText("Reject")
+									setPrimaryButtonText("批准")
+									setSecondaryButtonText("拒绝")
 									break
 							}
 							break
 						case "browser_action_launch":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("browser_action_launch")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Approve")
-							setSecondaryButtonText("Reject")
+							setPrimaryButtonText("批准")
+							setSecondaryButtonText("拒绝")
 							break
 						case "command":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("command")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Run Command")
-							setSecondaryButtonText("Reject")
+							setPrimaryButtonText("运行命令")
+							setSecondaryButtonText("拒绝")
 							break
 						case "command_output":
-							setTextAreaDisabled(false)
+							setSendingDisabled(false)
 							setClineAsk("command_output")
 							setEnableButtons(true)
-							setPrimaryButtonText("Proceed While Running")
+							setPrimaryButtonText("运行时继续")
 							setSecondaryButtonText(undefined)
 							break
 						case "use_mcp_server":
-							setTextAreaDisabled(isPartial)
+							setSendingDisabled(isPartial)
 							setClineAsk("use_mcp_server")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Approve")
-							setSecondaryButtonText("Reject")
+							setPrimaryButtonText("批准")
+							setSecondaryButtonText("拒绝")
 							break
 						case "completion_result":
-							// extension waiting for feedback. but we can just present a new task button
-							setTextAreaDisabled(isPartial)
+							// 扩展等待反馈。但我们可以只显示一个新任务按钮
+							setSendingDisabled(isPartial)
 							setClineAsk("completion_result")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Start New Task")
+							setPrimaryButtonText("开始新任务")
 							setSecondaryButtonText(undefined)
 							break
 						case "resume_task":
-							setTextAreaDisabled(false)
+							setSendingDisabled(false)
 							setClineAsk("resume_task")
 							setEnableButtons(true)
-							setPrimaryButtonText("Resume Task")
+							setPrimaryButtonText("恢复任务")
 							setSecondaryButtonText(undefined)
-							setDidClickCancel(false) // special case where we reset the cancel button state
+							setDidClickCancel(false) // 特殊情况，我们重置取消按钮状态
 							break
 						case "resume_completed_task":
-							setTextAreaDisabled(false)
+							setSendingDisabled(false)
 							setClineAsk("resume_completed_task")
 							setEnableButtons(true)
-							setPrimaryButtonText("Start New Task")
+							setPrimaryButtonText("开始新任务")
 							setSecondaryButtonText(undefined)
 							setDidClickCancel(false)
+							break
+						case "new_task":
+							setSendingDisabled(isPartial)
+							setClineAsk("new_task")
+							setEnableButtons(!isPartial)
+							setPrimaryButtonText("开始带上下文的新任务")
+							setSecondaryButtonText(undefined)
+							break
+						case "condense":
+							setSendingDisabled(isPartial)
+							setClineAsk("condense")
+							setEnableButtons(!isPartial)
+							setPrimaryButtonText("精简对话")
+							setSecondaryButtonText(undefined)
+							break
+						case "report_bug":
+							setSendingDisabled(isPartial)
+							setClineAsk("report_bug")
+							setEnableButtons(!isPartial)
+							setPrimaryButtonText("报告 GitHub 问题")
+							setSecondaryButtonText(undefined)
 							break
 					}
 					break
 				case "say":
-					// don't want to reset since there could be a "say" after an "ask" while ask is waiting for response
+					// 不想重置，因为在 ask 等待响应时，ask 之后可能会有一个 "say"
 					switch (lastMessage.say) {
 						case "api_req_started":
 							if (secondLastMessage?.ask === "command_output") {
-								// if the last ask is a command_output, and we receive an api_req_started, then that means the command has finished and we don't need input from the user anymore (in every other case, the user has to interact with input field or buttons to continue, which does the following automatically)
+								// 如果最后一个 ask 是 command_output，并且我们收到了一个 api_req_started，那么这意味着命令已经完成，我们不再需要用户的输入（在所有其他情况下，用户必须与输入字段或按钮交互才能继续，这会自动执行以下操作）
 								setInputValue("")
-								setTextAreaDisabled(true)
+								setSendingDisabled(true)
 								setSelectedImages([])
 								setClineAsk(undefined)
 								setEnableButtons(false)
@@ -224,13 +379,14 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 						case "mcp_server_response":
 						case "completion_result":
 						case "tool":
+						case "load_mcp_documentation":
 							break
 					}
 					break
 			}
 		} else {
-			// this would get called after sending the first message, so we have to watch messages.length instead
-			// No messages, so user has to submit a task
+			// 这会在发送第一条消息后被调用，所以我们必须改为监视 messages.length
+			// 没有消息，所以用户必须提交一个任务
 			// setTextAreaDisabled(false)
 			// setClineAsk(undefined)
 			// setPrimaryButtonText(undefined)
@@ -240,11 +396,11 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 	useEffect(() => {
 		if (messages.length === 0) {
-			setTextAreaDisabled(false)
+			setSendingDisabled(false)
 			setClineAsk(undefined)
 			setEnableButtons(false)
-			setPrimaryButtonText("Approve")
-			setSecondaryButtonText("Reject")
+			setPrimaryButtonText("批准")
+			setSecondaryButtonText("拒绝")
 		}
 	}, [messages.length])
 
@@ -253,7 +409,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	}, [task?.ts])
 
 	const isStreaming = useMemo(() => {
-		const isLastAsk = !!modifiedMessages.at(-1)?.ask // checking clineAsk isn't enough since messages effect may be called again for a tool for example, set clineAsk to its value, and if the next message is not an ask then it doesn't reset. This is likely due to how much more often we're updating messages as compared to before, and should be resolved with optimizations as it's likely a rendering bug. but as a final guard for now, the cancel button will show if the last message is not an ask
+		const isLastAsk = !!modifiedMessages.at(-1)?.ask // 检查 clineAsk 是不够的，因为例如对于一个工具，messages effect 可能会再次被调用，将 clineAsk 设置为其值，如果下一条消息不是 ask，则它不会重置。这可能是因为我们更新消息的频率比以前高得多，并且应该通过优化来解决，因为它可能是一个渲染错误。但作为目前的最后保障，如果最后一条消息不是 ask，则会显示取消按钮
 		const isToolCurrentlyAsking = isLastAsk && clineAsk !== undefined && enableButtons && primaryButtonText !== undefined
 		if (isToolCurrentlyAsking) {
 			return false
@@ -267,7 +423,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			if (lastApiReqStarted && lastApiReqStarted.text != null && lastApiReqStarted.say === "api_req_started") {
 				const cost = JSON.parse(lastApiReqStarted.text).cost
 				if (cost === undefined) {
-					// api request has not finished yet
+					// API 请求尚未完成
 					return true
 				}
 			}
@@ -277,36 +433,62 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	}, [modifiedMessages, clineAsk, enableButtons, primaryButtonText])
 
 	const handleSendMessage = useCallback(
-		(text: string, images: string[]) => {
-			text = text.trim()
-			if (text || images.length > 0) {
+		async (text: string, images: string[]) => {
+			let messageToSend = text.trim()
+			const hasContent = messageToSend || images.length > 0
+
+			// 如果存在活动引用，则在其前面添加
+			if (activeQuote && hasContent) {
+				const prefix = "[context] \n> "
+				const formattedQuote = activeQuote
+				const suffix = "\n[/context] \n\n"
+				messageToSend = `${prefix} ${formattedQuote} ${suffix} ${messageToSend}`
+			}
+
+			if (hasContent) {
+				console.log("[ChatView] handleSendMessage - 正在发送消息:", messageToSend)
 				if (messages.length === 0) {
-					vscode.postMessage({ type: "newTask", text, images })
+					await TaskServiceClient.newTask({ text: messageToSend, images })
 				} else if (clineAsk) {
 					switch (clineAsk) {
 						case "followup":
 						case "plan_mode_respond":
 						case "tool":
 						case "browser_action_launch":
-						case "command": // user can provide feedback to a tool or command use
-						case "command_output": // user can send input to command stdin
+						case "command": // 用户可以为工具或命令使用提供反馈
+						case "command_output": // 用户可以向命令标准输入发送输入
 						case "use_mcp_server":
-						case "completion_result": // if this happens then the user has feedback for the completion result
+						case "completion_result": // 如果发生这种情况，则用户对完成结果有反馈
 						case "resume_task":
 						case "resume_completed_task":
 						case "mistake_limit_reached":
-							vscode.postMessage({
-								type: "askResponse",
-								askResponse: "messageResponse",
-								text,
+						case "new_task": // 用户可以提供反馈或拒绝新的任务建议
+							await TaskServiceClient.askResponse({
+								responseType: "messageResponse",
+								text: messageToSend,
 								images,
 							})
 							break
-						// there is no other case that a textfield should be enabled
+						case "condense":
+							await TaskServiceClient.askResponse({
+								responseType: "messageResponse",
+								text: messageToSend,
+								images,
+							})
+							break
+						case "report_bug":
+							await TaskServiceClient.askResponse({
+								responseType: "messageResponse",
+								text: messageToSend,
+								images,
+							})
+							break
+						// 没有其他情况应该启用文本字段
 					}
 				}
 				setInputValue("")
-				setTextAreaDisabled(true)
+				setActiveQuote(null) // 发送消息时清除引用
+				setSendingDisabled(true)
 				setSelectedImages([])
 				setClineAsk(undefined)
 				setEnableButtons(false)
@@ -315,18 +497,19 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				disableAutoScrollRef.current = false
 			}
 		},
-		[messages.length, clineAsk],
+		[messages.length, clineAsk, activeQuote],
 	)
 
-	const startNewTask = useCallback(() => {
-		vscode.postMessage({ type: "clearTask" })
+	const startNewTask = useCallback(async () => {
+		setActiveQuote(null) // 清除活动引用状态
+		await TaskServiceClient.clearTask({})
 	}, [])
 
 	/*
-	This logic depends on the useEffect[messages] above to set clineAsk, after which buttons are shown and we then send an askResponse to the extension.
+	此逻辑依赖于上面的 useEffect[messages] 来设置 clineAsk，之后会显示按钮，然后我们向扩展发送一个 askResponse。
 	*/
 	const handlePrimaryButtonClick = useCallback(
-		(text?: string, images?: string[]) => {
+		async (text?: string, images?: string[]) => {
 			const trimmedInput = text?.trim()
 			switch (clineAsk) {
 				case "api_req_failed":
@@ -339,43 +522,55 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				case "mistake_limit_reached":
 				case "auto_approval_max_req_reached":
 					if (trimmedInput || (images && images.length > 0)) {
-						vscode.postMessage({
-							type: "askResponse",
-							askResponse: "yesButtonClicked",
+						await TaskServiceClient.askResponse({
+							responseType: "yesButtonClicked",
 							text: trimmedInput,
 							images: images,
 						})
 					} else {
-						vscode.postMessage({
-							type: "askResponse",
-							askResponse: "yesButtonClicked",
+						await TaskServiceClient.askResponse({
+							responseType: "yesButtonClicked",
 						})
 					}
-					// Clear input state after sending
+					// 发送后清除输入状态
 					setInputValue("")
+					setActiveQuote(null) // 使用主按钮时清除引用
 					setSelectedImages([])
 					break
 				case "completion_result":
 				case "resume_completed_task":
-					// extension waiting for feedback. but we can just present a new task button
+					// 扩展等待反馈。但我们可以只显示一个新任务按钮
 					startNewTask()
 					break
+				case "new_task":
+					console.info("新任务按钮已点击！", { lastMessage, messages, clineAsk, text })
+					await TaskServiceClient.newTask({
+						text: lastMessage?.text,
+						images: [],
+					})
+					break
+				case "condense":
+					await SlashServiceClient.condense({ value: lastMessage?.text }).catch((err) => console.error(err))
+					break
+				case "report_bug":
+					await SlashServiceClient.reportBug({ value: lastMessage?.text }).catch((err) => console.error(err))
+					break
 			}
-			setTextAreaDisabled(true)
+			setSendingDisabled(true)
 			setClineAsk(undefined)
 			setEnableButtons(false)
 			// setPrimaryButtonText(undefined)
 			// setSecondaryButtonText(undefined)
 			disableAutoScrollRef.current = false
 		},
-		[clineAsk, startNewTask],
+		[clineAsk, startNewTask, lastMessage],
 	)
 
 	const handleSecondaryButtonClick = useCallback(
-		(text?: string, images?: string[]) => {
+		async (text?: string, images?: string[]) => {
 			const trimmedInput = text?.trim()
 			if (isStreaming) {
-				vscode.postMessage({ type: "cancelTask" })
+				await TaskServiceClient.cancelTask({})
 				setDidClickCancel(true)
 				return
 			}
@@ -391,25 +586,24 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				case "browser_action_launch":
 				case "use_mcp_server":
 					if (trimmedInput || (images && images.length > 0)) {
-						vscode.postMessage({
-							type: "askResponse",
-							askResponse: "noButtonClicked",
+						await TaskServiceClient.askResponse({
+							responseType: "noButtonClicked",
 							text: trimmedInput,
 							images: images,
 						})
 					} else {
-						// responds to the API with a "This operation failed" and lets it try again
-						vscode.postMessage({
-							type: "askResponse",
-							askResponse: "noButtonClicked",
+						// 向 API 响应“此操作失败”并让其重试
+						await TaskServiceClient.askResponse({
+							responseType: "noButtonClicked",
 						})
 					}
-					// Clear input state after sending
+					// 发送后清除输入状态
 					setInputValue("")
+					setActiveQuote(null) // 使用辅助按钮时清除引用
 					setSelectedImages([])
 					break
 			}
-			setTextAreaDisabled(true)
+			setSendingDisabled(true)
 			setClineAsk(undefined)
 			setEnableButtons(false)
 			// setPrimaryButtonText(undefined)
@@ -423,16 +617,26 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		startNewTask()
 	}, [startNewTask])
 
+	const handleFocusChange = useCallback((isFocused: boolean) => {
+		setIsTextAreaFocused(isFocused)
+	}, [])
+
 	const { selectedModelInfo } = useMemo(() => {
 		return normalizeApiConfiguration(apiConfiguration)
 	}, [apiConfiguration])
 
-	const selectImages = useCallback(() => {
-		vscode.postMessage({ type: "selectImages" })
+	const selectImages = useCallback(async () => {
+		try {
+			const response = await FileServiceClient.selectImages({})
+			if (response && response.values && response.values.length > 0) {
+				setSelectedImages((prevImages) => [...prevImages, ...response.values].slice(0, MAX_IMAGES_PER_MESSAGE))
+			}
+		} catch (error) {
+			console.error("选择图片时出错:", error)
+		}
 	}, [])
 
-	const shouldDisableImages =
-		!selectedModelInfo.supportsImages || textAreaDisabled || selectedImages.length >= MAX_IMAGES_PER_MESSAGE
+	const shouldDisableImages = !selectedModelInfo.supportsImages || selectedImages.length >= MAX_IMAGES_PER_MESSAGE
 
 	const handleMessage = useCallback(
 		(e: MessageEvent) => {
@@ -441,8 +645,15 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				case "action":
 					switch (message.action!) {
 						case "didBecomeVisible":
-							if (!isHidden && !textAreaDisabled && !enableButtons) {
+							if (!isHidden && !sendingDisabled && !enableButtons) {
 								textAreaRef.current?.focus()
+							}
+							break
+						case "focusChatInput":
+							textAreaRef.current?.focus()
+							if (isHidden) {
+								// 将消息发送回扩展以显示聊天视图
+								vscode.postMessage({ type: "showChatView" })
 							}
 							break
 					}
@@ -456,12 +667,15 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				case "addToInput":
 					setInputValue((prevValue) => {
 						const newText = message.text ?? ""
-						return prevValue ? `${prevValue}\n${newText}` : newText
+						const newTextWithNewline = newText + "\n"
+						return prevValue ? `${prevValue}\n${newTextWithNewline}` : newTextWithNewline
 					})
-					// Add scroll to bottom after state update
+					// 状态更新后滚动到底部
+					// 自动聚焦输入并将光标置于新行以便于输入
 					setTimeout(() => {
 						if (textAreaRef.current) {
 							textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight
+							textAreaRef.current.focus()
 						}
 					}, 0)
 					break
@@ -478,50 +692,50 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							break
 					}
 			}
-			// textAreaRef.current is not explicitly required here since react guarantees that ref will be stable across re-renders, and we're not using its value but its reference.
+			// 此处不明确要求 textAreaRef.current，因为 React 保证 ref 在重新渲染时保持稳定，并且我们使用的是它的引用而不是它的值。
 		},
-		[isHidden, textAreaDisabled, enableButtons, handleSendMessage, handlePrimaryButtonClick, handleSecondaryButtonClick],
+		[isHidden, sendingDisabled, enableButtons, handleSendMessage, handlePrimaryButtonClick, handleSecondaryButtonClick],
 	)
 
 	useEvent("message", handleMessage)
 
 	useMount(() => {
-		// NOTE: the vscode window needs to be focused for this to work
+		// 注意：vscode 窗口需要聚焦才能使其工作
 		textAreaRef.current?.focus()
 	})
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
-			if (!isHidden && !textAreaDisabled && !enableButtons) {
+			if (!isHidden && !sendingDisabled && !enableButtons) {
 				textAreaRef.current?.focus()
 			}
 		}, 50)
 		return () => {
 			clearTimeout(timer)
 		}
-	}, [isHidden, textAreaDisabled, enableButtons])
+	}, [isHidden, sendingDisabled, enableButtons])
 
 	const visibleMessages = useMemo(() => {
 		return modifiedMessages.filter((message) => {
 			switch (message.ask) {
 				case "completion_result":
-					// don't show a chat row for a completion_result ask without text. This specific type of message only occurs if cline wants to execute a command as part of its completion result, in which case we interject the completion_result tool with the execute_command tool.
+					// 不要为没有文本的 completion_result ask 显示聊天行。这种特定类型的消息仅在 cline 希望执行命令作为其完成结果的一部分时发生，在这种情况下，我们将 completion_result 工具与 execute_command 工具穿插。
 					if (message.text === "") {
 						return false
 					}
 					break
-				case "api_req_failed": // this message is used to update the latest api_req_started that the request failed
+				case "api_req_failed": // 此消息用于更新最新的 api_req_started，表明请求失败
 				case "resume_task":
 				case "resume_completed_task":
 					return false
 			}
 			switch (message.say) {
-				case "api_req_finished": // combineApiRequests removes this from modifiedMessages anyways
-				case "api_req_retried": // this message is used to update the latest api_req_started that the request was retried
-				case "deleted_api_reqs": // aggregated api_req metrics from deleted messages
+				case "api_req_finished": // combineApiRequests 无论如何都会从 modifiedMessages 中删除此内容
+				case "api_req_retried": // 此消息用于更新最新的 api_req_started，表明请求已重试
+				case "deleted_api_reqs": // 来自已删除消息的聚合 api_req 指标
 					return false
 				case "text":
-					// Sometimes cline returns an empty text message, we don't want to render these. (We also use a say text for user messages, so in case they just sent images we still render that)
+					// 有时 cline 返回空文本消息，我们不想渲染这些消息。（我们也为用户消息使用 say 文本，因此如果他们只发送了图片，我们仍然会渲染它）
 					if ((message.text ?? "") === "" && (message.images?.length ?? 0) === 0) {
 						return false
 					}
@@ -534,14 +748,23 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	}, [modifiedMessages])
 
 	const isBrowserSessionMessage = (message: ClineMessage): boolean => {
-		// which of visible messages are browser session messages, see above
+		// 哪些可见消息是浏览器会话消息，见上文
+
+		// 注意：我们希望作为浏览器会话一部分的任何消息都应包含在此处
+		// 之前存在一个问题，我们在浏览器操作后添加了检查点，导致浏览器会话中断。
 		if (message.type === "ask") {
 			return ["browser_action_launch"].includes(message.ask!)
 		}
 		if (message.type === "say") {
-			return ["browser_action_launch", "api_req_started", "text", "browser_action", "browser_action_result"].includes(
-				message.say!,
-			)
+			return [
+				"browser_action_launch",
+				"api_req_started",
+				"text",
+				"browser_action",
+				"browser_action_result",
+				"checkpoint_created",
+				"reasoning",
+			].includes(message.say!)
 		}
 		return false
 	}
@@ -561,16 +784,16 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 		visibleMessages.forEach((message) => {
 			if (message.ask === "browser_action_launch" || message.say === "browser_action_launch") {
-				// complete existing browser session if any
+				// 如果有，则完成现有的浏览器会话
 				endBrowserSession()
-				// start new
+				// 开始新的
 				isInBrowserSession = true
 				currentGroup.push(message)
 			} else if (isInBrowserSession) {
-				// end session if api_req_started is cancelled
+				// 如果 api_req_started 被取消，则结束会话
 
 				if (message.say === "api_req_started") {
-					// get last api_req_started in currentGroup to check if it's cancelled. If it is then this api req is not part of the current browser session
+					// 获取 currentGroup 中的最后一个 api_req_started 以检查它是否被取消。如果是，则此 api req 不属于当前浏览器会话
 					const lastApiReqStarted = [...currentGroup].reverse().find((m) => m.say === "api_req_started")
 					if (lastApiReqStarted?.text != null) {
 						const info = JSON.parse(lastApiReqStarted.text)
@@ -586,7 +809,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				if (isBrowserSessionMessage(message)) {
 					currentGroup.push(message)
 
-					// Check if this is a close action
+					// 检查这是否是关闭操作
 					if (message.say === "browser_action") {
 						const browserAction = JSON.parse(message.text || "{}") as ClineSayBrowserAction
 						if (browserAction.action === "close") {
@@ -594,7 +817,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 						}
 					}
 				} else {
-					// complete existing browser session if any
+					// 如果有，则完成现有的浏览器会话
 					endBrowserSession()
 					result.push(message)
 				}
@@ -603,7 +826,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			}
 		})
 
-		// Handle case where browser session is the last group
+		// 处理浏览器会话是最后一组的情况
 		if (currentGroup.length > 0) {
 			result.push([...currentGroup])
 		}
@@ -611,7 +834,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		return result
 	}, [visibleMessages])
 
-	// scrolling
+	// 滚动
 
 	const scrollToBottomSmooth = useMemo(
 		() =>
@@ -631,11 +854,11 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	const scrollToBottomAuto = useCallback(() => {
 		virtuosoRef.current?.scrollTo({
 			top: Number.MAX_SAFE_INTEGER,
-			behavior: "auto", // instant causes crash
+			behavior: "auto", // "instant" 行为会导致崩溃
 		})
 	}, [])
 
-	// scroll when user toggles certain rows
+	// 用户切换某些行时滚动
 	const toggleRowExpansion = useCallback(
 		(ts: number) => {
 			const isCollapsing = expandedRows[ts] ?? false
@@ -648,7 +871,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 			const isLastCollapsedApiReq =
 				isLast &&
-				!Array.isArray(lastGroup) && // Make sure it's not a browser session group
+				!Array.isArray(lastGroup) && // 确保它不是浏览器会话组
 				lastGroup?.say === "api_req_started" &&
 				!expandedRows[lastGroup.ts]
 
@@ -657,7 +880,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				[ts]: !prev[ts],
 			}))
 
-			// disable auto scroll when user expands row
+			// 用户展开行时禁用自动滚动
 			if (!isCollapsing) {
 				disableAutoScrollRef.current = true
 			}
@@ -710,7 +933,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			setTimeout(() => {
 				scrollToBottomSmooth()
 			}, 50)
-			// return () => clearTimeout(timer) // dont cleanup since if visibleMessages.length changes it cancels.
+			// return () => clearTimeout(timer) // 不要清理，因为如果 visibleMessages.length 更改，它会取消。
 		}
 	}, [groupedMessages.length, scrollToBottomSmooth])
 
@@ -723,10 +946,10 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			}
 		}
 	}, [])
-	useEvent("wheel", handleWheel, window, { passive: true }) // passive 提高滚动性能
+	useEvent("wheel", handleWheel, window, { passive: true }) // passive 选项可提高滚动性能
 
 	const placeholderText = useMemo(() => {
-		const text = task ? "输入消息..." : "在这里输入你的任务..."
+		const text = task ? "输入消息..." : "在此输入您的任务..."
 		return text
 	}, [task])
 
@@ -748,9 +971,18 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 								[messageTs]: !prev[messageTs],
 							}))
 						}}
+						onSetQuote={setActiveQuote}
 					/>
 				)
 			}
+
+			// 我们仅为最后一条消息显示某些状态
+			// 如果最后一条消息是检查点，我们希望显示前一条消息的状态
+			const nextMessage = index < groupedMessages.length - 1 && groupedMessages[index + 1]
+			const isNextCheckpoint = !Array.isArray(nextMessage) && nextMessage && nextMessage?.say === "checkpoint_created"
+			const isLastMessageGroup = isNextCheckpoint && index === groupedMessages.length - 2
+
+			const isLast = index === groupedMessages.length - 1 || isLastMessageGroup
 
 			// 常规消息
 			return (
@@ -760,12 +992,24 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					isExpanded={expandedRows[messageOrGroup.ts] || false}
 					onToggleExpand={() => toggleRowExpansion(messageOrGroup.ts)}
 					lastModifiedMessage={modifiedMessages.at(-1)}
-					isLast={index === groupedMessages.length - 1}
+					isLast={isLast}
 					onHeightChange={handleRowHeightChange}
+					inputValue={inputValue}
+					sendMessageFromChatRow={handleSendMessage}
+					onSetQuote={setActiveQuote}
 				/>
 			)
 		},
-		[expandedRows, modifiedMessages, groupedMessages.length, toggleRowExpansion, handleRowHeightChange],
+		[
+			expandedRows,
+			modifiedMessages,
+			groupedMessages.length,
+			toggleRowExpansion,
+			handleRowHeightChange,
+			inputValue,
+			setActiveQuote,
+			handleSendMessage, // Added handleSendMessage to dependency array
+		],
 	)
 
 	return (
@@ -795,7 +1039,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			) : (
 				<div
 					style={{
-						flex: "1 1 0", // flex-grow: 1, flex-shrink: 1, flex-basis: 0
+						flex: "1 1 0", // flex-grow: 1（放大比例）, flex-shrink: 1（缩小比例）, flex-basis: 0（项目占据的主轴空间）
 						minHeight: 0,
 						overflowY: "auto",
 						display: "flex",
@@ -806,66 +1050,33 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 					{showAnnouncement && <Announcement version={version} hideAnnouncement={hideAnnouncement} />}
 
-					<div style={{ padding: "0 20px", flexShrink: 0 }}>
-						<h2>我能为你做些什么？</h2>
-						<p>
-							感谢{" "}
-							<VSCodeLink href="https://www.anthropic.com/claude/sonnet" style={{ display: "inline" }}>
-								Claude 3.7 Sonnet 的
-							</VSCodeLink>
-							智能编码能力，我可以逐步处理复杂的软件开发任务。借助可以创建和编辑文件、探索复杂项目、使用浏览器和执行终端命令的工具（在您授权后），我可以以超越代码补全或技术支持的方式为您提供帮助。我甚至可以使用
-							MCP 创建新工具并扩展我自己的能力。
-						</p>
-					</div>
+					<HomeHeader />
 					{taskHistory.length > 0 && <HistoryPreview showHistoryView={showHistoryView} />}
 				</div>
 			)}
 
-			{/* 
-			// Flex 布局说明：
-			// 1. 上面的内容 div 使用 flex: "1 1 0" 来：
-			//    - 增长以填充可用空间 (flex-grow: 1) 
-			//    - 在 AutoApproveMenu 需要空间时缩小 (flex-shrink: 1)
-			//    - 从零大小开始 (flex-basis: 0) 以确保适当分配
-			//    minHeight: 0 允许其缩小到内容高度以下
-			//
-			// 2. AutoApproveMenu 使用 flex: "0 1 auto" 来：
-			//    - 不超过其内容增长 (flex-grow: 0)
-			//    - 在视口较小时缩小 (flex-shrink: 1) 
-			//    - 使用其内容大小作为基础 (flex-basis: auto)
-			//    这确保在有空间时其自然高度
-			//    但在视口过小时变得可滚动
-			*/}
-			{!task && (
-				<AutoApproveMenu
-					style={{
-						marginBottom: -2,
-						flex: "0 1 auto", // flex-grow: 0, flex-shrink: 1, flex-basis: auto
-						minHeight: 0,
-					}}
-				/>
-			)}
+			{!task && <AutoApproveBar />}
 
 			{task && (
 				<>
 					<div style={{ flexGrow: 1, display: "flex" }} ref={scrollContainerRef}>
 						<Virtuoso
 							ref={virtuosoRef}
-							key={task.ts} // 确保 virtuoso 在任务更改时重新渲染的技巧，并使用 initialTopMostItemIndex 从底部开始
+							key={task.ts} // 确保任务更改时 virtuoso 重新渲染的技巧，我们使用 initialTopMostItemIndex 从底部开始
 							className="scrollable"
 							style={{
 								flexGrow: 1,
 								overflowY: "scroll", // 始终显示滚动条
 							}}
 							components={{
-								Footer: () => <div style={{ height: 5 }} />, // 在底部添加空填充
+								Footer: () => <div style={{ height: 5 }} />, // 在底部添加空内边距
 							}}
-							// 增加顶部 3_000 以防止用户折叠行时跳动
+							// 顶部增加 3_000 以防止用户折叠行时跳动
 							increaseViewportBy={{
 								top: 3_000,
 								bottom: Number.MAX_SAFE_INTEGER,
-							}} // 黑客确保最后一条消息始终被渲染，以获得真正完美的滚动到底部动画，当新消息被添加时 (Number.MAX_SAFE_INTEGER 对于算术操作是安全的，virtuso 在 src/sizeRangeSystem.ts 中使用此值进行所有操作)
-							data={groupedMessages} // 消息是扩展返回的原始格式，modifiedMessages 是组合某些相关类型消息的操作结构，visibleMessages 是过滤掉不应渲染的消息的结构
+							}} // 确保最后一条消息始终被渲染的技巧，以便在添加新消息时获得真正完美的滚动到底部动画（Number.MAX_SAFE_INTEGER 对于算术运算是安全的，virtuoso 在 src/sizeRangeSystem.ts 中仅将此值用于此目的）
+							data={groupedMessages} // messages 是扩展返回的原始格式，modifiedMessages 是组合了某些相关类型消息的已操作结构，visibleMessages 是移除了不应渲染消息的已过滤结构
 							itemContent={itemContent}
 							atBottomStateChange={(isAtBottom) => {
 								setIsAtBottom(isAtBottom)
@@ -874,11 +1085,11 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 								}
 								setShowScrollToBottom(disableAutoScrollRef.current && !isAtBottom)
 							}}
-							atBottomThreshold={10} // 任何较低的值都会导致 followOutput 出现问题
+							atBottomThreshold={10} // 任何更低的值都会导致 followOutput（跟随输出）出现问题
 							initialTopMostItemIndex={groupedMessages.length - 1}
 						/>
 					</div>
-					<AutoApproveMenu />
+					<AutoApproveBar />
 					{showScrollToBottom ? (
 						<div
 							style={{
@@ -933,11 +1144,25 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					)}
 				</>
 			)}
+			{(() => {
+				return activeQuote ? (
+					<div style={{ marginBottom: "-12px", marginTop: "10px" }}>
+						<QuotedMessagePreview
+							text={activeQuote}
+							onDismiss={() => setActiveQuote(null)}
+							isFocused={isTextAreaFocused}
+						/>
+					</div>
+				) : null
+			})()}
+
 			<ChatTextArea
 				ref={textAreaRef}
+				onFocusChange={handleFocusChange}
+				activeQuote={activeQuote}
 				inputValue={inputValue}
 				setInputValue={setInputValue}
-				textAreaDisabled={textAreaDisabled}
+				sendingDisabled={sendingDisabled}
 				placeholderText={placeholderText}
 				selectedImages={selectedImages}
 				setSelectedImages={setSelectedImages}

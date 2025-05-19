@@ -1,21 +1,27 @@
 import {
 	VSCodeButton,
 	VSCodeCheckbox,
+	VSCodeDropdown,
 	VSCodeLink,
+	VSCodeOption,
 	VSCodeTextArea,
-	VSCodePanels,
-	VSCodePanelTab,
-	VSCodePanelView,
 } from "@vscode/webview-ui-toolkit/react"
 import { memo, useCallback, useEffect, useState } from "react"
-import { useExtensionState } from "../../context/ExtensionStateContext"
-import { validateApiConfiguration, validateModelId } from "../../utils/validate"
-import { vscode } from "../../utils/vscode"
-import SettingsButton from "../common/SettingsButton"
+import PreferredLanguageSetting from "./PreferredLanguageSetting" // 已添加导入
+import { OpenAIReasoningEffort } from "@shared/ChatSettings"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { validateApiConfiguration, validateModelId } from "@/utils/validate"
+import { vscode } from "@/utils/vscode"
+import SettingsButton from "@/components/common/SettingsButton"
 import ApiOptions from "./ApiOptions"
-import { TabButton } from "../mcp/McpView"
+import { TabButton } from "../mcp/configuration/McpConfigurationView"
 import { useEvent } from "react-use"
-import { ExtensionMessage } from "../../../../src/shared/ExtensionMessage"
+import { ExtensionMessage } from "@shared/ExtensionMessage"
+import { StateServiceClient } from "@/services/grpc-client"
+import FeatureSettingsSection from "./FeatureSettingsSection"
+import BrowserSettingsSection from "./BrowserSettingsSection"
+import TerminalSettingsSection from "./TerminalSettingsSection"
+import { FEATURE_FLAGS } from "@shared/services/feature-flags/feature-flags"
 const { IS_DEV } = process.env
 
 type SettingsViewProps = {
@@ -32,8 +38,11 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 		telemetrySetting,
 		setTelemetrySetting,
 		chatSettings,
+		setChatSettings,
 		planActSeparateModelsSetting,
 		setPlanActSeparateModelsSetting,
+		enableCheckpointsSetting,
+		mcpMarketplaceEnabled,
 	} = useExtensionState()
 	const [apiErrorMessage, setApiErrorMessage] = useState<string | undefined>(undefined)
 	const [modelIdErrorMessage, setModelIdErrorMessage] = useState<string | undefined>(undefined)
@@ -63,7 +72,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 			// 	text: separateModeSetting,
 			// })
 		} else {
-			// 如果 API 配置无效，我们不保存它
+			// 如果 API 配置无效，则不保存
 			apiConfigurationToSubmit = undefined
 		}
 
@@ -72,6 +81,8 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 			planActSeparateModelsSetting,
 			customInstructionsSetting: customInstructions,
 			telemetrySetting,
+			enableCheckpointsSetting,
+			mcpMarketplaceEnabled,
 			apiConfiguration: apiConfigurationToSubmit,
 		})
 
@@ -85,18 +96,17 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 		setModelIdErrorMessage(undefined)
 	}, [apiConfiguration])
 
-	// 组件挂载后立即验证
+	// 组件挂载后立即进行验证
 	/*
-    如果依赖项数组中未包含变量，useEffect 将使用变量的旧值。
-    因此，尝试使用仅包含一个值的依赖项数组的 useEffect 将使用任何
-    其他变量的旧值。在大多数情况下，您不希望这样做，而应选择使用 react-use
-    钩子。
-
-        // 使用 someVar 和 anotherVar
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [someVar])
+	useEffect 如果其依赖项数组中未包含某些变量，则会使用这些变量的陈旧值。
+	因此，举例来说，尝试使用仅包含一个值的依赖项数组的 useEffect 将会使用任何其他变量的旧值。
+	在大多数情况下，您不希望这样做，而应选择使用 react-use 钩子。
+    
+		// 使用 someVar 和 anotherVar
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [someVar])
 	如果我们只想在挂载时运行一次代码，可以使用 react-use 的 useEffectOnce 或 useMount
-    */
+	*/
 
 	const handleMessage = useCallback(
 		(event: MessageEvent) => {
@@ -113,6 +123,24 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 						setPendingTabChange(null)
 					}
 					break
+				case "scrollToSettings":
+					setTimeout(() => {
+						const elementId = message.text
+						if (elementId) {
+							const element = document.getElementById(elementId)
+							if (element) {
+								element.scrollIntoView({ behavior: "smooth" })
+
+								element.style.transition = "background-color 0.5s ease"
+								element.style.backgroundColor = "var(--vscode-textPreformat-background)"
+
+								setTimeout(() => {
+									element.style.backgroundColor = "transparent"
+								}, 1200)
+							}
+						}
+					}, 300)
+					break
 			}
 		},
 		[pendingTabChange],
@@ -120,8 +148,12 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 
 	useEvent("message", handleMessage)
 
-	const handleResetState = () => {
-		vscode.postMessage({ type: "resetState" })
+	const handleResetState = async () => {
+		try {
+			await StateServiceClient.resetState({})
+		} catch (error) {
+			console.error("Failed to reset state:", error) // 日志信息保持英文
+		}
 	}
 
 	const handleTabChange = (tab: "plan" | "act") => {
@@ -133,55 +165,16 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 	}
 
 	return (
-		<div
-			style={{
-				position: "fixed",
-				top: 0,
-				left: 0,
-				right: 0,
-				bottom: 0,
-				padding: "10px 0px 0px 20px",
-				display: "flex",
-				flexDirection: "column",
-				overflow: "hidden",
-			}}>
-			<div
-				style={{
-					display: "flex",
-					justifyContent: "space-between",
-					alignItems: "center",
-					marginBottom: "13px",
-					paddingRight: 17,
-				}}>
-				<h3 style={{ color: "var(--vscode-foreground)", margin: 0 }}>设置</h3>
-				<VSCodeButton onClick={() => handleSubmit(false)}>完成</VSCodeButton>
+		<div className="fixed top-0 left-0 right-0 bottom-0 pt-[10px] pr-0 pb-0 pl-5 flex flex-col overflow-hidden">
+			<div className="flex justify-between items-center mb-[13px] pr-[17px]">
+				<h3 className="text-[var(--vscode-foreground)] m-0">设置</h3>
+				<VSCodeButton onClick={() => handleSubmit(false)}>保存</VSCodeButton>
 			</div>
-			<div
-				style={{
-					flexGrow: 1,
-					overflowY: "scroll",
-					paddingRight: 8,
-					display: "flex",
-					flexDirection: "column",
-				}}>
+			<div className="grow overflow-y-scroll pr-2 flex flex-col">
 				{/* 标签页容器 */}
 				{planActSeparateModelsSetting ? (
-					<div
-						style={{
-							border: "1px solid var(--vscode-panel-border)",
-							borderRadius: "4px",
-							padding: "10px",
-							marginBottom: "20px",
-							background: "var(--vscode-panel-background)",
-						}}>
-						<div
-							style={{
-								display: "flex",
-								gap: "1px",
-								marginBottom: "10px",
-								marginTop: -8,
-								borderBottom: "1px solid var(--vscode-panel-border)",
-							}}>
+					<div className="border border-solid border-[var(--vscode-panel-border)] rounded-md p-[10px] mb-5 bg-[var(--vscode-panel-background)]">
+						<div className="flex gap-[1px] mb-[10px] -mt-2 border-0 border-b border-solid border-[var(--vscode-panel-border)]">
 							<TabButton isActive={chatSettings.mode === "plan"} onClick={() => handleTabChange("plan")}>
 								计划模式
 							</TabButton>
@@ -191,7 +184,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 						</div>
 
 						{/* 内容容器 */}
-						<div style={{ marginBottom: -12 }}>
+						<div className="-mb-3">
 							<ApiOptions
 								key={chatSettings.mode}
 								showModelOptions={true}
@@ -209,50 +202,41 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 					/>
 				)}
 
-				<div style={{ marginBottom: 5 }}>
+				<div className="mb-[5px]">
 					<VSCodeTextArea
 						value={customInstructions ?? ""}
-						style={{ width: "100%" }}
+						className="w-full"
 						resize="vertical"
 						rows={4}
-						placeholder={"例如：“在末尾运行单元测试”，“使用 TypeScript 和 async/await”，“用西班牙语交流”"}
+						placeholder={'例如："在最后运行单元测试"，"使用 TypeScript 和 async/await"，"用西班牙语交流"'}
 						onInput={(e: any) => setCustomInstructions(e.target?.value ?? "")}>
-						<span style={{ fontWeight: "500" }}>自定义指令</span>
+						<span className="font-medium">自定义指令</span>
 					</VSCodeTextArea>
-					<p
-						style={{
-							fontSize: "12px",
-							marginTop: "5px",
-							color: "var(--vscode-descriptionForeground)",
-						}}>
-						这些指令会添加到每次请求发送的系统提示的末尾。
+					<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
+						这些指令会添加到每个请求发送的系统提示的末尾。
 					</p>
 				</div>
 
-				<div style={{ marginBottom: 5 }}>
+				{chatSettings && <PreferredLanguageSetting chatSettings={chatSettings} setChatSettings={setChatSettings} />}
+
+				<div className="mb-[5px]">
 					<VSCodeCheckbox
-						style={{ marginBottom: "5px" }}
+						className="mb-[5px]"
 						checked={planActSeparateModelsSetting}
 						onChange={(e: any) => {
 							const checked = e.target.checked === true
 							setPlanActSeparateModelsSetting(checked)
 						}}>
-						为计划和执行模式使用不同的模型
+						为计划模式和执行模式使用不同模型
 					</VSCodeCheckbox>
-					<p
-						style={{
-							fontSize: "12px",
-							marginTop: "5px",
-							color: "var(--vscode-descriptionForeground)",
-						}}>
-						在计划和执行模式之间切换将保留先前模式中使用的 API
-						和模型。例如，当使用强大的推理模型来构建计划，然后让更便宜的编码模型来执行时，这可能会很有用。
+					<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
+						在计划模式和执行模式之间切换将会保留先前模式中使用的 API 和模型。例如，当使用强大的推理模型来规划架构，然后让较便宜的编码模型来执行时，这可能很有用。
 					</p>
 				</div>
 
-				<div style={{ marginBottom: 5 }}>
+				<div className="mb-[5px]">
 					<VSCodeCheckbox
-						style={{ marginBottom: "5px" }}
+						className="mb-[5px]"
 						checked={telemetrySetting === "enabled"}
 						onChange={(e: any) => {
 							const checked = e.target.checked === true
@@ -260,85 +244,52 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 						}}>
 						允许匿名错误和使用情况报告
 					</VSCodeCheckbox>
-					<p
-						style={{
-							fontSize: "12px",
-							marginTop: "5px",
-							color: "var(--vscode-descriptionForeground)",
-						}}>
-						通过发送匿名使用数据和错误报告来帮助改进
-						Cline。绝不会发送任何代码、提示或个人信息。有关更多详细信息，请参阅我们的{" "}
-						<VSCodeLink href="https://docs.cline.bot/more-info/telemetry" style={{ fontSize: "inherit" }}>
+					<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
+						通过发送匿名使用数据和错误报告来帮助改进 Cline。绝不会发送任何代码、提示或个人信息。有关更多详细信息，请参阅我们的{" "}
+						<VSCodeLink href="https://docs.cline.bot/more-info/telemetry" className="text-inherit">
 							遥测概述
 						</VSCodeLink>{" "}
 						和{" "}
-						<VSCodeLink href="https://cline.bot/privacy" style={{ fontSize: "inherit" }}>
+						<VSCodeLink href="https://cline.bot/privacy" className="text-inherit">
 							隐私政策
-						</VSCodeLink>{" "}
+						</VSCodeLink>
 						。
 					</p>
 				</div>
 
+				{/* 功能设置区域 */}
+				<FeatureSettingsSection />
+
+				{/* 浏览器设置区域 */}
+				<BrowserSettingsSection />
+
+				{/* 终端设置区域 */}
+				<TerminalSettingsSection />
+
 				{IS_DEV && (
 					<>
-						<div style={{ marginTop: "10px", marginBottom: "4px" }}>调试</div>
-						<VSCodeButton onClick={handleResetState} style={{ marginTop: "5px", width: "auto" }}>
+						<div className="mt-[10px] mb-1">调试</div>
+						<VSCodeButton
+							onClick={handleResetState}
+							className="mt-[5px] w-auto"
+							style={{ backgroundColor: "var(--vscode-errorForeground)", color: "black" }}>
 							重置状态
 						</VSCodeButton>
-						<p
-							style={{
-								fontSize: "12px",
-								marginTop: "5px",
-								color: "var(--vscode-descriptionForeground)",
-							}}>
+						<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
 							这将重置扩展中的所有全局状态和密钥存储。
 						</p>
 					</>
 				)}
 
-				<div
-					style={{
-						marginTop: "auto",
-						paddingRight: 8,
-						display: "flex",
-						justifyContent: "center",
-					}}>
-					<SettingsButton
-						onClick={() => vscode.postMessage({ type: "openExtensionSettings" })}
-						style={{
-							margin: "0 0 16px 0",
-						}}>
-						<i className="codicon codicon-settings-gear" />
-						高级设置
-					</SettingsButton>
-				</div>
-				<div
-					style={{
-						textAlign: "center",
-						color: "var(--vscode-descriptionForeground)",
-						fontSize: "12px",
-						lineHeight: "1.2",
-						padding: "0 8px 15px 0",
-					}}>
-					<p
-						style={{
-							wordWrap: "break-word",
-							margin: 0,
-							padding: 0,
-						}}>
-						如果您有任何问题或反馈，请随时在以下地址提出问题：{" "}
-						<VSCodeLink href="https://github.com/cline/cline" style={{ display: "inline" }}>
+				<div className="text-center text-[var(--vscode-descriptionForeground)] text-xs leading-[1.2] px-0 py-0 pr-2 pb-[15px] mt-auto">
+					<p className="break-words m-0 p-0">
+						如果您有任何问题或反馈，请随时在{" "}
+						<VSCodeLink href="https://github.com/cline/cline" className="inline">
 							https://github.com/cline/cline
-						</VSCodeLink>
+						</VSCodeLink>{" "}
+						上提交问题。
 					</p>
-					<p
-						style={{
-							fontStyle: "italic",
-							margin: "10px 0 0 0",
-							padding: 0,
-						}}>
-						v{version}
-					</p>
+					<p className="italic mt-[10px] mb-0 p-0">v{version}</p>
 				</div>
 			</div>
 		</div>

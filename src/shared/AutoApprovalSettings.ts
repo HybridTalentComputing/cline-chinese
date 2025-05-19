@@ -1,28 +1,39 @@
 export interface AutoApprovalSettings {
-	// 是否启用自动批准
+	// Version for race condition prevention (incremented on every change)
+	version: number
+	// Whether auto-approval is enabled
 	enabled: boolean
-	// 单个操作权限
+	// Individual action permissions
 	actions: {
-		readFiles: boolean // 读取文件和目录
-		editFiles: boolean // 编辑文件
-		executeCommands: boolean // 执行安全命令
-		useBrowser: boolean // 使用浏览器
-		useMcp: boolean // 使用 MCP 服务器
+		readFiles: boolean // Read files and directories in the working directory
+		readFilesExternally?: boolean // Read files and directories outside of the working directory
+		editFiles: boolean // Edit files in the working directory
+		editFilesExternally?: boolean // Edit files outside of the working directory
+		executeSafeCommands?: boolean // Execute safe commands
+		executeAllCommands?: boolean // Execute all commands
+		useBrowser: boolean // Use browser
+		useMcp: boolean // Use MCP servers
 	}
-	// 全局设置
-	maxRequests: number // 自动批准请求的最大数量
-	enableNotifications: boolean // 显示批准和任务完成的通知
+	// Global settings
+	maxRequests: number // Maximum number of auto-approved requests
+	enableNotifications: boolean // Show notifications for approval and task completion
+	favorites: string[] // IDs of actions favorited by the user for quick access
 }
 
 export const DEFAULT_AUTO_APPROVAL_SETTINGS: AutoApprovalSettings = {
-	enabled: false,
+	version: 1,
+	enabled: true,
 	actions: {
-		readFiles: false,
+		readFiles: true,
+		readFilesExternally: false,
 		editFiles: false,
-		executeCommands: false,
+		editFilesExternally: false,
+		executeSafeCommands: true,
+		executeAllCommands: false,
 		useBrowser: false,
 		useMcp: false,
 	},
 	maxRequests: 20,
 	enableNotifications: false,
+	favorites: ["enableAutoApprove", "readFiles", "editFiles"],
 }

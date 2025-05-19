@@ -7,7 +7,7 @@ The Cline extension exposes an API that can be used by other extensions. To use 
 3. Get access to the API with the following code:
 
     ```ts
-    const clineExtension = vscode.extensions.getExtension<ClineAPI>("hybridtalentcomputing.cline-chinese")
+    const clineExtension = vscode.extensions.getExtension<ClineAPI>("saoudrizwan.claude-dev")
 
     if (!clineExtension?.isActive) {
     	throw new Error("Cline extension is not activated")

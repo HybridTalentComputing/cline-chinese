@@ -1,19 +1,24 @@
-// 'vscode' 模块包含 VS Code 可扩展性 API
-// 导入模块并在下面的代码中使用别名 vscode 引用它
+// The module 'vscode' contains the VS Code extensibility API
+// Import the module and reference it with the alias vscode in your code below
 import { setTimeout as setTimeoutPromise } from "node:timers/promises"
 import * as vscode from "vscode"
-import { ClineProvider } from "./core/webview/ClineProvider"
+import pWaitFor from "p-wait-for"
 import { Logger } from "./services/logging/Logger"
 import { createClineAPI } from "./exports"
-import "./utils/path" // 需要访问 String.prototype.toPosix
+import "./utils/path" // necessary to have access to String.prototype.toPosix
 import { DIFF_VIEW_URI_SCHEME } from "./integrations/editor/DiffViewProvider"
 import assert from "node:assert"
-import { telemetryService } from "./services/telemetry/TelemetryService"
+import { posthogClientProvider } from "./services/posthog/PostHogClientProvider"
+import { WebviewProvider } from "./core/webview"
+import { Controller } from "./core/controller"
+import { ErrorService } from "./services/error/ErrorService"
+import { initializeTestMode, cleanupTestMode } from "./services/test/TestMode"
+import { telemetryService } from "./services/posthog/telemetry/TelemetryService"
 
 /*
-使用 https://github.com/microsoft/vscode-webview-ui-toolkit 构建
+Built using https://github.com/microsoft/vscode-webview-ui-toolkit
 
-灵感来自
+Inspired by
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/tree/main/default/weather-webview
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/tree/main/frameworks/hello-world-react-cra
 
@@ -21,75 +26,93 @@ https://github.com/microsoft/vscode-webview-ui-toolkit-samples/tree/main/framewo
 
 let outputChannel: vscode.OutputChannel
 
-// 当您的扩展程序被激活时，将调用此方法
-// 您的扩展程序在首次执行命令时被激活
+// This method is called when your extension is activated
+// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	outputChannel = vscode.window.createOutputChannel("Cline")
+	outputChannel = vscode.window.createOutputChannel("Cline Chinese")
 	context.subscriptions.push(outputChannel)
 
+	ErrorService.initialize()
 	Logger.initialize(outputChannel)
-	Logger.log("Cline 扩展已激活")
+	Logger.log("Cline extension activated")
 
-	const sidebarProvider = new ClineProvider(context, outputChannel)
+	const sidebarWebview = new WebviewProvider(context, outputChannel)
+
+	// Initialize test mode and add disposables to context
+	context.subscriptions.push(...initializeTestMode(context, sidebarWebview))
 
 	vscode.commands.executeCommand("setContext", "clineChinese.isDevMode", IS_DEV && IS_DEV === "true")
 
 	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider(ClineProvider.sideBarId, sidebarProvider, {
+		vscode.window.registerWebviewViewProvider(WebviewProvider.sideBarId, sidebarWebview, {
 			webviewOptions: { retainContextWhenHidden: true },
 		}),
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineChinese.plusButtonClicked", async () => {
-			Logger.log("加号按钮已点击")
-			await sidebarProvider.clearTask()
-			await sidebarProvider.postStateToWebview()
-			await sidebarProvider.postMessageToWebview({
-				type: "action",
-				action: "chatButtonClicked",
-			})
+		vscode.commands.registerCommand("clineChinese.plusButtonClicked", async (webview: any) => {
+			const openChat = async (instance?: WebviewProvider) => {
+				await instance?.controller.clearTask()
+				await instance?.controller.postStateToWebview()
+				await instance?.controller.postMessageToWebview({
+					type: "action",
+					action: "chatButtonClicked",
+				})
+			}
+			const isSidebar = !webview
+			if (isSidebar) {
+				openChat(WebviewProvider.getSidebarInstance())
+			} else {
+				WebviewProvider.getTabInstances().forEach(openChat)
+			}
 		}),
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineChinese.mcpButtonClicked", () => {
-			sidebarProvider.postMessageToWebview({
-				type: "action",
-				action: "mcpButtonClicked",
-			})
+		vscode.commands.registerCommand("clineChinese.mcpButtonClicked", (webview: any) => {
+			const openMcp = (instance?: WebviewProvider) =>
+				instance?.controller.postMessageToWebview({
+					type: "action",
+					action: "mcpButtonClicked",
+				})
+			const isSidebar = !webview
+			if (isSidebar) {
+				openMcp(WebviewProvider.getSidebarInstance())
+			} else {
+				WebviewProvider.getTabInstances().forEach(openMcp)
+			}
 		}),
 	)
 
 	const openClineInNewTab = async () => {
-		Logger.log("正在新标签页中打开 Cline")
-		// (此示例使用 webviewProvider 激活事件，这对于反序列化缓存的 webview 是必需的，但由于我们使用 retainContextWhenHidden，因此不需要使用该事件)
+		Logger.log("Opening Cline in new tab")
+		// (this example uses webviewProvider activation event which is necessary to deserialize cached webview, but since we use retainContextWhenHidden, we don't need to use that event)
 		// https://github.com/microsoft/vscode-extension-samples/blob/main/webview-sample/src/extension.ts
-		const tabProvider = new ClineProvider(context, outputChannel)
+		const tabWebview = new WebviewProvider(context, outputChannel)
 		//const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined
 		const lastCol = Math.max(...vscode.window.visibleTextEditors.map((editor) => editor.viewColumn || 0))
 
-		// 检查是否有任何可见的文本编辑器，否则在右侧打开一个新组
+		// Check if there are any visible text editors, otherwise open a new group to the right
 		const hasVisibleEditors = vscode.window.visibleTextEditors.length > 0
 		if (!hasVisibleEditors) {
 			await vscode.commands.executeCommand("workbench.action.newGroupRight")
 		}
 		const targetCol = hasVisibleEditors ? Math.max(lastCol + 1, 1) : vscode.ViewColumn.Two
 
-		const panel = vscode.window.createWebviewPanel(ClineProvider.tabPanelId, "Cline", targetCol, {
+		const panel = vscode.window.createWebviewPanel(WebviewProvider.tabPanelId, "Cline Chinese", targetCol, {
 			enableScripts: true,
 			retainContextWhenHidden: true,
 			localResourceRoots: [context.extensionUri],
 		})
-		// TODO: 使用具有浅色和深色变体的更好的 svg 图标 (参见 https://stackoverflow.com/questions/58365687/vscode-extension-iconpath)
+		// TODO: use better svg icon with light and dark variants (see https://stackoverflow.com/questions/58365687/vscode-extension-iconpath)
 
 		panel.iconPath = {
 			light: vscode.Uri.joinPath(context.extensionUri, "assets", "icons", "robot_panel_light.png"),
 			dark: vscode.Uri.joinPath(context.extensionUri, "assets", "icons", "robot_panel_dark.png"),
 		}
-		tabProvider.resolveWebviewView(panel)
+		tabWebview.resolveWebviewView(panel)
 
-		// 锁定编辑器组，这样点击文件时不会在面板上方打开它们
+		// Lock the editor group so clicking on files doesn't open them over the panel
 		await setTimeoutPromise(100)
 		await vscode.commands.executeCommand("workbench.action.lockEditorGroup")
 	}
@@ -98,44 +121,67 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand("clineChinese.openInNewTab", openClineInNewTab))
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineChinese.settingsButtonClicked", () => {
-			//vscode.window.showInformationMessage(message)
-			sidebarProvider.postMessageToWebview({
-				type: "action",
-				action: "settingsButtonClicked",
+		vscode.commands.registerCommand("clineChinese.settingsButtonClicked", (webview: any) => {
+			WebviewProvider.getAllInstances().forEach((instance) => {
+				const openSettings = async (instance?: WebviewProvider) => {
+					instance?.controller.postMessageToWebview({
+						type: "action",
+						action: "settingsButtonClicked",
+					})
+				}
+				const isSidebar = !webview
+				if (isSidebar) {
+					openSettings(WebviewProvider.getSidebarInstance())
+				} else {
+					WebviewProvider.getTabInstances().forEach(openSettings)
+				}
 			})
 		}),
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineChinese.historyButtonClicked", () => {
-			sidebarProvider.postMessageToWebview({
-				type: "action",
-				action: "historyButtonClicked",
+		vscode.commands.registerCommand("clineChinese.historyButtonClicked", (webview: any) => {
+			WebviewProvider.getAllInstances().forEach((instance) => {
+				const openHistory = async (instance?: WebviewProvider) => {
+					instance?.controller.postMessageToWebview({
+						type: "action",
+						action: "historyButtonClicked",
+					})
+				}
+				const isSidebar = !webview
+				if (isSidebar) {
+					openHistory(WebviewProvider.getSidebarInstance())
+				} else {
+					WebviewProvider.getTabInstances().forEach(openHistory)
+				}
 			})
 		}),
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineChinese.accountButtonClicked", () => {
-			sidebarProvider.postMessageToWebview({
-				type: "action",
-				action: "accountButtonClicked",
+		vscode.commands.registerCommand("clineChinese.accountButtonClicked", (webview: any) => {
+			WebviewProvider.getAllInstances().forEach((instance) => {
+				const openAccount = async (instance?: WebviewProvider) => {
+					instance?.controller.postMessageToWebview({
+						type: "action",
+						action: "accountButtonClicked",
+					})
+				}
+				const isSidebar = !webview
+				if (isSidebar) {
+					openAccount(WebviewProvider.getSidebarInstance())
+				} else {
+					WebviewProvider.getTabInstances().forEach(openAccount)
+				}
 			})
-		}),
-	)
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand("clineChinese.openDocumentation", () => {
-			vscode.env.openExternal(vscode.Uri.parse("https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/"))
 		}),
 	)
 
 	/*
-	我们使用文本文件内容提供程序 API 通过为原始内容创建虚拟文件来显示差异视图的左侧。这使其成为只读，以便用户知道如果想保留更改，需要编辑右侧。
+	We use the text document content provider API to show the left side for diff view by creating a virtual document for the original content. This makes it readonly so users know to edit the right side if they want to keep their changes.
 
-	- 此 API 允许您从任意来源在 VSCode 中创建只读文件，其工作方式是声明一个 uri 方案，您的提供程序随后会为其返回文本内容。注册提供程序时必须提供该方案，之后不能更改。
-	- 请注意，提供程序不会为虚拟文件创建 uri - 它的作用是根据给定的 uri 提供内容。作为回报，内容提供程序被连接到打开文件的逻辑中，因此始终会考虑提供程序。
+	- This API allows you to create readonly documents in VSCode from arbitrary sources, and works by claiming an uri-scheme for which your provider then returns text contents. The scheme must be provided when registering a provider and cannot change afterwards.
+	- Note how the provider doesn't create uris for virtual documents - its role is to provide contents given such an uri. In return, content providers are wired into the open document logic so that providers are always considered.
 	https://code.visualstudio.com/api/extension-guides/virtual-documents
 	*/
 	const diffContentProvider = new (class implements vscode.TextDocumentContentProvider {
@@ -145,9 +191,9 @@ export function activate(context: vscode.ExtensionContext) {
 	})()
 	context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider(DIFF_VIEW_URI_SCHEME, diffContentProvider))
 
-	// URI 处理程序
+	// URI Handler
 	const handleUri = async (uri: vscode.Uri) => {
-		console.log("URI 处理程序已调用，参数:", {
+		console.log("URI Handler called with:", {
 			path: uri.path,
 			query: uri.query,
 			scheme: uri.scheme,
@@ -155,15 +201,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 		const path = uri.path
 		const query = new URLSearchParams(uri.query.replace(/\+/g, "%2B"))
-		const visibleProvider = ClineProvider.getVisibleInstance()
-		if (!visibleProvider) {
+		const visibleWebview = WebviewProvider.getVisibleInstance()
+		if (!visibleWebview) {
 			return
 		}
 		switch (path) {
 			case "/openrouter": {
 				const code = query.get("code")
 				if (code) {
-					await visibleProvider.handleOpenRouterCallback(code)
+					await visibleWebview?.controller.handleOpenRouterCallback(code)
 				}
 				break
 			}
@@ -172,20 +218,20 @@ export function activate(context: vscode.ExtensionContext) {
 				const state = query.get("state")
 				const apiKey = query.get("apiKey")
 
-				console.log("收到身份验证回调:", {
+				console.log("Auth callback received:", {
 					token: token,
 					state: state,
 					apiKey: apiKey,
 				})
 
-				// 验证 state 参数
-				if (!(await visibleProvider.validateAuthState(state))) {
-					vscode.window.showErrorMessage("无效的身份验证状态")
+				// Validate state parameter
+				if (!(await visibleWebview?.controller.validateAuthState(state))) {
+					vscode.window.showErrorMessage("Invalid auth state")
 					return
 				}
 
 				if (token && apiKey) {
-					await visibleProvider.handleAuthCallback(token, apiKey)
+					await visibleWebview?.controller.handleAuthCallback(token, apiKey)
 				}
 				break
 			}
@@ -195,51 +241,48 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 	context.subscriptions.push(vscode.window.registerUriHandler({ handleUri }))
 
-	// 在开发模式下注册大小测试命令
+	// Register size testing commands in development mode
 	if (IS_DEV && IS_DEV === "true") {
-		// 使用动态导入以避免在生产环境中加载模块
+		// Use dynamic import to avoid loading the module in production
 		import("./dev/commands/tasks")
 			.then((module) => {
-				const devTaskCommands = module.registerTaskCommands(context, sidebarProvider)
+				const devTaskCommands = module.registerTaskCommands(context, sidebarWebview.controller)
 				context.subscriptions.push(...devTaskCommands)
-				Logger.log("Cline 开发任务命令已注册")
+				Logger.log("Cline dev task commands registered")
 			})
 			.catch((error) => {
-				Logger.log("注册开发任务命令失败: " + error)
+				Logger.log("Failed to register dev task commands: " + error)
 			})
 	}
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand(
-			"clineChinese.addToChat",
-			async (range?: vscode.Range, diagnostics?: vscode.Diagnostic[]) => {
-				const editor = vscode.window.activeTextEditor
-				if (!editor) {
-					return
-				}
+		vscode.commands.registerCommand("clineChinese.addToChat", async (range?: vscode.Range, diagnostics?: vscode.Diagnostic[]) => {
+			const editor = vscode.window.activeTextEditor
+			if (!editor) {
+				return
+			}
 
-				// 如果提供了范围，则使用提供的范围，否则使用当前选择
-				// (vscode 命令默认在第一个参数中传递参数，因此我们需要确保它是一个 Range 对象)
-				const textRange = range instanceof vscode.Range ? range : editor.selection
-				const selectedText = editor.document.getText(textRange)
+			// Use provided range if available, otherwise use current selection
+			// (vscode command passes an argument in the first param by default, so we need to ensure it's a Range object)
+			const textRange = range instanceof vscode.Range ? range : editor.selection
+			const selectedText = editor.document.getText(textRange)
 
-				if (!selectedText) {
-					return
-				}
+			if (!selectedText) {
+				return
+			}
 
-				// 获取文件路径和语言 ID
-				const filePath = editor.document.uri.fsPath
-				const languageId = editor.document.languageId
+			// Get the file path and language ID
+			const filePath = editor.document.uri.fsPath
+			const languageId = editor.document.languageId
 
-				// 发送到侧边栏提供程序
-				await sidebarProvider.addSelectedCodeToChat(
-					selectedText,
-					filePath,
-					languageId,
-					Array.isArray(diagnostics) ? diagnostics : undefined,
-				)
-			},
-		),
+			const visibleWebview = WebviewProvider.getVisibleInstance()
+			await visibleWebview?.controller.addSelectedCodeToChat(
+				selectedText,
+				filePath,
+				languageId,
+				Array.isArray(diagnostics) ? diagnostics : undefined,
+			)
+		}),
 	)
 
 	context.subscriptions.push(
@@ -249,26 +292,26 @@ export function activate(context: vscode.ExtensionContext) {
 				return
 			}
 
-			// 保存当前剪贴板内容
+			// Save current clipboard content
 			const tempCopyBuffer = await vscode.env.clipboard.readText()
 
 			try {
-				// 复制*现有*的终端选择（不全选）
+				// Copy the *existing* terminal selection (without selecting all)
 				await vscode.commands.executeCommand("workbench.action.terminal.copySelection")
 
-				// 获取复制的内容
+				// Get copied content
 				let terminalContents = (await vscode.env.clipboard.readText()).trim()
 
-				// 恢复原始剪贴板内容
+				// Restore original clipboard content
 				await vscode.env.clipboard.writeText(tempCopyBuffer)
 
 				if (!terminalContents) {
-					// 未复制任何终端内容（要么未选择任何内容，要么出现错误）
+					// No terminal content was copied (either nothing selected or some error)
 					return
 				}
 
-				// [可选] 处理多行内容的任何附加逻辑可以保留在此处
-				// 例如:
+				// [Optional] Any additional logic to process multi-line content can remain here
+				// For example:
 				/*
 				const lines = terminalContents.split("\n")
 				const lastLine = lines.pop()?.trim()
@@ -281,18 +324,19 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 				*/
 
-				// 发送到侧边栏提供程序
-				await sidebarProvider.addSelectedTerminalOutputToChat(terminalContents, terminal.name)
+				// Send to sidebar provider
+				const visibleWebview = WebviewProvider.getVisibleInstance()
+				await visibleWebview?.controller.addSelectedTerminalOutputToChat(terminalContents, terminal.name)
 			} catch (error) {
-				// 确保即使发生错误也要恢复剪贴板
+				// Ensure clipboard is restored even if an error occurs
 				await vscode.env.clipboard.writeText(tempCopyBuffer)
-				console.error("获取终端内容时出错:", error)
-				vscode.window.showErrorMessage("获取终端内容失败")
+				console.error("Error getting terminal contents:", error)
+				vscode.window.showErrorMessage("Failed to get terminal contents")
 			}
 		}),
 	)
 
-	// 注册代码操作提供程序
+	// Register code action provider
 	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider(
 			"*",
@@ -304,7 +348,7 @@ export function activate(context: vscode.ExtensionContext) {
 					range: vscode.Range,
 					context: vscode.CodeActionContext,
 				): vscode.CodeAction[] {
-					// 扩展范围以包含周围的 3 行
+					// Expand range to include surrounding 3 lines
 					const expandedRange = new vscode.Range(
 						Math.max(0, range.start.line - 3),
 						0,
@@ -312,21 +356,21 @@ export function activate(context: vscode.ExtensionContext) {
 						document.lineAt(Math.min(document.lineCount - 1, range.end.line + 3)).text.length,
 					)
 
-					const addAction = new vscode.CodeAction("添加到 Cline", vscode.CodeActionKind.QuickFix)
+					const addAction = new vscode.CodeAction("Add to Cline", vscode.CodeActionKind.QuickFix)
 					addAction.command = {
 						command: "clineChinese.addToChat",
-						title: "添加到 Cline",
+						title: "Add to Cline",
 						arguments: [expandedRange, context.diagnostics],
 					}
 
-					const fixAction = new vscode.CodeAction("使用 Cline 修复", vscode.CodeActionKind.QuickFix)
+					const fixAction = new vscode.CodeAction("Fix with Cline", vscode.CodeActionKind.QuickFix)
 					fixAction.command = {
 						command: "clineChinese.fixWithCline",
-						title: "使用 Cline 修复",
+						title: "Fix with Cline",
 						arguments: [expandedRange, context.diagnostics],
 					}
 
-					// 仅在有错误时显示操作
+					// Only show actions when there are errors
 					if (context.diagnostics.length > 0) {
 						return [addAction, fixAction]
 					} else {
@@ -340,9 +384,13 @@ export function activate(context: vscode.ExtensionContext) {
 		),
 	)
 
-	// 注册命令处理程序
+	// Register the command handler
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineChinese.fixWithCline", async (range: vscode.Range, diagnostics: any[]) => {
+		vscode.commands.registerCommand("clineChinese.fixWithCline", async (range: vscode.Range, diagnostics: vscode.Diagnostic[]) => {
+			// Add this line to focus the chat input first
+			await vscode.commands.executeCommand("clineChinese.focusChatInput")
+			// Wait for a webview instance to become visible after focusing
+			await pWaitFor(() => !!WebviewProvider.getVisibleInstance())
 			const editor = vscode.window.activeTextEditor
 			if (!editor) {
 				return
@@ -352,34 +400,78 @@ export function activate(context: vscode.ExtensionContext) {
 			const filePath = editor.document.uri.fsPath
 			const languageId = editor.document.languageId
 
-			// 连同诊断信息一起发送到侧边栏提供程序
-			await sidebarProvider.fixWithCline(selectedText, filePath, languageId, diagnostics)
+			// Send to sidebar provider with diagnostics
+			const visibleWebview = WebviewProvider.getVisibleInstance()
+			await visibleWebview?.controller.fixWithCline(selectedText, filePath, languageId, diagnostics)
 		}),
 	)
 
-	return createClineAPI(outputChannel, sidebarProvider)
+	// Register the focusChatInput command handler
+	context.subscriptions.push(
+		vscode.commands.registerCommand("clineChinese.focusChatInput", () => {
+			let visibleWebview = WebviewProvider.getVisibleInstance()
+			if (!visibleWebview) {
+				vscode.commands.executeCommand("clineChinese.SidebarProvider.focus")
+				visibleWebview = WebviewProvider.getSidebarInstance()
+				// showing the extension will call didBecomeVisible which focuses it already
+				// but it doesn't focus if a tab is selected which focusChatInput accounts for
+			}
+
+			visibleWebview?.controller.postMessageToWebview({
+				type: "action",
+				action: "focusChatInput",
+			})
+		}),
+	)
+
+	// Register the generateGitCommitMessage command handler
+	context.subscriptions.push(
+		vscode.commands.registerCommand("clineChinese.generateGitCommitMessage", async () => {
+			// Get the controller from any instance, without activating the view
+			const controller = WebviewProvider.getAllInstances()[0]?.controller
+
+			if (controller) {
+				// Call the controller method to generate commit message
+				await controller.generateGitCommitMessage()
+			} else {
+				// Create a temporary controller just for this operation
+				const outputChannel = vscode.window.createOutputChannel("Cline Commit Generator")
+				const tempController = new Controller(context, outputChannel, () => Promise.resolve(true))
+
+				await tempController.generateGitCommitMessage()
+				outputChannel.dispose()
+			}
+		}),
+	)
+
+	return createClineAPI(outputChannel, sidebarWebview.controller)
 }
 
-// 当您的扩展程序被停用时，将调用此方法
-export function deactivate() {
-	telemetryService.shutdown()
-	Logger.log("Cline 扩展已停用")
-}
-
-// TODO: 寻找自动从生产构建中移除开发相关内容的解决方案。
-//  这种类型的代码在生产环境中保留是可以的。我们只是希望将其从生产构建中移除
-//  以减小构建资产的大小。
+// TODO: Find a solution for automatically removing DEV related content from production builds.
+//  This type of code is fine in production to keep. We just will want to remove it from production builds
+//  to bring down built asset sizes.
 //
-// 这是一个在源代码更改时重新加载扩展程序的变通方法
-// 因为 vscode 不支持扩展程序的热重载
+// This is a workaround to reload the extension when the source code changes
+// since vscode doesn't support hot reload for extensions
 const { IS_DEV, DEV_WORKSPACE_FOLDER } = process.env
 
+// This method is called when your extension is deactivated
+export async function deactivate() {
+	await telemetryService.sendCollectedEvents()
+
+	// Clean up test mode
+	cleanupTestMode()
+	await posthogClientProvider.shutdown()
+	Logger.log("Cline extension deactivated")
+}
+
+// Set up development mode file watcher
 if (IS_DEV && IS_DEV !== "false") {
-	assert(DEV_WORKSPACE_FOLDER, "必须在开发环境中设置 DEV_WORKSPACE_FOLDER")
+	assert(DEV_WORKSPACE_FOLDER, "DEV_WORKSPACE_FOLDER must be set in development")
 	const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(DEV_WORKSPACE_FOLDER, "src/**/*"))
 
 	watcher.onDidChange(({ scheme, path }) => {
-		console.info(`${scheme} ${path} 已更改。正在重新加载 VSCode...`)
+		console.info(`${scheme} ${path} changed. Reloading VSCode...`)
 
 		vscode.commands.executeCommand("workbench.action.reloadWindow")
 	})

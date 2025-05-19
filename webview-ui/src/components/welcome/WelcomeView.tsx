@@ -1,14 +1,14 @@
-import { VSCodeButton, VSCodeDivider, VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { useCallback, useEffect, useState } from "react"
-import { useEvent } from "react-use"
-import { ExtensionMessage } from "../../../../src/shared/ExtensionMessage"
-import { useExtensionState } from "../../context/ExtensionStateContext"
-import { validateApiConfiguration } from "../../utils/validate"
-import { vscode } from "../../utils/vscode"
-import ApiOptions from "../settings/ApiOptions"
-import ClineLogoWhite from "../../assets/ClineLogoWhite"
+import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { useEffect, useState, memo } from "react"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { validateApiConfiguration } from "@/utils/validate"
+import { vscode } from "@/utils/vscode"
+import ApiOptions from "@/components/settings/ApiOptions"
+import ClineLogoWhite from "@/assets/ClineLogoWhite"
+import { AccountServiceClient } from "@/services/grpc-client"
+import { EmptyRequest } from "@shared/proto/common"
 
-const WelcomeView = () => {
+const WelcomeView = memo(() => {
 	const { apiConfiguration } = useExtensionState()
 	const [apiErrorMessage, setApiErrorMessage] = useState<string | undefined>(undefined)
 	const [showApiOptions, setShowApiOptions] = useState(false)
@@ -16,7 +16,9 @@ const WelcomeView = () => {
 	const disableLetsGoButton = apiErrorMessage != null
 
 	const handleLogin = () => {
-		vscode.postMessage({ type: "accountLoginClicked" })
+		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
+			console.error("Failed to get login URL:", err), // 日志信息保持英文
+		)
 	}
 
 	const handleSubmit = () => {
@@ -28,58 +30,42 @@ const WelcomeView = () => {
 	}, [apiConfiguration])
 
 	return (
-		<div
-			style={{
-				position: "fixed",
-				top: 0,
-				left: 0,
-				right: 0,
-				bottom: 0,
-				padding: "0 0px",
-				display: "flex",
-				flexDirection: "column",
-			}}>
-			<div
-				style={{
-					height: "100%",
-					padding: "0 20px",
-					overflow: "auto",
-				}}>
+		<div className="fixed inset-0 p-0 flex flex-col">
+			<div className="h-full px-5 overflow-auto">
 				<h2>你好，我是 Cline</h2>
-				<div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
+				<div className="flex justify-center my-5">
 					<ClineLogoWhite className="size-16" />
 				</div>
 				<p>
-					我能完成各种任务，这得益于{" "}
-					<VSCodeLink href="https://www.anthropic.com/claude/sonnet" style={{ display: "inline" }}>
-						Claude 3.7 Sonnet 的
+					得益于{" "}
+					<VSCodeLink href="https://www.anthropic.com/claude/sonnet" className="inline">
+						Claude 3.7 Sonnet
 					</VSCodeLink>
-					智能编码能力以及访问工具，让我可以创建和编辑文件、探索复杂项目、使用浏览器和执行终端命令{" "}
-					<i>（当然，需要您的许可）</i>。我甚至可以使用 MCP 创建新工具并扩展我自己的能力。
+					在智能体编码能力方面的突破，以及可以让我创建和编辑文件、探索复杂项目、使用浏览器和执行终端命令的工具（<i>当然，需要您的许可</i>），我可以完成各种任务。我甚至可以使用 MCP 来创建新工具并扩展我自身的能力。
 				</p>
 
-				<p style={{ color: "var(--vscode-descriptionForeground)" }}>
-					注册一个账户即可免费开始使用，或者使用可以访问像 Claude 3.7 Sonnet 这样模型的 API 密钥。
+				<p className="text-[var(--vscode-descriptionForeground)]">
+					注册账户即可免费开始使用，或者使用可访问 Claude 3.7 Sonnet 等模型的 API 密钥。
 				</p>
 
-				<VSCodeButton appearance="primary" onClick={handleLogin} style={{ width: "100%", marginTop: 4 }}>
-					免费开始使用
+				<VSCodeButton appearance="primary" onClick={handleLogin} className="w-full mt-1">
+					免费开始
 				</VSCodeButton>
 
 				{!showApiOptions && (
 					<VSCodeButton
 						appearance="secondary"
 						onClick={() => setShowApiOptions(!showApiOptions)}
-						style={{ marginTop: 10, width: "100%" }}>
+						className="mt-2.5 w-full">
 						使用您自己的 API 密钥
 					</VSCodeButton>
 				)}
 
-				<div style={{ marginTop: "18px" }}>
+				<div className="mt-4.5">
 					{showApiOptions && (
 						<div>
 							<ApiOptions showModelOptions={false} />
-							<VSCodeButton onClick={handleSubmit} disabled={disableLetsGoButton} style={{ marginTop: "3px" }}>
+							<VSCodeButton onClick={handleSubmit} disabled={disableLetsGoButton} className="mt-0.75">
 								开始吧！
 							</VSCodeButton>
 						</div>
@@ -88,6 +74,6 @@ const WelcomeView = () => {
 			</div>
 		</div>
 	)
-}
+})
 
 export default WelcomeView

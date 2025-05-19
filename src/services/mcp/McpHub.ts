@@ -1,5 +1,5 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
-import { StdioClientTransport, StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio.js"
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import {
 	CallToolResultSchema,
 	ListResourcesResultSchema,
@@ -14,7 +14,6 @@ import * as fs from "fs/promises"
 import * as path from "path"
 import * as vscode from "vscode"
 import { z } from "zod"
-import { ClineProvider } from "../../core/webview/ClineProvider"
 import {
 	DEFAULT_MCP_TIMEOUT_SECONDS,
 	McpMode,
@@ -25,12 +24,16 @@ import {
 	McpTool,
 	McpToolCallResponse,
 	MIN_MCP_TIMEOUT_SECONDS,
-} from "../../shared/mcp"
-import { fileExistsAtPath } from "../../utils/fs"
-import { arePathsEqual } from "../../utils/path"
-import { secondsToMs } from "../../utils/time"
-import { GlobalFileNames } from "../../global-constants"
+} from "@shared/mcp"
+import { fileExistsAtPath } from "@utils/fs"
+import { arePathsEqual } from "@utils/path"
+import { secondsToMs } from "@utils/time"
+import { GlobalFileNames } from "@core/storage/disk"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
+import { ExtensionMessage } from "@shared/ExtensionMessage"
+
+// 内部 MCP 数据请求的默认超时时间（毫秒）；与存储为 DEFAULT_MCP_TIMEOUT_SECONDS 的面向用户的超时不同
+const DEFAULT_REQUEST_TIMEOUT_MS = 5000
 
 export type McpConnection = {
 	server: McpServer
@@ -73,43 +76,38 @@ const McpSettingsSchema = z.object({
 })
 
 export class McpHub {
-	private providerRef: WeakRef<ClineProvider>
+	getMcpServersPath: () => Promise<string>
+	private getSettingsDirectoryPath: () => Promise<string>
+	private postMessageToWebview: (message: ExtensionMessage) => Promise<void>
+	private clientVersion: string
+
 	private disposables: vscode.Disposable[] = []
 	private settingsWatcher?: vscode.FileSystemWatcher
 	private fileWatchers: Map<string, FSWatcher> = new Map()
 	connections: McpConnection[] = []
-	isConnecting: boolean = false
+	isConnecting: boolean = false // 是否正在连接
 
-	constructor(provider: ClineProvider) {
-		this.providerRef = new WeakRef(provider)
-		this.watchMcpSettingsFile()
-		this.initializeMcpServers()
+	constructor(
+		getMcpServersPath: () => Promise<string>,
+		getSettingsDirectoryPath: () => Promise<string>,
+		postMessageToWebview: (message: ExtensionMessage) => Promise<void>,
+		clientVersion: string,
+	) {
+		this.getMcpServersPath = getMcpServersPath
+		this.getSettingsDirectoryPath = getSettingsDirectoryPath
+		this.postMessageToWebview = postMessageToWebview
+		this.clientVersion = clientVersion
+		this.watchMcpSettingsFile() // 监视 MCP 配置文件
+		this.initializeMcpServers() // 初始化 MCP 服务器
 	}
 
 	getServers(): McpServer[] {
-		// Only return enabled servers
+		// 仅返回启用的服务器
 		return this.connections.filter((conn) => !conn.server.disabled).map((conn) => conn.server)
 	}
 
-	getMode(): McpMode {
-		return vscode.workspace.getConfiguration("clineChinese.mcp").get<McpMode>("mode", "full")
-	}
-
-	async getMcpServersPath(): Promise<string> {
-		const provider = this.providerRef.deref()
-		if (!provider) {
-			throw new Error("Provider not available")
-		}
-		const mcpServersPath = await provider.ensureMcpServersDirectoryExists()
-		return mcpServersPath
-	}
-
 	async getMcpSettingsFilePath(): Promise<string> {
-		const provider = this.providerRef.deref()
-		if (!provider) {
-			throw new Error("Provider not available")
-		}
-		const mcpSettingsFilePath = path.join(await provider.ensureSettingsDirectoryExists(), GlobalFileNames.mcpSettings)
+		const mcpSettingsFilePath = path.join(await this.getSettingsDirectoryPath(), GlobalFileNames.mcpSettings)
 		const fileExists = await fileExistsAtPath(mcpSettingsFilePath)
 		if (!fileExists) {
 			await fs.writeFile(
@@ -131,26 +129,26 @@ export class McpHub {
 
 			let config: any
 
-			// Parse JSON file content
+			// 解析 JSON 文件内容
 			try {
 				config = JSON.parse(content)
 			} catch (error) {
 				vscode.window.showErrorMessage(
-					"Invalid MCP settings format. Please ensure your settings follow the correct JSON format.",
+					"MCP 设置格式无效。请确保您的设置遵循正确的 JSON 格式。",
 				)
 				return undefined
 			}
 
-			// Validate against schema
+			// 根据模式验证
 			const result = McpSettingsSchema.safeParse(config)
 			if (!result.success) {
-				vscode.window.showErrorMessage("Invalid MCP settings schema.")
+				vscode.window.showErrorMessage("MCP 设置模式无效。")
 				return undefined
 			}
 
 			return result.data
 		} catch (error) {
-			console.error("Failed to read MCP settings:", error)
+			console.error("读取 MCP 设置失败：", error)
 			return undefined
 		}
 	}
@@ -163,11 +161,11 @@ export class McpHub {
 					const settings = await this.readAndValidateMcpSettingsFile()
 					if (settings) {
 						try {
-							vscode.window.showInformationMessage("Updating MCP servers...")
+							vscode.window.showInformationMessage("正在更新 MCP 服务器...")
 							await this.updateServerConnections(settings.mcpServers)
-							vscode.window.showInformationMessage("MCP servers updated")
+							vscode.window.showInformationMessage("MCP 服务器已更新")
 						} catch (error) {
-							console.error("Failed to process MCP settings change:", error)
+							console.error("处理 MCP 设置更改失败：", error)
 						}
 					}
 				}
@@ -186,15 +184,15 @@ export class McpHub {
 		name: string,
 		config: z.infer<typeof StdioConfigSchema> | z.infer<typeof SseConfigSchema>,
 	): Promise<void> {
-		// Remove existing connection if it exists (should never happen, the connection should be deleted beforehand)
+		// 如果存在现有连接，则将其删除（这不应该发生，连接应该事先删除）
 		this.connections = this.connections.filter((conn) => conn.server.name !== name)
 
 		try {
-			// Each MCP server requires its own transport connection and has unique capabilities, configurations, and error handling. Having separate clients also allows proper scoping of resources/tools and independent server management like reconnection.
+			// 每个 MCP 服务器都需要自己的传输连接，并具有独特的功能、配置和错误处理。拥有独立的客户端还允许对资源/工具进行适当的作用域划分以及独立的服务器管理（如重新连接）。
 			const client = new Client(
 				{
-					name: "Cline",
-					version: this.providerRef.deref()?.context.extension?.packageJSON?.version ?? "1.0.0",
+					name: "Cline", // 客户端名称，保持英文
+					version: this.clientVersion,
 				},
 				{
 					capabilities: {},
@@ -204,7 +202,7 @@ export class McpHub {
 			let transport: StdioClientTransport | SSEClientTransport
 
 			if (config.transportType === "sse") {
-				return
+				transport = new SSEClientTransport(new URL(config.url), {})
 			} else {
 				transport = new StdioClientTransport({
 					command: config.command,
@@ -214,12 +212,12 @@ export class McpHub {
 						...(process.env.PATH ? { PATH: process.env.PATH } : {}),
 						// ...(process.env.NODE_PATH ? { NODE_PATH: process.env.NODE_PATH } : {}),
 					},
-					stderr: "pipe", // necessary for stderr to be available
+					stderr: "pipe", // stderr 可用所必需
 				})
 			}
 
 			transport.onerror = async (error) => {
-				console.error(`Transport error for "${name}":`, error)
+				console.error(`服务器 "${name}" 的传输错误：`, error)
 				const connection = this.connections.find((conn) => conn.server.name === name)
 				if (connection) {
 					connection.server.status = "disconnected"
@@ -236,71 +234,63 @@ export class McpHub {
 				await this.notifyWebviewOfServerChanges()
 			}
 
-			// If the config is invalid, show an error
-			if (!StdioConfigSchema.safeParse(config).success) {
-				console.error(`Invalid config for "${name}": missing or invalid parameters`)
-				const connection: McpConnection = {
-					server: {
-						name,
-						config: JSON.stringify(config),
-						status: "disconnected",
-						error: "Invalid config: missing or invalid parameters",
-					},
-					client,
-					transport,
-				}
-				this.connections.push(connection)
-				return
-			}
-
-			// valid schema
-			const parsedConfig = StdioConfigSchema.parse(config)
 			const connection: McpConnection = {
 				server: {
 					name,
 					config: JSON.stringify(config),
-					status: "connecting",
-					disabled: parsedConfig.disabled,
+					status: "connecting", // 状态标识符，保持英文
+					disabled: config.disabled,
 				},
 				client,
 				transport,
 			}
 			this.connections.push(connection)
 
-			// transport.stderr is only available after the process has been started. However we can't start it separately from the .connect() call because it also starts the transport. And we can't place this after the connect call since we need to capture the stderr stream before the connection is established, in order to capture errors during the connection process.
-			// As a workaround, we start the transport ourselves, and then monkey-patch the start method to no-op so that .connect() doesn't try to start it again.
-			await transport.start()
-			const stderrStream = transport.stderr
-			if (stderrStream) {
-				stderrStream.on("data", async (data: Buffer) => {
-					const errorOutput = data.toString()
-					console.error(`Server "${name}" stderr:`, errorOutput)
-					const connection = this.connections.find((conn) => conn.server.name === name)
-					if (connection) {
-						// NOTE: we do not set server status to "disconnected" because stderr logs do not necessarily mean the server crashed or disconnected, it could just be informational. In fact when the server first starts up, it immediately logs "<name> server running on stdio" to stderr.
-						this.appendErrorMessage(connection, errorOutput)
-						// Only need to update webview right away if it's already disconnected
-						if (connection.server.status === "disconnected") {
-							await this.notifyWebviewOfServerChanges()
-						}
-					}
-				})
-			} else {
-				console.error(`No stderr stream for ${name}`)
-			}
-			transport.start = async () => {} // No-op now, .connect() won't fail
+			if (config.transportType === "stdio") {
+				// transport.stderr 仅在进程启动后可用。但是，我们无法将其与 .connect() 调用分开启动，因为它也会启动传输。而且我们不能在 connect 调用之后放置它，因为我们需要在建立连接之前捕获 stderr 流，以便捕获连接过程中的错误。
+				// 作为一种解决方法，我们自己启动传输，然后对 start 方法进行猴子补丁以使其不执行任何操作，这样 .connect() 就不会尝试再次启动它。
+				await transport.start()
+				const stderrStream = (transport as StdioClientTransport).stderr
+				if (stderrStream) {
+					stderrStream.on("data", async (data: Buffer) => {
+						const output = data.toString()
+						// 检查输出是否包含 INFO 级别的日志
+						const isInfoLog = !/\berror\b/i.test(output)
 
-			// Connect
+						if (isInfoLog) {
+							// 记录正常的参考信息
+							console.info(`服务器 "${name}" 信息：`, output)
+						} else {
+							// 视为错误日志
+							console.error(`服务器 "${name}" stderr：`, output)
+							const connection = this.connections.find((conn) => conn.server.name === name)
+							if (connection) {
+								this.appendErrorMessage(connection, output)
+								// 仅当服务器已断开连接时才通知 webview
+								if (connection.server.status === "disconnected") {
+									await this.notifyWebviewOfServerChanges()
+								}
+							}
+						}
+					})
+				} else {
+					console.error(`服务器 ${name} 没有 stderr 流`)
+				}
+				transport.start = async () => {} // 现在不执行任何操作，.connect() 不会失败
+			}
+
+			// 连接
 			await client.connect(transport)
-			connection.server.status = "connected"
+
+			connection.server.status = "connected" // 状态标识符，保持英文
 			connection.server.error = ""
 
-			// Initial fetch of tools and resources
+			// 初始获取工具和资源
 			connection.server.tools = await this.fetchToolsList(name)
 			connection.server.resources = await this.fetchResourcesList(name)
 			connection.server.resourceTemplates = await this.fetchResourceTemplatesList(name)
 		} catch (error) {
-			// Update status with error
+			// 更新状态并附带错误
 			const connection = this.connections.find((conn) => conn.server.name === name)
 			if (connection) {
 				connection.server.status = "disconnected"
@@ -317,26 +307,31 @@ export class McpHub {
 
 	private async fetchToolsList(serverName: string): Promise<McpTool[]> {
 		try {
-			const response = await this.connections
-				.find((conn) => conn.server.name === serverName)
-				?.client.request({ method: "tools/list" }, ListToolsResultSchema)
+			const connection = this.connections.find((conn) => conn.server.name === serverName)
 
-			// Get autoApprove settings
+			if (!connection) {
+				throw new Error(`未找到服务器 ${serverName} 的连接`)
+			}
+
+			const response = await connection.client.request({ method: "tools/list" }, ListToolsResultSchema, {
+				timeout: DEFAULT_REQUEST_TIMEOUT_MS,
+			})
+
+			// 获取 autoApprove 设置
 			const settingsPath = await this.getMcpSettingsFilePath()
 			const content = await fs.readFile(settingsPath, "utf-8")
 			const config = JSON.parse(content)
 			const autoApproveConfig = config.mcpServers[serverName]?.autoApprove || []
 
-			// Mark tools as always allowed based on settings
+			// 根据设置将工具标记为始终允许
 			const tools = (response?.tools || []).map((tool) => ({
 				...tool,
 				autoApprove: autoApproveConfig.includes(tool.name),
 			}))
 
-			// console.log(`[MCP] Fetched tools for ${serverName}:`, tools)
 			return tools
 		} catch (error) {
-			// console.error(`Failed to fetch tools for ${serverName}:`, error)
+			console.error(`为服务器 ${serverName} 获取工具失败：`, error)
 			return []
 		}
 	}
@@ -345,10 +340,10 @@ export class McpHub {
 		try {
 			const response = await this.connections
 				.find((conn) => conn.server.name === serverName)
-				?.client.request({ method: "resources/list" }, ListResourcesResultSchema)
+				?.client.request({ method: "resources/list" }, ListResourcesResultSchema, { timeout: DEFAULT_REQUEST_TIMEOUT_MS })
 			return response?.resources || []
 		} catch (error) {
-			// console.error(`Failed to fetch resources for ${serverName}:`, error)
+			// console.error(`为服务器 ${serverName} 获取资源失败：`, error)
 			return []
 		}
 	}
@@ -357,10 +352,13 @@ export class McpHub {
 		try {
 			const response = await this.connections
 				.find((conn) => conn.server.name === serverName)
-				?.client.request({ method: "resources/templates/list" }, ListResourceTemplatesResultSchema)
+				?.client.request({ method: "resources/templates/list" }, ListResourceTemplatesResultSchema, {
+					timeout: DEFAULT_REQUEST_TIMEOUT_MS,
+				})
+
 			return response?.resourceTemplates || []
 		} catch (error) {
-			// console.error(`Failed to fetch resource templates for ${serverName}:`, error)
+			// console.error(`为服务器 ${serverName} 获取资源模板失败：`, error)
 			return []
 		}
 	}
@@ -372,10 +370,57 @@ export class McpHub {
 				await connection.transport.close()
 				await connection.client.close()
 			} catch (error) {
-				console.error(`Failed to close transport for ${name}:`, error)
+				console.error(`关闭服务器 ${name} 的传输失败：`, error)
 			}
 			this.connections = this.connections.filter((conn) => conn.server.name !== name)
 		}
+	}
+
+	async updateServerConnectionsRPC(newServers: Record<string, McpServerConfig>): Promise<void> {
+		this.isConnecting = true
+		this.removeAllFileWatchers()
+		const currentNames = new Set(this.connections.map((conn) => conn.server.name))
+		const newNames = new Set(Object.keys(newServers))
+
+		// 删除已移除的服务器
+		for (const name of currentNames) {
+			if (!newNames.has(name)) {
+				await this.deleteConnection(name)
+				console.log(`已删除 MCP 服务器：${name}`)
+			}
+		}
+
+		// 更新或添加服务器
+		for (const [name, config] of Object.entries(newServers)) {
+			const currentConnection = this.connections.find((conn) => conn.server.name === name)
+
+			if (!currentConnection) {
+				// 新服务器
+				try {
+					if (config.transportType === "stdio") {
+						this.setupFileWatcher(name, config)
+					}
+					await this.connectToServer(name, config)
+				} catch (error) {
+					console.error(`连接到新的 MCP 服务器 ${name} 失败：`, error)
+				}
+			} else if (!deepEqual(JSON.parse(currentConnection.server.config), config)) {
+				// 配置已更改的现有服务器
+				try {
+					if (config.transportType === "stdio") {
+						this.setupFileWatcher(name, config)
+					}
+					await this.deleteConnection(name)
+					await this.connectToServer(name, config)
+					console.log(`已使用更新的配置重新连接 MCP 服务器：${name}`)
+				} catch (error) {
+					console.error(`重新连接 MCP 服务器 ${name} 失败：`, error)
+				}
+			}
+			// 如果服务器存在且配置相同，则不执行任何操作
+		}
+
+		this.isConnecting = false
 	}
 
 	async updateServerConnections(newServers: Record<string, McpServerConfig>): Promise<void> {
@@ -384,55 +429,59 @@ export class McpHub {
 		const currentNames = new Set(this.connections.map((conn) => conn.server.name))
 		const newNames = new Set(Object.keys(newServers))
 
-		// Delete removed servers
+		// 删除已移除的服务器
 		for (const name of currentNames) {
 			if (!newNames.has(name)) {
 				await this.deleteConnection(name)
-				console.log(`Deleted MCP server: ${name}`)
+				console.log(`已删除 MCP 服务器：${name}`)
 			}
 		}
 
-		// Update or add servers
+		// 更新或添加服务器
 		for (const [name, config] of Object.entries(newServers)) {
 			const currentConnection = this.connections.find((conn) => conn.server.name === name)
 
 			if (!currentConnection) {
-				// New server
+				// 新服务器
 				try {
-					this.setupFileWatcher(name, config)
+					if (config.transportType === "stdio") {
+						this.setupFileWatcher(name, config)
+					}
 					await this.connectToServer(name, config)
 				} catch (error) {
-					console.error(`Failed to connect to new MCP server ${name}:`, error)
+					console.error(`连接到新的 MCP 服务器 ${name} 失败：`, error)
 				}
 			} else if (!deepEqual(JSON.parse(currentConnection.server.config), config)) {
-				// Existing server with changed config
+				// 配置已更改的现有服务器
 				try {
-					this.setupFileWatcher(name, config)
+					if (config.transportType === "stdio") {
+						this.setupFileWatcher(name, config)
+					}
 					await this.deleteConnection(name)
 					await this.connectToServer(name, config)
-					console.log(`Reconnected MCP server with updated config: ${name}`)
+					console.log(`已使用更新的配置重新连接 MCP 服务器：${name}`)
 				} catch (error) {
-					console.error(`Failed to reconnect MCP server ${name}:`, error)
+					console.error(`重新连接 MCP 服务器 ${name} 失败：`, error)
 				}
 			}
-			// If server exists with same config, do nothing
+			// 如果服务器存在且配置相同，则不执行任何操作
 		}
 		await this.notifyWebviewOfServerChanges()
 		this.isConnecting = false
 	}
 
-	private setupFileWatcher(name: string, config: any) {
+	private setupFileWatcher(name: string, config: Extract<McpServerConfig, { transportType: "stdio" }>) {
 		const filePath = config.args?.find((arg: string) => arg.includes("build/index.js"))
 		if (filePath) {
-			// we use chokidar instead of onDidSaveTextDocument because it doesn't require the file to be open in the editor. The settings config is better suited for onDidSave since that will be manually updated by the user or Cline (and we want to detect save events, not every file change)
+			// 我们使用 chokidar 而不是 onDidSaveTextDocument，因为它不需要在编辑器中打开文件。设置配置更适合 onDidSave，因为它将由用户或 Cline 手动更新（我们希望检测保存事件，而不是每个文件更改）
 			const watcher = chokidar.watch(filePath, {
 				// persistent: true,
 				// ignoreInitial: true,
-				// awaitWriteFinish: true, // This helps with atomic writes
+				// awaitWriteFinish: true, // 这有助于原子写入
 			})
 
 			watcher.on("change", () => {
-				console.log(`Detected change in ${filePath}. Restarting server ${name}...`)
+				console.log(`检测到 ${filePath} 中的更改。正在重新启动服务器 ${name}...`)
 				this.restartConnection(name)
 			})
 
@@ -447,28 +496,24 @@ export class McpHub {
 
 	async restartConnection(serverName: string): Promise<void> {
 		this.isConnecting = true
-		const provider = this.providerRef.deref()
-		if (!provider) {
-			return
-		}
 
-		// Get existing connection and update its status
+		// 获取现有连接并更新其状态
 		const connection = this.connections.find((conn) => conn.server.name === serverName)
 		const config = connection?.server.config
 		if (config) {
-			vscode.window.showInformationMessage(`Restarting ${serverName} MCP server...`)
+			vscode.window.showInformationMessage(`正在重新启动 ${serverName} MCP 服务器...`)
 			connection.server.status = "connecting"
 			connection.server.error = ""
 			await this.notifyWebviewOfServerChanges()
-			await setTimeoutPromise(500) // artificial delay to show user that server is restarting
+			await setTimeoutPromise(500) // 人为延迟以向用户显示服务器正在重新启动
 			try {
 				await this.deleteConnection(serverName)
-				// Try to connect again using existing config
+				// 尝试使用现有配置再次连接
 				await this.connectToServer(serverName, JSON.parse(config))
-				vscode.window.showInformationMessage(`${serverName} MCP server connected`)
+				vscode.window.showInformationMessage(`${serverName} MCP 服务器已连接`)
 			} catch (error) {
-				console.error(`Failed to restart connection for ${serverName}:`, error)
-				vscode.window.showErrorMessage(`Failed to connect to ${serverName} MCP server`)
+				console.error(`为服务器 ${serverName} 重新启动连接失败：`, error)
+				vscode.window.showErrorMessage(`连接到 ${serverName} MCP 服务器失败`)
 			}
 		}
 
@@ -476,21 +521,30 @@ export class McpHub {
 		this.isConnecting = false
 	}
 
+	/**
+	 * 获取根据设置中定义的顺序排序的 MCP 服务器
+	 * @param serverOrder 设置中显示的服务器名称顺序数组
+	 * @returns 根据设置顺序排序的 McpServer 对象数组
+	 */
+	private getSortedMcpServers(serverOrder: string[]): McpServer[] {
+		return [...this.connections]
+			.sort((a, b) => {
+				const indexA = serverOrder.indexOf(a.server.name)
+				const indexB = serverOrder.indexOf(b.server.name)
+				return indexA - indexB
+			})
+			.map((connection) => connection.server)
+	}
+
 	private async notifyWebviewOfServerChanges(): Promise<void> {
-		// servers should always be sorted in the order they are defined in the settings file
+		// 服务器应始终按照它们在设置文件中的定义顺序排序
 		const settingsPath = await this.getMcpSettingsFilePath()
 		const content = await fs.readFile(settingsPath, "utf-8")
 		const config = JSON.parse(content)
 		const serverOrder = Object.keys(config.mcpServers || {})
-		await this.providerRef.deref()?.postMessageToWebview({
+		await this.postMessageToWebview({
 			type: "mcpServers",
-			mcpServers: [...this.connections]
-				.sort((a, b) => {
-					const indexA = serverOrder.indexOf(a.server.name)
-					const indexB = serverOrder.indexOf(b.server.name)
-					return indexA - indexB
-				})
-				.map((connection) => connection.server),
+			mcpServers: this.getSortedMcpServers(serverOrder),
 		})
 	}
 
@@ -498,80 +552,40 @@ export class McpHub {
 		await this.notifyWebviewOfServerChanges()
 	}
 
-	// Using server
+	// 使用服务器
 
-	// Public methods for server management
+	// 服务器管理的公共方法
 
-	public async toggleServerDisabled(serverName: string, disabled: boolean): Promise<void> {
-		let settingsPath: string
+	public async toggleServerDisabledRPC(serverName: string, disabled: boolean): Promise<McpServer[]> {
 		try {
-			settingsPath = await this.getMcpSettingsFilePath()
-
-			// Ensure the settings file exists and is accessible
-			try {
-				await fs.access(settingsPath)
-			} catch (error) {
-				console.error("Settings file not accessible:", error)
-				throw new Error("Settings file not accessible")
-			}
-			const content = await fs.readFile(settingsPath, "utf-8")
-			const config = JSON.parse(content)
-
-			// Validate the config structure
-			if (!config || typeof config !== "object") {
-				throw new Error("Invalid config structure")
-			}
-
-			if (!config.mcpServers || typeof config.mcpServers !== "object") {
-				config.mcpServers = {}
+			const config = await this.readAndValidateMcpSettingsFile()
+			if (!config) {
+				throw new Error("读取或验证 MCP 设置失败")
 			}
 
 			if (config.mcpServers[serverName]) {
-				// Create a new server config object to ensure clean structure
-				const serverConfig = {
-					...config.mcpServers[serverName],
-					disabled,
-				}
+				config.mcpServers[serverName].disabled = disabled
 
-				// Ensure required fields exist
-				if (!serverConfig.autoApprove) {
-					serverConfig.autoApprove = []
-				}
-
-				config.mcpServers[serverName] = serverConfig
-
-				// Write the entire config back
-				const updatedConfig = {
-					mcpServers: config.mcpServers,
-				}
-
-				await fs.writeFile(settingsPath, JSON.stringify(updatedConfig, null, 2))
+				const settingsPath = await this.getMcpSettingsFilePath()
+				await fs.writeFile(settingsPath, JSON.stringify(config, null, 2))
 
 				const connection = this.connections.find((conn) => conn.server.name === serverName)
 				if (connection) {
-					try {
-						connection.server.disabled = disabled
-
-						// Only refresh capabilities if connected
-						if (connection.server.status === "connected") {
-							connection.server.tools = await this.fetchToolsList(serverName)
-							connection.server.resources = await this.fetchResourcesList(serverName)
-							connection.server.resourceTemplates = await this.fetchResourceTemplatesList(serverName)
-						}
-					} catch (error) {
-						console.error(`Failed to refresh capabilities for ${serverName}:`, error)
-					}
+					connection.server.disabled = disabled
 				}
 
-				await this.notifyWebviewOfServerChanges()
+				const serverOrder = Object.keys(config.mcpServers || {})
+				return this.getSortedMcpServers(serverOrder)
 			}
+			console.error(`在 MCP 配置中找不到服务器 "${serverName}"`)
+			throw new Error(`在 MCP 配置中找不到服务器 "${serverName}"`)
 		} catch (error) {
-			console.error("Failed to update server disabled state:", error)
+			console.error("更新服务器禁用状态失败：", error)
 			if (error instanceof Error) {
-				console.error("Error details:", error.message, error.stack)
+				console.error("错误详情：", error.message, error.stack)
 			}
 			vscode.window.showErrorMessage(
-				`Failed to update server state: ${error instanceof Error ? error.message : String(error)}`,
+				`更新服务器状态失败：${error instanceof Error ? error.message : String(error)}`,
 			)
 			throw error
 		}
@@ -580,10 +594,10 @@ export class McpHub {
 	async readResource(serverName: string, uri: string): Promise<McpResourceResponse> {
 		const connection = this.connections.find((conn) => conn.server.name === serverName)
 		if (!connection) {
-			throw new Error(`No connection found for server: ${serverName}`)
+			throw new Error(`未找到服务器 ${serverName} 的连接`)
 		}
 		if (connection.server.disabled) {
-			throw new Error(`Server "${serverName}" is disabled`)
+			throw new Error(`服务器 "${serverName}" 已禁用`)
 		}
 
 		return await connection.client.request(
@@ -601,22 +615,22 @@ export class McpHub {
 		const connection = this.connections.find((conn) => conn.server.name === serverName)
 		if (!connection) {
 			throw new Error(
-				`No connection found for server: ${serverName}. Please make sure to use MCP servers available under 'Connected MCP Servers'.`,
+				`未找到服务器 ${serverName} 的连接。请确保使用“已连接的 MCP 服务器”下可用的 MCP 服务器。`,
 			)
 		}
 
 		if (connection.server.disabled) {
-			throw new Error(`Server "${serverName}" is disabled and cannot be used`)
+			throw new Error(`服务器 "${serverName}" 已禁用且无法使用`)
 		}
 
-		let timeout = secondsToMs(DEFAULT_MCP_TIMEOUT_SECONDS) // sdk expects ms
+		let timeout = secondsToMs(DEFAULT_MCP_TIMEOUT_SECONDS) // sdk 需要毫秒单位
 
 		try {
 			const config = JSON.parse(connection.server.config)
-			const parsedConfig = StdioConfigSchema.parse(config)
+			const parsedConfig = ServerConfigSchema.parse(config)
 			timeout = secondsToMs(parsedConfig.timeout)
 		} catch (error) {
-			console.error(`Failed to parse timeout configuration for server ${serverName}: ${error}`)
+			console.error(`解析服务器 ${serverName} 的超时配置失败：${error}`)
 		}
 
 		return await connection.client.request(
@@ -634,40 +648,93 @@ export class McpHub {
 		)
 	}
 
-	async toggleToolAutoApprove(serverName: string, toolName: string, shouldAllow: boolean): Promise<void> {
+	async toggleToolAutoApprove(serverName: string, toolNames: string[], shouldAllow: boolean): Promise<void> {
 		try {
 			const settingsPath = await this.getMcpSettingsFilePath()
 			const content = await fs.readFile(settingsPath, "utf-8")
 			const config = JSON.parse(content)
 
-			// Initialize autoApprove if it doesn't exist
+			// 如果 autoApprove 不存在，则初始化它
 			if (!config.mcpServers[serverName].autoApprove) {
 				config.mcpServers[serverName].autoApprove = []
 			}
 
 			const autoApprove = config.mcpServers[serverName].autoApprove
-			const toolIndex = autoApprove.indexOf(toolName)
+			for (const toolName of toolNames) {
+				const toolIndex = autoApprove.indexOf(toolName)
 
-			if (shouldAllow && toolIndex === -1) {
-				// Add tool to autoApprove list
-				autoApprove.push(toolName)
-			} else if (!shouldAllow && toolIndex !== -1) {
-				// Remove tool from autoApprove list
-				autoApprove.splice(toolIndex, 1)
+				if (shouldAllow && toolIndex === -1) {
+					// 将工具添加到 autoApprove 列表
+					autoApprove.push(toolName)
+				} else if (!shouldAllow && toolIndex !== -1) {
+					// 从 autoApprove 列表中删除工具
+					autoApprove.splice(toolIndex, 1)
+				}
 			}
 
 			await fs.writeFile(settingsPath, JSON.stringify(config, null, 2))
 
-			// Update the tools list to reflect the change
+			// 更新工具列表以反映更改
 			const connection = this.connections.find((conn) => conn.server.name === serverName)
-			if (connection) {
-				connection.server.tools = await this.fetchToolsList(serverName)
+			if (connection && connection.server.tools) {
+				// 更新内存中服务器对象中每个工具的 autoApprove 属性
+				connection.server.tools = connection.server.tools.map((tool) => ({
+					...tool,
+					autoApprove: autoApprove.includes(tool.name),
+				}))
 				await this.notifyWebviewOfServerChanges()
 			}
 		} catch (error) {
-			console.error("Failed to update autoApprove settings:", error)
-			vscode.window.showErrorMessage("Failed to update autoApprove settings")
-			throw error // Re-throw to ensure the error is properly handled
+			console.error("更新 autoApprove 设置失败：", error)
+			vscode.window.showErrorMessage("更新 autoApprove 设置失败")
+			throw error // 重新抛出以确保错误得到正确处理
+		}
+	}
+
+	public async addRemoteServer(serverName: string, serverUrl: string): Promise<McpServer[]> {
+		try {
+			const settings = await this.readAndValidateMcpSettingsFile()
+			if (!settings) {
+				throw new Error("读取 MCP 设置失败")
+			}
+
+			if (settings.mcpServers[serverName]) {
+				throw new Error(`名称为 "${serverName}" 的 MCP 服务器已存在`)
+			}
+
+			const urlValidation = z.string().url().safeParse(serverUrl)
+			if (!urlValidation.success) {
+				throw new Error(`无效的服务器 URL：${serverUrl}。请输入有效的 URL。`)
+			}
+
+			const serverConfig = {
+				url: serverUrl,
+				disabled: false,
+				autoApprove: [],
+			}
+
+			const parsedConfig = ServerConfigSchema.parse(serverConfig)
+
+			settings.mcpServers[serverName] = parsedConfig
+			const settingsPath = await this.getMcpSettingsFilePath()
+
+			// 我们不将 zod 转换后的版本写入文件。
+			// 上面的 parse() 调用会将 transportType 字段添加到服务器配置中
+			// 如果写入此内容也可以，但我们不想用内部细节来扰乱文件
+
+			// 待办：我们可以从反映未转换/已转换版本的输入/输出类型中受益
+			await fs.writeFile(
+				settingsPath,
+				JSON.stringify({ mcpServers: { ...settings.mcpServers, [serverName]: serverConfig } }, null, 2),
+			)
+
+			await this.updateServerConnectionsRPC(settings.mcpServers)
+
+			const serverOrder = Object.keys(settings.mcpServers || {})
+			return this.getSortedMcpServers(serverOrder)
+		} catch (error) {
+			console.error("添加远程 MCP 服务器失败：", error)
+			throw error
 		}
 	}
 
@@ -686,24 +753,24 @@ export class McpHub {
 				}
 				await fs.writeFile(settingsPath, JSON.stringify(updatedConfig, null, 2))
 				await this.updateServerConnections(config.mcpServers)
-				vscode.window.showInformationMessage(`Deleted ${serverName} MCP server`)
+				vscode.window.showInformationMessage(`已删除 ${serverName} MCP 服务器`)
 			} else {
-				vscode.window.showWarningMessage(`${serverName} not found in MCP configuration`)
+				vscode.window.showWarningMessage(`${serverName} 在 MCP 配置中未找到`)
 			}
 		} catch (error) {
 			vscode.window.showErrorMessage(
-				`Failed to delete MCP server: ${error instanceof Error ? error.message : String(error)}`,
+				`删除 MCP 服务器失败：${error instanceof Error ? error.message : String(error)}`,
 			)
 			throw error
 		}
 	}
 
-	public async updateServerTimeout(serverName: string, timeout: number): Promise<void> {
+	public async updateServerTimeoutRPC(serverName: string, timeout: number): Promise<McpServer[]> {
 		try {
-			// Validate timeout against schema
+			// 根据模式验证超时
 			const setConfigResult = BaseConfigSchema.shape.timeout.safeParse(timeout)
 			if (!setConfigResult.success) {
-				throw new Error(`Invalid timeout value: ${timeout}. Must be at minimum ${MIN_MCP_TIMEOUT_SECONDS} seconds.`)
+				throw new Error(`无效的超时值：${timeout}。必须至少为 ${MIN_MCP_TIMEOUT_SECONDS} 秒。`)
 			}
 
 			const settingsPath = await this.getMcpSettingsFilePath()
@@ -711,7 +778,7 @@ export class McpHub {
 			const config = JSON.parse(content)
 
 			if (!config.mcpServers?.[serverName]) {
-				throw new Error(`Server "${serverName}" not found in settings`)
+				throw new Error(`在设置中找不到服务器 "${serverName}"`)
 			}
 
 			config.mcpServers[serverName] = {
@@ -721,14 +788,17 @@ export class McpHub {
 
 			await fs.writeFile(settingsPath, JSON.stringify(config, null, 2))
 
-			await this.updateServerConnections(config.mcpServers)
+			await this.updateServerConnectionsRPC(config.mcpServers)
+
+			const serverOrder = Object.keys(config.mcpServers || {})
+			return this.getSortedMcpServers(serverOrder)
 		} catch (error) {
-			console.error("Failed to update server timeout:", error)
+			console.error("更新服务器超时失败：", error)
 			if (error instanceof Error) {
-				console.error("Error details:", error.message, error.stack)
+				console.error("错误详情：", error.message, error.stack)
 			}
 			vscode.window.showErrorMessage(
-				`Failed to update server timeout: ${error instanceof Error ? error.message : String(error)}`,
+				`更新服务器超时失败：${error instanceof Error ? error.message : String(error)}`,
 			)
 			throw error
 		}
@@ -740,7 +810,7 @@ export class McpHub {
 			try {
 				await this.deleteConnection(connection.server.name)
 			} catch (error) {
-				console.error(`Failed to close connection for ${connection.server.name}:`, error)
+				console.error(`关闭服务器 ${connection.server.name} 的连接失败：`, error)
 			}
 		}
 		this.connections = []

@@ -1,5 +1,5 @@
-import { ApiConfiguration, openRouterDefaultModelId } from "../../../src/shared/api"
-import { ModelInfo } from "../../../src/shared/api"
+import { ApiConfiguration, openRouterDefaultModelId, ModelInfo } from "@shared/api"
+
 export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): string | undefined {
 	if (apiConfiguration) {
 		switch (apiConfiguration.apiProvider) {
@@ -45,7 +45,12 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 				break
 			case "qwen":
 				if (!apiConfiguration.qwenApiKey) {
-					return "您必须提供有效的 API 密钥或选择其他提供商。"
+					return "You must provide a valid API key or choose a different provider."
+				}
+				break
+			case "doubao":
+				if (!apiConfiguration.doubaoApiKey) {
+					return "You must provide a valid API key or choose a different provider."
 				}
 				break
 			case "mistral":
@@ -65,7 +70,12 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 				break
 			case "requesty":
 				if (!apiConfiguration.requestyApiKey || !apiConfiguration.requestyModelId) {
-					return "您必须提供有效的 API 密钥或选择其他提供商。"
+					return "You must provide a valid API key or choose a different provider."
+				}
+				break
+			case "fireworks":
+				if (!apiConfiguration.fireworksApiKey || !apiConfiguration.fireworksModelId) {
+					return "You must provide a valid API key or choose a different provider."
 				}
 				break
 			case "together":
@@ -116,7 +126,7 @@ export function validateModelId(
 		switch (apiConfiguration.apiProvider) {
 			case "openrouter":
 			case "cline":
-				const modelId = apiConfiguration.openRouterModelId || openRouterDefaultModelId // 如果用户未更改模型 ID，则默认为 undefined
+				const modelId = apiConfiguration.openRouterModelId || openRouterDefaultModelId // in case the user hasn't changed the model id, it will be undefined by default
 				if (!modelId) {
 					return "您必须提供模型 ID。"
 				}

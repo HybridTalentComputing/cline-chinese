@@ -2,19 +2,19 @@ import React from "react"
 
 interface ChatErrorBoundaryProps {
 	children: React.ReactNode
-	errorTitle?: string
-	errorBody?: string
-	height?: string
+	errorTitle?: string // 错误标题
+	errorBody?: string // 错误正文
+	height?: string // 高度
 }
 
 interface ChatErrorBoundaryState {
-	hasError: boolean
-	error: Error | null
+	hasError: boolean // 是否有错误
+	error: Error | null // 错误对象
 }
 
 /**
- * A reusable error boundary component specifically designed for chat widgets.
- * It provides a consistent error UI with customizable title and body text.
+ * 一个可重用的错误边界组件，专为聊天小部件设计。
+ * 它提供了一致的错误用户界面，并带有可自定义的标题和正文文本。
  */
 export class ChatErrorBoundary extends React.Component<ChatErrorBoundaryProps, ChatErrorBoundaryState> {
 	constructor(props: ChatErrorBoundaryProps) {
@@ -23,18 +23,21 @@ export class ChatErrorBoundary extends React.Component<ChatErrorBoundaryProps, C
 	}
 
 	static getDerivedStateFromError(error: Error) {
+		// 更新 state 以便下一次渲染能够显示降级后的 UI
 		return { hasError: true, error }
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-		console.error("Error in ChatErrorBoundary:", error.message)
-		console.error("Component stack:", errorInfo.componentStack)
+		// 你同样可以将错误日志上报给服务器
+		console.error("ChatErrorBoundary 发生错误:", error.message)
+		console.error("组件堆栈:", errorInfo.componentStack)
 	}
 
 	render() {
 		const { errorTitle, errorBody, height } = this.props
 
 		if (this.state.hasError) {
+			// 你可以自定义降级后的 UI 并渲染
 			return (
 				<div
 					style={{
@@ -47,8 +50,8 @@ export class ChatErrorBoundary extends React.Component<ChatErrorBoundaryProps, C
 						borderRadius: "4px",
 						backgroundColor: "var(--vscode-inputValidation-errorBackground, rgba(255, 0, 0, 0.1))",
 					}}>
-					<h3 style={{ margin: "0 0 8px 0" }}>{errorTitle || "Something went wrong displaying this content"}</h3>
-					<p style={{ margin: "0" }}>{errorBody || `Error: ${this.state.error?.message || "Unknown error"}`}</p>
+					<h3 style={{ margin: "0 0 8px 0" }}>{errorTitle || "显示此内容时出错"}</h3>
+					<p style={{ margin: "0" }}>{errorBody || `错误: ${this.state.error?.message || "未知错误"}`}</p>
 				</div>
 			)
 		}
@@ -58,15 +61,15 @@ export class ChatErrorBoundary extends React.Component<ChatErrorBoundaryProps, C
 }
 
 /**
- * A demo component that throws an error after a delay.
- * This is useful for testing error boundaries during development
+ * 一个演示组件，在延迟后抛出错误。
+ * 这对于在开发过程中测试错误边界非常有用。
  */
 interface ErrorAfterDelayProps {
-	numSecondsToWait?: number
+	numSecondsToWait?: number // 等待的秒数
 }
 
 interface ErrorAfterDelayState {
-	tickCount: number
+	tickCount: number // 计时次数
 }
 
 export class ErrorAfterDelay extends React.Component<ErrorAfterDelayProps, ErrorAfterDelayState> {
@@ -87,10 +90,10 @@ export class ErrorAfterDelay extends React.Component<ErrorAfterDelayProps, Error
 				if (this.intervalID) {
 					clearInterval(this.intervalID)
 				}
-				// Error boundaries don't catch async code :(
-				// So this only works by throwing inside of a setState
+				// 错误边界无法捕获异步代码 :(
+				// 所以这只能通过在 setState 内部抛出错误来工作
 				this.setState(() => {
-					throw new Error("This is an error for testing the error boundary")
+					throw new Error("这是一个用于测试错误边界的错误")
 				})
 			} else {
 				this.setState({
@@ -107,7 +110,7 @@ export class ErrorAfterDelay extends React.Component<ErrorAfterDelayProps, Error
 	}
 
 	render() {
-		// Add a small visual indicator that this component will cause an error
+		// 添加一个小的视觉指示器，表明此组件将导致错误
 		return (
 			<div
 				style={{
@@ -121,7 +124,7 @@ export class ErrorAfterDelay extends React.Component<ErrorAfterDelayProps, Error
 					borderRadius: "0 0 0 4px",
 					zIndex: 100,
 				}}>
-				Error in {this.state.tickCount}/{this.props.numSecondsToWait ?? 5} seconds
+				错误倒计时: {this.state.tickCount}/{this.props.numSecondsToWait ?? 5} 秒
 			</div>
 		)
 	}

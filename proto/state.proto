@@ -1,0 +1,15 @@
+syntax = "proto3";
+package cline;
+
+import "common.proto";
+
+service StateService {
+  rpc getLatestState(EmptyRequest) returns (State);
+  rpc subscribeToState(EmptyRequest) returns (stream State);
+  rpc toggleFavoriteModel(StringRequest) returns (Empty);
+  rpc resetState(EmptyRequest) returns (Empty);
+}
+
+message State {
+  string state_json = 1;
+}

@@ -1,12 +1,20 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { useFirebaseAuth } from "../../context/FirebaseAuthContext"
-import { vscode } from "../../utils/vscode"
+import { useFirebaseAuth } from "@/context/FirebaseAuthContext"
+import { vscode } from "@/utils/vscode"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { AccountServiceClient } from "@/services/grpc-client"
+import { EmptyRequest } from "@shared/proto/common"
 
 export const ClineAccountInfoCard = () => {
-	const { user, handleSignOut } = useFirebaseAuth()
+	const { user: firebaseUser, handleSignOut } = useFirebaseAuth()
+	const { userInfo, apiConfiguration } = useExtensionState()
+
+	let user = apiConfiguration?.clineApiKey ? firebaseUser || userInfo : undefined
 
 	const handleLogin = () => {
-		vscode.postMessage({ type: "accountLoginClicked" })
+		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
+			console.error("Failed to get login URL:", err),
+		)
 	}
 
 	const handleLogout = () => {
