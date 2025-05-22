@@ -17,7 +17,8 @@ Gitee:  https://gitee.com/shengsuan-cloud/cline-chinese-ssy<br>
 
 ## 文档地址(包括使用方法，MCP知识，常见问题解答等)<br>
 https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs/<br>
-
+## 胜算云Router的Gemini模型半价！<br>
+Google: Gemini 2.5 Pro Preview 05-06 与Gemini 2.5 Flash Preview 05-20 半价！详情点击[胜算云Router](https://router.shengsuanyun.com/)<br>
 ## 功能展示<br>
 
 <video width="100%" controls src="https://github.com/user-attachments/assets/f3b49926-ce1f-45a1-9ef6-a735b2f1e268"></video><br>
