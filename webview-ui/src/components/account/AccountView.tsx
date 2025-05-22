@@ -10,7 +10,7 @@ import { UsageTransaction, PaymentTransaction } from "@shared/ClineAccount"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { EmptyRequest } from "@shared/proto/common"
-import { useSsyAuth } from "@/context/SsyAuthContext"
+import { useShengSuanYunAuth } from "@/context/ShengSuanYunAuthContext"
 
 type AccountViewProps = {
 	onDone: () => void
@@ -180,7 +180,7 @@ export const ClineAccountView = () => {
 }
 
 export const SSYAccountView = () => {
-	const { userSSY: ssyUser, handleSignOutSSY } = useSsyAuth()
+	const { userSSY: ssyUser, handleSignOutSSY } = useShengSuanYunAuth()
 	const { userInfo, apiConfiguration } = useExtensionState()
 
 	let user = apiConfiguration?.shengsuanyunToken ? ssyUser || userInfo : undefined

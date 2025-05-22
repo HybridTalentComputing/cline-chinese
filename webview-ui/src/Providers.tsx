@@ -4,16 +4,16 @@ import { ExtensionStateContextProvider } from "./context/ExtensionStateContext"
 import { FirebaseAuthProvider } from "./context/FirebaseAuthContext"
 import { HeroUIProvider } from "@heroui/react"
 import { CustomPostHogProvider } from "./CustomPostHogProvider"
-import { SsyAuthProvider } from "./context/SsyAuthContext"
+import { ShengSuanYunAuthProvider } from "./context/ShengSuanYunAuthContext"
 
 export function Providers({ children }: { children: ReactNode }) {
 	return (
 		<ExtensionStateContextProvider>
 			<CustomPostHogProvider>
 				<FirebaseAuthProvider>
-					<SsyAuthProvider>
+					<ShengSuanYunAuthProvider>
 						<HeroUIProvider>{children}</HeroUIProvider>
-					</SsyAuthProvider>
+					</ShengSuanYunAuthProvider>
 				</FirebaseAuthProvider>
 			</CustomPostHogProvider>
 		</ExtensionStateContextProvider>

@@ -419,7 +419,7 @@ export class VsCodeLmHandler implements ApiHandler, SingleCompletionHandler {
 		}))
 
 		// Convert Anthropic messages to VS Code LM messages
-		const vsCodeLmMessages: vscode.LanguageModelChatMessage[] = [
+		const vsCodeLmMessages: InstanceType<typeof vscode.LanguageModelChatMessage>[] = [
 			vscode.LanguageModelChatMessage.Assistant(cleanedSystemPrompt),
 			...convertToVsCodeLmMessages(cleanedMessages),
 		]

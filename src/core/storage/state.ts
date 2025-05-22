@@ -1,5 +1,5 @@
 import * as vscode from "vscode"
-import { DEFAULT_CHAT_SETTINGS } from "@shared/ChatSettings"
+import { DEFAULT_CHAT_SETTINGS, OpenAIReasoningEffort } from "@shared/ChatSettings"
 import { DEFAULT_BROWSER_SETTINGS } from "@shared/BrowserSettings"
 import { DEFAULT_AUTO_APPROVAL_SETTINGS } from "@shared/AutoApprovalSettings"
 import { GlobalStateKey, SecretKey } from "./state-keys"
@@ -51,8 +51,32 @@ export async function getWorkspaceState(context: vscode.ExtensionContext, key: s
 	return await context.workspaceState.get(key)
 }
 
+async function migrateMcpMarketplaceEnableSetting(mcpMarketplaceEnabledRaw: boolean | undefined): Promise<boolean> {
+	const config = vscode.workspace.getConfiguration("cline")
+	const mcpMarketplaceEnabled = config.get<boolean>("mcpMarketplace.enabled")
+	if (mcpMarketplaceEnabled !== undefined) {
+		// Remove from VSCode configuration
+		await config.update("mcpMarketplace.enabled", undefined, true)
+
+		return !mcpMarketplaceEnabled
+	}
+	return mcpMarketplaceEnabledRaw ?? true
+}
+
+async function migrateEnableCheckpointsSetting(enableCheckpointsSettingRaw: boolean | undefined): Promise<boolean> {
+	const config = vscode.workspace.getConfiguration("cline")
+	const enableCheckpoints = config.get<boolean>("enableCheckpoints")
+	if (enableCheckpoints !== undefined) {
+		// Remove from VSCode configuration
+		await config.update("enableCheckpoints", undefined, true)
+		return enableCheckpoints
+	}
+	return enableCheckpointsSettingRaw ?? true
+}
+
 export async function getAllExtensionState(context: vscode.ExtensionContext) {
 	const [
+		isNewUser,
 		storedApiProvider,
 		apiModelId,
 		apiKey,
@@ -140,7 +164,10 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		shellIntegrationTimeout,
 		shengSuanYunModelId,
 		shengSuanYunModelInfo,
+		enableCheckpointsSettingRaw,
+		mcpMarketplaceEnabledRaw,
 	] = await Promise.all([
+		getGlobalState(context, "isNewUser") as Promise<boolean | undefined>,
 		getGlobalState(context, "apiProvider") as Promise<ApiProvider | undefined>,
 		getGlobalState(context, "apiModelId") as Promise<string | undefined>,
 		getSecret(context, "apiKey") as Promise<string | undefined>,
@@ -228,6 +255,9 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "shellIntegrationTimeout") as Promise<number | undefined>,
 		getGlobalState(context, "shengSuanYunModelId") as Promise<string | undefined>,
 		getGlobalState(context, "shengSuanYunModelInfo") as Promise<ModelInfo | undefined>,
+		getGlobalState(context, "enableCheckpointsSetting") as Promise<boolean | undefined>,
+		getGlobalState(context, "mcpMarketplaceEnabled") as Promise<boolean | undefined>,
+		fetch,
 	])
 
 	let apiProvider: ApiProvider
@@ -246,11 +276,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 
 	const localClineRulesToggles = (await getWorkspaceState(context, "localClineRulesToggles")) as ClineRulesToggles
 
-	const o3MiniReasoningEffort = vscode.workspace
-		.getConfiguration("clineShengsuan.modelSettings.o3Mini")
-		.get("reasoningEffort", "medium")
-
-	const mcpMarketplaceEnabled = vscode.workspace.getConfiguration("clineShengsuan").get<boolean>("mcpMarketplace.enabled", true)
+	const mcpMarketplaceEnabled = await migrateMcpMarketplaceEnableSetting(mcpMarketplaceEnabledRaw)
+	const enableCheckpointsSetting = await migrateEnableCheckpointsSetting(enableCheckpointsSettingRaw)
 
 	// Plan/Act separate models setting is a boolean indicating whether the user wants to use different models for plan and act. Existing users expect this to be enabled, while we want new users to opt in to this being disabled by default.
 	// On win11 state sometimes initializes as empty string instead of undefined
@@ -319,7 +346,6 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 			openRouterModelInfo,
 			openRouterProviderSorting,
 			vsCodeLmModelSelector,
-			o3MiniReasoningEffort,
 			thinkingBudgetTokens,
 			reasoningEffort,
 			liteLlmBaseUrl,
@@ -342,6 +368,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 			shengSuanYunModelId,
 			shengSuanYunModelInfo,
 		},
+		isNewUser: isNewUser ?? true,
 		lastShownAnnouncementId,
 		customInstructions,
 		taskHistory,
@@ -349,7 +376,10 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		globalClineRulesToggles: globalClineRulesToggles || {},
 		localClineRulesToggles: localClineRulesToggles || {},
 		browserSettings: { ...DEFAULT_BROWSER_SETTINGS, ...browserSettings }, // this will ensure that older versions of browserSettings (e.g. before remoteBrowserEnabled was added) are merged with the default values (false for remoteBrowserEnabled)
-		chatSettings: chatSettings || DEFAULT_CHAT_SETTINGS,
+		chatSettings: {
+			...DEFAULT_CHAT_SETTINGS, // Apply defaults first
+			...(chatSettings || {}), // Spread fetched chatSettings, which includes preferredLanguage, and openAIReasoningEffort
+		},
 		userInfo,
 		previousModeApiProvider,
 		previousModeModelId,
@@ -359,9 +389,10 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		previousModeReasoningEffort,
 		previousModeAwsBedrockCustomSelected,
 		previousModeAwsBedrockCustomModelBaseId,
-		mcpMarketplaceEnabled,
+		mcpMarketplaceEnabled: mcpMarketplaceEnabled,
 		telemetrySetting: telemetrySetting || "unset",
 		planActSeparateModelsSetting,
+		enableCheckpointsSetting: enableCheckpointsSetting,
 		shellIntegrationTimeout: shellIntegrationTimeout || 4000,
 	}
 }

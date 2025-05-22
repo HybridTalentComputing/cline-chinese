@@ -12,7 +12,7 @@ import { ModelInfoView, normalizeApiConfiguration } from "./ApiOptions"
 import { CODE_BLOCK_BG_COLOR } from "../common/CodeBlock"
 import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
 
-export interface SSYModelPickerProps {
+export interface ShengSuanYunModelPickerProps {
 	isPopup?: boolean
 }
 // Star icon for favorites
@@ -35,7 +35,7 @@ const StarIcon = ({ isFavorite, onClick }: { isFavorite: boolean; onClick: (e: R
 		</div>
 	)
 }
-const ShengSuanYunModelPicker: React.FC<SSYModelPickerProps> = ({ isPopup }) => {
+const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPopup }) => {
 	const { apiConfiguration, setApiConfiguration, shengSuanYunModels } = useExtensionState()
 	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.shengSuanYunModelId || shengSuanYunDefaultModelId)
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
@@ -198,7 +198,7 @@ const ShengSuanYunModelPicker: React.FC<SSYModelPickerProps> = ({ isPopup }) => 
 						{searchTerm && (
 							<div
 								className="input-icon-button codicon codicon-close"
-								aria-label="Clear search"
+								aria-label="清除"
 								onClick={() => {
 									handleModelChange("")
 									setIsDropdownVisible(true)

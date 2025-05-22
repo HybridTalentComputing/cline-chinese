@@ -40,8 +40,8 @@ export async function refreshShengSuanYunModels(
 					inputPrice: parsePrice(model.pricing?.prompt),
 					outputPrice: parsePrice(model.pricing?.completion),
 					description: model.description,
-					cacheWritesPrice: model.pricing?.cache,
-					cacheReadsPrice: 0,
+					cacheWritesPrice: 0,
+					cacheReadsPrice: parsePrice(model.pricing?.cache),
 				}
 				models[model.api_name] = modelInfo
 			}

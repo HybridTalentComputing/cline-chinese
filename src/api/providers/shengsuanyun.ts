@@ -21,7 +21,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 			baseURL: "https://router.shengsuanyun.com/api/v1",
 			apiKey: this.options.shengsuanyunApiKey,
 			defaultHeaders: {
-				"HTTP-Referer": "https://router.shengsuanyun.com/",
+				"HTTP-Referer": "vscode://shengsuan-cloud.cline-shengsuan/ssy",
 				"X-Title": "ClineShengsuan",
 			},
 		})
@@ -36,7 +36,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 			systemPrompt,
 			messages,
 			model,
-			this.options.o3MiniReasoningEffort,
+			this.options.reasoningEffort,
 			this.options.thinkingBudgetTokens,
 			this.options.openRouterProviderSorting,
 		)
@@ -47,10 +47,10 @@ export class ShengSuanYunHandler implements ApiHandler {
 			// openrouter returns an error object instead of the openai sdk throwing an error
 			if ("error" in chunk) {
 				const error = chunk.error as OpenRouterErrorResponse["error"]
-				console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
+				console.error(`ShengSuanYun API Error: ${error?.code} - ${error?.message}`)
 				// Include metadata in the error message if available
 				const metadataStr = error.metadata ? `\nMetadata: ${JSON.stringify(error.metadata, null, 2)}` : ""
-				throw new Error(`OpenRouter API Error ${error.code}: ${error.message}${metadataStr}`)
+				throw new Error(`ShengSuanYun API Error ${error.code}: ${error.message}${metadataStr}`)
 			}
 
 			if (!this.lastGenerationId && chunk.id) {
@@ -118,7 +118,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 			try {
 				const generationIterator = this.fetchGenerationDetails(this.lastGenerationId)
 				const generation = (await generationIterator.next()).value
-				// console.log("OpenRouter generation details:", generation)
+				// console.log("ShengSuanYun generation details:", generation)
 				return {
 					type: "usage",
 					// cacheWriteTokens: 0,
@@ -130,7 +130,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 				}
 			} catch (error) {
 				// ignore if fails
-				console.error("Error fetching OpenRouter generation details:", error)
+				console.error("Error fetching ShengSuanYun generation details:", error)
 			}
 		}
 		return undefined
@@ -149,7 +149,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 			yield response.data?.data
 		} catch (error) {
 			// ignore if fails
-			console.error("Error fetching OpenRouter generation details:", error)
+			console.error("Error fetching ShengSuanYun generation details:", error)
 			throw error
 		}
 	}

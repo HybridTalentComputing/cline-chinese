@@ -7,9 +7,10 @@ import { CreateRuleFileRequest } from "@shared/proto-conversions/file/rule-files
 
 interface NewRuleRowProps {
 	isGlobal: boolean
+	ruleType?: string
 }
 
-const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal }) => {
+const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [filename, setFilename] = useState("")
 	const inputRef = useRef<HTMLInputElement>(null)
@@ -64,6 +65,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal }) => {
 					CreateRuleFileRequest.create({
 						isGlobal,
 						filename: finalFilename,
+						type: ruleType || "cline",
 					}),
 				)
 			} catch (err) {
@@ -97,7 +99,9 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal }) => {
 						<input
 							ref={inputRef}
 							type="text"
-							placeholder="rule-name (.md, .txt, or no extension)"
+							placeholder={
+								ruleType === "workflow" ? "工作流名 (.md, .txt, 或无扩展名)" : "规则名 (.md, .txt, 或无扩展名)"
+							}
 							value={filename}
 							onChange={(e) => setFilename(e.target.value)}
 							onKeyDown={handleKeyDown}
@@ -121,7 +125,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal }) => {
 				) : (
 					<>
 						<span className="flex-1 text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-input-background)] italic text-xs">
-							新规则文件...
+							{ruleType === "workflow" ? "新工作流文件..." : "新规则文件..."}
 						</span>
 						<div className="flex items-center ml-2 space-x-2">
 							<VSCodeButton

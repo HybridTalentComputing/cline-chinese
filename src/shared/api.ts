@@ -81,7 +81,6 @@ export interface ApiHandlerOptions {
 	mistralApiKey?: string
 	azureApiVersion?: string
 	vsCodeLmModelSelector?: LanguageModelChatSelector
-	o3MiniReasoningEffort?: string
 	qwenApiLine?: string
 	asksageApiUrl?: string
 	asksageApiKey?: string
@@ -94,6 +93,7 @@ export interface ApiHandlerOptions {
 	shengsuanyunToken?: string
 	shengSuanYunModelId?: string
 	shengSuanYunModelInfo?: ModelInfo
+	onRetryAttempt?: (attempt: number, maxRetries: number, delay: number, error: any) => void
 }
 
 export type ApiConfiguration = ApiHandlerOptions & {
@@ -120,6 +120,7 @@ export interface ModelInfo {
 		outputPrice?: number // Output price per million tokens when budget > 0
 		outputPriceTiers?: PriceTier[] // Optional: Tiered output price when budget > 0
 	}
+	supportsGlobalEndpoint?: boolean // Whether the model supports a global endpoint with Vertex AI
 	cacheWritesPrice?: number
 	cacheReadsPrice?: number
 	description?: string
@@ -409,6 +410,7 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsPromptCache: true,
+		supportsGlobalEndpoint: true,
 		inputPrice: 0.15,
 		outputPrice: 0.6,
 		cacheWritesPrice: 1.0,
@@ -419,6 +421,7 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsPromptCache: false,
+		supportsGlobalEndpoint: true,
 		inputPrice: 0.075,
 		outputPrice: 0.3,
 	},
@@ -427,11 +430,21 @@ export const vertexModels = {
 		contextWindow: 32_767,
 		supportsImages: true,
 		supportsPromptCache: false,
+		supportsGlobalEndpoint: true,
 		inputPrice: 0,
 		outputPrice: 0,
 	},
 	"gemini-2.0-flash-exp": {
 		maxTokens: 8192,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: false,
+		supportsGlobalEndpoint: true,
+		inputPrice: 0,
+		outputPrice: 0,
+	},
+	"gemini-2.5-pro-exp-03-25": {
+		maxTokens: 65536,
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsPromptCache: false,
@@ -443,6 +456,7 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsPromptCache: true,
+		supportsGlobalEndpoint: true,
 		inputPrice: 2.5,
 		outputPrice: 15,
 		cacheReadsPrice: 0.31,
@@ -466,6 +480,7 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsPromptCache: false,
+		supportsGlobalEndpoint: true,
 		inputPrice: 0.15,
 		outputPrice: 0.6,
 		thinkingConfig: {
@@ -478,6 +493,7 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsPromptCache: false,
+		supportsGlobalEndpoint: true,
 		inputPrice: 0,
 		outputPrice: 0,
 	},
@@ -546,6 +562,10 @@ export const vertexModels = {
 		outputPrice: 0,
 	},
 } as const satisfies Record<string, ModelInfo>
+
+export const vertexGlobalModels: Record<string, ModelInfo> = Object.fromEntries(
+	Object.entries(vertexModels).filter(([_k, v]) => v.hasOwnProperty("supportsGlobalEndpoint")),
+) as Record<string, ModelInfo>
 
 export const openAiModelInfoSaneDefaults: OpenAiCompatibleModelInfo = {
 	maxTokens: -1,

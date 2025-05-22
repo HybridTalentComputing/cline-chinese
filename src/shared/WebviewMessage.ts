@@ -14,21 +14,16 @@ export interface WebviewMessage {
 		| "newTask"
 		| "condense"
 		| "reportBug"
-		| "askResponse"
 		| "didShowAnnouncement"
-		| "selectImages"
-		| "resetState"
 		| "openInBrowser"
 		| "openMention"
 		| "showChatView"
 		| "refreshClineRules"
 		| "openMcpSettings"
-		| "restartMcpServer"
 		| "deleteMcpServer"
 		| "autoApprovalSettings"
 		| "browserRelaunchResult"
 		| "togglePlanActMode"
-		| "taskCompletionViewChanges"
 		| "openExtensionSettings"
 		| "requestVsCodeLmModels"
 		| "toggleToolAutoApprove"
@@ -42,7 +37,6 @@ export interface WebviewMessage {
 		| "fetchLatestMcpServersFromHub"
 		| "telemetrySetting"
 		| "openSettings"
-		| "fetchOpenGraphData"
 		| "invoke"
 		| "updateSettings"
 		| "clearAllTaskHistory"
@@ -50,7 +44,6 @@ export interface WebviewMessage {
 		| "optionsResponse"
 		| "requestTotalTasksSize"
 		| "relaunchChromeDebugMode"
-		| "taskFeedback"
 		| "scrollToSettings"
 		| "searchFiles"
 		| "grpc_request"
@@ -58,6 +51,7 @@ export interface WebviewMessage {
 		| "toggleClineRule"
 		| "toggleCursorRule"
 		| "toggleWindsurfRule"
+		| "toggleWorkflow"
 		| "deleteClineRule"
 		| "copyToClipboard"
 		| "updateTerminalConnectionTimeout"
@@ -68,7 +62,6 @@ export interface WebviewMessage {
 	// | "relaunchChromeDebugMode"
 	text?: string
 	disabled?: boolean
-	askResponse?: ClineAskResponse
 	apiConfiguration?: ApiConfiguration
 	images?: string[]
 	bool?: boolean
@@ -93,10 +86,10 @@ export interface WebviewMessage {
 	// For openInBrowser
 	url?: string
 	planActSeparateModelsSetting?: boolean
+	enableCheckpointsSetting?: boolean
+	mcpMarketplaceEnabled?: boolean
 	telemetrySetting?: TelemetrySetting
 	customInstructionsSetting?: string
-	// For task feedback
-	feedbackType?: TaskFeedbackType
 	mentionsRequestId?: string
 	query?: string
 	// For toggleFavoriteModel
@@ -111,9 +104,10 @@ export interface WebviewMessage {
 	grpc_request_cancel?: {
 		request_id: string // ID of the request to cancel
 	}
-	// For cline rules
+	// For cline rules and workflows
 	isGlobal?: boolean
 	rulePath?: string
+	workflowPath?: string
 	enabled?: boolean
 	filename?: string
 

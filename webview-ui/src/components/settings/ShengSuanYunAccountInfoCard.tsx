@@ -1,10 +1,10 @@
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { useSsyAuth } from "@/context/SsyAuthContext"
+import { useShengSuanYunAuth } from "@/context/ShengSuanYunAuthContext"
 import { vscode } from "@/utils/vscode"
 
 export const SSYAccountInfoCard = () => {
-	const { userSSY: ssyUser, handleSignOutSSY } = useSsyAuth()
+	const { userSSY: ssyUser, handleSignOutSSY } = useShengSuanYunAuth()
 	const { userInfo, apiConfiguration } = useExtensionState()
 
 	let user = apiConfiguration?.shengsuanyunToken ? ssyUser || userInfo : undefined

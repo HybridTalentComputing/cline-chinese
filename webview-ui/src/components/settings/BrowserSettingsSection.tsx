@@ -363,7 +363,7 @@ export const BrowserSettingsSection: React.FC = () => {
 		<div
 			id="browser-settings-section"
 			style={{ marginBottom: 20, borderTop: "1px solid var(--vscode-panel-border)", paddingTop: 15 }}>
-			<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 10px 0", fontSize: "14px" }}>Browser Settings</h3>
+			<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 10px 0", fontSize: "14px" }}>浏览器设置</h3>
 
 			{/* Master Toggle */}
 			<div style={{ marginBottom: isSubSettingsOpen ? 0 : 10 }}>
@@ -378,7 +378,7 @@ export const BrowserSettingsSection: React.FC = () => {
 						color: "var(--vscode-descriptionForeground)",
 						margin: "4px 0 0 0px",
 					}}>
-					禁止 Cline 使用浏览器操作 (e.g. launch, click, type).
+					禁止使用浏览器操作 (e.g. launch, click, type).
 				</p>
 			</div>
 
@@ -422,7 +422,7 @@ export const BrowserSettingsSection: React.FC = () => {
 						<VSCodeCheckbox
 							checked={browserSettings.remoteBrowserEnabled}
 							onChange={(e) => updateRemoteBrowserEnabled((e.target as HTMLInputElement).checked)}>
-							Use remote browser connection
+							使用远程浏览器操作
 						</VSCodeCheckbox>
 						<ConnectionStatusIndicator
 							isChecking={isCheckingConnection}

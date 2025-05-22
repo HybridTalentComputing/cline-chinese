@@ -234,10 +234,11 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 				break
 			}
-			case "/ssy": {
+			case "/ssy":
+			case "shengsuanyun": {
 				const code = query.get("code")
 				if (code) {
-					await visibleWebview?.controller.handleSSYCallback(code)
+					await visibleWebview?.controller.handleShengSuanYunCallback(code)
 				}
 				break
 			}

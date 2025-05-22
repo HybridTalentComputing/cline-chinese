@@ -40,16 +40,16 @@ const RulesToggleList = ({
 							ruleType={ruleType}
 						/>
 					))}
-					{showNewRule && <NewRuleRow isGlobal={isGlobal} />}
+					{showNewRule && <NewRuleRow isGlobal={isGlobal} ruleType={ruleType} />}
 				</>
 			) : (
 				<>
 					{showNoRules && (
 						<div className="flex flex-col items-center gap-3 my-3 text-[var(--vscode-descriptionForeground)]">
-							没有设置规则
+							{ruleType === "workflow" ? "没有设置工作流" : "没有设置规则"}
 						</div>
 					)}
-					{showNewRule && <NewRuleRow isGlobal={isGlobal} />}
+					{showNewRule && <NewRuleRow isGlobal={isGlobal} ruleType={ruleType} />}
 				</>
 			)}
 		</div>

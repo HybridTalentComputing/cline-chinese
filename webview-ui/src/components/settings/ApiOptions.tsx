@@ -41,6 +41,7 @@ import {
 	internationalQwenDefaultModelId,
 	vertexDefaultModelId,
 	vertexModels,
+	vertexGlobalModels,
 	askSageModels,
 	askSageDefaultModelId,
 	askSageDefaultURL,
@@ -63,7 +64,7 @@ import VSCodeButtonLink from "@/components/common/VSCodeButtonLink"
 import OpenRouterModelPicker, { ModelDescriptionMarkdown, OPENROUTER_MODEL_PICKER_Z_INDEX } from "./OpenRouterModelPicker"
 import { ClineAccountInfoCard } from "./ClineAccountInfoCard"
 import RequestyModelPicker from "./RequestyModelPicker"
-import SSYModelPicker from "./ShengSuanYunModelPicker"
+import ShengSuanYunModelPicker from "./ShengSuanYunModelPicker"
 import { useOpenRouterKeyInfo } from "../ui/hooks/useOpenRouterKeyInfo"
 
 interface ApiOptionsProps {
@@ -933,6 +934,7 @@ const ApiOptions = ({
 							<VSCodeOption value="europe-west1">europe-west1</VSCodeOption>
 							<VSCodeOption value="europe-west4">europe-west4</VSCodeOption>
 							<VSCodeOption value="asia-southeast1">asia-southeast1</VSCodeOption>
+							<VSCodeOption value="global">global</VSCodeOption>
 						</VSCodeDropdown>
 					</DropdownContainer>
 					<p
@@ -2067,7 +2069,8 @@ const ApiOptions = ({
 								<span style={{ fontWeight: 500 }}>模型</span>
 							</label>
 							{selectedProvider === "anthropic" && createDropdown(anthropicModels)}
-							{selectedProvider === "vertex" && createDropdown(vertexModels)}
+							{selectedProvider === "vertex" &&
+								createDropdown(apiConfiguration?.vertexRegion === "global" ? vertexGlobalModels : vertexModels)}
 							{selectedProvider === "gemini" && createDropdown(geminiModels)}
 							{selectedProvider === "openai-native" && createDropdown(openAiNativeModels)}
 							{selectedProvider === "deepseek" && createDropdown(deepSeekModels)}
@@ -2153,7 +2156,7 @@ const ApiOptions = ({
 				<OpenRouterModelPicker isPopup={isPopup} />
 			)}
 			{selectedProvider === "requesty" && showModelOptions && <RequestyModelPicker isPopup={isPopup} />}
-			{selectedProvider === "shengsuanyun" && showModelOptions && <SSYModelPicker isPopup={isPopup} />}
+			{selectedProvider === "shengsuanyun" && showModelOptions && <ShengSuanYunModelPicker isPopup={isPopup} />}
 			{modelIdErrorMessage && (
 				<p
 					style={{

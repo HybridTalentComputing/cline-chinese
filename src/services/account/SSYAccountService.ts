@@ -60,7 +60,7 @@ export class SSYAccountService {
 			const utl = res.logs.map((it: any) => ({
 				spentAt: it.request_time,
 				modelProvider: "胜算云",
-				model: `${it.model.company}/${it.model.name}`,
+				model: `${it.model?.company}/${it.model?.name}`,
 				credits: it.total_amount / 10000000,
 				totalTokens: it.total_amount,
 				promptTokens: it.input_tokens,

@@ -3,15 +3,15 @@ import { useExtensionState } from "./ExtensionStateContext"
 import axios, { AxiosRequestConfig } from "axios"
 import { vscode } from "@/utils/vscode"
 
-interface SsyAuthContextType {
+interface ShengSuanYunAuthContextType {
 	userSSY: any | null
 	isInitSSY: boolean
 	signInWithTokenSSY: (token: string) => Promise<void>
 	handleSignOutSSY: () => Promise<void>
 }
 
-const SsyAuthContext = createContext<SsyAuthContextType | undefined>(undefined)
-export const SsyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ShengSuanYunAuthContext = createContext<ShengSuanYunAuthContextType | undefined>(undefined)
+export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [userSSY, setUser] = useState<any | null>(null)
 	const [isInitSSY, setIsInitialized] = useState(false)
 	const { apiConfiguration } = useExtensionState()
@@ -42,7 +42,7 @@ export const SsyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			}
 			setUser(usi)
 			setIsInitialized(true)
-			console.log("SsyAuthProvider onAuthStateChanged user", usi)
+			console.log("ShengSuanYunAuthProvider onAuthStateChanged user", usi)
 			vscode.postMessage({
 				type: "authStateChanged",
 				userSSY: usi,
@@ -76,16 +76,16 @@ export const SsyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ child
 	}, [])
 
 	return (
-		<SsyAuthContext.Provider value={{ userSSY, isInitSSY, signInWithTokenSSY, handleSignOutSSY }}>
+		<ShengSuanYunAuthContext.Provider value={{ userSSY, isInitSSY, signInWithTokenSSY, handleSignOutSSY }}>
 			{children}
-		</SsyAuthContext.Provider>
+		</ShengSuanYunAuthContext.Provider>
 	)
 }
 
-export const useSsyAuth = () => {
-	const context = useContext(SsyAuthContext)
+export const useShengSuanYunAuth = () => {
+	const context = useContext(ShengSuanYunAuthContext)
 	if (context === undefined) {
-		throw new Error("useSsyAuth must be used within a SsyAuthProvider")
+		throw new Error("useShengSuanYunAuth must be used within a ShengSuanYunAuthProvider")
 	}
 	return context
 }
