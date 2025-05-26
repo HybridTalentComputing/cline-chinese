@@ -60,13 +60,13 @@ const TelemetryBanner = () => {
 				✕
 			</CloseButton>
 			<div>
-				<strong>帮助改进 Cline-中文版胜算云</strong>
+				<strong>帮助改进 Cline-中文版</strong>
 				<i>
 					<br />
 					(and access experimental features)
 				</i>
 				<div style={{ marginTop: 4 }}>
-					Cline-中文版胜算云收集匿名错误和使用数据，以帮助我们修复错误并改进扩展。绝不会发送任何代码、提示或个人信息。
+					Cline-中文版收集匿名错误和使用数据，以帮助我们修复错误并改进扩展。绝不会发送任何代码、提示或个人信息。
 					<div style={{ marginTop: 4 }}>
 						您可以在此关闭该设置{" "}
 						<VSCodeLink href="#" onClick={handleOpenSettings}>
