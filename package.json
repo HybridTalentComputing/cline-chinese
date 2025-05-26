@@ -1,8 +1,8 @@
 {
 	"name": "cline-shengsuan",
-	"displayName": "Cline-中文版胜算云",
-	"description": "Cline-中文版胜算云是一款在您的IDE中运行的强大自主编程助手，经您许可后可创建/编辑文件、运行命令、使用浏览器等。",
-	"version": "3.16.1",
+	"displayName": "Cline-中文版",
+	"description": "Cline-中文版是一款在您的IDE中运行的强大自主编程助手，经您许可后可创建/编辑文件、运行命令、使用浏览器等。",
+	"version": "3.16.2",
 	"icon": "assets/icons/icon.png",
 	"engines": {
 		"vscode": "^1.84.0"
@@ -52,7 +52,7 @@
 			"activitybar": [
 				{
 					"id": "cline-shengsuan-ActivityBar",
-					"title": "Cline-中文版胜算云",
+					"title": "Cline-中文版",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
@@ -110,12 +110,12 @@
 			},
 			{
 				"command": "clineShengsuan.addToChat",
-				"title": "添加到 Cline-中文版胜算云",
+				"title": "添加到 Cline-中文版",
 				"category": "ClineShengsuan"
 			},
 			{
 				"command": "clineShengsuan.addTerminalOutputToChat",
-				"title": "添加到 Cline-中文版胜算云",
+				"title": "添加到 Cline-中文版",
 				"category": "ClineShengsuan"
 			},
 			{
@@ -237,7 +237,7 @@
 			]
 		},
 		"configuration": {
-			"title": "Cline-中文版胜算云",
+			"title": "Cline-中文版",
 			"properties": {}
 		}
 	},

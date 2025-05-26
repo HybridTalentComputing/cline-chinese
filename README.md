@@ -1,8 +1,8 @@
-## Cline-中文版胜算云
+## Cline-中文版
 
 <p align="center">
 
-[![Cline-中文版胜算云](https://img.shields.io/badge/Cline%20中文版胜算云-blue)](https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs) [![Discord](https://img.shields.io/badge/Discord-加入讨论-7289DA)](https://discord.gg/frBHkRKB4x) 
+[![Cline-中文版](https://img.shields.io/badge/Cline%20中文版胜算云-blue)](https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs) [![Discord](https://img.shields.io/badge/Discord-加入讨论-7289DA)](https://discord.gg/frBHkRKB4x) 
 
 </p>
 
@@ -32,13 +32,13 @@ AI项目全面得到落地使用。<br>
 - 开放文件上传及联网搜索 API 接口；<br>
 
 ## 安装使用<br>
-Cline-中文版胜算云已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下载体验。<br>
+Cline-中文版已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下载体验。<br>
 <a href="https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan" target="_blank"><strong>在 VS Marketplace 下载</strong></a>
 ## 简介
 
 这个项目是基于 [Cline](https://github.com/cline/cline) 的汉化版本。旨在优化由于英文 prompt 导致 Cline 在中文输入下+大模型表现不佳的问题, 并提供更符合中文用户习惯的UI界面和功能。目前已测试[DeepSeek-R1/DeepSeek-V3](https://api-docs.deepseek.com/zh-cn/news/news250325)工作良好，同时，[胜算云Router](https://router.shengsuanyun.com/)提供多种免费/收费模型API<br>
 
-日常使用Cline-中文版胜算云等编程助手时发现使用某些模型推理速度较慢（如deepseek-R1, Claude-3.5-Sonnet），这个项目优先尝试在中文输入下，对轻量化LLM进行实验，优化上下文prompt, 以提升推理长度，以增加推理输入项目代码或者数据长度。<br>
+日常使用Cline-中文版等编程助手时发现使用某些模型推理速度较慢（如deepseek-R1, Claude-3.5-Sonnet），这个项目优先尝试在中文输入下，对轻量化LLM进行实验，优化上下文prompt, 以提升推理长度，以增加推理输入项目代码或者数据长度。<br>
 
 
 ## 背景
@@ -97,7 +97,7 @@ Cline 中文版胜算云 开发初衷<br>
 </td>
 </tbody>
 </table>
-Cline-中文版胜算云讨论群<br>
+Cline-中文版讨论群<br>
   <img src="https://github.com/user-attachments/assets/1c08215e-9f99-4a13-98b9-85807bda3af9" alt="微信群二维码" width="250" />
 </div>
 
