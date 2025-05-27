@@ -1,8 +1,8 @@
-## Cline-中文版胜算云
+## Cline-中文版
 
 <p align="center">
 
-[![Cline-中文版胜算云](https://img.shields.io/badge/Cline%20中文版胜算云-blue)](https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs) [![Discord](https://img.shields.io/badge/Discord-加入讨论-7289DA)](https://discord.gg/frBHkRKB4x) 
+[![Cline-中文版](https://img.shields.io/badge/Cline%20中文版-blue)](https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs) [![Discord](https://img.shields.io/badge/Discord-加入讨论-7289DA)](https://discord.gg/frBHkRKB4x) 
 
 </p>
 
@@ -24,7 +24,7 @@ Google: Gemini 2.5 Pro Preview 05-06 与Gemini 2.5 Flash Preview 05-20 半价！
 <video width="100%" controls src="https://github.com/user-attachments/assets/f3b49926-ce1f-45a1-9ef6-a735b2f1e268"></video><br>
 
 
-> 演示视频使用 免费 LLM Coding 大模型API DeepSeek V3 0324 模型，展示了 Cline 中文版胜算云的主要功能和使用效果，视频没有加速，推理速度快到飞起。<br>
+> 演示视频使用 免费 LLM Coding 大模型API DeepSeek V3 0324 模型，展示了 Cline 中文版的主要功能和使用效果，视频没有加速，推理速度快到飞起。<br>
 > 本项目推荐使用[胜算云Router](https://router.shengsuanyun.com/)的LLM API进行智能编码推理，中国大陆地区可以免魔法访问世界范围内的最全的人工智能API，超低价格外，同时可以开发票，以及免费的云部署项目，让您的
 AI项目全面得到落地使用。<br>
 中国大陆地区针对DeepSeek官方不提供以下服务，我们则完全支持：<br>
@@ -32,18 +32,18 @@ AI项目全面得到落地使用。<br>
 - 开放文件上传及联网搜索 API 接口；<br>
 
 ## 安装使用<br>
-Cline-中文版胜算云已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下载体验。<br>
+Cline-中文版已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下载体验。<br>
 <a href="https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan" target="_blank"><strong>在 VS Marketplace 下载</strong></a>
 ## 简介
 
 这个项目是基于 [Cline](https://github.com/cline/cline) 的汉化版本。旨在优化由于英文 prompt 导致 Cline 在中文输入下+大模型表现不佳的问题, 并提供更符合中文用户习惯的UI界面和功能。目前已测试[DeepSeek-R1/DeepSeek-V3](https://api-docs.deepseek.com/zh-cn/news/news250325)工作良好，同时，[胜算云Router](https://router.shengsuanyun.com/)提供多种免费/收费模型API<br>
 
-日常使用Cline-中文版胜算云等编程助手时发现使用某些模型推理速度较慢（如deepseek-R1, Claude-3.5-Sonnet），这个项目优先尝试在中文输入下，对轻量化LLM进行实验，优化上下文prompt, 以提升推理长度，以增加推理输入项目代码或者数据长度。<br>
+日常使用Cline-中文版等编程助手时发现使用某些模型推理速度较慢（如deepseek-R1, Claude-3.5-Sonnet），这个项目优先尝试在中文输入下，对轻量化LLM进行实验，优化上下文prompt, 以提升推理长度，以增加推理输入项目代码或者数据长度。<br>
 
 
 ## 背景
 
-Cline 中文版胜算云 开发初衷<br>
+Cline 中文版 开发初衷<br>
 我们推出 胜算中文版，旨在为国内开发者提供更便捷、高效的 AI 接入体验。在并行 Cline 主线功能开发的同时，「胜算云 Router」特别开放免费模型 无限制使用，全面支持国内用户免魔法接入，实现真正的即用即连。<br>
 
 核心优势<br>
