@@ -13,63 +13,62 @@ import { handleTaskServiceRequest, handleTaskServiceStreamingRequest } from "./t
 import { handleWebServiceRequest, handleWebServiceStreamingRequest } from "./web/index"
 import { handleModelsServiceRequest, handleModelsServiceStreamingRequest } from "./models/index"
 import { handleSlashServiceRequest, handleSlashServiceStreamingRequest } from "./slash/index"
+import { handleUiServiceRequest, handleUiServiceStreamingRequest } from "./ui/index"
 
 /**
  * Configuration for a service handler
  */
 export interface ServiceHandlerConfig {
-	requestHandler: (controller: Controller, method: string, message: any) => Promise<any>
-	streamingHandler: (
-		controller: Controller,
-		method: string,
-		message: any,
-		responseStream: StreamingResponseHandler,
-		requestId?: string,
-	) => Promise<void>
+  requestHandler: (controller: Controller, method: string, message: any) => Promise<any>;
+  streamingHandler: (controller: Controller, method: string, message: any, responseStream: StreamingResponseHandler, requestId?: string) => Promise<void>;
 }
 
 /**
  * Map of service names to their handler configurations
  */
 export const serviceHandlers: Record<string, ServiceHandlerConfig> = {
-	"clineShengsuan.AccountService": {
-		requestHandler: handleAccountServiceRequest,
-		streamingHandler: handleAccountServiceStreamingRequest,
-	},
-	"clineShengsuan.BrowserService": {
-		requestHandler: handleBrowserServiceRequest,
-		streamingHandler: handleBrowserServiceStreamingRequest,
-	},
-	"clineShengsuan.CheckpointsService": {
-		requestHandler: handleCheckpointsServiceRequest,
-		streamingHandler: handleCheckpointsServiceStreamingRequest,
-	},
-	"clineShengsuan.FileService": {
-		requestHandler: handleFileServiceRequest,
-		streamingHandler: handleFileServiceStreamingRequest,
-	},
-	"clineShengsuan.McpService": {
-		requestHandler: handleMcpServiceRequest,
-		streamingHandler: handleMcpServiceStreamingRequest,
-	},
-	"clineShengsuan.StateService": {
-		requestHandler: handleStateServiceRequest,
-		streamingHandler: handleStateServiceStreamingRequest,
-	},
-	"clineShengsuan.TaskService": {
-		requestHandler: handleTaskServiceRequest,
-		streamingHandler: handleTaskServiceStreamingRequest,
-	},
-	"clineShengsuan.WebService": {
-		requestHandler: handleWebServiceRequest,
-		streamingHandler: handleWebServiceStreamingRequest,
-	},
-	"clineShengsuan.ModelsService": {
-		requestHandler: handleModelsServiceRequest,
-		streamingHandler: handleModelsServiceStreamingRequest,
-	},
-	"clineShengsuan.SlashService": {
-		requestHandler: handleSlashServiceRequest,
-		streamingHandler: handleSlashServiceStreamingRequest,
-	},
-}
+  "clineShengsuan.AccountService": {
+    requestHandler: handleAccountServiceRequest,
+    streamingHandler: handleAccountServiceStreamingRequest
+  },
+  "clineShengsuan.BrowserService": {
+    requestHandler: handleBrowserServiceRequest,
+    streamingHandler: handleBrowserServiceStreamingRequest
+  },
+  "clineShengsuan.CheckpointsService": {
+    requestHandler: handleCheckpointsServiceRequest,
+    streamingHandler: handleCheckpointsServiceStreamingRequest
+  },
+  "clineShengsuan.FileService": {
+    requestHandler: handleFileServiceRequest,
+    streamingHandler: handleFileServiceStreamingRequest
+  },
+  "clineShengsuan.McpService": {
+    requestHandler: handleMcpServiceRequest,
+    streamingHandler: handleMcpServiceStreamingRequest
+  },
+  "clineShengsuan.StateService": {
+    requestHandler: handleStateServiceRequest,
+    streamingHandler: handleStateServiceStreamingRequest
+  },
+  "clineShengsuan.TaskService": {
+    requestHandler: handleTaskServiceRequest,
+    streamingHandler: handleTaskServiceStreamingRequest
+  },
+  "clineShengsuan.WebService": {
+    requestHandler: handleWebServiceRequest,
+    streamingHandler: handleWebServiceStreamingRequest
+  },
+  "clineShengsuan.ModelsService": {
+    requestHandler: handleModelsServiceRequest,
+    streamingHandler: handleModelsServiceStreamingRequest
+  },
+  "clineShengsuan.SlashService": {
+    requestHandler: handleSlashServiceRequest,
+    streamingHandler: handleSlashServiceStreamingRequest
+  },
+  "clineShengsuan.UiService": {
+    requestHandler: handleUiServiceRequest,
+    streamingHandler: handleUiServiceStreamingRequest
+  }
+};

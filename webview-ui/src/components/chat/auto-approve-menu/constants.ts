@@ -4,7 +4,7 @@ export const ACTION_METADATA: ActionMetadata[] = [
 	{
 		id: "enableAutoApprove",
 		label: "启用自动批准",
-		shortName: "Enabled",
+		shortName: "启用",
 		description: "启用或禁用自动批准功能。",
 		icon: "codicon-play-circle",
 	},

@@ -7,7 +7,8 @@ interface SlashCommandMenuProps {
 	setSelectedIndex: (index: number) => void
 	onMouseDown: () => void
 	query: string
-	workflowToggles?: Record<string, boolean>
+	localWorkflowToggles?: Record<string, boolean>
+	globalWorkflowToggles?: Record<string, boolean>
 }
 
 const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
@@ -16,7 +17,8 @@ const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
 	setSelectedIndex,
 	onMouseDown,
 	query,
-	workflowToggles = {},
+	localWorkflowToggles = {},
+	globalWorkflowToggles = {},
 }) => {
 	const menuRef = useRef<HTMLDivElement>(null)
 
@@ -44,7 +46,7 @@ const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
 	}, [selectedIndex])
 
 	// Filter commands based on query
-	const filteredCommands = getMatchingSlashCommands(query, workflowToggles)
+	const filteredCommands = getMatchingSlashCommands(query, localWorkflowToggles, globalWorkflowToggles)
 	const defaultCommands = filteredCommands.filter((cmd) => cmd.section === "default" || !cmd.section)
 	const workflowCommands = filteredCommands.filter((cmd) => cmd.section === "custom")
 
@@ -95,12 +97,12 @@ const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
 				style={{ maxHeight: "min(200px, calc(50vh))", overscrollBehavior: "contain" }}>
 				{filteredCommands.length > 0 ? (
 					<>
-						{renderCommandSection(defaultCommands, "Default Commands", 0, true)}
-						{renderCommandSection(workflowCommands, "Workflow Commands", defaultCommands.length, false)}
+						{renderCommandSection(defaultCommands, "默认命令", 0, true)}
+						{renderCommandSection(workflowCommands, "工作流命令", defaultCommands.length, false)}
 					</>
 				) : (
 					<div className="py-2 px-3 cursor-default flex flex-col">
-						<div className="text-[0.85em] text-[var(--vscode-descriptionForeground)]">No matching commands found</div>
+						<div className="text-[0.85em] text-[var(--vscode-descriptionForeground)]">没找到命令</div>
 					</div>
 				)}
 			</div>

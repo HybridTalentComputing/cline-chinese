@@ -13,6 +13,7 @@ import { ApiStream, ApiStreamUsageChunk } from "./transform/stream"
 import { DeepSeekHandler } from "./providers/deepseek"
 import { RequestyHandler } from "./providers/requesty"
 import { TogetherHandler } from "./providers/together"
+import { NebiusHandler } from "./providers/nebius"
 import { QwenHandler } from "./providers/qwen"
 import { MistralHandler } from "./providers/mistral"
 import { DoubaoHandler } from "./providers/doubao"
@@ -23,8 +24,8 @@ import { FireworksHandler } from "./providers/fireworks"
 import { AskSageHandler } from "./providers/asksage"
 import { XAIHandler } from "./providers/xai"
 import { SambanovaHandler } from "./providers/sambanova"
+import { CerebrasHandler } from "./providers/cerebras"
 import { ShengSuanYunHandler } from "./providers/shengsuanyun"
-
 export interface ApiHandler {
 	createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream
 	getModel(): { id: string; info: ModelInfo }
@@ -76,6 +77,8 @@ export function buildApiHandler(configuration: ApiConfiguration): ApiHandler {
 			return new ClineHandler(options)
 		case "litellm":
 			return new LiteLlmHandler(options)
+		case "nebius":
+			return new NebiusHandler(options)
 		case "asksage":
 			return new AskSageHandler(options)
 		case "xai":
@@ -84,6 +87,8 @@ export function buildApiHandler(configuration: ApiConfiguration): ApiHandler {
 			return new SambanovaHandler(options)
 		case "shengsuanyun":
 			return new ShengSuanYunHandler(options)
+		case "cerebras":
+			return new CerebrasHandler(options)
 		default:
 			return new AnthropicHandler(options)
 	}

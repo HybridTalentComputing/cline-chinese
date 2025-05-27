@@ -37,11 +37,8 @@ export interface ExtensionMessage {
 		| "userCreditsBalance"
 		| "userCreditsUsage"
 		| "userCreditsPayments"
-		| "totalTasksSize"
 		| "addToInput"
 		| "browserConnectionResult"
-		| "scrollToSettings"
-		| "browserRelaunchResult"
 		| "fileSearchResults"
 		| "grpc_response" // New type for gRPC responses
 		| "setActiveQuote"
@@ -88,7 +85,6 @@ export interface ExtensionMessage {
 	userCreditsBalance?: BalanceResponse
 	userCreditsUsage?: UsageTransaction[]
 	userCreditsPayments?: PaymentTransaction[]
-	totalTasksSize?: number | null
 	success?: boolean
 	endpoint?: string
 	isBundled?: boolean
@@ -140,10 +136,11 @@ export interface ExtensionState {
 	uriScheme?: string
 	userInfo?: any
 	version: string
-	vscMachineId: string
+	distinctId: string
 	globalClineRulesToggles: ClineRulesToggles
 	localClineRulesToggles: ClineRulesToggles
-	workflowToggles: ClineRulesToggles
+	localWorkflowToggles: ClineRulesToggles
+	globalWorkflowToggles: ClineRulesToggles
 	localCursorRulesToggles: ClineRulesToggles
 	localWindsurfRulesToggles: ClineRulesToggles
 }

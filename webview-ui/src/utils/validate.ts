@@ -98,6 +98,11 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 					return "您必须提供一个有效的模型选择器。"
 				}
 				break
+			case "nebius":
+				if (!apiConfiguration.nebiusApiKey) {
+					return "You must provide a valid API key or choose a different provider."
+				}
+				break
 			case "asksage":
 				if (!apiConfiguration.asksageApiKey) {
 					return "您必须提供有效的API密钥或选择其他提供者。"
