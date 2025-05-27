@@ -157,6 +157,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		sambanovaApiKey,
 		shengsuanyunApiKey,
 		shengsuanyunToken,
+		cerebrasApiKey,
+		nebiusApiKey,
 		planActSeparateModelsSettingRaw,
 		favoritedModelIds,
 		globalClineRulesToggles,
@@ -166,6 +168,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		shengSuanYunModelInfo,
 		enableCheckpointsSettingRaw,
 		mcpMarketplaceEnabledRaw,
+		globalWorkflowToggles,
 	] = await Promise.all([
 		getGlobalState(context, "isNewUser") as Promise<boolean | undefined>,
 		getGlobalState(context, "apiProvider") as Promise<ApiProvider | undefined>,
@@ -248,6 +251,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getSecret(context, "sambanovaApiKey") as Promise<string | undefined>,
 		getSecret(context, "shengsuanyunApiKey") as Promise<string | undefined>,
 		getGlobalState(context, "shengsuanyunToken") as Promise<string | undefined>,
+		getSecret(context, "cerebrasApiKey") as Promise<string | undefined>,
+		getSecret(context, "nebiusApiKey") as Promise<string | undefined>,
 		getGlobalState(context, "planActSeparateModelsSetting") as Promise<boolean | undefined>,
 		getGlobalState(context, "favoritedModelIds") as Promise<string[] | undefined>,
 		getGlobalState(context, "globalClineRulesToggles") as Promise<ClineRulesToggles | undefined>,
@@ -257,6 +262,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "shengSuanYunModelInfo") as Promise<ModelInfo | undefined>,
 		getGlobalState(context, "enableCheckpointsSetting") as Promise<boolean | undefined>,
 		getGlobalState(context, "mcpMarketplaceEnabled") as Promise<boolean | undefined>,
+		getGlobalState(context, "globalWorkflowToggles") as Promise<ClineRulesToggles | undefined>,
 		fetch,
 	])
 
@@ -363,6 +369,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 			sambanovaApiKey,
 			shengsuanyunApiKey,
 			shengsuanyunToken,
+			cerebrasApiKey,
+			nebiusApiKey,
 			favoritedModelIds,
 			requestTimeoutMs,
 			shengSuanYunModelId,
@@ -394,6 +402,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		planActSeparateModelsSetting,
 		enableCheckpointsSetting: enableCheckpointsSetting,
 		shellIntegrationTimeout: shellIntegrationTimeout || 4000,
+		globalWorkflowToggles: globalWorkflowToggles || {},
 	}
 }
 
@@ -459,6 +468,8 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 		sambanovaApiKey,
 		shengsuanyunApiKey,
 		shengsuanyunToken,
+		cerebrasApiKey,
+		nebiusApiKey,
 		favoritedModelIds,
 		shengSuanYunModelId,
 		shengSuanYunModelInfo,
@@ -523,6 +534,8 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 	await storeSecret(context, "sambanovaApiKey", sambanovaApiKey)
 	await storeSecret(context, "shengsuanyunApiKey", shengsuanyunApiKey)
 	await updateGlobalState(context, "shengsuanyunToken", shengsuanyunToken)
+	await storeSecret(context, "cerebrasApiKey", cerebrasApiKey)
+	await storeSecret(context, "nebiusApiKey", nebiusApiKey)
 	await updateGlobalState(context, "favoritedModelIds", favoritedModelIds)
 	await updateGlobalState(context, "requestTimeoutMs", apiConfiguration.requestTimeoutMs)
 	await updateGlobalState(context, "shengSuanYunModelId", shengSuanYunModelId)
@@ -555,6 +568,8 @@ export async function resetExtensionState(context: vscode.ExtensionContext) {
 		"xaiApiKey",
 		"sambanovaApiKey",
 		"shengsuanyunApiKey",
+		"cerebrasApiKey",
+		"nebiusApiKey",
 	]
 	for (const key of secretKeys) {
 		await storeSecret(context, key, undefined)

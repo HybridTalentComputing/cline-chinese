@@ -5,6 +5,7 @@ import { validateApiConfiguration } from "@/utils/validate"
 import { vscode } from "@/utils/vscode"
 import ApiOptions from "@/components/settings/ApiOptions"
 import ClineLogoWhite from "@/assets/ClineLogoWhite"
+import { AccountServiceClient } from "@/services/grpc-client"
 
 const WelcomeView = memo(() => {
 	const { apiConfiguration } = useExtensionState()
@@ -35,15 +36,13 @@ const WelcomeView = memo(() => {
 				<p>
 					感谢{" "}
 					<VSCodeLink href="https://www.anthropic.com/claude/sonnet" className="inline">
-						Claude 3.7 Sonnet's
+						Claude 4 Sonnet's
 					</VSCodeLink>
 					我可以执行各种任务。代理编码能力和访问工具，让我创建和编辑文件、探索复杂项目、使用浏览器和执行终端命令
 					<i>（当然，在您的许可下）。</i>我甚至可以使用 MCP 来创建新工具并扩展我自己的能力。
 				</p>
 
-				<p className="text-[var(--vscode-descriptionForeground)]">
-					注册账户，开始免费试用, 或提供 API key 使用像 Claude 3.7 Sonnet.一样的模型。
-				</p>
+				<p className="text-[var(--vscode-descriptionForeground)]">注册 & 加群，赠送 Claude 4 Sonnet. 免费使用额度。</p>
 
 				<VSCodeButton appearance="primary" onClick={handleLogin} className="w-full mt-1">
 					免费试用

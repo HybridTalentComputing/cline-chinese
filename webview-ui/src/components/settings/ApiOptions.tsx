@@ -47,15 +47,18 @@ import {
 	askSageDefaultURL,
 	xaiDefaultModelId,
 	xaiModels,
+	nebiusModels,
+	nebiusDefaultModelId,
 	sambanovaModels,
 	sambanovaDefaultModelId,
+	cerebrasModels,
+	cerebrasDefaultModelId,
 	doubaoModels,
 	doubaoDefaultModelId,
 	liteLlmModelInfoSaneDefaults,
 	shengSuanYunDefaultModelId,
 	shengSuanYunDefaultModelInfo,
 } from "@shared/api"
-import { ExtensionMessage } from "@shared/ExtensionMessage"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { vscode } from "@/utils/vscode"
 import { ModelsServiceClient } from "@/services/grpc-client"
@@ -328,9 +331,11 @@ const ApiOptions = ({
 					<VSCodeOption value="lmstudio">LM Studio</VSCodeOption>
 					<VSCodeOption value="ollama">Ollama</VSCodeOption>
 					<VSCodeOption value="litellm">LiteLLM</VSCodeOption>
+					<VSCodeOption value="nebius">Nebius AI Studio</VSCodeOption>
 					<VSCodeOption value="asksage">AskSage</VSCodeOption>
 					<VSCodeOption value="xai">xAI</VSCodeOption>
 					<VSCodeOption value="sambanova">SambaNova</VSCodeOption>
+					<VSCodeOption value="cerebras">Cerebras</VSCodeOption>
 				</VSCodeDropdown>
 			</DropdownContainer>
 
@@ -891,8 +896,14 @@ const ApiOptions = ({
 						</div>
 					)}
 					{(selectedModelId === "anthropic.claude-3-7-sonnet-20250219-v1:0" ||
+						selectedModelId === "anthropic.claude-sonnet-4-20250514-v1:0" ||
+						selectedModelId === "anthropic.claude-opus-4-20250514-v1:0" ||
 						(apiConfiguration?.awsBedrockCustomSelected &&
-							apiConfiguration?.awsBedrockCustomModelBaseId === "anthropic.claude-3-7-sonnet-20250219-v1:0")) && (
+							apiConfiguration?.awsBedrockCustomModelBaseId === "anthropic.claude-3-7-sonnet-20250219-v1:0") ||
+						(apiConfiguration?.awsBedrockCustomSelected &&
+							apiConfiguration?.awsBedrockCustomModelBaseId === "anthropic.claude-sonnet-4-20250514-v1:0") ||
+						(apiConfiguration?.awsBedrockCustomSelected &&
+							apiConfiguration?.awsBedrockCustomModelBaseId === "anthropic.claude-opus-4-20250514-v1:0")) && (
 						<ThinkingBudgetSlider apiConfiguration={apiConfiguration} setApiConfiguration={setApiConfiguration} />
 					)}
 					<ModelInfoView
@@ -943,7 +954,7 @@ const ApiOptions = ({
 							marginTop: "5px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						To use Google Cloud Vertex AI, you need to
+						要使用 Google Cloud Vertex AI, 你需要
 						<VSCodeLink
 							href="https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude#before_you_begin"
 							style={{ display: "inline", fontSize: "inherit" }}>
@@ -981,7 +992,7 @@ const ApiOptions = ({
 								})
 							}
 						}}>
-						Use custom base URL
+						自定义 URL
 					</VSCodeCheckbox>
 
 					{geminiBaseUrlSelected && (
@@ -1643,7 +1654,7 @@ const ApiOptions = ({
 						value={apiConfiguration?.liteLlmModelId || ""}
 						style={{ width: "100%" }}
 						onInput={handleInputChange("liteLlmModelId")}
-						placeholder={"e.g. anthropic/claude-3-7-sonnet-20250219"}>
+						placeholder={"e.g. anthropic/claude-sonnet-4-20250514"}>
 						<span style={{ fontWeight: 500 }}>Model ID</span>
 					</VSCodeTextField>
 
@@ -1677,7 +1688,7 @@ const ApiOptions = ({
 								marginTop: "5px",
 								color: "var(--vscode-descriptionForeground)",
 							}}>
-							扩展思维可用于 Sonnet-3-7、o3-mini、Deepseek R1 等模型。更多信息{" "}
+							扩展思维适用于Sonnet-4、o3-mini、Deepseek R1等模型。更多信息请查看{" "}
 							<VSCodeLink
 								href="https://docs.litellm.ai/docs/reasoning_content"
 								style={{ display: "inline", fontSize: "inherit" }}>
@@ -1705,7 +1716,7 @@ const ApiOptions = ({
 								fontWeight: 700,
 								textTransform: "uppercase",
 							}}>
-							Model Configuration
+							模型配置
 						</span>
 					</div>
 					{modelConfigurationSelected && (
@@ -1723,7 +1734,7 @@ const ApiOptions = ({
 										liteLlmModelInfo: modelInfo,
 									})
 								}}>
-								Supports Images
+								支持图片
 							</VSCodeCheckbox>
 							<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
 								<VSCodeTextField
@@ -1743,7 +1754,7 @@ const ApiOptions = ({
 											liteLlmModelInfo: modelInfo,
 										})
 									}}>
-									<span style={{ fontWeight: 500 }}>Context Window Size</span>
+									<span style={{ fontWeight: 500 }}>上下文窗口大小</span>
 								</VSCodeTextField>
 								<VSCodeTextField
 									value={
@@ -1794,7 +1805,7 @@ const ApiOptions = ({
 											liteLlmModelInfo: modelInfo,
 										})
 									}}>
-									<span style={{ fontWeight: 500 }}>Temperature</span>
+									<span style={{ fontWeight: 500 }}>温度</span>
 								</VSCodeTextField>
 							</div>
 						</>
@@ -1881,6 +1892,52 @@ const ApiOptions = ({
 				</div>
 			)}
 
+			{selectedProvider === "nebius" && (
+				<div>
+					<VSCodeTextField
+						value={apiConfiguration?.nebiusApiKey || ""}
+						style={{ width: "100%" }}
+						type="password"
+						onInput={handleInputChange("nebiusApiKey")}
+						placeholder="Enter API Key...">
+						<span style={{ fontWeight: 500 }}>Nebius API Key</span>
+					</VSCodeTextField>
+					<p
+						style={{
+							fontSize: "12px",
+							marginTop: 3,
+							color: "var(--vscode-descriptionForeground)",
+						}}>
+						This key is stored locally and only used to make API requests from this extension.{" "}
+						{!apiConfiguration?.nebiusApiKey && (
+							<VSCodeLink
+								href="https://studio.nebius.com/settings/api-keys"
+								style={{
+									display: "inline",
+									fontSize: "inherit",
+								}}>
+								注册获取 Nebius API key.{" "}
+							</VSCodeLink>
+						)}
+						<span style={{ color: "var(--vscode-errorForeground)" }}>
+							(<span style={{ fontWeight: 500 }}>提示:</span>{" "}
+							Cline使用复杂的提示，与Claude模型效果最佳。能力较弱的模型可能无法如预期般工作。)
+						</span>
+					</p>
+				</div>
+			)}
+
+			{apiErrorMessage && (
+				<p
+					style={{
+						margin: "-10px 0 4px 0",
+						fontSize: 12,
+						color: "var(--vscode-errorForeground)",
+					}}>
+					{apiErrorMessage}
+				</p>
+			)}
+
 			{selectedProvider === "xai" && (
 				<div>
 					<VSCodeTextField
@@ -1897,7 +1954,11 @@ const ApiOptions = ({
 							marginTop: 3,
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						API key 保存在本地，只会被本插件用来请求API.
+						<span style={{ color: "var(--vscode-errorForeground)" }}>
+							(<span style={{ fontWeight: 500 }}>提示:</span>
+							Cline使用复杂的提示，与Claude模型最为匹配。能力较弱的模型可能无法按预期工作。)
+						</span>
+						这个密钥存储在本地，仅用于从此扩展程序发出API请求。
 						{!apiConfiguration?.xaiApiKey && (
 							<VSCodeLink href="https://x.ai" style={{ display: "inline", fontSize: "inherit" }}>
 								注册获取 X AI API key.
@@ -1965,6 +2026,37 @@ const ApiOptions = ({
 				</div>
 			)}
 
+			{selectedProvider === "cerebras" && (
+				<div>
+					<VSCodeTextField
+						value={apiConfiguration?.cerebrasApiKey || ""}
+						style={{ width: "100%" }}
+						type="password"
+						onInput={handleInputChange("cerebrasApiKey")}
+						placeholder="Enter API Key...">
+						<span style={{ fontWeight: 500 }}>Cerebras API Key</span>
+					</VSCodeTextField>
+					<p
+						style={{
+							fontSize: "12px",
+							marginTop: 3,
+							color: "var(--vscode-descriptionForeground)",
+						}}>
+						This key is stored locally and only used to make API requests from this extension.
+						{!apiConfiguration?.cerebrasApiKey && (
+							<VSCodeLink
+								href="https://cloud.cerebras.ai/"
+								style={{
+									display: "inline",
+									fontSize: "inherit",
+								}}>
+								注册获取 Cerebras API key.
+							</VSCodeLink>
+						)}
+					</p>
+				</div>
+			)}
+
 			{apiErrorMessage && (
 				<p
 					style={{
@@ -1993,10 +2085,10 @@ const ApiOptions = ({
 							}
 						}}
 						placeholder="Default: 30000 (30 seconds)">
-						<span style={{ fontWeight: 500 }}>Request Timeout (ms)</span>
+						<span style={{ fontWeight: 500 }}>请求超时 (ms)</span>
 					</VSCodeTextField>
 					<p style={{ fontSize: "12px", marginTop: 3, color: "var(--vscode-descriptionForeground)" }}>
-						Maximum time in milliseconds to wait for API responses before timing out.
+						等待API返回的最大毫秒数
 					</p>
 				</>
 			)}
@@ -2083,12 +2175,29 @@ const ApiOptions = ({
 							{selectedProvider === "asksage" && createDropdown(askSageModels)}
 							{selectedProvider === "xai" && createDropdown(xaiModels)}
 							{selectedProvider === "sambanova" && createDropdown(sambanovaModels)}
+							{selectedProvider === "cerebras" && createDropdown(cerebrasModels)}
+							{selectedProvider === "nebius" && createDropdown(nebiusModels)}
 						</DropdownContainer>
 
-						{((selectedProvider === "anthropic" && selectedModelId === "claude-3-7-sonnet-20250219") ||
-							(selectedProvider === "vertex" && selectedModelId === "claude-3-7-sonnet@20250219")) && (
-							<ThinkingBudgetSlider apiConfiguration={apiConfiguration} setApiConfiguration={setApiConfiguration} />
-						)}
+						{selectedProvider === "anthropic" &&
+							(selectedModelId === "claude-3-7-sonnet-20250219" ||
+								selectedModelId === "claude-sonnet-4-20250514" ||
+								selectedModelId === "claude-opus-4-20250514") && (
+								<ThinkingBudgetSlider
+									apiConfiguration={apiConfiguration}
+									setApiConfiguration={setApiConfiguration}
+								/>
+							)}
+
+						{selectedProvider === "vertex" &&
+							(selectedModelId === "claude-3-7-sonnet@20250219" ||
+								selectedModelId === "claude-sonnet-4@20250514" ||
+								selectedModelId === "claude-opus-4@20250514") && (
+								<ThinkingBudgetSlider
+									apiConfiguration={apiConfiguration}
+									setApiConfiguration={setApiConfiguration}
+								/>
+							)}
 
 						{selectedProvider === "xai" && selectedModelId.includes("3-mini") && (
 							<>
@@ -2105,7 +2214,7 @@ const ApiOptions = ({
 											})
 										}
 									}}>
-									Modify reasoning effort
+									修改模型推理效果
 								</VSCodeCheckbox>
 
 								{reasoningEffortSelected && (
@@ -2141,7 +2250,6 @@ const ApiOptions = ({
 								)}
 							</>
 						)}
-
 						<ModelInfoView
 							selectedModelId={selectedModelId}
 							modelInfo={selectedModelInfo}
@@ -2156,7 +2264,16 @@ const ApiOptions = ({
 				<OpenRouterModelPicker isPopup={isPopup} />
 			)}
 			{selectedProvider === "requesty" && showModelOptions && <RequestyModelPicker isPopup={isPopup} />}
-			{selectedProvider === "shengsuanyun" && showModelOptions && <ShengSuanYunModelPicker isPopup={isPopup} />}
+
+			{selectedProvider === "shengsuanyun" && showModelOptions && (
+				<>
+					<ShengSuanYunModelPicker isPopup={isPopup} />
+					{selectedModelId?.startsWith("qwen/qwen") && selectedModelId?.endsWith(":thinking") && (
+						<ThinkingBudgetSlider apiConfiguration={apiConfiguration} setApiConfiguration={setApiConfiguration} />
+					)}
+				</>
+			)}
+
 			{modelIdErrorMessage && (
 				<p
 					style={{
@@ -2496,6 +2613,8 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 			}
 		case "xai":
 			return getProviderData(xaiModels, xaiDefaultModelId)
+		case "nebius":
+			return getProviderData(nebiusModels, nebiusDefaultModelId)
 		case "sambanova":
 			return getProviderData(sambanovaModels, sambanovaDefaultModelId)
 		case "shengsuanyun":
@@ -2504,6 +2623,8 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 				selectedModelId: apiConfiguration?.shengSuanYunModelId || shengSuanYunDefaultModelId,
 				selectedModelInfo: apiConfiguration?.shengSuanYunModelInfo || shengSuanYunDefaultModelInfo,
 			}
+		case "cerebras":
+			return getProviderData(cerebrasModels, cerebrasDefaultModelId)
 		default:
 			return getProviderData(anthropicModels, anthropicDefaultModelId)
 	}

@@ -21,7 +21,7 @@ function generateHandlersAndExports() {
 	let imports = []
 	let handlerSetup = []
 
-	for (const [name, def] of Object.entries(proto.cline)) {
+	for (const [name, def] of Object.entries(proto.clineShengsuan)) {
 		if (!def || !("service" in def)) {
 			continue
 		}
@@ -29,7 +29,7 @@ function generateHandlersAndExports() {
 		const dir = domain.charAt(0).toLowerCase() + domain.slice(1)
 		imports.push(`// ${domain} Service`)
 		handlerSetup.push(`    // ${domain} Service`)
-		handlerSetup.push(`    server.addService(proto.cline.${name}.service, {`)
+		handlerSetup.push(`    server.addService(proto.clineShengsuan.${name}.service, {`)
 		for (const [rpcName, rpc] of Object.entries(def.service)) {
 			imports.push(`import { ${rpcName} } from "../core/controller/${dir}/${rpcName}"`)
 			if (rpc.requestStream) {

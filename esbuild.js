@@ -134,14 +134,6 @@ const baseConfig = {
 		aliasResolverPlugin,
 		/* add to the end of plugins array */
 		esbuildProblemMatcherPlugin,
-		// {
-		// 	name: "alias-plugin",
-		// 	setup(build) {
-		// 		build.onResolve({ filter: /^pkce-challenge$/ }, () => {
-		// 			return { path: require.resolve("pkce-challenge/dist/index.node.cjs") }
-		// 		})
-		// 	},
-		// },
 	],
 	format: "cjs",
 	sourcesContent: false,

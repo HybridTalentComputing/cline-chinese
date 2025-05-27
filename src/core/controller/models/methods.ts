@@ -10,6 +10,7 @@ import { refreshOpenAiModels } from "./refreshOpenAiModels"
 import { refreshOpenRouterModels } from "./refreshOpenRouterModels"
 import { refreshRequestyModels } from "./refreshRequestyModels"
 import { refreshShengSuanYunModels } from "./refreshShengSuanYunModels"
+
 // Register all models service methods
 export function registerAllMethods(): void {
 	// Register each method with the registry

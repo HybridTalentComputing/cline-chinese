@@ -3,10 +3,13 @@ import { useClickAway, useWindowSize } from "react-use"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { vscode } from "@/utils/vscode"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { FileServiceClient } from "@/services/grpc-client"
+import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import RulesToggleList from "./RulesToggleList"
 import Tooltip from "@/components/common/Tooltip"
 import styled from "styled-components"
+import { ClineRulesToggles, RefreshedRules, ToggleWindsurfRuleRequest } from "@shared/proto/file"
+import { EmptyRequest } from "@shared/proto/common"
 
 const ClineRulesToggleModal: React.FC = () => {
 	const {
@@ -14,7 +17,14 @@ const ClineRulesToggleModal: React.FC = () => {
 		localClineRulesToggles = {},
 		localCursorRulesToggles = {},
 		localWindsurfRulesToggles = {},
-		workflowToggles = {},
+		localWorkflowToggles = {},
+		globalWorkflowToggles = {},
+		setGlobalClineRulesToggles,
+		setLocalClineRulesToggles,
+		setLocalCursorRulesToggles,
+		setLocalWindsurfRulesToggles,
+		setLocalWorkflowToggles,
+		setGlobalWorkflowToggles,
 	} = useExtensionState()
 	const [isVisible, setIsVisible] = useState(false)
 	const buttonRef = useRef<HTMLDivElement>(null)
@@ -26,7 +36,31 @@ const ClineRulesToggleModal: React.FC = () => {
 
 	useEffect(() => {
 		if (isVisible) {
-			vscode.postMessage({ type: "refreshClineRules" })
+			FileServiceClient.refreshRules({} as EmptyRequest)
+				.then((response: RefreshedRules) => {
+					// Update state with the response data using all available setters
+					if (response.globalClineRulesToggles?.toggles) {
+						setGlobalClineRulesToggles(response.globalClineRulesToggles.toggles)
+					}
+					if (response.localClineRulesToggles?.toggles) {
+						setLocalClineRulesToggles(response.localClineRulesToggles.toggles)
+					}
+					if (response.localCursorRulesToggles?.toggles) {
+						setLocalCursorRulesToggles(response.localCursorRulesToggles.toggles)
+					}
+					if (response.localWindsurfRulesToggles?.toggles) {
+						setLocalWindsurfRulesToggles(response.localWindsurfRulesToggles.toggles)
+					}
+					if (response.localWorkflowToggles?.toggles) {
+						setLocalWorkflowToggles(response.localWorkflowToggles.toggles)
+					}
+					if (response.globalWorkflowToggles?.toggles) {
+						setGlobalWorkflowToggles(response.globalWorkflowToggles.toggles)
+					}
+				})
+				.catch((error) => {
+					console.error("Failed to refresh rules:", error)
+				})
 		}
 	}, [isVisible])
 
@@ -48,41 +82,72 @@ const ClineRulesToggleModal: React.FC = () => {
 		.map(([path, enabled]): [string, boolean] => [path, enabled as boolean])
 		.sort(([a], [b]) => a.localeCompare(b))
 
-	const workflows = Object.entries(workflowToggles || {})
+	const localWorkflows = Object.entries(localWorkflowToggles || {})
 		.map(([path, enabled]): [string, boolean] => [path, enabled as boolean])
 		.sort(([a], [b]) => a.localeCompare(b))
 
-	// Handle toggle rule
+	const globalWorkflows = Object.entries(globalWorkflowToggles || {})
+		.map(([path, enabled]): [string, boolean] => [path, enabled as boolean])
+		.sort(([a], [b]) => a.localeCompare(b))
+
+	// Handle toggle rule using gRPC
 	const toggleRule = (isGlobal: boolean, rulePath: string, enabled: boolean) => {
-		vscode.postMessage({
-			type: "toggleClineRule",
+		FileServiceClient.toggleClineRule({
 			isGlobal,
 			rulePath,
 			enabled,
 		})
+			.then((response) => {
+				// Update the local state with the response
+				if (response.globalClineRulesToggles?.toggles) {
+					setGlobalClineRulesToggles(response.globalClineRulesToggles.toggles)
+				}
+				if (response.localClineRulesToggles?.toggles) {
+					setLocalClineRulesToggles(response.localClineRulesToggles.toggles)
+				}
+			})
+			.catch((error) => {
+				console.error("Error toggling Cline rule:", error)
+			})
 	}
 
 	const toggleCursorRule = (rulePath: string, enabled: boolean) => {
-		vscode.postMessage({
-			type: "toggleCursorRule",
+		FileServiceClient.toggleCursorRule({
 			rulePath,
 			enabled,
 		})
+			.then((response) => {
+				// Update the local state with the response
+				if (response.toggles) {
+					setLocalCursorRulesToggles(response.toggles)
+				}
+			})
+			.catch((error) => {
+				console.error("Error toggling Cursor rule:", error)
+			})
 	}
 
 	const toggleWindsurfRule = (rulePath: string, enabled: boolean) => {
-		vscode.postMessage({
-			type: "toggleWindsurfRule",
+		FileServiceClient.toggleWindsurfRule({
 			rulePath,
 			enabled,
-		})
+		} as ToggleWindsurfRuleRequest)
+			.then((response: ClineRulesToggles) => {
+				if (response.toggles) {
+					setLocalWindsurfRulesToggles(response.toggles)
+				}
+			})
+			.catch((error) => {
+				console.error("Error toggling Windsurf rule:", error)
+			})
 	}
 
-	const toggleWorkflow = (workflowPath: string, enabled: boolean) => {
+	const toggleWorkflow = (isGlobal: boolean, workflowPath: string, enabled: boolean) => {
 		vscode.postMessage({
 			type: "toggleWorkflow",
 			workflowPath,
 			enabled,
+			isGlobal,
 		})
 	}
 
@@ -166,8 +231,14 @@ const ClineRulesToggleModal: React.FC = () => {
 					<div className="text-xs text-[var(--vscode-descriptionForeground)] mb-4">
 						{currentView === "rules" ? (
 							<p>
-								规则允许您为 Cline
-								提供系统级指导。将它们视为一种持久的方式，以包含项目或每个对话的全局上下文和偏好。
+								规则允许您向 Cline
+								提供系统级的指导。将它们视为一种持久的方式，以便在您的项目或每次对话中包含上下文和偏好。{" "}
+								<VSCodeLink
+									href="https://docs.cline.bot/features/cline-rules"
+									style={{ display: "inline" }}
+									className="text-xs">
+									文档
+								</VSCodeLink>
 							</p>
 						) : (
 							<p>
@@ -177,7 +248,13 @@ const ClineRulesToggleModal: React.FC = () => {
 								text-[var(--vscode-foreground)] font-bold">
 									/工作流名
 								</span>{" "}
-								在聊天中。
+								对话窗口.{" "}
+								<VSCodeLink
+									href="https://docs.cline.bot/features/slash-commands/workflows"
+									style={{ display: "inline" }}
+									className="text-xs">
+									文档
+								</VSCodeLink>
 							</p>
 						)}
 					</div>
@@ -231,19 +308,35 @@ const ClineRulesToggleModal: React.FC = () => {
 							</div>
 						</>
 					) : (
-						/* Workflows section */
-						<div style={{ marginBottom: -10 }}>
-							<div className="text-sm font-normal mb-2">工作区工作流</div>
-							<RulesToggleList
-								rules={workflows}
-								toggleRule={toggleWorkflow}
-								listGap="small"
-								isGlobal={false}
-								ruleType={"workflow"}
-								showNewRule={true}
-								showNoRules={false}
-							/>
-						</div>
+						<>
+							{/* Global Workflows Section */}
+							<div className="mb-3">
+								<div className="text-sm font-normal mb-2">全局工作流</div>
+								<RulesToggleList
+									rules={globalWorkflows}
+									toggleRule={(rulePath, enabled) => toggleWorkflow(true, rulePath, enabled)}
+									listGap="small"
+									isGlobal={true}
+									ruleType={"workflow"}
+									showNewRule={true}
+									showNoRules={false}
+								/>
+							</div>
+
+							{/* Local Workflows Section */}
+							<div style={{ marginBottom: -10 }}>
+								<div className="text-sm font-normal mb-2">项目工作流</div>
+								<RulesToggleList
+									rules={localWorkflows}
+									toggleRule={(rulePath, enabled) => toggleWorkflow(false, rulePath, enabled)}
+									listGap="small"
+									isGlobal={false}
+									ruleType={"workflow"}
+									showNewRule={true}
+									showNoRules={false}
+								/>
+							</div>
+						</>
 					)}
 				</div>
 			)}
