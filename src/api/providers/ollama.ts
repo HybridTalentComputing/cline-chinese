@@ -5,6 +5,7 @@ import { ApiHandlerOptions, ModelInfo, openAiModelInfoSaneDefaults } from "../..
 import { convertToOllamaMessages } from "../transform/ollama-format"
 import { ApiStream } from "../transform/stream"
 import { withRetry } from "../retry"
+import fetch from "node-fetch"
 
 export class OllamaHandler implements ApiHandler {
 	private options: ApiHandlerOptions
@@ -18,7 +19,6 @@ export class OllamaHandler implements ApiHandler {
 	@withRetry({ retryAllErrors: true })
 	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		const ollamaMessages: Message[] = [{ role: "system", content: systemPrompt }, ...convertToOllamaMessages(messages)]
-
 		try {
 			// Create a promise that rejects after timeout
 			const timeoutMs = this.options.requestTimeoutMs || 30000
@@ -71,9 +71,7 @@ export class OllamaHandler implements ApiHandler {
 			// Enhance error reporting
 			const statusCode = error.status || error.statusCode
 			const errorMessage = error.message || "Unknown error"
-
 			console.error(`Ollama API error (${statusCode || "unknown"}): ${errorMessage}`)
-			throw error
 		}
 	}
 
