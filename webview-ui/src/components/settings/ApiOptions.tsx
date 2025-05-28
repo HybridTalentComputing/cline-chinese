@@ -316,7 +316,7 @@ const ApiOptions = ({
 					<VSCodeOption value="openrouter">OpenRouter</VSCodeOption>
 					<VSCodeOption value="anthropic">Anthropic</VSCodeOption>
 					<VSCodeOption value="bedrock">Amazon Bedrock</VSCodeOption>
-					<VSCodeOption value="openai">OpenAI Compatible</VSCodeOption>
+					<VSCodeOption value="openai">OpenAI 兼容接口</VSCodeOption>
 					<VSCodeOption value="vertex">GCP Vertex AI</VSCodeOption>
 					<VSCodeOption value="gemini">Google Gemini</VSCodeOption>
 					<VSCodeOption value="deepseek">DeepSeek</VSCodeOption>
@@ -1077,7 +1077,7 @@ const ApiOptions = ({
 						return (
 							<div style={{ marginBottom: 10 }}>
 								<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-									<span style={{ fontWeight: 500 }}>Custom Headers</span>
+									<span style={{ fontWeight: 500 }}>自定义头</span>
 									<VSCodeButton
 										onClick={() => {
 											const currentHeaders = { ...(apiConfiguration?.openAiHeaders || {}) }
@@ -1090,7 +1090,7 @@ const ApiOptions = ({
 												},
 											})
 										}}>
-										Add Header
+										添加 http 头
 									</VSCodeButton>
 								</div>
 								<div>
@@ -1191,7 +1191,7 @@ const ApiOptions = ({
 								fontWeight: 700,
 								textTransform: "uppercase",
 							}}>
-							Model 配置
+							模型配置
 						</span>
 					</div>
 					{modelConfigurationSelected && (
