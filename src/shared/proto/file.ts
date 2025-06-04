@@ -6,7 +6,7 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import { Empty, EmptyRequest, Metadata, StringArray, StringRequest } from "./common";
+import { Empty, EmptyRequest, Metadata, StringArray, StringArrays, StringRequest } from "./common";
 
 export const protobufPackage = "clineShengsuan";
 
@@ -1766,6 +1766,15 @@ export const FileServiceDefinition = {
       requestType: EmptyRequest,
       requestStream: false,
       responseType: StringArray,
+      responseStream: false,
+      options: {},
+    },
+    /** Select images and other files from the file system and returns as data URLs & paths respectively */
+    selectFiles: {
+      name: "selectFiles",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: StringArrays,
       responseStream: false,
       options: {},
     },

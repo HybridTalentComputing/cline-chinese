@@ -328,7 +328,7 @@ Hey, the PR looks good overall but I'm concerned about removing those timeouts. 
 Could you add back the timeouts after focusing the sidebar? Something like:
 
 ```typescript
-await vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
+await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
 await setTimeoutPromise(100)  // Give UI time to update
 visibleWebview = WebviewProvider.getSidebarInstance()
 ```

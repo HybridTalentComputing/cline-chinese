@@ -5,10 +5,17 @@
 import { registerMethod } from "./index"
 import { onDidShowAnnouncement } from "./onDidShowAnnouncement"
 import { scrollToSettings } from "./scrollToSettings"
+import { subscribeToAddToInput } from "./subscribeToAddToInput"
+
+// Streaming methods for this service
+export const streamingMethods = [
+  "subscribeToAddToInput"
+]
 
 // Register all ui service methods
 export function registerAllMethods(): void {
 	// Register each method with the registry
 	registerMethod("onDidShowAnnouncement", onDidShowAnnouncement)
 	registerMethod("scrollToSettings", scrollToSettings)
+	registerMethod("subscribeToAddToInput", subscribeToAddToInput, { isStreaming: true })
 }

@@ -40,5 +40,14 @@ export const AccountServiceDefinition = {
       responseStream: false,
       options: {},
     },
+    /** Subscribe to auth callback events (when authentication tokens are received) */
+    subscribeToAuthCallback: {
+      name: "subscribeToAuthCallback",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: String,
+      responseStream: true,
+      options: {},
+    },
   },
 } as const;

@@ -5,7 +5,7 @@
 // source: ui.proto
 
 /* eslint-disable */
-import { Boolean, Empty, EmptyRequest, StringRequest } from "./common";
+import { Boolean, Empty, EmptyRequest, String, StringRequest } from "./common";
 
 export const protobufPackage = "clineShengsuan";
 
@@ -31,6 +31,15 @@ export const UiServiceDefinition = {
       requestStream: false,
       responseType: Boolean,
       responseStream: false,
+      options: {},
+    },
+    /** Subscribe to addToInput events (when user adds content via context menu) */
+    subscribeToAddToInput: {
+      name: "subscribeToAddToInput",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: String,
+      responseStream: true,
       options: {},
     },
   },

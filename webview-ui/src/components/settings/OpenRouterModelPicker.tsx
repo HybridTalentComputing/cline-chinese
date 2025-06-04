@@ -41,8 +41,8 @@ export interface OpenRouterModelPickerProps {
 // Featured models for Cline provider
 const featuredModels = [
 	{
-		id: "anthropic/claude-sonnet-4",
-		description: "Best model for agentic coding",
+		id: "anthropic/claude-3.7-sonnet",
+		description: "Recommended for agentic coding in Cline",
 		label: "Best",
 	},
 	{
@@ -336,8 +336,8 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 						如果你不确定使用哪个模型, Cline 使用{" "}
 						<VSCodeLink
 							style={{ display: "inline", fontSize: "inherit" }}
-							onClick={() => handleModelChange("anthropic/claude-sonnet-4")}>
-							anthropic/claude-sonnet-4.
+							onClick={() => handleModelChange("anthropic/claude-3.7-sonnet")}>
+							anthropic/claude-3.7-sonnet.
 						</VSCodeLink>
 						你也可以尝试使用 "free" 搜索免费模型
 					</>
