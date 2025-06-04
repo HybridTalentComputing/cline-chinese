@@ -1,5 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import axios from "axios"
+import { v4 as uuidv4 } from "uuid"
 
 import fs from "fs/promises"
 import { setTimeout as setTimeoutPromise } from "node:timers/promises"
@@ -54,6 +55,7 @@ import { ClineRulesToggles } from "@shared/cline-rules"
 import { sendStateUpdate } from "./state/subscribeToState"
 import { sendAddToInputEvent } from "./ui/subscribeToAddToInput"
 import { sendAuthCallbackEvent } from "./account/subscribeToAuthCallback"
+import { sendChatButtonClickedEvent } from "./ui/subscribeToChatButtonClicked"
 import { refreshClineRulesToggles } from "@core/context/instructions/user-instructions/cline-rules"
 import { refreshExternalRulesToggles } from "@core/context/instructions/user-instructions/external-rules"
 import { refreshWorkflowToggles } from "@core/context/instructions/user-instructions/workflows"
@@ -65,6 +67,7 @@ https://github.com/KumarVariable/vscode-extension-sidebar-html/blob/master/src/c
 */
 
 export class Controller {
+	readonly id: string = uuidv4()
 	private postMessage: (message: ExtensionMessage) => Thenable<boolean> | undefined
 
 	private disposables: vscode.Disposable[] = []
@@ -109,9 +112,7 @@ export class Controller {
 	- https://github.com/microsoft/vscode-extension-samples/blob/main/webview-sample/src/extension.ts
 	*/
 	async dispose() {
-		this.outputChannel.appendLine("Disposing ClineProvider...")
 		await this.clearTask()
-		this.outputChannel.appendLine("Cleared task")
 		while (this.disposables.length) {
 			const x = this.disposables.pop()
 			if (x) {
@@ -120,7 +121,6 @@ export class Controller {
 		}
 		this.workspaceTracker.dispose()
 		this.mcpHub.dispose()
-		this.outputChannel.appendLine("Disposed all disposables")
 
 		console.error("Controller disposed")
 	}
@@ -264,6 +264,13 @@ export class Controller {
 						}
 					}
 				})
+
+				// Initialize telemetry service with user's current setting
+				this.getStateToPostToWebview().then((state) => {
+					const { telemetrySetting } = state
+					const isOptedIn = telemetrySetting !== "disabled"
+					telemetryService.updateTelemetryState(isOptedIn)
+				})
 				break
 			case "newTask":
 				// Code that should run in response to the hello message command
@@ -284,11 +291,6 @@ export class Controller {
 					}
 				}
 				await this.postStateToWebview()
-				break
-			case "optionsResponse":
-				if (this.task) {
-					await this.task.handleWebviewAskResponse("messageResponse", message.text || "", [])
-				}
 				break
 			case "fetchUserCreditsData": {
 				await this.fetchUserCreditsData()
@@ -1086,18 +1088,6 @@ export class Controller {
 		// FIXME: this seems to happen sometimes when the json file doesn't save to disk for some reason
 		await this.deleteTaskFromState(id)
 		throw new Error("Task not found")
-	}
-
-	async showTaskWithId(id: string) {
-		if (id !== this.task?.taskId) {
-			// non-current task
-			const { historyItem } = await this.getTaskWithId(id)
-			await this.initTask(undefined, undefined, undefined, historyItem) // clears existing task
-		}
-		await this.postMessageToWebview({
-			type: "action",
-			action: "chatButtonClicked",
-		})
 	}
 
 	async exportTaskWithId(id: string) {

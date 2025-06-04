@@ -5,9 +5,128 @@
 // source: ui.proto
 
 /* eslint-disable */
-import { Boolean, Empty, EmptyRequest, String, StringRequest } from "./common";
+import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import { Boolean, Empty, EmptyRequest, Metadata, String, StringRequest } from "./common";
 
 export const protobufPackage = "clineShengsuan";
+
+/** Enum for webview provider types */
+export enum WebviewProviderType {
+  SIDEBAR = 0,
+  TAB = 1,
+  UNRECOGNIZED = -1,
+}
+
+export function webviewProviderTypeFromJSON(object: any): WebviewProviderType {
+  switch (object) {
+    case 0:
+    case "SIDEBAR":
+      return WebviewProviderType.SIDEBAR;
+    case 1:
+    case "TAB":
+      return WebviewProviderType.TAB;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return WebviewProviderType.UNRECOGNIZED;
+  }
+}
+
+export function webviewProviderTypeToJSON(object: WebviewProviderType): string {
+  switch (object) {
+    case WebviewProviderType.SIDEBAR:
+      return "SIDEBAR";
+    case WebviewProviderType.TAB:
+      return "TAB";
+    case WebviewProviderType.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+/** Define a new message type for webview provider info */
+export interface WebviewProviderTypeRequest {
+  metadata?: Metadata | undefined;
+  providerType: WebviewProviderType;
+}
+
+function createBaseWebviewProviderTypeRequest(): WebviewProviderTypeRequest {
+  return { metadata: undefined, providerType: 0 };
+}
+
+export const WebviewProviderTypeRequest: MessageFns<WebviewProviderTypeRequest> = {
+  encode(message: WebviewProviderTypeRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.metadata !== undefined) {
+      Metadata.encode(message.metadata, writer.uint32(10).fork()).join();
+    }
+    if (message.providerType !== 0) {
+      writer.uint32(16).int32(message.providerType);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): WebviewProviderTypeRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWebviewProviderTypeRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.metadata = Metadata.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.providerType = reader.int32() as any;
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): WebviewProviderTypeRequest {
+    return {
+      metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+      providerType: isSet(object.providerType) ? webviewProviderTypeFromJSON(object.providerType) : 0,
+    };
+  },
+
+  toJSON(message: WebviewProviderTypeRequest): unknown {
+    const obj: any = {};
+    if (message.metadata !== undefined) {
+      obj.metadata = Metadata.toJSON(message.metadata);
+    }
+    if (message.providerType !== 0) {
+      obj.providerType = webviewProviderTypeToJSON(message.providerType);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<WebviewProviderTypeRequest>, I>>(base?: I): WebviewProviderTypeRequest {
+    return WebviewProviderTypeRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<WebviewProviderTypeRequest>, I>>(object: I): WebviewProviderTypeRequest {
+    const message = createBaseWebviewProviderTypeRequest();
+    message.metadata = (object.metadata !== undefined && object.metadata !== null)
+      ? Metadata.fromPartial(object.metadata)
+      : undefined;
+    message.providerType = object.providerType ?? 0;
+    return message;
+  },
+};
 
 /** UiService provides methods for managing UI interactions */
 export type UiServiceDefinition = typeof UiServiceDefinition;
@@ -42,5 +161,57 @@ export const UiServiceDefinition = {
       responseStream: true,
       options: {},
     },
+    /** Subscribe to MCP button clicked events */
+    subscribeToMcpButtonClicked: {
+      name: "subscribeToMcpButtonClicked",
+      requestType: WebviewProviderTypeRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: true,
+      options: {},
+    },
+    /** Subscribe to history button click events */
+    subscribeToHistoryButtonClicked: {
+      name: "subscribeToHistoryButtonClicked",
+      requestType: WebviewProviderTypeRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: true,
+      options: {},
+    },
+    /** Subscribe to chat button clicked events (when the chat button is clicked in VSCode) */
+    subscribeToChatButtonClicked: {
+      name: "subscribeToChatButtonClicked",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: true,
+      options: {},
+    },
   },
 } as const;
+
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+
+export type DeepPartial<T> = T extends Builtin ? T
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
+  : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+export type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+function isSet(value: any): boolean {
+  return value !== null && value !== undefined;
+}
+
+export interface MessageFns<T> {
+  encode(message: T, writer?: BinaryWriter): BinaryWriter;
+  decode(input: BinaryReader | Uint8Array, length?: number): T;
+  fromJSON(object: any): T;
+  toJSON(message: T): unknown;
+  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
+  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
+}

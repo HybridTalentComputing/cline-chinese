@@ -47,13 +47,13 @@
 
 ## ✨进群交流
 ### 进群福利
-- **注册新用户赠送10元**
+- **注册新用户并且进群赠送10元(添加群主好友)**
 - **我们的专业客服及时为您答疑解惑**
 - **开发票**
 <div align="center" style="display: flex; justify-content: center; gap: 20px;">
 
 APIRouter进群交流<br>（如果无法加群，请加企业微信客服）<br>
-  <img src="https://github.com/user-attachments/assets/41e6dc76-07c9-4dbf-ac35-d2494ebc9a41" alt="APIRouter企业微信群" width="250" /> <br>
+  <img src="https://github.com/user-attachments/assets/41e6dc76-07c9-4dbf-ac35-d2494ebc9a41" alt="APIRouter企业微信群" width="250" /> 
 </div>
 
 <div align="center" style="display: flex; justify-content: center; gap: 20px;">

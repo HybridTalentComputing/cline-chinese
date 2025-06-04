@@ -6,10 +6,16 @@ import { registerMethod } from "./index"
 import { onDidShowAnnouncement } from "./onDidShowAnnouncement"
 import { scrollToSettings } from "./scrollToSettings"
 import { subscribeToAddToInput } from "./subscribeToAddToInput"
+import { subscribeToChatButtonClicked } from "./subscribeToChatButtonClicked"
+import { subscribeToHistoryButtonClicked } from "./subscribeToHistoryButtonClicked"
+import { subscribeToMcpButtonClicked } from "./subscribeToMcpButtonClicked"
 
 // Streaming methods for this service
 export const streamingMethods = [
-  "subscribeToAddToInput"
+  "subscribeToAddToInput",
+  "subscribeToMcpButtonClicked",
+  "subscribeToHistoryButtonClicked",
+  "subscribeToChatButtonClicked"
 ]
 
 // Register all ui service methods
@@ -18,4 +24,7 @@ export function registerAllMethods(): void {
 	registerMethod("onDidShowAnnouncement", onDidShowAnnouncement)
 	registerMethod("scrollToSettings", scrollToSettings)
 	registerMethod("subscribeToAddToInput", subscribeToAddToInput, { isStreaming: true })
+	registerMethod("subscribeToChatButtonClicked", subscribeToChatButtonClicked, { isStreaming: true })
+	registerMethod("subscribeToHistoryButtonClicked", subscribeToHistoryButtonClicked, { isStreaming: true })
+	registerMethod("subscribeToMcpButtonClicked", subscribeToMcpButtonClicked, { isStreaming: true })
 }
