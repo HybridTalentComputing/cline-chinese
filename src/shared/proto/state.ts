@@ -62,6 +62,7 @@ export interface ChatSettings {
 export interface ChatContent {
   message?: string | undefined;
   images: string[];
+  files: string[];
 }
 
 /** Message for auto approval settings */
@@ -337,7 +338,7 @@ export const ChatSettings: MessageFns<ChatSettings> = {
 };
 
 function createBaseChatContent(): ChatContent {
-  return { message: undefined, images: [] };
+  return { message: undefined, images: [], files: [] };
 }
 
 export const ChatContent: MessageFns<ChatContent> = {
@@ -347,6 +348,9 @@ export const ChatContent: MessageFns<ChatContent> = {
     }
     for (const v of message.images) {
       writer.uint32(18).string(v!);
+    }
+    for (const v of message.files) {
+      writer.uint32(26).string(v!);
     }
     return writer;
   },
@@ -374,6 +378,14 @@ export const ChatContent: MessageFns<ChatContent> = {
           message.images.push(reader.string());
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.files.push(reader.string());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -387,6 +399,7 @@ export const ChatContent: MessageFns<ChatContent> = {
     return {
       message: isSet(object.message) ? globalThis.String(object.message) : undefined,
       images: globalThis.Array.isArray(object?.images) ? object.images.map((e: any) => globalThis.String(e)) : [],
+      files: globalThis.Array.isArray(object?.files) ? object.files.map((e: any) => globalThis.String(e)) : [],
     };
   },
 
@@ -398,6 +411,9 @@ export const ChatContent: MessageFns<ChatContent> = {
     if (message.images?.length) {
       obj.images = message.images;
     }
+    if (message.files?.length) {
+      obj.files = message.files;
+    }
     return obj;
   },
 
@@ -408,6 +424,7 @@ export const ChatContent: MessageFns<ChatContent> = {
     const message = createBaseChatContent();
     message.message = object.message ?? undefined;
     message.images = object.images?.map((e) => e) || [];
+    message.files = object.files?.map((e) => e) || [];
     return message;
   },
 };

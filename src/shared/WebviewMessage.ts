@@ -13,15 +13,12 @@ export interface WebviewMessage {
 		| "newTask"
 		| "condense"
 		| "reportBug"
-		| "showChatView"
 		| "requestVsCodeLmModels"
 		| "authStateChanged"
-		| "authCallback"
 		| "fetchMcpMarketplace"
 		| "searchCommits"
 		| "fetchLatestMcpServersFromHub"
 		| "telemetrySetting"
-		| "invoke"
 		| "updateSettings"
 		| "clearAllTaskHistory"
 		| "fetchUserCreditsData"
@@ -33,11 +30,14 @@ export interface WebviewMessage {
 		| "fetchUSDRate"
 		| "accountLoginClickedSSY"
 		| "accountLogoutClickedSSY"
-	// | "relaunchChromeDebugMode"
+		// | "relaunchChromeDebugMode"
+		| "executeQuickWin"
+
 	text?: string
 	disabled?: boolean
 	apiConfiguration?: ApiConfiguration
 	images?: string[]
+	files?: string[]
 	bool?: boolean
 	number?: number
 	browserSettings?: BrowserSettings
@@ -81,6 +81,8 @@ export interface WebviewMessage {
 	workflowPath?: string
 	enabled?: boolean
 	filename?: string
+
+	payload?: { command: string; title: string }
 
 	offset?: number
 	shellIntegrationTimeout?: number

@@ -62,7 +62,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			if (currentVersion !== lastShownPopupNotificationVersion && previousVersion) {
 				// Show VS Code popup notification as this version hasn't been notified yet without doing it for fresh installs
 				const message = `Cline has been updated to v${currentVersion}`
-				await vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
+				await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
 				await new Promise((resolve) => setTimeout(resolve, 200))
 				vscode.window.showInformationMessage(message)
 				// Record that we've shown the popup for this version.
