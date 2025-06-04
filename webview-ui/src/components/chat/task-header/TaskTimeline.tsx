@@ -4,7 +4,16 @@ import { ClineMessage } from "@shared/ExtensionMessage"
 import { combineApiRequests } from "@shared/combineApiRequests"
 import { combineCommandSequences } from "@shared/combineCommandSequences"
 import TaskTimelineTooltip from "./TaskTimelineTooltip"
-import { COLOR_WHITE, COLOR_GRAY, COLOR_DARK_GRAY, COLOR_BEIGE, COLOR_BLUE, COLOR_RED, COLOR_PURPLE, COLOR_GREEN } from "./colors"
+import {
+	COLOR_WHITE,
+	COLOR_GRAY,
+	COLOR_DARK_GRAY,
+	COLOR_BEIGE,
+	COLOR_BLUE,
+	COLOR_RED,
+	COLOR_PURPLE,
+	COLOR_GREEN,
+} from "../colors"
 
 // Timeline dimensions and spacing
 const TIMELINE_HEIGHT = "18px"
@@ -40,6 +49,8 @@ const getBlockColor = (message: ClineMessage): string => {
 							return COLOR_BEIGE // Beige for file read operations
 						} else if (toolData.tool === "editedExistingFile" || toolData.tool === "newFileCreated") {
 							return COLOR_BLUE // Blue for file edit/create operations
+						} else if (toolData.tool === "webFetch") {
+							return COLOR_PURPLE // Purple for web fetch operations
 						}
 					} catch (e) {
 						// JSON parse error here
@@ -78,6 +89,8 @@ const getBlockColor = (message: ClineMessage): string => {
 							return COLOR_BEIGE // Beige for file read operations
 						} else if (toolData.tool === "editedExistingFile" || toolData.tool === "newFileCreated") {
 							return COLOR_BLUE // Blue for file edit/create operations
+						} else if (toolData.tool === "webFetch") {
+							return COLOR_PURPLE // Purple for web fetch operations
 						}
 					} catch (e) {
 						// JSON parse error here

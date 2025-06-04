@@ -1,6 +1,15 @@
 import React from "react"
 import { ClineMessage } from "@shared/ExtensionMessage"
-import { COLOR_WHITE, COLOR_GRAY, COLOR_DARK_GRAY, COLOR_BEIGE, COLOR_BLUE, COLOR_RED, COLOR_PURPLE, COLOR_GREEN } from "./colors"
+import {
+	COLOR_WHITE,
+	COLOR_GRAY,
+	COLOR_DARK_GRAY,
+	COLOR_BEIGE,
+	COLOR_BLUE,
+	COLOR_RED,
+	COLOR_PURPLE,
+	COLOR_GREEN,
+} from "../colors"
 import { Tooltip } from "@heroui/react"
 
 // Color mapping for different message types
@@ -37,6 +46,8 @@ const TaskTimelineTooltip = ({ message, children }: TaskTimelineTooltipProps) =>
 								return `编辑文件: ${toolData.path || "未知文件"}`
 							} else if (toolData.tool === "newFileCreated") {
 								return `新文件: ${toolData.path || "未知文件"}`
+							} else if (toolData.tool === "webFetch") {
+								return `读取网页: ${toolData.path || "未知的 URL"}`
 							}
 							return `工具: ${toolData.tool}`
 						} catch (e) {
@@ -81,6 +92,8 @@ const TaskTimelineTooltip = ({ message, children }: TaskTimelineTooltipProps) =>
 								return `编辑文件批准: ${toolData.path || "未知文件"}`
 							} else if (toolData.tool === "newFileCreated") {
 								return `新文件批准: ${toolData.path || "未知文件"}`
+							} else if (toolData.tool === "webFetch") {
+								return `网页读取: ${toolData.path || "未知的 URL"}`
 							}
 							return `工具批准: ${toolData.tool}`
 						} catch (e) {
@@ -187,6 +200,8 @@ const TaskTimelineTooltip = ({ message, children }: TaskTimelineTooltipProps) =>
 								return COLOR_BEIGE // Beige for file read operations
 							} else if (toolData.tool === "editedExistingFile" || toolData.tool === "newFileCreated") {
 								return COLOR_BLUE // Blue for file edit/create operations
+							} else if (toolData.tool === "webFetch") {
+								return COLOR_PURPLE // Beige for web fetch operations
 							}
 						} catch (e) {
 							// JSON parse error here
@@ -225,6 +240,8 @@ const TaskTimelineTooltip = ({ message, children }: TaskTimelineTooltipProps) =>
 								return COLOR_BEIGE // Beige for file read operations
 							} else if (toolData.tool === "editedExistingFile" || toolData.tool === "newFileCreated") {
 								return COLOR_BLUE // Blue for file edit/create operations
+							} else if (toolData.tool === "webFetch") {
+								return COLOR_PURPLE // Purple for web fetch operations
 							}
 						} catch (e) {
 							// JSON parse error here

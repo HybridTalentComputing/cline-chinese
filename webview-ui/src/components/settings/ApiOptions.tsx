@@ -1,3 +1,56 @@
+import VSCodeButtonLink from "@/components/common/VSCodeButtonLink"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { ModelsServiceClient } from "@/services/grpc-client"
+import { vscode } from "@/utils/vscode"
+import { getAsVar, VSC_DESCRIPTION_FOREGROUND } from "@/utils/vscStyles"
+import {
+	anthropicDefaultModelId,
+	anthropicModels,
+	ApiConfiguration,
+	ApiProvider,
+	askSageDefaultModelId,
+	askSageDefaultURL,
+	askSageModels,
+	azureOpenAiDefaultApiVersion,
+	bedrockDefaultModelId,
+	bedrockModels,
+	cerebrasDefaultModelId,
+	cerebrasModels,
+	deepSeekDefaultModelId,
+	deepSeekModels,
+	doubaoDefaultModelId,
+	doubaoModels,
+	geminiDefaultModelId,
+	geminiModels,
+	internationalQwenDefaultModelId,
+	internationalQwenModels,
+	liteLlmModelInfoSaneDefaults,
+	mainlandQwenDefaultModelId,
+	mainlandQwenModels,
+	mistralDefaultModelId,
+	mistralModels,
+	ModelInfo,
+	nebiusDefaultModelId,
+	nebiusModels,
+	openAiModelInfoSaneDefaults,
+	openAiNativeDefaultModelId,
+	openAiNativeModels,
+	openRouterDefaultModelId,
+	openRouterDefaultModelInfo,
+	requestyDefaultModelId,
+	requestyDefaultModelInfo,
+	sambanovaDefaultModelId,
+	sambanovaModels,
+	vertexDefaultModelId,
+	vertexGlobalModels,
+	vertexModels,
+	xaiDefaultModelId,
+	xaiModels,
+	shengSuanYunDefaultModelId,
+	shengSuanYunDefaultModelInfo,
+} from "@shared/api"
+import { EmptyRequest, StringRequest } from "@shared/proto/common"
+import { OpenAiModelsRequest } from "@shared/proto/models"
 import {
 	VSCodeButton,
 	VSCodeCheckbox,
@@ -9,66 +62,16 @@ import {
 	VSCodeTextField,
 } from "@vscode/webview-ui-toolkit/react"
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
-import { useEvent, useInterval } from "react-use"
+import { useInterval } from "react-use"
 import styled from "styled-components"
 import * as vscodemodels from "vscode"
-import {
-	anthropicDefaultModelId,
-	anthropicModels,
-	ApiConfiguration,
-	ApiProvider,
-	azureOpenAiDefaultApiVersion,
-	bedrockDefaultModelId,
-	bedrockModels,
-	deepSeekDefaultModelId,
-	deepSeekModels,
-	geminiDefaultModelId,
-	geminiModels,
-	mistralDefaultModelId,
-	mistralModels,
-	ModelInfo,
-	openAiModelInfoSaneDefaults,
-	openAiNativeDefaultModelId,
-	openAiNativeModels,
-	openRouterDefaultModelId,
-	openRouterDefaultModelInfo,
-	requestyDefaultModelId,
-	requestyDefaultModelInfo,
-	mainlandQwenModels,
-	internationalQwenModels,
-	mainlandQwenDefaultModelId,
-	internationalQwenDefaultModelId,
-	vertexDefaultModelId,
-	vertexModels,
-	vertexGlobalModels,
-	askSageModels,
-	askSageDefaultModelId,
-	askSageDefaultURL,
-	xaiDefaultModelId,
-	xaiModels,
-	nebiusModels,
-	nebiusDefaultModelId,
-	sambanovaModels,
-	sambanovaDefaultModelId,
-	cerebrasModels,
-	cerebrasDefaultModelId,
-	doubaoModels,
-	doubaoDefaultModelId,
-	liteLlmModelInfoSaneDefaults,
-	shengSuanYunDefaultModelId,
-	shengSuanYunDefaultModelInfo,
-} from "@shared/api"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { vscode } from "@/utils/vscode"
-import { ModelsServiceClient } from "@/services/grpc-client"
-import { getAsVar, VSC_DESCRIPTION_FOREGROUND } from "@/utils/vscStyles"
-import VSCodeButtonLink from "@/components/common/VSCodeButtonLink"
-import OpenRouterModelPicker, { ModelDescriptionMarkdown, OPENROUTER_MODEL_PICKER_Z_INDEX } from "./OpenRouterModelPicker"
-import { ClineAccountInfoCard } from "./ClineAccountInfoCard"
-import RequestyModelPicker from "./RequestyModelPicker"
-import ShengSuanYunModelPicker from "./ShengSuanYunModelPicker"
 import { useOpenRouterKeyInfo } from "../ui/hooks/useOpenRouterKeyInfo"
+import { ClineAccountInfoCard } from "./ClineAccountInfoCard"
+import OllamaModelPicker from "./OllamaModelPicker"
+import OpenRouterModelPicker, { ModelDescriptionMarkdown, OPENROUTER_MODEL_PICKER_Z_INDEX } from "./OpenRouterModelPicker"
+import RequestyModelPicker from "./RequestyModelPicker"
+import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
+import ShengSuanYunModelPicker from "./ShengSuanYunModelPicker"
 
 interface ApiOptionsProps {
 	showModelOptions: boolean
@@ -193,9 +196,11 @@ const ApiOptions = ({
 	const requestLocalModels = useCallback(async () => {
 		if (selectedProvider === "ollama") {
 			try {
-				const response = await ModelsServiceClient.getOllamaModels({
-					value: apiConfiguration?.ollamaBaseUrl || "",
-				})
+				const response = await ModelsServiceClient.getOllamaModels(
+					StringRequest.create({
+						value: apiConfiguration?.ollamaBaseUrl || "",
+					}),
+				)
 				if (response && response.values) {
 					setOllamaModels(response.values)
 				}
@@ -205,9 +210,11 @@ const ApiOptions = ({
 			}
 		} else if (selectedProvider === "lmstudio") {
 			try {
-				const response = await ModelsServiceClient.getLmStudioModels({
-					value: apiConfiguration?.lmStudioBaseUrl || "",
-				})
+				const response = await ModelsServiceClient.getLmStudioModels(
+					StringRequest.create({
+						value: apiConfiguration?.lmStudioBaseUrl || "",
+					}),
+				)
 				if (response && response.values) {
 					setLmStudioModels(response.values)
 				}
@@ -217,7 +224,7 @@ const ApiOptions = ({
 			}
 		} else if (selectedProvider === "vscode-lm") {
 			try {
-				const response = await ModelsServiceClient.getVsCodeLmModels({})
+				const response = await ModelsServiceClient.getVsCodeLmModels(EmptyRequest.create({}))
 				if (response && response.models) {
 					setVsCodeLmModels(response.models)
 				}
@@ -287,10 +294,12 @@ const ApiOptions = ({
 
 		if (baseUrl && apiKey) {
 			debounceTimerRef.current = setTimeout(() => {
-				ModelsServiceClient.refreshOpenAiModels({
-					baseUrl,
-					apiKey,
-				}).catch((error) => {
+				ModelsServiceClient.refreshOpenAiModels(
+					OpenAiModelsRequest.create({
+						baseUrl,
+						apiKey,
+					}),
+				).catch((error) => {
 					console.error("Failed to refresh OpenAI models:", error)
 				})
 			}, 500)
@@ -1835,13 +1844,37 @@ const ApiOptions = ({
 						placeholder={"Default: http://localhost:11434"}>
 						<span style={{ fontWeight: 500 }}>Base URL (可选)</span>
 					</VSCodeTextField>
-					<VSCodeTextField
-						value={apiConfiguration?.ollamaModelId || ""}
-						style={{ width: "100%" }}
-						onInput={handleInputChange("ollamaModelId")}
-						placeholder={"e.g. llama3.1"}>
-						<span style={{ fontWeight: 500 }}>Model ID</span>
-					</VSCodeTextField>
+
+					{/* Model selection - use filterable picker */}
+					<label htmlFor="ollama-model-selection">
+						<span style={{ fontWeight: 500 }}>Model</span>
+					</label>
+					<OllamaModelPicker
+						ollamaModels={ollamaModels}
+						selectedModelId={apiConfiguration?.ollamaModelId || ""}
+						onModelChange={(modelId) => {
+							setApiConfiguration({
+								...apiConfiguration,
+								ollamaModelId: modelId,
+							})
+						}}
+						placeholder={ollamaModels.length > 0 ? "Search and select a model..." : "e.g. llama3.1"}
+					/>
+
+					{/* Show status message based on model availability */}
+					{ollamaModels.length === 0 && (
+						<p
+							style={{
+								fontSize: "12px",
+								marginTop: "3px",
+								color: "var(--vscode-descriptionForeground)",
+								fontStyle: "italic",
+							}}>
+							Unable to fetch models from Ollama server. Please ensure Ollama is running and accessible, or enter
+							the model ID manually above.
+						</p>
+					)}
+
 					<VSCodeTextField
 						value={apiConfiguration?.ollamaApiOptionsCtxNum || "32768"}
 						style={{ width: "100%" }}
@@ -1849,29 +1882,6 @@ const ApiOptions = ({
 						placeholder={"e.g. 32768"}>
 						<span style={{ fontWeight: 500 }}>上下文窗口</span>
 					</VSCodeTextField>
-					{ollamaModels.length > 0 && (
-						<VSCodeRadioGroup
-							value={
-								ollamaModels.includes(apiConfiguration?.ollamaModelId || "")
-									? apiConfiguration?.ollamaModelId
-									: ""
-							}
-							onChange={(e) => {
-								const value = (e.target as HTMLInputElement)?.value
-								// need to check value first since radio group returns empty string sometimes
-								if (value) {
-									handleInputChange("ollamaModelId")({
-										target: { value },
-									})
-								}
-							}}>
-							{ollamaModels.map((model) => (
-								<VSCodeRadio key={model} value={model} checked={apiConfiguration?.ollamaModelId === model}>
-									{model}
-								</VSCodeRadio>
-							))}
-						</VSCodeRadioGroup>
-					)}
 					<p
 						style={{
 							fontSize: "12px",

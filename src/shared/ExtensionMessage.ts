@@ -42,15 +42,7 @@ export interface ExtensionMessage {
 		| "shengSuanYunModels"
 		| "authCallback"
 	text?: string
-	action?:
-		| "chatButtonClicked"
-		| "mcpButtonClicked"
-		| "settingsButtonClicked"
-		| "historyButtonClicked"
-		| "didBecomeVisible"
-		| "accountLogoutClicked"
-		| "accountButtonClicked"
-		| "focusChatInput"
+	action?: "settingsButtonClicked" | "didBecomeVisible" | "accountLogoutClicked" | "accountButtonClicked" | "focusChatInput"
 	state?: ExtensionState
 	images?: string[]
 	files?: string[]
@@ -212,6 +204,7 @@ export interface ClineSayTool {
 		| "listFilesRecursive"
 		| "listCodeDefinitionNames"
 		| "searchFiles"
+		| "webFetch"
 	path?: string
 	diff?: string
 	content?: string

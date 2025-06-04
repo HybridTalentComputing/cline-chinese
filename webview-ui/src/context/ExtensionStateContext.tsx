@@ -1,9 +1,14 @@
-import React, { createContext, useCallback, useContext, useEffect, useState, useRef } from "react"
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { useEvent } from "react-use"
-import { StateServiceClient } from "../services/grpc-client"
+import { StateServiceClient, ModelsServiceClient, UiServiceClient } from "../services/grpc-client"
 import { EmptyRequest } from "@shared/proto/common"
+import { WebviewProviderType as WebviewProviderTypeEnum, WebviewProviderTypeRequest } from "@shared/proto/ui"
 import { DEFAULT_AUTO_APPROVAL_SETTINGS } from "@shared/AutoApprovalSettings"
-import { ExtensionMessage, ExtensionState, DEFAULT_PLATFORM } from "@shared/ExtensionMessage"
+import { DEFAULT_BROWSER_SETTINGS } from "@shared/BrowserSettings"
+import { ChatSettings, DEFAULT_CHAT_SETTINGS } from "@shared/ChatSettings"
+import { DEFAULT_PLATFORM, ExtensionMessage, ExtensionState } from "@shared/ExtensionMessage"
+import { TelemetrySetting } from "@shared/TelemetrySetting"
+import { findLastIndex } from "@shared/array"
 import {
 	ApiConfiguration,
 	ModelInfo,
@@ -14,13 +19,9 @@ import {
 	shengSuanYunDefaultModelId,
 	shengSuanYunDefaultModelInfo,
 } from "../../../src/shared/api"
-import { findLastIndex } from "@shared/array"
 import { McpMarketplaceCatalog, McpServer, McpViewTab } from "../../../src/shared/mcp"
 import { convertTextMateToHljs } from "../utils/textMateToHljs"
 import { vscode } from "../utils/vscode"
-import { DEFAULT_BROWSER_SETTINGS } from "@shared/BrowserSettings"
-import { ChatSettings, DEFAULT_CHAT_SETTINGS } from "@shared/ChatSettings"
-import { TelemetrySetting } from "@shared/TelemetrySetting"
 
 interface ExtensionStateContextType extends ExtensionState {
 	didHydrateState: boolean
@@ -63,6 +64,9 @@ interface ExtensionStateContextType extends ExtensionState {
 	setGlobalWorkflowToggles: (toggles: Record<string, boolean>) => void
 	setMcpMarketplaceCatalog: (value: McpMarketplaceCatalog) => void
 	setTotalTasksSize: (value: number | null) => void
+
+	// Refresh functions
+	refreshOpenRouterModels: () => void
 
 	// Navigation state setters
 	setShowMcp: (value: boolean) => void
@@ -195,20 +199,11 @@ export const ExtensionStateContextProvider: React.FC<{
 		switch (message.type) {
 			case "action": {
 				switch (message.action!) {
-					case "mcpButtonClicked":
-						navigateToMcp(message.tab)
-						break
 					case "settingsButtonClicked":
 						navigateToSettings()
 						break
-					case "historyButtonClicked":
-						navigateToHistory()
-						break
 					case "accountButtonClicked":
 						navigateToAccount()
-						break
-					case "chatButtonClicked":
-						navigateToChat()
 						break
 				}
 				break
@@ -282,95 +277,174 @@ export const ExtensionStateContextProvider: React.FC<{
 
 	useEvent("message", handleMessage)
 
-	// Reference to store the state subscription cancellation function
+	// References to store subscription cancellation functions
 	const stateSubscriptionRef = useRef<(() => void) | null>(null)
+	const mcpButtonUnsubscribeRef = useRef<(() => void) | null>(null)
+	const historyButtonClickedSubscriptionRef = useRef<(() => void) | null>(null)
+	const chatButtonUnsubscribeRef = useRef<(() => void) | null>(null)
 
-	// Subscribe to state updates using the new gRPC streaming API
+	// Subscribe to state updates and UI events using the gRPC streaming API
 	useEffect(() => {
+		// Determine the webview provider type
+		const webviewType =
+			window.WEBVIEW_PROVIDER_TYPE === "sidebar" ? WebviewProviderTypeEnum.SIDEBAR : WebviewProviderTypeEnum.TAB
+
 		// Set up state subscription
-		stateSubscriptionRef.current = StateServiceClient.subscribeToState(
-			{},
-			{
-				onResponse: (response) => {
-					if (response.stateJson) {
-						try {
-							const stateData = JSON.parse(response.stateJson) as ExtensionState
-							console.log("[DEBUG] parsed state JSON, updating state")
-							setState((prevState) => {
-								// Versioning logic for autoApprovalSettings
-								const incomingVersion = stateData.autoApprovalSettings?.version ?? 1
-								const currentVersion = prevState.autoApprovalSettings?.version ?? 1
-								const shouldUpdateAutoApproval = incomingVersion > currentVersion
+		stateSubscriptionRef.current = StateServiceClient.subscribeToState(EmptyRequest.create({}), {
+			onResponse: (response) => {
+				if (response.stateJson) {
+					try {
+						const stateData = JSON.parse(response.stateJson) as ExtensionState
+						console.log("[DEBUG] parsed state JSON, updating state")
+						setState((prevState) => {
+							// Versioning logic for autoApprovalSettings
+							const incomingVersion = stateData.autoApprovalSettings?.version ?? 1
+							const currentVersion = prevState.autoApprovalSettings?.version ?? 1
+							const shouldUpdateAutoApproval = incomingVersion > currentVersion
 
-								const newState = {
-									...stateData,
-									autoApprovalSettings: shouldUpdateAutoApproval
-										? stateData.autoApprovalSettings
-										: prevState.autoApprovalSettings,
-								}
+							const newState = {
+								...stateData,
+								autoApprovalSettings: shouldUpdateAutoApproval
+									? stateData.autoApprovalSettings
+									: prevState.autoApprovalSettings,
+							}
 
-								// Update welcome screen state based on API configuration
-								const config = stateData.apiConfiguration
-								const hasKey = config
-									? [
-											config.apiKey,
-											config.openRouterApiKey,
-											config.awsRegion,
-											config.vertexProjectId,
-											config.openAiApiKey,
-											config.ollamaModelId,
-											config.lmStudioModelId,
-											config.liteLlmApiKey,
-											config.geminiApiKey,
-											config.openAiNativeApiKey,
-											config.deepSeekApiKey,
-											config.requestyApiKey,
-											config.togetherApiKey,
-											config.qwenApiKey,
-											config.doubaoApiKey,
-											config.mistralApiKey,
-											config.vsCodeLmModelSelector,
-											config.clineApiKey,
-											config.asksageApiKey,
-											config.xaiApiKey,
-											config.sambanovaApiKey,
-											config.shengsuanyunApiKey,
-										].some((key) => key !== undefined)
-									: false
+							// Update welcome screen state based on API configuration
+							const config = stateData.apiConfiguration
+							const hasKey = config
+								? [
+										config.apiKey,
+										config.openRouterApiKey,
+										config.awsRegion,
+										config.vertexProjectId,
+										config.openAiApiKey,
+										config.ollamaModelId,
+										config.lmStudioModelId,
+										config.liteLlmApiKey,
+										config.geminiApiKey,
+										config.openAiNativeApiKey,
+										config.deepSeekApiKey,
+										config.requestyApiKey,
+										config.togetherApiKey,
+										config.qwenApiKey,
+										config.doubaoApiKey,
+										config.mistralApiKey,
+										config.vsCodeLmModelSelector,
+										config.clineApiKey,
+										config.asksageApiKey,
+										config.xaiApiKey,
+										config.sambanovaApiKey,
+										config.shengsuanyunApiKey,
+									].some((key) => key !== undefined)
+								: false
 
-								setShowWelcome(!hasKey)
-								setDidHydrateState(true)
+							setShowWelcome(!hasKey)
+							setDidHydrateState(true)
 
-								console.log("[DEBUG] returning new state in ESC")
+							console.log("[DEBUG] returning new state in ESC")
 
-								return newState
-							})
-						} catch (error) {
-							console.error("Error parsing state JSON:", error)
-							console.log("[DEBUG] ERR getting state", error)
-						}
+							return newState
+						})
+					} catch (error) {
+						console.error("Error parsing state JSON:", error)
+						console.log("[DEBUG] ERR getting state", error)
 					}
-					console.log('[DEBUG] ended "got subscribed state"')
+				}
+				console.log('[DEBUG] ended "got subscribed state"')
+			},
+			onError: (error) => {
+				console.error("Error in state subscription:", error)
+			},
+			onComplete: () => {
+				console.log("State subscription completed")
+			},
+		})
+
+		// Subscribe to MCP button clicked events with webview type
+		mcpButtonUnsubscribeRef.current = UiServiceClient.subscribeToMcpButtonClicked(
+			WebviewProviderTypeRequest.create({
+				providerType: webviewType,
+			}),
+			{
+				onResponse: () => {
+					console.log("[DEBUG] Received mcpButtonClicked event from gRPC stream")
+					navigateToMcp()
 				},
 				onError: (error) => {
-					console.error("Error in state subscription:", error)
+					console.error("Error in mcpButtonClicked subscription:", error)
 				},
 				onComplete: () => {
-					console.log("State subscription completed")
+					console.log("mcpButtonClicked subscription completed")
 				},
 			},
 		)
 
+		// Set up history button clicked subscription with webview type
+		historyButtonClickedSubscriptionRef.current = UiServiceClient.subscribeToHistoryButtonClicked(
+			WebviewProviderTypeRequest.create({
+				providerType: webviewType,
+			}),
+			{
+				onResponse: () => {
+					// When history button is clicked, navigate to history view
+					console.log("[DEBUG] Received history button clicked event from gRPC stream")
+					navigateToHistory()
+				},
+				onError: (error) => {
+					console.error("Error in history button clicked subscription:", error)
+				},
+				onComplete: () => {
+					console.log("History button clicked subscription completed")
+				},
+			},
+		)
+
+		// Subscribe to chat button clicked events with webview type
+		chatButtonUnsubscribeRef.current = UiServiceClient.subscribeToChatButtonClicked(EmptyRequest.create({}), {
+			onResponse: () => {
+				// When chat button is clicked, navigate to chat
+				console.log("[DEBUG] Received chat button clicked event from gRPC stream")
+				navigateToChat()
+			},
+			onError: (error) => {
+				console.error("Error in chat button subscription:", error)
+			},
+			onComplete: () => {},
+		})
+
 		// Still send the webviewDidLaunch message for other initialization
 		vscode.postMessage({ type: "webviewDidLaunch" })
 
-		// Clean up subscription when component unmounts
+		// Clean up subscriptions when component unmounts
 		return () => {
 			if (stateSubscriptionRef.current) {
 				stateSubscriptionRef.current()
 				stateSubscriptionRef.current = null
 			}
+			if (mcpButtonUnsubscribeRef.current) {
+				mcpButtonUnsubscribeRef.current()
+				mcpButtonUnsubscribeRef.current = null
+			}
+			if (historyButtonClickedSubscriptionRef.current) {
+				historyButtonClickedSubscriptionRef.current()
+				historyButtonClickedSubscriptionRef.current = null
+			}
+			if (chatButtonUnsubscribeRef.current) {
+				chatButtonUnsubscribeRef.current()
+				chatButtonUnsubscribeRef.current = null
+			}
 		}
+	}, [])
+
+	const refreshOpenRouterModels = useCallback(() => {
+		ModelsServiceClient.refreshOpenRouterModels(EmptyRequest.create({}))
+			.then((res) => {
+				setOpenRouterModels({
+					[openRouterDefaultModelId]: openRouterDefaultModelInfo, // in case the extension sent a model list without the default model
+					...res.models,
+				})
+			})
+			.catch((error: Error) => console.error("Failed to refresh OpenRouter models:", error))
 	}, [])
 
 	const contextValue: ExtensionStateContextType = {
@@ -505,6 +579,7 @@ export const ExtensionStateContextProvider: React.FC<{
 			})),
 		setMcpTab,
 		setTotalTasksSize,
+		refreshOpenRouterModels,
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

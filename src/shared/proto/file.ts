@@ -6,7 +6,7 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import { Empty, EmptyRequest, Metadata, StringArray, StringArrays, StringRequest } from "./common";
+import { BooleanRequest, Empty, EmptyRequest, Metadata, StringArray, StringArrays, StringRequest } from "./common";
 
 export const protobufPackage = "clineShengsuan";
 
@@ -1772,7 +1772,7 @@ export const FileServiceDefinition = {
     /** Select images and other files from the file system and returns as data URLs & paths respectively */
     selectFiles: {
       name: "selectFiles",
-      requestType: EmptyRequest,
+      requestType: BooleanRequest,
       requestStream: false,
       responseType: StringArrays,
       responseStream: false,
@@ -1829,6 +1829,15 @@ export const FileServiceDefinition = {
       requestType: EmptyRequest,
       requestStream: false,
       responseType: RefreshedRules,
+      responseStream: false,
+      options: {},
+    },
+    /** Opens a task's conversation history file on disk */
+    openTaskHistory: {
+      name: "openTaskHistory",
+      requestType: StringRequest,
+      requestStream: false,
+      responseType: Empty,
       responseStream: false,
       options: {},
     },

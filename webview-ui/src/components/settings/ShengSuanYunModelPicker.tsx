@@ -11,6 +11,7 @@ import { highlight } from "../history/HistoryView"
 import { ModelInfoView, normalizeApiConfiguration } from "./ApiOptions"
 import { CODE_BLOCK_BG_COLOR } from "../common/CodeBlock"
 import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
+import { EmptyRequest, StringRequest } from "@shared/proto/common"
 
 export interface ShengSuanYunModelPickerProps {
 	isPopup?: boolean
@@ -62,7 +63,7 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 	}, [apiConfiguration])
 
 	useMount(() => {
-		ModelsServiceClient.refreshShengSuanYunModels({}).catch((error: Error) =>
+		ModelsServiceClient.refreshShengSuanYunModels(EmptyRequest.create({})).catch((error: Error) =>
 			console.error("Failed to refresh ShengSuanYun models:", error),
 		)
 	})
@@ -233,9 +234,9 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 												isFavorite={isFavorite}
 												onClick={(e) => {
 													e.stopPropagation()
-													StateServiceClient.toggleFavoriteModel({ value: item.id }).catch((error) =>
-														console.error("Failed to toggle favorite model:", error),
-													)
+													StateServiceClient.toggleFavoriteModel(
+														StringRequest.create({ value: item.id }),
+													).catch((error) => console.error("Failed to toggle favorite model:", error))
 												}}
 											/>
 										</div>

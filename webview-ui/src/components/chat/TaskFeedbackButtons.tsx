@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react"
-import styled from "styled-components"
 import { TaskServiceClient } from "@/services/grpc-client"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { TaskFeedbackType } from "@shared/WebviewMessage"
+import { StringRequest } from "@shared/proto/common"
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import React, { useEffect, useState } from "react"
+import styled from "styled-components"
 
 interface TaskFeedbackButtonsProps {
 	messageTs: number
@@ -47,9 +48,11 @@ const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, is
 		setFeedback(type)
 
 		try {
-			await TaskServiceClient.taskFeedback({
-				value: type,
-			})
+			await TaskServiceClient.taskFeedback(
+				StringRequest.create({
+					value: type,
+				}),
+			)
 
 			// Store in localStorage that feedback was provided for this message
 			try {
@@ -73,8 +76,8 @@ const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, is
 						appearance="icon"
 						onClick={() => handleFeedback("thumbs_up")}
 						disabled={feedback !== null}
-						title="This was helpful"
-						aria-label="This was helpful">
+						title="有帮助"
+						aria-label="有帮助">
 						<IconWrapper>
 							<span
 								className={`codicon ${feedback === "thumbs_up" ? "codicon-thumbsup-filled" : "codicon-thumbsup"}`}
@@ -87,8 +90,8 @@ const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, is
 						appearance="icon"
 						onClick={() => handleFeedback("thumbs_down")}
 						disabled={feedback !== null && feedback !== "thumbs_down"}
-						title="This wasn't helpful"
-						aria-label="This wasn't helpful">
+						title="没啥用"
+						aria-label="没啥用">
 						<IconWrapper>
 							<span
 								className={`codicon ${feedback === "thumbs_down" ? "codicon-thumbsdown-filled" : "codicon-thumbsdown"}`}

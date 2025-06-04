@@ -60,7 +60,13 @@ import { fileExistsAtPath } from "@utils/fs"
 import { createAndOpenGitHubIssue } from "@utils/github-url-utils"
 import { arePathsEqual, getReadablePath, isLocatedInWorkspace } from "@utils/path"
 import { fixModelHtmlEscaping, removeInvalidChars } from "@utils/string"
-import { AssistantMessageContent, parseAssistantMessageV2, ToolParamName, ToolUseName } from "@core/assistant-message"
+import {
+	AssistantMessageContent,
+	parseAssistantMessageV2,
+	parseAssistantMessageV3,
+	ToolParamName,
+	ToolUseName,
+} from "@core/assistant-message"
 import { constructNewFileContent } from "@core/assistant-message/diff"
 import { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
 import { parseMentions } from "@core/mentions"
@@ -104,7 +110,8 @@ import { isInTestMode } from "../../services/test/TestMode"
 import { processFilesIntoText } from "@integrations/misc/extract-text"
 import { featureFlagsService } from "@services/posthog/feature-flags/FeatureFlagsService"
 import { StreamingJsonReplacer, ChangeLocation } from "@core/assistant-message/diff-json"
-import { parseAssistantMessageV3 } from "../assistant-message/parse-assistant-message"
+
+export const USE_EXPERIMENTAL_CLAUDE4_FEATURES = false
 
 export const cwd =
 	vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0) ?? path.join(os.homedir(), "Desktop") // may or may not exist but fs checking existence would immediately ask for permission which would be bad UX, need to come up with a better solution
@@ -395,7 +402,7 @@ export class Task {
 			case "taskAndWorkspace":
 			case "workspace":
 				if (!this.enableCheckpoints) {
-					vscode.window.showErrorMessage("Checkpoints are disabled in settings.")
+					vscode.window.showErrorMessage("设置中禁用了检查点.")
 					didWorkspaceRestoreFail = true
 					break
 				}
@@ -477,13 +484,13 @@ export class Task {
 
 			switch (restoreType) {
 				case "task":
-					vscode.window.showInformationMessage("Task messages have been restored to the checkpoint")
+					vscode.window.showInformationMessage("任务消息已恢复到检查点")
 					break
 				case "workspace":
-					vscode.window.showInformationMessage("Workspace files have been restored to the checkpoint")
+					vscode.window.showInformationMessage("工作区文件已恢复到检查点")
 					break
 				case "taskAndWorkspace":
-					vscode.window.showInformationMessage("Task and workspace have been restored to the checkpoint")
+					vscode.window.showInformationMessage("任务和工作区已恢复到检查点")
 					break
 			}
 
@@ -1222,15 +1229,35 @@ export class Task {
 			//
 		} else {
 			// attempt completion requires checkpoint to be sync so that we can present button after attempt_completion
-			const commitHash = await this.checkpointTracker?.commit()
-			// For attempt_completion, find the last completion_result message and set its checkpoint hash. This will be used to present the 'see new changes' button
-			const lastCompletionResultMessage = findLast(
-				this.clineMessages,
-				(m) => m.say === "completion_result" || m.ask === "completion_result",
-			)
-			if (lastCompletionResultMessage) {
-				lastCompletionResultMessage.lastCheckpointHash = commitHash
-				await this.saveClineMessagesAndUpdateHistory()
+			// Check if checkpoint tracker exists, if not, create it
+			if (!this.checkpointTracker) {
+				try {
+					this.checkpointTracker = await CheckpointTracker.create(
+						this.taskId,
+						this.context.globalStorageUri.fsPath,
+						this.enableCheckpoints,
+					)
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : "Unknown error"
+					console.error("Failed to initialize checkpoint tracker for attempt completion:", errorMessage)
+					return
+				}
+			}
+
+			if (this.checkpointTracker) {
+				const commitHash = await this.checkpointTracker.commit()
+
+				// For attempt_completion, find the last completion_result message and set its checkpoint hash. This will be used to present the 'see new changes' button
+				const lastCompletionResultMessage = findLast(
+					this.clineMessages,
+					(m) => m.say === "completion_result" || m.ask === "completion_result",
+				)
+				if (lastCompletionResultMessage) {
+					lastCompletionResultMessage.lastCheckpointHash = commitHash
+					await this.saveClineMessagesAndUpdateHistory()
+				}
+			} else {
+				console.error("Checkpoint tracker does not exist and could not be initialized for attempt completion")
 			}
 		}
 
@@ -1522,6 +1549,8 @@ export class Task {
 					]
 				case "browser_action":
 					return this.autoApprovalSettings.actions.useBrowser
+				case "web_fetch":
+					return this.autoApprovalSettings.actions.useBrowser
 				case "access_mcp_resource":
 				case "use_mcp_tool":
 					return this.autoApprovalSettings.actions.useMcp
@@ -1782,7 +1811,6 @@ export class Task {
 	): Promise<{ shouldBreak: boolean; newContent?: string; error?: string }> {
 		// Calculate the delta - what's new since last time
 		const newJsonChunk = currentFullJson.substring(this.lastProcessedJsonLength)
-
 		if (block.partial) {
 			// Initialize on first chunk
 			if (!this.streamingJsonReplacer) {
@@ -1798,6 +1826,7 @@ export class Task {
 
 				const onError = (error: Error) => {
 					console.error("StreamingJsonReplacer error:", error)
+					console.log("Failed StreamingJsonReplacer update:")
 					// Handle error: push tool result, cleanup
 					this.userMessageContent.push({
 						type: "text",
@@ -1839,9 +1868,45 @@ export class Task {
 				if (!this.diffViewProvider.isEditing) {
 					await this.diffViewProvider.open(relPath)
 				}
-				// Would need to initialize StreamingJsonReplacer here for non-streaming case
+
+				// Initialize StreamingJsonReplacer for non-streaming case
+				const onContentUpdated = (newContent: string, _isFinalItem: boolean, changeLocation?: ChangeLocation) => {
+					// Update diff view incrementally
+					this.diffViewProvider.update(newContent, false, changeLocation)
+				}
+
+				const onError = (error: Error) => {
+					console.error("StreamingJsonReplacer error:", error)
+					// Handle error
+					this.userMessageContent.push({
+						type: "text",
+						text: formatResponse.toolError(`JSON replacement error: ${error.message}`),
+					})
+					this.didAlreadyUseTool = true
+					this.userMessageContentReady = true
+					throw error
+				}
+
+				this.streamingJsonReplacer = new StreamingJsonReplacer(
+					this.diffViewProvider.originalContent || "",
+					onContentUpdated,
+					onError,
+				)
+
+				// Write the entire JSON at once
+				this.streamingJsonReplacer.write(currentFullJson)
+
+				// Get the final content
+				const newContent = this.streamingJsonReplacer.getCurrentContent()
+
+				// Cleanup
+				this.streamingJsonReplacer = undefined
 				this.lastProcessedJsonLength = 0
-				return { shouldBreak: true }
+
+				// Update diff view with final content
+				await this.diffViewProvider.update(newContent, true)
+
+				return { shouldBreak: false, newContent }
 			}
 
 			// Feed final delta
@@ -1988,6 +2053,8 @@ export class Task {
 							return `[${block.name}]`
 						case "new_rule":
 							return `[${block.name} for '${block.params.path}']`
+						case "web_fetch":
+							return `[${block.name} for '${block.params.url}']`
 					}
 				}
 
@@ -2021,7 +2088,7 @@ export class Task {
 					if (typeof content === "string") {
 						const resultText = content || "(tool did not return anything)"
 
-						if (isClaude4ModelFamily) {
+						if (isClaude4ModelFamily && USE_EXPERIMENTAL_CLAUDE4_FEATURES) {
 							// Claude 4 family: Use function_results format
 							this.userMessageContent.push({
 								type: "text",
@@ -2197,9 +2264,9 @@ export class Task {
 								const currentFullJson = block.params.diff
 								// Check if we should use streaming (e.g., for specific models)
 								const isClaude4ModelFamily = await this.isClaude4ModelFamily()
-
 								// Going through claude family of models
-								if (isClaude4ModelFamily && currentFullJson) {
+								if (isClaude4ModelFamily && USE_EXPERIMENTAL_CLAUDE4_FEATURES && currentFullJson) {
+									console.log("[EDIT] Streaming JSON replacement")
 									const streamingResult = await this.handleStreamingJsonReplacement(
 										block,
 										relPath,
@@ -2366,14 +2433,14 @@ export class Task {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
 									await this.say("tool", completeMessage, undefined, undefined, false)
 									this.consecutiveAutoApprovedRequestsCount++
-									telemetryService.captureToolUsage(this.taskId, block.name, true, true)
+									telemetryService.captureToolUsage(this.taskId, block.name, this.api.getModel().id, true, true)
 
 									// we need an artificial delay to let the diagnostics catch up to the changes
 									await setTimeoutPromise(3_500)
 								} else {
 									// If auto-approval is enabled but this tool wasn't auto-approved, send notification
 									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline wants to ${fileExists ? "edit" : "create"} ${path.basename(relPath)}`,
+										`Cline 需要 ${fileExists ? "编辑" : "创建"} ${path.basename(relPath)}`,
 									)
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 
@@ -2404,7 +2471,13 @@ export class Task {
 										}
 										this.didRejectTool = true
 										didApprove = false
-										telemetryService.captureToolUsage(this.taskId, block.name, false, false)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											false,
+										)
 									} else {
 										// User hit the approve button, and may have provided feedback
 										if (text || (images && images.length > 0) || (askFiles && askFiles.length > 0)) {
@@ -2417,7 +2490,13 @@ export class Task {
 											await this.say("user_feedback", text, images, askFiles)
 											await this.saveCheckpoint()
 										}
-										telemetryService.captureToolUsage(this.taskId, block.name, false, true)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											true,
+										)
 									}
 
 									if (!didApprove) {
@@ -2535,19 +2614,31 @@ export class Task {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
 									await this.say("tool", completeMessage, undefined, undefined, false) // need to be sending partialValue bool, since undefined has its own purpose in that the message is treated neither as a partial or completion of a partial, but as a single complete message
 									this.consecutiveAutoApprovedRequestsCount++
-									telemetryService.captureToolUsage(this.taskId, block.name, true, true)
+									telemetryService.captureToolUsage(this.taskId, block.name, this.api.getModel().id, true, true)
 								} else {
 									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline wants to read ${path.basename(absolutePath)}`,
+										`Cline 需要读取 ${path.basename(absolutePath)}`,
 									)
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									const didApprove = await askApproval("tool", completeMessage)
 									if (!didApprove) {
 										await this.saveCheckpoint()
-										telemetryService.captureToolUsage(this.taskId, block.name, false, false)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											false,
+										)
 										break
 									}
-									telemetryService.captureToolUsage(this.taskId, block.name, false, true)
+									telemetryService.captureToolUsage(
+										this.taskId,
+										block.name,
+										this.api.getModel().id,
+										false,
+										true,
+									)
 								}
 								// now execute the tool like normal
 								const content = await extractTextFromFile(absolutePath)
@@ -2620,19 +2711,31 @@ export class Task {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
 									await this.say("tool", completeMessage, undefined, undefined, false)
 									this.consecutiveAutoApprovedRequestsCount++
-									telemetryService.captureToolUsage(this.taskId, block.name, true, true)
+									telemetryService.captureToolUsage(this.taskId, block.name, this.api.getModel().id, true, true)
 								} else {
 									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline wants to view directory ${path.basename(absolutePath)}/`,
+										`Cline 需要查看目录 ${path.basename(absolutePath)}/`,
 									)
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									const didApprove = await askApproval("tool", completeMessage)
 									if (!didApprove) {
-										telemetryService.captureToolUsage(this.taskId, block.name, false, false)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											false,
+										)
 										await this.saveCheckpoint()
 										break
 									}
-									telemetryService.captureToolUsage(this.taskId, block.name, false, true)
+									telemetryService.captureToolUsage(
+										this.taskId,
+										block.name,
+										this.api.getModel().id,
+										false,
+										true,
+									)
 								}
 								pushToolResult(result, isClaude4ModelFamily)
 								await this.saveCheckpoint()
@@ -2690,19 +2793,31 @@ export class Task {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
 									await this.say("tool", completeMessage, undefined, undefined, false)
 									this.consecutiveAutoApprovedRequestsCount++
-									telemetryService.captureToolUsage(this.taskId, block.name, true, true)
+									telemetryService.captureToolUsage(this.taskId, block.name, this.api.getModel().id, true, true)
 								} else {
 									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline wants to view source code definitions in ${path.basename(absolutePath)}/`,
+										`Cline 需要查看 ${path.basename(absolutePath)}/ 中的代码`,
 									)
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									const didApprove = await askApproval("tool", completeMessage)
 									if (!didApprove) {
-										telemetryService.captureToolUsage(this.taskId, block.name, false, false)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											false,
+										)
 										await this.saveCheckpoint()
 										break
 									}
-									telemetryService.captureToolUsage(this.taskId, block.name, false, true)
+									telemetryService.captureToolUsage(
+										this.taskId,
+										block.name,
+										this.api.getModel().id,
+										false,
+										true,
+									)
 								}
 								pushToolResult(result)
 								await this.saveCheckpoint()
@@ -2779,7 +2894,7 @@ export class Task {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
 									await this.say("tool", completeMessage, undefined, undefined, false)
 									this.consecutiveAutoApprovedRequestsCount++
-									telemetryService.captureToolUsage(this.taskId, block.name, true, true)
+									telemetryService.captureToolUsage(this.taskId, block.name, this.api.getModel().id, true, true)
 								} else {
 									showNotificationForApprovalIfAutoApprovalEnabled(
 										`Cline wants to search files in ${path.basename(absolutePath)}/`,
@@ -2787,11 +2902,23 @@ export class Task {
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									const didApprove = await askApproval("tool", completeMessage)
 									if (!didApprove) {
-										telemetryService.captureToolUsage(this.taskId, block.name, false, false)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											false,
+										)
 										await this.saveCheckpoint()
 										break
 									}
-									telemetryService.captureToolUsage(this.taskId, block.name, false, true)
+									telemetryService.captureToolUsage(
+										this.taskId,
+										block.name,
+										this.api.getModel().id,
+										false,
+										true,
+									)
 								}
 								pushToolResult(results, isClaude4ModelFamily)
 								await this.saveCheckpoint()
@@ -3053,9 +3180,7 @@ export class Task {
 									this.consecutiveAutoApprovedRequestsCount++
 									didAutoApprove = true
 								} else {
-									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline wants to execute a command: ${command}`,
-									)
+									showNotificationForApprovalIfAutoApprovalEnabled(`Cline 需要执行命令: ${command}`)
 									// this.removeLastPartialMessageIfExistsWithType("say", "command")
 									const didApprove = await askApproval(
 										"command",
@@ -3073,9 +3198,8 @@ export class Task {
 									// if the command was auto-approved, and it's long running we need to notify the user after some time has passed without proceeding
 									timeoutId = setTimeout(() => {
 										showSystemNotification({
-											subtitle: "Command is still running",
-											message:
-												"An auto-approved command has been running for 30s, and may need your attention.",
+											subtitle: "命令任在执行",
+											message: "一个自动批准的命令运行了 30秒, 也许你需要关注它.",
 										})
 									}, 30_000)
 								}
@@ -3150,10 +3274,7 @@ export class Task {
 										parsedArguments = JSON.parse(mcp_arguments)
 									} catch (error) {
 										this.consecutiveMistakeCount++
-										await this.say(
-											"error",
-											`Cline tried to use ${tool_name} with an invalid JSON argument. Retrying...`,
-										)
+										await this.say("error", `Cline 使用 ${tool_name} 但是 JSON 参数无效. 正在重试...`)
 										pushToolResult(
 											formatResponse.toolError(
 												formatResponse.invalidMcpToolArgumentError(server_name, tool_name),
@@ -3227,7 +3348,7 @@ export class Task {
 								// MCP's might return images to display to the user, but the model may not support them
 								const supportsImages = this.api.getModel().info.supportsImages ?? false
 								if (toolResultImages.length > 0 && !supportsImages) {
-									toolResultText += `\n\n[${toolResultImages.length} images were provided in the response, and while they are displayed to the user, you do not have the ability to view them.]`
+									toolResultText += `\n\n[${toolResultImages.length} 响应中提供了图像，虽然它们显示给用户，但您无法查看它们。]`
 								}
 
 								// only passes in images if model supports them
@@ -3347,7 +3468,7 @@ export class Task {
 
 								if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 									showSystemNotification({
-										subtitle: "Cline has a question...",
+										subtitle: "Cline 有个疑问...",
 										message: question.replace(/\n/g, " "),
 									})
 								}
@@ -3414,8 +3535,8 @@ export class Task {
 
 								if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 									showSystemNotification({
-										subtitle: "Cline wants to start a new task...",
-										message: `Cline is suggesting to start a new task with: ${context}`,
+										subtitle: "Cline 开始一个新任务...",
+										message: `Cline 建议使用: ${context} 开始一个新任务`,
 									})
 								}
 
@@ -3431,16 +3552,14 @@ export class Task {
 									await this.say("user_feedback", text ?? "", images, newTaskFiles)
 									pushToolResult(
 										formatResponse.toolResult(
-											`The user provided feedback instead of creating a new task:\n<feedback>\n${text}\n</feedback>`,
+											`用户提供反馈而不是创建新任务:\n<feedback>\n${text}\n</feedback>`,
 											images,
 											fileContentString,
 										),
 									)
 								} else {
 									// If no response, the user clicked the "Create New Task" button
-									pushToolResult(
-										formatResponse.toolResult(`The user has created a new task with the provided context.`),
-									)
+									pushToolResult(formatResponse.toolResult(`用户已使用提供的上下文创建新任务.`))
 								}
 								await this.saveCheckpoint()
 								break
@@ -3468,8 +3587,8 @@ export class Task {
 
 								if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 									showSystemNotification({
-										subtitle: "Cline wants to condense the conversation...",
-										message: `Cline is suggesting to condense your conversation with: ${context}`,
+										subtitle: "Cline 需要压缩当前会话上下文...",
+										message: `Cline 需要用${context} 压缩当前会话上下文`,
 									})
 								}
 
@@ -3576,15 +3695,16 @@ export class Task {
 
 								if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 									showSystemNotification({
-										subtitle: "Cline wants to create a github issue...",
-										message: `Cline is suggesting to create a github issue with the title: ${title}`,
+										subtitle: "Cline 需要创建一个 github issue...",
+										message: `Cline 需要用: ${title}为标题创建一个 github issue `,
 									})
 								}
 
 								// Derive system information values algorithmically
 								const operatingSystem = os.platform() + " " + os.release()
 								const clineVersion =
-									vscode.extensions.getExtension("saoudrizwan.claude-dev")?.packageJSON.version || "Unknown"
+									vscode.extensions.getExtension("shengsuan-cloud.cline-shengsuan")?.packageJSON.version ||
+									"Unknown"
 								const systemInfo = `VSCode: ${vscode.version}, Node.js: ${process.version}, Architecture: ${os.arch()}`
 								const providerAndModel = `${(await getGlobalState(this.getContext(), "apiProvider")) as string} / ${this.api.getModel().id}`
 
@@ -3650,6 +3770,104 @@ export class Task {
 							}
 						} catch (error) {
 							await handleError("reporting bug", error)
+							await this.saveCheckpoint()
+							break
+						}
+					}
+					case "web_fetch": {
+						const url: string | undefined = block.params.url
+						// TODO: Implement caching for web_fetch
+						const sharedMessageProps: ClineSayTool = {
+							tool: "webFetch",
+							path: removeClosingTag("url", url),
+							content: `Fetching URL: ${removeClosingTag("url", url)}`,
+						}
+
+						try {
+							if (block.partial) {
+								const partialMessage = JSON.stringify({
+									...sharedMessageProps,
+									operationIsLocatedInWorkspace: false, // web_fetch is always external
+								} satisfies ClineSayTool)
+
+								// WebFetch is a read-only operation, generally safe.
+								// Let's assume it follows similar auto-approval logic to read_file for now.
+								// We might need a dedicated auto-approval setting for it later.
+								if (this.shouldAutoApproveTool("web_fetch" as ToolUseName)) {
+									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
+									await this.say("tool", partialMessage, undefined, undefined, block.partial)
+								} else {
+									this.removeLastPartialMessageIfExistsWithType("say", "tool")
+									await this.ask("tool", partialMessage, block.partial).catch(() => {})
+								}
+								break
+							} else {
+								if (!url) {
+									this.consecutiveMistakeCount++
+									pushToolResult(await this.sayAndCreateMissingParamError("web_fetch", "url"))
+									await this.saveCheckpoint()
+									break
+								}
+
+								this.consecutiveMistakeCount = 0
+								const completeMessage = JSON.stringify({
+									...sharedMessageProps,
+									operationIsLocatedInWorkspace: false,
+								} satisfies ClineSayTool)
+
+								if (this.shouldAutoApproveTool("web_fetch" as ToolUseName)) {
+									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
+									await this.say("tool", completeMessage, undefined, undefined, false)
+									this.consecutiveAutoApprovedRequestsCount++
+									telemetryService.captureToolUsage(
+										this.taskId,
+										"web_fetch" as ToolUseName,
+										this.api.getModel().id,
+										true,
+										true,
+									)
+								} else {
+									showNotificationForApprovalIfAutoApprovalEnabled(`Cline wants to fetch content from ${url}`)
+									this.removeLastPartialMessageIfExistsWithType("say", "tool")
+									const didApprove = await askApproval("tool", completeMessage)
+									if (!didApprove) {
+										telemetryService.captureToolUsage(
+											this.taskId,
+											"web_fetch" as ToolUseName,
+											this.api.getModel().id,
+											false,
+											false,
+										)
+										await this.saveCheckpoint()
+										break
+									}
+									telemetryService.captureToolUsage(
+										this.taskId,
+										"web_fetch" as ToolUseName,
+										this.api.getModel().id,
+										false,
+										true,
+									)
+								}
+
+								// Fetch Markdown contentcc
+								await this.urlContentFetcher.launchBrowser()
+								const markdownContent = await this.urlContentFetcher.urlToMarkdown(url)
+								await this.urlContentFetcher.closeBrowser()
+
+								// TODO: Implement secondary AI call to process markdownContent with prompt
+								// For now, returning markdown directly.
+								// This will be a significant sub-task.
+								// Placeholder for processed summary:
+								const processedSummary = `Fetched Markdown for ${url}:\n\n${markdownContent}`
+
+								pushToolResult(formatResponse.toolResult(processedSummary))
+								await this.saveCheckpoint()
+								break
+							}
+						} catch (error) {
+							await this.urlContentFetcher.closeBrowser() // Ensure browser is closed on error
+							await handleError("fetching web content", error)
 							await this.saveCheckpoint()
 							break
 						}
@@ -4278,9 +4496,9 @@ export class Task {
 							assistantMessage += chunk.text
 							// parse raw assistant message into content blocks
 							const prevLength = this.assistantMessageContent.length
-							const enableFunctionCallsParsing = await this.isClaude4ModelFamily()
+							const isClaude4ModelFamily = await this.isClaude4ModelFamily()
 
-							if (enableFunctionCallsParsing) {
+							if (isClaude4ModelFamily && USE_EXPERIMENTAL_CLAUDE4_FEATURES) {
 								this.assistantMessageContent = parseAssistantMessageV3(assistantMessage)
 							} else {
 								this.assistantMessageContent = parseAssistantMessageV2(assistantMessage)

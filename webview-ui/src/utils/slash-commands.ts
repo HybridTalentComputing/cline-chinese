@@ -12,7 +12,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
 	},
 	{
 		name: "smol",
-		description: "浓缩您当前的上下文窗口",
+		description: "压缩当前的上下文窗口",
 		section: "default",
 	},
 	{
@@ -75,9 +75,9 @@ export function getWorkflowCommands(
 
 // Regex for detecting slash commands in text
 // currently doesn't allow whitespace inside of the filename
-export const slashCommandRegex = /\/([a-zA-Z0-9_\.-]+)(\s|$)/
+export const slashCommandRegex = /\/([a-zA-Z0-9_.-]+)(\s|$)/
 export const slashCommandRegexGlobal = new RegExp(slashCommandRegex.source, "g")
-export const slashCommandDeleteRegex = /^\s*\/([a-zA-Z0-9_\.-]+)$/
+export const slashCommandDeleteRegex = /^\s*\/([a-zA-Z0-9_.-]+)$/
 
 /**
  * Removes a slash command at the cursor position
