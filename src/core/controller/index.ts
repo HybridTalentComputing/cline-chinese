@@ -906,7 +906,6 @@ export class Controller {
 	}
 
 	// shengsuanyun Auth
-
 	async handleShengSuanYunCallback(code: string) {
 		let apiKey: string
 		let customToken: string
