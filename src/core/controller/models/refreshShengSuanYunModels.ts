@@ -1,6 +1,6 @@
 import { Controller } from ".."
 import { EmptyRequest } from "../../../shared/proto/common"
-import { OpenRouterCompatibleModelInfo, OpenRouterModelInfo } from "../../../shared/proto/models"
+import { OpenRouterCompatibleModelInfo, ShengSuanYunModelInfo } from "../../../shared/proto/models"
 import axios from "axios"
 import path from "path"
 import fs from "fs/promises"
@@ -20,7 +20,7 @@ export async function refreshShengSuanYunModels(
 ): Promise<OpenRouterCompatibleModelInfo> {
 	const shengSuanYunModelsFilePath = path.join(await ensureCacheDirectoryExists(controller), GlobalFileNames.shengSuanYunModels)
 
-	let models: Record<string, Partial<OpenRouterModelInfo>> = {}
+	let models: Record<string, Partial<ShengSuanYunModelInfo>> = {}
 	try {
 		const response = await axios.get("https://router.shengsuanyun.com/api/v1/models/")
 		if (response.data?.data && Array.isArray(response.data?.data)) {
@@ -32,7 +32,7 @@ export async function refreshShengSuanYunModels(
 				return undefined
 			}
 			for (const model of rawModels) {
-				const modelInfo: Partial<OpenRouterModelInfo> = {
+				const modelInfo: Partial<ShengSuanYunModelInfo> = {
 					maxTokens: model.max_tokens || undefined,
 					contextWindow: model.context_window,
 					supportsImages: model.architecture?.input?.includes("image"),
@@ -59,9 +59,7 @@ export async function refreshShengSuanYunModels(
 		}
 	}
 
-	// Convert the Record<string, Partial<OpenRouterModelInfo>> to Record<string, OpenRouterModelInfo>
-	// by filling in any missing required fields with defaults
-	const typedModels: Record<string, OpenRouterModelInfo> = {}
+	const typedModels: Record<string, ShengSuanYunModelInfo> = {}
 	for (const [key, model] of Object.entries(models)) {
 		typedModels[key] = {
 			maxTokens: model.maxTokens ?? 0,
@@ -87,7 +85,9 @@ export async function refreshShengSuanYunModels(
 /**
  * Reads cached ShengSuanYun models from disk
  */
-async function readShengSuanYunModels(controller: Controller): Promise<Record<string, Partial<OpenRouterModelInfo>> | undefined> {
+async function readShengSuanYunModels(
+	controller: Controller,
+): Promise<Record<string, Partial<ShengSuanYunModelInfo>> | undefined> {
 	const shengSuanYunModelsFilePath = path.join(await ensureCacheDirectoryExists(controller), GlobalFileNames.shengSuanYunModels)
 	const fileExists = await fileExistsAtPath(shengSuanYunModelsFilePath)
 	if (fileExists) {

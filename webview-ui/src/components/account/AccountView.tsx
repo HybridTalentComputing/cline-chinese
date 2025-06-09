@@ -183,7 +183,7 @@ export const SSYAccountView = () => {
 	const { userSSY: ssyUser, handleSignOutSSY } = useShengSuanYunAuth()
 	const { userInfo, apiConfiguration } = useExtensionState()
 
-	let user = apiConfiguration?.shengsuanyunToken ? ssyUser || userInfo : undefined
+	let user = apiConfiguration?.shengSuanYunToken ? ssyUser || userInfo : undefined
 	const [rate, setRate] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
 	const [usageData, setUsageData] = useState<UsageTransaction[]>([])

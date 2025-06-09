@@ -8,8 +8,6 @@
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import { EmptyRequest, Metadata, StringArray, StringRequest } from "./common";
 
-export const protobufPackage = "clineShengsuan";
-
 /** List of VS Code LM models */
 export interface VsCodeLmModelsArray {
   models: VsCodeLmModel[];
@@ -23,17 +21,51 @@ export interface VsCodeLmModel {
   id: string;
 }
 
+/** Price tier for tiered pricing models */
+export interface PriceTier {
+  /** Upper limit (inclusive) of input tokens for this price */
+  tokenLimit: number;
+  /** Price per million tokens for this tier */
+  price: number;
+}
+
+/** Thinking configuration for models that support thinking/reasoning */
+export interface ThinkingConfig {
+  /** Max allowed thinking budget tokens */
+  maxBudget?:
+    | number
+    | undefined;
+  /** Output price per million tokens when budget > 0 */
+  outputPrice?:
+    | number
+    | undefined;
+  /** Optional: Tiered output price when budget > 0 */
+  outputPriceTiers: PriceTier[];
+}
+
+/** Model tier for tiered pricing structures */
+export interface ModelTier {
+  contextWindow: number;
+  inputPrice?: number | undefined;
+  outputPrice?: number | undefined;
+  cacheWritesPrice?: number | undefined;
+  cacheReadsPrice?: number | undefined;
+}
+
 /** For OpenRouterCompatibleModelInfo structure in OpenRouterModels */
 export interface OpenRouterModelInfo {
-  maxTokens: number;
-  contextWindow: number;
-  supportsImages: boolean;
+  maxTokens?: number | undefined;
+  contextWindow?: number | undefined;
+  supportsImages?: boolean | undefined;
   supportsPromptCache: boolean;
-  inputPrice: number;
-  outputPrice: number;
-  cacheWritesPrice: number;
-  cacheReadsPrice: number;
-  description: string;
+  inputPrice?: number | undefined;
+  outputPrice?: number | undefined;
+  cacheWritesPrice?: number | undefined;
+  cacheReadsPrice?: number | undefined;
+  description?: string | undefined;
+  thinkingConfig?: ThinkingConfig | undefined;
+  supportsGlobalEndpoint?: boolean | undefined;
+  tiers: ModelTier[];
 }
 
 /** Shared response message for model information */
@@ -51,6 +83,20 @@ export interface OpenAiModelsRequest {
   metadata?: Metadata | undefined;
   baseUrl: string;
   apiKey: string;
+}
+
+export interface ShengSuanYunModelInfo {
+  maxTokens?: number | undefined;
+  contextWindow?: number | undefined;
+  supportsImages?: boolean | undefined;
+  supportsPromptCache: boolean;
+  inputPrice?: number | undefined;
+  outputPrice?: number | undefined;
+  cacheWritesPrice?: number | undefined;
+  cacheReadsPrice?: number | undefined;
+  description?: string | undefined;
+  thinkingConfig?: ThinkingConfig | undefined;
+  supportsGlobalEndpoint?: boolean | undefined;
 }
 
 function createBaseVsCodeLmModelsArray(): VsCodeLmModelsArray {
@@ -221,48 +267,360 @@ export const VsCodeLmModel: MessageFns<VsCodeLmModel> = {
   },
 };
 
+function createBasePriceTier(): PriceTier {
+  return { tokenLimit: 0, price: 0 };
+}
+
+export const PriceTier: MessageFns<PriceTier> = {
+  encode(message: PriceTier, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.tokenLimit !== 0) {
+      writer.uint32(8).int32(message.tokenLimit);
+    }
+    if (message.price !== 0) {
+      writer.uint32(17).double(message.price);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PriceTier {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePriceTier();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.tokenLimit = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 17) {
+            break;
+          }
+
+          message.price = reader.double();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PriceTier {
+    return {
+      tokenLimit: isSet(object.tokenLimit) ? globalThis.Number(object.tokenLimit) : 0,
+      price: isSet(object.price) ? globalThis.Number(object.price) : 0,
+    };
+  },
+
+  toJSON(message: PriceTier): unknown {
+    const obj: any = {};
+    if (message.tokenLimit !== 0) {
+      obj.tokenLimit = Math.round(message.tokenLimit);
+    }
+    if (message.price !== 0) {
+      obj.price = message.price;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PriceTier>, I>>(base?: I): PriceTier {
+    return PriceTier.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PriceTier>, I>>(object: I): PriceTier {
+    const message = createBasePriceTier();
+    message.tokenLimit = object.tokenLimit ?? 0;
+    message.price = object.price ?? 0;
+    return message;
+  },
+};
+
+function createBaseThinkingConfig(): ThinkingConfig {
+  return { maxBudget: undefined, outputPrice: undefined, outputPriceTiers: [] };
+}
+
+export const ThinkingConfig: MessageFns<ThinkingConfig> = {
+  encode(message: ThinkingConfig, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.maxBudget !== undefined) {
+      writer.uint32(8).int32(message.maxBudget);
+    }
+    if (message.outputPrice !== undefined) {
+      writer.uint32(17).double(message.outputPrice);
+    }
+    for (const v of message.outputPriceTiers) {
+      PriceTier.encode(v!, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ThinkingConfig {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseThinkingConfig();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.maxBudget = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 17) {
+            break;
+          }
+
+          message.outputPrice = reader.double();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.outputPriceTiers.push(PriceTier.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ThinkingConfig {
+    return {
+      maxBudget: isSet(object.maxBudget) ? globalThis.Number(object.maxBudget) : undefined,
+      outputPrice: isSet(object.outputPrice) ? globalThis.Number(object.outputPrice) : undefined,
+      outputPriceTiers: globalThis.Array.isArray(object?.outputPriceTiers)
+        ? object.outputPriceTiers.map((e: any) => PriceTier.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ThinkingConfig): unknown {
+    const obj: any = {};
+    if (message.maxBudget !== undefined) {
+      obj.maxBudget = Math.round(message.maxBudget);
+    }
+    if (message.outputPrice !== undefined) {
+      obj.outputPrice = message.outputPrice;
+    }
+    if (message.outputPriceTiers?.length) {
+      obj.outputPriceTiers = message.outputPriceTiers.map((e) => PriceTier.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ThinkingConfig>, I>>(base?: I): ThinkingConfig {
+    return ThinkingConfig.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ThinkingConfig>, I>>(object: I): ThinkingConfig {
+    const message = createBaseThinkingConfig();
+    message.maxBudget = object.maxBudget ?? undefined;
+    message.outputPrice = object.outputPrice ?? undefined;
+    message.outputPriceTiers = object.outputPriceTiers?.map((e) => PriceTier.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseModelTier(): ModelTier {
+  return {
+    contextWindow: 0,
+    inputPrice: undefined,
+    outputPrice: undefined,
+    cacheWritesPrice: undefined,
+    cacheReadsPrice: undefined,
+  };
+}
+
+export const ModelTier: MessageFns<ModelTier> = {
+  encode(message: ModelTier, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.contextWindow !== 0) {
+      writer.uint32(8).int32(message.contextWindow);
+    }
+    if (message.inputPrice !== undefined) {
+      writer.uint32(17).double(message.inputPrice);
+    }
+    if (message.outputPrice !== undefined) {
+      writer.uint32(25).double(message.outputPrice);
+    }
+    if (message.cacheWritesPrice !== undefined) {
+      writer.uint32(33).double(message.cacheWritesPrice);
+    }
+    if (message.cacheReadsPrice !== undefined) {
+      writer.uint32(41).double(message.cacheReadsPrice);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ModelTier {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseModelTier();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.contextWindow = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 17) {
+            break;
+          }
+
+          message.inputPrice = reader.double();
+          continue;
+        }
+        case 3: {
+          if (tag !== 25) {
+            break;
+          }
+
+          message.outputPrice = reader.double();
+          continue;
+        }
+        case 4: {
+          if (tag !== 33) {
+            break;
+          }
+
+          message.cacheWritesPrice = reader.double();
+          continue;
+        }
+        case 5: {
+          if (tag !== 41) {
+            break;
+          }
+
+          message.cacheReadsPrice = reader.double();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ModelTier {
+    return {
+      contextWindow: isSet(object.contextWindow) ? globalThis.Number(object.contextWindow) : 0,
+      inputPrice: isSet(object.inputPrice) ? globalThis.Number(object.inputPrice) : undefined,
+      outputPrice: isSet(object.outputPrice) ? globalThis.Number(object.outputPrice) : undefined,
+      cacheWritesPrice: isSet(object.cacheWritesPrice) ? globalThis.Number(object.cacheWritesPrice) : undefined,
+      cacheReadsPrice: isSet(object.cacheReadsPrice) ? globalThis.Number(object.cacheReadsPrice) : undefined,
+    };
+  },
+
+  toJSON(message: ModelTier): unknown {
+    const obj: any = {};
+    if (message.contextWindow !== 0) {
+      obj.contextWindow = Math.round(message.contextWindow);
+    }
+    if (message.inputPrice !== undefined) {
+      obj.inputPrice = message.inputPrice;
+    }
+    if (message.outputPrice !== undefined) {
+      obj.outputPrice = message.outputPrice;
+    }
+    if (message.cacheWritesPrice !== undefined) {
+      obj.cacheWritesPrice = message.cacheWritesPrice;
+    }
+    if (message.cacheReadsPrice !== undefined) {
+      obj.cacheReadsPrice = message.cacheReadsPrice;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ModelTier>, I>>(base?: I): ModelTier {
+    return ModelTier.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ModelTier>, I>>(object: I): ModelTier {
+    const message = createBaseModelTier();
+    message.contextWindow = object.contextWindow ?? 0;
+    message.inputPrice = object.inputPrice ?? undefined;
+    message.outputPrice = object.outputPrice ?? undefined;
+    message.cacheWritesPrice = object.cacheWritesPrice ?? undefined;
+    message.cacheReadsPrice = object.cacheReadsPrice ?? undefined;
+    return message;
+  },
+};
+
 function createBaseOpenRouterModelInfo(): OpenRouterModelInfo {
   return {
-    maxTokens: 0,
-    contextWindow: 0,
-    supportsImages: false,
+    maxTokens: undefined,
+    contextWindow: undefined,
+    supportsImages: undefined,
     supportsPromptCache: false,
-    inputPrice: 0,
-    outputPrice: 0,
-    cacheWritesPrice: 0,
-    cacheReadsPrice: 0,
-    description: "",
+    inputPrice: undefined,
+    outputPrice: undefined,
+    cacheWritesPrice: undefined,
+    cacheReadsPrice: undefined,
+    description: undefined,
+    thinkingConfig: undefined,
+    supportsGlobalEndpoint: undefined,
+    tiers: [],
   };
 }
 
 export const OpenRouterModelInfo: MessageFns<OpenRouterModelInfo> = {
   encode(message: OpenRouterModelInfo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.maxTokens !== 0) {
+    if (message.maxTokens !== undefined) {
       writer.uint32(8).int32(message.maxTokens);
     }
-    if (message.contextWindow !== 0) {
+    if (message.contextWindow !== undefined) {
       writer.uint32(16).int32(message.contextWindow);
     }
-    if (message.supportsImages !== false) {
+    if (message.supportsImages !== undefined) {
       writer.uint32(24).bool(message.supportsImages);
     }
     if (message.supportsPromptCache !== false) {
       writer.uint32(32).bool(message.supportsPromptCache);
     }
-    if (message.inputPrice !== 0) {
+    if (message.inputPrice !== undefined) {
       writer.uint32(41).double(message.inputPrice);
     }
-    if (message.outputPrice !== 0) {
+    if (message.outputPrice !== undefined) {
       writer.uint32(49).double(message.outputPrice);
     }
-    if (message.cacheWritesPrice !== 0) {
+    if (message.cacheWritesPrice !== undefined) {
       writer.uint32(57).double(message.cacheWritesPrice);
     }
-    if (message.cacheReadsPrice !== 0) {
+    if (message.cacheReadsPrice !== undefined) {
       writer.uint32(65).double(message.cacheReadsPrice);
     }
-    if (message.description !== "") {
+    if (message.description !== undefined) {
       writer.uint32(74).string(message.description);
+    }
+    if (message.thinkingConfig !== undefined) {
+      ThinkingConfig.encode(message.thinkingConfig, writer.uint32(82).fork()).join();
+    }
+    if (message.supportsGlobalEndpoint !== undefined) {
+      writer.uint32(88).bool(message.supportsGlobalEndpoint);
+    }
+    for (const v of message.tiers) {
+      ModelTier.encode(v!, writer.uint32(98).fork()).join();
     }
     return writer;
   },
@@ -346,6 +704,30 @@ export const OpenRouterModelInfo: MessageFns<OpenRouterModelInfo> = {
           message.description = reader.string();
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.thinkingConfig = ThinkingConfig.decode(reader, reader.uint32());
+          continue;
+        }
+        case 11: {
+          if (tag !== 88) {
+            break;
+          }
+
+          message.supportsGlobalEndpoint = reader.bool();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.tiers.push(ModelTier.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -357,46 +739,60 @@ export const OpenRouterModelInfo: MessageFns<OpenRouterModelInfo> = {
 
   fromJSON(object: any): OpenRouterModelInfo {
     return {
-      maxTokens: isSet(object.maxTokens) ? globalThis.Number(object.maxTokens) : 0,
-      contextWindow: isSet(object.contextWindow) ? globalThis.Number(object.contextWindow) : 0,
-      supportsImages: isSet(object.supportsImages) ? globalThis.Boolean(object.supportsImages) : false,
+      maxTokens: isSet(object.maxTokens) ? globalThis.Number(object.maxTokens) : undefined,
+      contextWindow: isSet(object.contextWindow) ? globalThis.Number(object.contextWindow) : undefined,
+      supportsImages: isSet(object.supportsImages) ? globalThis.Boolean(object.supportsImages) : undefined,
       supportsPromptCache: isSet(object.supportsPromptCache) ? globalThis.Boolean(object.supportsPromptCache) : false,
-      inputPrice: isSet(object.inputPrice) ? globalThis.Number(object.inputPrice) : 0,
-      outputPrice: isSet(object.outputPrice) ? globalThis.Number(object.outputPrice) : 0,
-      cacheWritesPrice: isSet(object.cacheWritesPrice) ? globalThis.Number(object.cacheWritesPrice) : 0,
-      cacheReadsPrice: isSet(object.cacheReadsPrice) ? globalThis.Number(object.cacheReadsPrice) : 0,
-      description: isSet(object.description) ? globalThis.String(object.description) : "",
+      inputPrice: isSet(object.inputPrice) ? globalThis.Number(object.inputPrice) : undefined,
+      outputPrice: isSet(object.outputPrice) ? globalThis.Number(object.outputPrice) : undefined,
+      cacheWritesPrice: isSet(object.cacheWritesPrice) ? globalThis.Number(object.cacheWritesPrice) : undefined,
+      cacheReadsPrice: isSet(object.cacheReadsPrice) ? globalThis.Number(object.cacheReadsPrice) : undefined,
+      description: isSet(object.description) ? globalThis.String(object.description) : undefined,
+      thinkingConfig: isSet(object.thinkingConfig) ? ThinkingConfig.fromJSON(object.thinkingConfig) : undefined,
+      supportsGlobalEndpoint: isSet(object.supportsGlobalEndpoint)
+        ? globalThis.Boolean(object.supportsGlobalEndpoint)
+        : undefined,
+      tiers: globalThis.Array.isArray(object?.tiers) ? object.tiers.map((e: any) => ModelTier.fromJSON(e)) : [],
     };
   },
 
   toJSON(message: OpenRouterModelInfo): unknown {
     const obj: any = {};
-    if (message.maxTokens !== 0) {
+    if (message.maxTokens !== undefined) {
       obj.maxTokens = Math.round(message.maxTokens);
     }
-    if (message.contextWindow !== 0) {
+    if (message.contextWindow !== undefined) {
       obj.contextWindow = Math.round(message.contextWindow);
     }
-    if (message.supportsImages !== false) {
+    if (message.supportsImages !== undefined) {
       obj.supportsImages = message.supportsImages;
     }
     if (message.supportsPromptCache !== false) {
       obj.supportsPromptCache = message.supportsPromptCache;
     }
-    if (message.inputPrice !== 0) {
+    if (message.inputPrice !== undefined) {
       obj.inputPrice = message.inputPrice;
     }
-    if (message.outputPrice !== 0) {
+    if (message.outputPrice !== undefined) {
       obj.outputPrice = message.outputPrice;
     }
-    if (message.cacheWritesPrice !== 0) {
+    if (message.cacheWritesPrice !== undefined) {
       obj.cacheWritesPrice = message.cacheWritesPrice;
     }
-    if (message.cacheReadsPrice !== 0) {
+    if (message.cacheReadsPrice !== undefined) {
       obj.cacheReadsPrice = message.cacheReadsPrice;
     }
-    if (message.description !== "") {
+    if (message.description !== undefined) {
       obj.description = message.description;
+    }
+    if (message.thinkingConfig !== undefined) {
+      obj.thinkingConfig = ThinkingConfig.toJSON(message.thinkingConfig);
+    }
+    if (message.supportsGlobalEndpoint !== undefined) {
+      obj.supportsGlobalEndpoint = message.supportsGlobalEndpoint;
+    }
+    if (message.tiers?.length) {
+      obj.tiers = message.tiers.map((e) => ModelTier.toJSON(e));
     }
     return obj;
   },
@@ -406,15 +802,20 @@ export const OpenRouterModelInfo: MessageFns<OpenRouterModelInfo> = {
   },
   fromPartial<I extends Exact<DeepPartial<OpenRouterModelInfo>, I>>(object: I): OpenRouterModelInfo {
     const message = createBaseOpenRouterModelInfo();
-    message.maxTokens = object.maxTokens ?? 0;
-    message.contextWindow = object.contextWindow ?? 0;
-    message.supportsImages = object.supportsImages ?? false;
+    message.maxTokens = object.maxTokens ?? undefined;
+    message.contextWindow = object.contextWindow ?? undefined;
+    message.supportsImages = object.supportsImages ?? undefined;
     message.supportsPromptCache = object.supportsPromptCache ?? false;
-    message.inputPrice = object.inputPrice ?? 0;
-    message.outputPrice = object.outputPrice ?? 0;
-    message.cacheWritesPrice = object.cacheWritesPrice ?? 0;
-    message.cacheReadsPrice = object.cacheReadsPrice ?? 0;
-    message.description = object.description ?? "";
+    message.inputPrice = object.inputPrice ?? undefined;
+    message.outputPrice = object.outputPrice ?? undefined;
+    message.cacheWritesPrice = object.cacheWritesPrice ?? undefined;
+    message.cacheReadsPrice = object.cacheReadsPrice ?? undefined;
+    message.description = object.description ?? undefined;
+    message.thinkingConfig = (object.thinkingConfig !== undefined && object.thinkingConfig !== null)
+      ? ThinkingConfig.fromPartial(object.thinkingConfig)
+      : undefined;
+    message.supportsGlobalEndpoint = object.supportsGlobalEndpoint ?? undefined;
+    message.tiers = object.tiers?.map((e) => ModelTier.fromPartial(e)) || [];
     return message;
   },
 };
@@ -679,6 +1080,242 @@ export const OpenAiModelsRequest: MessageFns<OpenAiModelsRequest> = {
   },
 };
 
+function createBaseShengSuanYunModelInfo(): ShengSuanYunModelInfo {
+  return {
+    maxTokens: undefined,
+    contextWindow: undefined,
+    supportsImages: undefined,
+    supportsPromptCache: false,
+    inputPrice: undefined,
+    outputPrice: undefined,
+    cacheWritesPrice: undefined,
+    cacheReadsPrice: undefined,
+    description: undefined,
+    thinkingConfig: undefined,
+    supportsGlobalEndpoint: undefined,
+  };
+}
+
+export const ShengSuanYunModelInfo: MessageFns<ShengSuanYunModelInfo> = {
+  encode(message: ShengSuanYunModelInfo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.maxTokens !== undefined) {
+      writer.uint32(8).int32(message.maxTokens);
+    }
+    if (message.contextWindow !== undefined) {
+      writer.uint32(16).int32(message.contextWindow);
+    }
+    if (message.supportsImages !== undefined) {
+      writer.uint32(24).bool(message.supportsImages);
+    }
+    if (message.supportsPromptCache !== false) {
+      writer.uint32(32).bool(message.supportsPromptCache);
+    }
+    if (message.inputPrice !== undefined) {
+      writer.uint32(41).double(message.inputPrice);
+    }
+    if (message.outputPrice !== undefined) {
+      writer.uint32(49).double(message.outputPrice);
+    }
+    if (message.cacheWritesPrice !== undefined) {
+      writer.uint32(57).double(message.cacheWritesPrice);
+    }
+    if (message.cacheReadsPrice !== undefined) {
+      writer.uint32(65).double(message.cacheReadsPrice);
+    }
+    if (message.description !== undefined) {
+      writer.uint32(74).string(message.description);
+    }
+    if (message.thinkingConfig !== undefined) {
+      ThinkingConfig.encode(message.thinkingConfig, writer.uint32(82).fork()).join();
+    }
+    if (message.supportsGlobalEndpoint !== undefined) {
+      writer.uint32(88).bool(message.supportsGlobalEndpoint);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ShengSuanYunModelInfo {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseShengSuanYunModelInfo();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.maxTokens = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.contextWindow = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.supportsImages = reader.bool();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.supportsPromptCache = reader.bool();
+          continue;
+        }
+        case 5: {
+          if (tag !== 41) {
+            break;
+          }
+
+          message.inputPrice = reader.double();
+          continue;
+        }
+        case 6: {
+          if (tag !== 49) {
+            break;
+          }
+
+          message.outputPrice = reader.double();
+          continue;
+        }
+        case 7: {
+          if (tag !== 57) {
+            break;
+          }
+
+          message.cacheWritesPrice = reader.double();
+          continue;
+        }
+        case 8: {
+          if (tag !== 65) {
+            break;
+          }
+
+          message.cacheReadsPrice = reader.double();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.thinkingConfig = ThinkingConfig.decode(reader, reader.uint32());
+          continue;
+        }
+        case 11: {
+          if (tag !== 88) {
+            break;
+          }
+
+          message.supportsGlobalEndpoint = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ShengSuanYunModelInfo {
+    return {
+      maxTokens: isSet(object.maxTokens) ? globalThis.Number(object.maxTokens) : undefined,
+      contextWindow: isSet(object.contextWindow) ? globalThis.Number(object.contextWindow) : undefined,
+      supportsImages: isSet(object.supportsImages) ? globalThis.Boolean(object.supportsImages) : undefined,
+      supportsPromptCache: isSet(object.supportsPromptCache) ? globalThis.Boolean(object.supportsPromptCache) : false,
+      inputPrice: isSet(object.inputPrice) ? globalThis.Number(object.inputPrice) : undefined,
+      outputPrice: isSet(object.outputPrice) ? globalThis.Number(object.outputPrice) : undefined,
+      cacheWritesPrice: isSet(object.cacheWritesPrice) ? globalThis.Number(object.cacheWritesPrice) : undefined,
+      cacheReadsPrice: isSet(object.cacheReadsPrice) ? globalThis.Number(object.cacheReadsPrice) : undefined,
+      description: isSet(object.description) ? globalThis.String(object.description) : undefined,
+      thinkingConfig: isSet(object.thinkingConfig) ? ThinkingConfig.fromJSON(object.thinkingConfig) : undefined,
+      supportsGlobalEndpoint: isSet(object.supportsGlobalEndpoint)
+        ? globalThis.Boolean(object.supportsGlobalEndpoint)
+        : undefined,
+    };
+  },
+
+  toJSON(message: ShengSuanYunModelInfo): unknown {
+    const obj: any = {};
+    if (message.maxTokens !== undefined) {
+      obj.maxTokens = Math.round(message.maxTokens);
+    }
+    if (message.contextWindow !== undefined) {
+      obj.contextWindow = Math.round(message.contextWindow);
+    }
+    if (message.supportsImages !== undefined) {
+      obj.supportsImages = message.supportsImages;
+    }
+    if (message.supportsPromptCache !== false) {
+      obj.supportsPromptCache = message.supportsPromptCache;
+    }
+    if (message.inputPrice !== undefined) {
+      obj.inputPrice = message.inputPrice;
+    }
+    if (message.outputPrice !== undefined) {
+      obj.outputPrice = message.outputPrice;
+    }
+    if (message.cacheWritesPrice !== undefined) {
+      obj.cacheWritesPrice = message.cacheWritesPrice;
+    }
+    if (message.cacheReadsPrice !== undefined) {
+      obj.cacheReadsPrice = message.cacheReadsPrice;
+    }
+    if (message.description !== undefined) {
+      obj.description = message.description;
+    }
+    if (message.thinkingConfig !== undefined) {
+      obj.thinkingConfig = ThinkingConfig.toJSON(message.thinkingConfig);
+    }
+    if (message.supportsGlobalEndpoint !== undefined) {
+      obj.supportsGlobalEndpoint = message.supportsGlobalEndpoint;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ShengSuanYunModelInfo>, I>>(base?: I): ShengSuanYunModelInfo {
+    return ShengSuanYunModelInfo.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ShengSuanYunModelInfo>, I>>(object: I): ShengSuanYunModelInfo {
+    const message = createBaseShengSuanYunModelInfo();
+    message.maxTokens = object.maxTokens ?? undefined;
+    message.contextWindow = object.contextWindow ?? undefined;
+    message.supportsImages = object.supportsImages ?? undefined;
+    message.supportsPromptCache = object.supportsPromptCache ?? false;
+    message.inputPrice = object.inputPrice ?? undefined;
+    message.outputPrice = object.outputPrice ?? undefined;
+    message.cacheWritesPrice = object.cacheWritesPrice ?? undefined;
+    message.cacheReadsPrice = object.cacheReadsPrice ?? undefined;
+    message.description = object.description ?? undefined;
+    message.thinkingConfig = (object.thinkingConfig !== undefined && object.thinkingConfig !== null)
+      ? ThinkingConfig.fromPartial(object.thinkingConfig)
+      : undefined;
+    message.supportsGlobalEndpoint = object.supportsGlobalEndpoint ?? undefined;
+    return message;
+  },
+};
+
 /** Service for model-related operations */
 export type ModelsServiceDefinition = typeof ModelsServiceDefinition;
 export const ModelsServiceDefinition = {
@@ -748,19 +1385,28 @@ export const ModelsServiceDefinition = {
       responseStream: false,
       options: {},
     },
+    /** Subscribe to OpenRouter models updates */
+    subscribeToOpenRouterModels: {
+      name: "subscribeToOpenRouterModels",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: OpenRouterCompatibleModelInfo,
+      responseStream: true,
+      options: {},
+    },
   },
 } as const;
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
-export type DeepPartial<T> = T extends Builtin ? T
+type DeepPartial<T> = T extends Builtin ? T
   : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
   : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
+type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
 function isObject(value: any): boolean {
@@ -771,7 +1417,7 @@ function isSet(value: any): boolean {
   return value !== null && value !== undefined;
 }
 
-export interface MessageFns<T> {
+interface MessageFns<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;
   decode(input: BinaryReader | Uint8Array, length?: number): T;
   fromJSON(object: any): T;

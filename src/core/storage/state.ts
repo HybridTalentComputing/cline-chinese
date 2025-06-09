@@ -155,8 +155,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		thinkingBudgetTokens,
 		reasoningEffort,
 		sambanovaApiKey,
-		shengsuanyunApiKey,
-		shengsuanyunToken,
+		shengSuanYunApiKey,
 		cerebrasApiKey,
 		nebiusApiKey,
 		planActSeparateModelsSettingRaw,
@@ -164,11 +163,14 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		globalClineRulesToggles,
 		requestTimeoutMs,
 		shellIntegrationTimeout,
+		shengSuanYunToken,
 		shengSuanYunModelId,
 		shengSuanYunModelInfo,
 		enableCheckpointsSettingRaw,
 		mcpMarketplaceEnabledRaw,
+		mcpResponsesCollapsedRaw,
 		globalWorkflowToggles,
+		terminalReuseEnabled,
 	] = await Promise.all([
 		getGlobalState(context, "isNewUser") as Promise<boolean | undefined>,
 		getGlobalState(context, "apiProvider") as Promise<ApiProvider | undefined>,
@@ -249,8 +251,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "thinkingBudgetTokens") as Promise<number | undefined>,
 		getGlobalState(context, "reasoningEffort") as Promise<string | undefined>,
 		getSecret(context, "sambanovaApiKey") as Promise<string | undefined>,
-		getSecret(context, "shengsuanyunApiKey") as Promise<string | undefined>,
-		getGlobalState(context, "shengsuanyunToken") as Promise<string | undefined>,
+		getSecret(context, "shengSuanYunApiKey") as Promise<string | undefined>,
 		getSecret(context, "cerebrasApiKey") as Promise<string | undefined>,
 		getSecret(context, "nebiusApiKey") as Promise<string | undefined>,
 		getGlobalState(context, "planActSeparateModelsSetting") as Promise<boolean | undefined>,
@@ -258,12 +259,14 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "globalClineRulesToggles") as Promise<ClineRulesToggles | undefined>,
 		getGlobalState(context, "requestTimeoutMs") as Promise<number | undefined>,
 		getGlobalState(context, "shellIntegrationTimeout") as Promise<number | undefined>,
+		getGlobalState(context, "shengSuanYunToken") as Promise<string | undefined>,
 		getGlobalState(context, "shengSuanYunModelId") as Promise<string | undefined>,
 		getGlobalState(context, "shengSuanYunModelInfo") as Promise<ModelInfo | undefined>,
 		getGlobalState(context, "enableCheckpointsSetting") as Promise<boolean | undefined>,
 		getGlobalState(context, "mcpMarketplaceEnabled") as Promise<boolean | undefined>,
+		getGlobalState(context, "mcpResponsesCollapsed") as Promise<boolean | undefined>,
 		getGlobalState(context, "globalWorkflowToggles") as Promise<ClineRulesToggles | undefined>,
-		fetch,
+		getGlobalState(context, "terminalReuseEnabled") as Promise<boolean | undefined>,
 	])
 
 	let apiProvider: ApiProvider
@@ -284,6 +287,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 
 	const mcpMarketplaceEnabled = await migrateMcpMarketplaceEnableSetting(mcpMarketplaceEnabledRaw)
 	const enableCheckpointsSetting = await migrateEnableCheckpointsSetting(enableCheckpointsSettingRaw)
+	const mcpResponsesCollapsed = mcpResponsesCollapsedRaw ?? false
 
 	// Plan/Act separate models setting is a boolean indicating whether the user wants to use different models for plan and act. Existing users expect this to be enabled, while we want new users to opt in to this being disabled by default.
 	// On win11 state sometimes initializes as empty string instead of undefined
@@ -367,12 +371,12 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 			asksageApiUrl,
 			xaiApiKey,
 			sambanovaApiKey,
-			shengsuanyunApiKey,
-			shengsuanyunToken,
 			cerebrasApiKey,
 			nebiusApiKey,
 			favoritedModelIds,
 			requestTimeoutMs,
+			shengSuanYunApiKey,
+			shengSuanYunToken,
 			shengSuanYunModelId,
 			shengSuanYunModelInfo,
 		},
@@ -398,10 +402,12 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		previousModeAwsBedrockCustomSelected,
 		previousModeAwsBedrockCustomModelBaseId,
 		mcpMarketplaceEnabled: mcpMarketplaceEnabled,
+		mcpResponsesCollapsed: mcpResponsesCollapsed,
 		telemetrySetting: telemetrySetting || "unset",
 		planActSeparateModelsSetting,
 		enableCheckpointsSetting: enableCheckpointsSetting,
 		shellIntegrationTimeout: shellIntegrationTimeout || 4000,
+		terminalReuseEnabled: terminalReuseEnabled ?? true,
 		globalWorkflowToggles: globalWorkflowToggles || {},
 	}
 }
@@ -466,11 +472,11 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 		reasoningEffort,
 		clineApiKey,
 		sambanovaApiKey,
-		shengsuanyunApiKey,
-		shengsuanyunToken,
 		cerebrasApiKey,
 		nebiusApiKey,
 		favoritedModelIds,
+		shengSuanYunApiKey,
+		shengSuanYunToken,
 		shengSuanYunModelId,
 		shengSuanYunModelInfo,
 	} = apiConfiguration
@@ -532,12 +538,12 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 	await updateGlobalState(context, "reasoningEffort", reasoningEffort)
 	await storeSecret(context, "clineApiKey", clineApiKey)
 	await storeSecret(context, "sambanovaApiKey", sambanovaApiKey)
-	await storeSecret(context, "shengsuanyunApiKey", shengsuanyunApiKey)
-	await updateGlobalState(context, "shengsuanyunToken", shengsuanyunToken)
 	await storeSecret(context, "cerebrasApiKey", cerebrasApiKey)
 	await storeSecret(context, "nebiusApiKey", nebiusApiKey)
 	await updateGlobalState(context, "favoritedModelIds", favoritedModelIds)
 	await updateGlobalState(context, "requestTimeoutMs", apiConfiguration.requestTimeoutMs)
+	await storeSecret(context, "shengSuanYunApiKey", shengSuanYunApiKey)
+	await updateGlobalState(context, "shengSuanYunToken", shengSuanYunToken)
 	await updateGlobalState(context, "shengSuanYunModelId", shengSuanYunModelId)
 	await updateGlobalState(context, "shengSuanYunModelInfo", shengSuanYunModelInfo)
 }
@@ -567,7 +573,7 @@ export async function resetExtensionState(context: vscode.ExtensionContext) {
 		"asksageApiKey",
 		"xaiApiKey",
 		"sambanovaApiKey",
-		"shengsuanyunApiKey",
+		"shengSuanYunApiKey",
 		"cerebrasApiKey",
 		"nebiusApiKey",
 	]

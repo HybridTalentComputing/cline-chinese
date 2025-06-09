@@ -1,11 +1,12 @@
 import React, { useState } from "react"
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import { Int64, Int64Request } from "@shared/proto/common"
 
 export const TerminalSettingsSection: React.FC = () => {
-	const { shellIntegrationTimeout, setShellIntegrationTimeout } = useExtensionState()
+	const { shellIntegrationTimeout, setShellIntegrationTimeout, terminalReuseEnabled, setTerminalReuseEnabled } =
+		useExtensionState()
 	const [inputValue, setInputValue] = useState((shellIntegrationTimeout / 1000).toString())
 	const [inputError, setInputError] = useState<string | null>(null)
 
@@ -48,6 +49,17 @@ export const TerminalSettingsSection: React.FC = () => {
 		}
 	}
 
+	const handleTerminalReuseChange = (event: Event) => {
+		const target = event.target as HTMLInputElement
+		const checked = target.checked
+
+		// Update local state
+		setTerminalReuseEnabled(checked)
+
+		// TODO: Send to extension using gRPC when the backend is ready
+		// For now, we'll just update the local state
+	}
+
 	return (
 		<div id="terminal-settings-section" style={{ marginBottom: 20 }}>
 			<div style={{ marginBottom: 15 }}>
@@ -68,6 +80,20 @@ export const TerminalSettingsSection: React.FC = () => {
 				</div>
 				<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: 0 }}>
 					设置执行命令之前等待 Shell 集成激活的时间。如果您遇到终端连接超时，请增加该值。
+				</p>
+			</div>
+
+			<div style={{ marginBottom: 15 }}>
+				<div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+					<VSCodeCheckbox
+						checked={terminalReuseEnabled ?? true}
+						onChange={(event) => handleTerminalReuseChange(event as Event)}>
+						Enable aggressive terminal reuse
+					</VSCodeCheckbox>
+				</div>
+				<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: 0 }}>
+					When enabled, Cline will reuse existing terminal windows that aren't in the current working directory. Disable
+					this if you experience issues with task lockout after a terminal command.
 				</p>
 			</div>
 		</div>
