@@ -3,28 +3,45 @@
 
 // Import all method implementations
 import { registerMethod } from "./index"
+import { initializeWebview } from "./initializeWebview"
 import { onDidShowAnnouncement } from "./onDidShowAnnouncement"
 import { scrollToSettings } from "./scrollToSettings"
+import { subscribeToAccountButtonClicked } from "./subscribeToAccountButtonClicked"
 import { subscribeToAddToInput } from "./subscribeToAddToInput"
 import { subscribeToChatButtonClicked } from "./subscribeToChatButtonClicked"
 import { subscribeToHistoryButtonClicked } from "./subscribeToHistoryButtonClicked"
 import { subscribeToMcpButtonClicked } from "./subscribeToMcpButtonClicked"
+import { subscribeToPartialMessage } from "./subscribeToPartialMessage"
+import { subscribeToRelinquishControl } from "./subscribeToRelinquishControl"
+import { subscribeToSettingsButtonClicked } from "./subscribeToSettingsButtonClicked"
+import { subscribeToTheme } from "./subscribeToTheme"
 
 // Streaming methods for this service
 export const streamingMethods = [
   "subscribeToAddToInput",
   "subscribeToMcpButtonClicked",
   "subscribeToHistoryButtonClicked",
-  "subscribeToChatButtonClicked"
+  "subscribeToChatButtonClicked",
+  "subscribeToAccountButtonClicked",
+  "subscribeToSettingsButtonClicked",
+  "subscribeToPartialMessage",
+  "subscribeToTheme",
+  "subscribeToRelinquishControl"
 ]
 
 // Register all ui service methods
 export function registerAllMethods(): void {
 	// Register each method with the registry
+	registerMethod("initializeWebview", initializeWebview)
 	registerMethod("onDidShowAnnouncement", onDidShowAnnouncement)
 	registerMethod("scrollToSettings", scrollToSettings)
+	registerMethod("subscribeToAccountButtonClicked", subscribeToAccountButtonClicked, { isStreaming: true })
 	registerMethod("subscribeToAddToInput", subscribeToAddToInput, { isStreaming: true })
 	registerMethod("subscribeToChatButtonClicked", subscribeToChatButtonClicked, { isStreaming: true })
 	registerMethod("subscribeToHistoryButtonClicked", subscribeToHistoryButtonClicked, { isStreaming: true })
 	registerMethod("subscribeToMcpButtonClicked", subscribeToMcpButtonClicked, { isStreaming: true })
+	registerMethod("subscribeToPartialMessage", subscribeToPartialMessage, { isStreaming: true })
+	registerMethod("subscribeToRelinquishControl", subscribeToRelinquishControl, { isStreaming: true })
+	registerMethod("subscribeToSettingsButtonClicked", subscribeToSettingsButtonClicked, { isStreaming: true })
+	registerMethod("subscribeToTheme", subscribeToTheme, { isStreaming: true })
 }

@@ -7,8 +7,6 @@
 /* eslint-disable */
 import { Empty, StringRequest } from "./common";
 
-export const protobufPackage = "clineShengsuan";
-
 /** SlashService provides methods for managing slash */
 export type SlashServiceDefinition = typeof SlashServiceDefinition;
 export const SlashServiceDefinition = {

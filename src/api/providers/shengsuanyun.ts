@@ -19,7 +19,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 		this.options = options
 		this.client = new OpenAI({
 			baseURL: "https://router.shengsuanyun.com/api/v1",
-			apiKey: this.options.shengsuanyunApiKey,
+			apiKey: this.options.shengSuanYunApiKey,
 			defaultHeaders: {
 				"HTTP-Referer": "vscode://shengsuan-cloud.cline-shengsuan/ssy",
 				"X-Title": "ClineShengsuan",
@@ -142,7 +142,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 		try {
 			const response = await axios.get(`https://router.shengsuanyun.com/api/v1/generation?id=${genId}`, {
 				headers: {
-					Authorization: `Bearer ${this.options.shengsuanyunApiKey}`,
+					Authorization: `Bearer ${this.options.shengSuanYunApiKey}`,
 				},
 				timeout: 15_000, // this request hangs sometimes
 			})

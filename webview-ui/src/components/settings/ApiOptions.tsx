@@ -67,6 +67,7 @@ import styled from "styled-components"
 import * as vscodemodels from "vscode"
 import { useOpenRouterKeyInfo } from "../ui/hooks/useOpenRouterKeyInfo"
 import { ClineAccountInfoCard } from "./ClineAccountInfoCard"
+import { ShengSuanYunAccountInfoCard } from "./ShengSuanYunAccountInfoCard"
 import OllamaModelPicker from "./OllamaModelPicker"
 import OpenRouterModelPicker, { ModelDescriptionMarkdown, OPENROUTER_MODEL_PICKER_Z_INDEX } from "./OpenRouterModelPicker"
 import RequestyModelPicker from "./RequestyModelPicker"
@@ -117,6 +118,23 @@ const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
 			Balance: {formattedBalance}
 		</VSCodeLink>
 	)
+}
+
+const SUPPORTED_THINKING_MODELS: Record<string, string[]> = {
+	anthropic: ["claude-3-7-sonnet-20250219", "claude-sonnet-4-20250514", "claude-opus-4-20250514"],
+	vertex: ["claude-3-7-sonnet@20250219", "claude-sonnet-4@20250514", "claude-opus-4@20250514"],
+	qwen: [
+		"qwen3-235b-a22b",
+		"qwen3-32b",
+		"qwen3-30b-a3b",
+		"qwen3-14b",
+		"qwen3-8b",
+		"qwen3-4b",
+		"qwen3-1.7b",
+		"qwen3-0.6b",
+		"qwen-plus-latest",
+		"qwen-turbo-latest",
+	],
 }
 
 // This is necessary to ensure dropdown opens downward, important for when this is used in popup
@@ -351,6 +369,11 @@ const ApiOptions = ({
 			{selectedProvider === "cline" && (
 				<div style={{ marginBottom: 14, marginTop: 4 }}>
 					<ClineAccountInfoCard />
+				</div>
+			)}
+			{selectedProvider === "shengsuanyun" && (
+				<div style={{ marginBottom: 14, marginTop: 4 }}>
+					<ShengSuanYunAccountInfoCard />
 				</div>
 			)}
 			{selectedProvider === "asksage" && (
@@ -2025,14 +2048,16 @@ const ApiOptions = ({
 			{selectedProvider === "shengsuanyun" && (
 				<div>
 					<VSCodeTextField
-						value={apiConfiguration?.shengsuanyunApiKey || ""}
+						value={apiConfiguration?.shengSuanYunApiKey || ""}
 						style={{ width: "100%" }}
 						type="password"
-						onInput={handleInputChange("shengsuanyunApiKey")}
+						onInput={handleInputChange("shengSuanYunApiKey")}
 						placeholder="输入 API Key...">
 						<span style={{ fontWeight: 500 }}>API Key</span>
 					</VSCodeTextField>
-					{!apiConfiguration?.shengsuanyunApiKey && <a href="https://router.shengsuanyun.com/">获取 API Key</a>}
+					{!apiConfiguration?.shengSuanYunApiKey && (
+						<a href="https://router.shengsuanyun.com/user/keys">获取 API Key</a>
+					)}
 				</div>
 			)}
 
@@ -2189,25 +2214,13 @@ const ApiOptions = ({
 							{selectedProvider === "nebius" && createDropdown(nebiusModels)}
 						</DropdownContainer>
 
-						{selectedProvider === "anthropic" &&
-							(selectedModelId === "claude-3-7-sonnet-20250219" ||
-								selectedModelId === "claude-sonnet-4-20250514" ||
-								selectedModelId === "claude-opus-4-20250514") && (
-								<ThinkingBudgetSlider
-									apiConfiguration={apiConfiguration}
-									setApiConfiguration={setApiConfiguration}
-								/>
-							)}
-
-						{selectedProvider === "vertex" &&
-							(selectedModelId === "claude-3-7-sonnet@20250219" ||
-								selectedModelId === "claude-sonnet-4@20250514" ||
-								selectedModelId === "claude-opus-4@20250514") && (
-								<ThinkingBudgetSlider
-									apiConfiguration={apiConfiguration}
-									setApiConfiguration={setApiConfiguration}
-								/>
-							)}
+						{SUPPORTED_THINKING_MODELS[selectedProvider]?.includes(selectedModelId) && (
+							<ThinkingBudgetSlider
+								apiConfiguration={apiConfiguration}
+								setApiConfiguration={setApiConfiguration}
+								maxBudget={selectedModelInfo.thinkingConfig?.maxBudget}
+							/>
+						)}
 
 						{selectedProvider === "xai" && selectedModelId.includes("3-mini") && (
 							<>

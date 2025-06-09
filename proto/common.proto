@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package clineShengsuan;
-option java_package = "bot.cline.proto";
+option java_package = "bot.clineShengsuan.proto";
 option java_multiple_files = true;
 
 message Metadata {
@@ -62,4 +62,9 @@ message StringArray {
 message StringArrays {
   repeated string values1 = 1;
   repeated string values2 = 2;
+}
+
+message KeyValuePair {
+  string key = 1;
+  string value = 2;
 }

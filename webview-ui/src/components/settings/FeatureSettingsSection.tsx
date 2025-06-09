@@ -9,6 +9,8 @@ const FeatureSettingsSection = () => {
 		setEnableCheckpointsSetting,
 		mcpMarketplaceEnabled,
 		setMcpMarketplaceEnabled,
+		mcpResponsesCollapsed,
+		setMcpResponsesCollapsed,
 		chatSettings,
 		setChatSettings,
 	} = useExtensionState()
@@ -38,6 +40,17 @@ const FeatureSettingsSection = () => {
 					启用 MCP 市场
 				</VSCodeCheckbox>
 				<p className="text-xs text-[var(--vscode-descriptionForeground)]">启用 MCP 市场选项卡以发现和安装 MCP 服务器。</p>
+			</div>
+			<div style={{ marginTop: 10 }}>
+				<VSCodeCheckbox
+					checked={mcpResponsesCollapsed}
+					onChange={(e: any) => {
+						const checked = e.target.checked === true
+						setMcpResponsesCollapsed(checked)
+					}}>
+					折叠 MCP 消息
+				</VSCodeCheckbox>
+				<p className="text-xs text-[var(--vscode-descriptionForeground)]">设置 MCP 响应面板的默认显示模式</p>
 			</div>
 			<div style={{ marginTop: 10 }}>
 				<label

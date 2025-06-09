@@ -7,8 +7,6 @@
 /* eslint-disable */
 import { Empty, EmptyRequest, String } from "./common";
 
-export const protobufPackage = "clineShengsuan";
-
 /** Service for account-related operations */
 export type AccountServiceDefinition = typeof AccountServiceDefinition;
 export const AccountServiceDefinition = {

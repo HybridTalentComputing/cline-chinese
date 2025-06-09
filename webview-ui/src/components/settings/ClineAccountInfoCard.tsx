@@ -17,14 +17,15 @@ export const ClineAccountInfoCard = () => {
 	}
 
 	const handleShowAccount = () => {
-		navigateToAccount()
+		// navigateToAccount()
+		handleSignOut()
 	}
 
 	return (
 		<div className="max-w-[600px]">
-			{user ? (
+			{user?.providerId == "firebase" ? (
 				<VSCodeButton appearance="secondary" onClick={handleShowAccount}>
-					查看账单与使用记录
+					退出登录
 				</VSCodeButton>
 			) : (
 				<div>

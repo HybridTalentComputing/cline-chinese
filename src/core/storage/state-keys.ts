@@ -21,7 +21,7 @@ export type SecretKey =
 	| "xaiApiKey"
 	| "nebiusApiKey"
 	| "sambanovaApiKey"
-	| "shengsuanyunApiKey"
+	| "shengSuanYunApiKey"
 	| "cerebrasApiKey"
 
 export type GlobalStateKey =
@@ -92,8 +92,10 @@ export type GlobalStateKey =
 	| "favoritedModelIds"
 	| "requestTimeoutMs"
 	| "shellIntegrationTimeout"
+	| "mcpResponsesCollapsed"
+	| "terminalReuseEnabled"
 	| "isNewUser"
-	| "shengsuanyunToken"
+	| "shengSuanYunToken"
 	| "shengSuanYunModelId"
 	| "shengSuanYunModelInfo"
 

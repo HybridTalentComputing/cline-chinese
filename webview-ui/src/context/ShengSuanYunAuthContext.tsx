@@ -16,8 +16,8 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 	const [isInitSSY, setIsInitialized] = useState(false)
 	const { apiConfiguration } = useExtensionState()
 	useEffect(() => {
-		if (apiConfiguration?.shengsuanyunToken) signInWithTokenSSY(apiConfiguration?.shengsuanyunToken)
-	}, [apiConfiguration?.shengsuanyunToken])
+		if (apiConfiguration?.shengSuanYunToken) signInWithTokenSSY(apiConfiguration?.shengSuanYunToken)
+	}, [apiConfiguration?.shengSuanYunToken])
 
 	const signInWithTokenSSY = async (token: string) => {
 		try {

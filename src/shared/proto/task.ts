@@ -8,8 +8,6 @@
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import { Empty, EmptyRequest, Int64, Int64Request, Metadata, StringArrayRequest, StringRequest } from "./common";
 
-export const protobufPackage = "clineShengsuan";
-
 /** Request message for creating a new task */
 export interface NewTaskRequest {
   metadata?: Metadata | undefined;
@@ -81,6 +79,13 @@ export interface AskResponseRequest {
   text: string;
   images: string[];
   files: string[];
+}
+
+/** Request for executing a quick win task */
+export interface ExecuteQuickWinRequest {
+  metadata?: Metadata | undefined;
+  command: string;
+  title: string;
 }
 
 function createBaseNewTaskRequest(): NewTaskRequest {
@@ -1125,6 +1130,100 @@ export const AskResponseRequest: MessageFns<AskResponseRequest> = {
   },
 };
 
+function createBaseExecuteQuickWinRequest(): ExecuteQuickWinRequest {
+  return { metadata: undefined, command: "", title: "" };
+}
+
+export const ExecuteQuickWinRequest: MessageFns<ExecuteQuickWinRequest> = {
+  encode(message: ExecuteQuickWinRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.metadata !== undefined) {
+      Metadata.encode(message.metadata, writer.uint32(10).fork()).join();
+    }
+    if (message.command !== "") {
+      writer.uint32(18).string(message.command);
+    }
+    if (message.title !== "") {
+      writer.uint32(26).string(message.title);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ExecuteQuickWinRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseExecuteQuickWinRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.metadata = Metadata.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.command = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.title = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ExecuteQuickWinRequest {
+    return {
+      metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+      command: isSet(object.command) ? globalThis.String(object.command) : "",
+      title: isSet(object.title) ? globalThis.String(object.title) : "",
+    };
+  },
+
+  toJSON(message: ExecuteQuickWinRequest): unknown {
+    const obj: any = {};
+    if (message.metadata !== undefined) {
+      obj.metadata = Metadata.toJSON(message.metadata);
+    }
+    if (message.command !== "") {
+      obj.command = message.command;
+    }
+    if (message.title !== "") {
+      obj.title = message.title;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ExecuteQuickWinRequest>, I>>(base?: I): ExecuteQuickWinRequest {
+    return ExecuteQuickWinRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ExecuteQuickWinRequest>, I>>(object: I): ExecuteQuickWinRequest {
+    const message = createBaseExecuteQuickWinRequest();
+    message.metadata = (object.metadata !== undefined && object.metadata !== null)
+      ? Metadata.fromPartial(object.metadata)
+      : undefined;
+    message.command = object.command ?? "";
+    message.title = object.title ?? "";
+    return message;
+  },
+};
+
 export type TaskServiceDefinition = typeof TaskServiceDefinition;
 export const TaskServiceDefinition = {
   name: "TaskService",
@@ -1247,19 +1346,28 @@ export const TaskServiceDefinition = {
       responseStream: false,
       options: {},
     },
+    /** Executes a quick win task with command and title */
+    executeQuickWin: {
+      name: "executeQuickWin",
+      requestType: ExecuteQuickWinRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: false,
+      options: {},
+    },
   },
 } as const;
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
-export type DeepPartial<T> = T extends Builtin ? T
+type DeepPartial<T> = T extends Builtin ? T
   : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
   : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
+type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
 function longToNumber(int64: { toString(): string }): number {
@@ -1277,7 +1385,7 @@ function isSet(value: any): boolean {
   return value !== null && value !== undefined;
 }
 
-export interface MessageFns<T> {
+interface MessageFns<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;
   decode(input: BinaryReader | Uint8Array, length?: number): T;
   fromJSON(object: any): T;
