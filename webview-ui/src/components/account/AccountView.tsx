@@ -314,7 +314,7 @@ export const SSYAccountView = () => {
 					<p style={{}}>注册一个帐户以访问最新型号，注册账单仪表板以查看使用情况和积分， 以及更多即将推出的功能。</p>
 
 					<VSCodeButton onClick={handleLogin} className="w-full mb-4">
-						注册 / 登录 Cline
+						注册 / 登录 Cline 胜算云
 					</VSCodeButton>
 					<p className="text-[var(--vscode-descriptionForeground)] text-xs text-center m-0">
 						继续即表示您同意 <VSCodeLink href="https://cline.bot/tos">服务条款</VSCodeLink> 和{" "}

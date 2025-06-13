@@ -48,7 +48,7 @@ export const deleteRuleFile: FileMethodHandler = async (controller: Controller, 
 
 	const fileTypeName = request.type === "workflow" ? "workflow" : "rule"
 
-	vscode.window.showInformationMessage(`${fileTypeName} file "${fileName}" deleted successfully`)
+	vscode.window.showInformationMessage(`${fileTypeName} 文件 "${fileName}" 删除成功`)
 
 	return RuleFile.create({
 		filePath: request.rulePath,

@@ -137,5 +137,5 @@ export function mergeJson(
 }
 
 function getExtensionUri(): vscode.Uri {
-	return vscode.extensions.getExtension("shengsuan-cloud.cline-shengsuan")!.extensionUri
+	return vscode.extensions.getExtension("HybridTalentComputing.cline-chinese")!.extensionUri
 }

@@ -171,6 +171,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		mcpResponsesCollapsedRaw,
 		globalWorkflowToggles,
 		terminalReuseEnabled,
+		difyApiKey,
+		difyBaseUrl,
 	] = await Promise.all([
 		getGlobalState(context, "isNewUser") as Promise<boolean | undefined>,
 		getGlobalState(context, "apiProvider") as Promise<ApiProvider | undefined>,
@@ -267,6 +269,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "mcpResponsesCollapsed") as Promise<boolean | undefined>,
 		getGlobalState(context, "globalWorkflowToggles") as Promise<ClineRulesToggles | undefined>,
 		getGlobalState(context, "terminalReuseEnabled") as Promise<boolean | undefined>,
+		getSecret(context, "difyApiKey") as Promise<string | undefined>,
+		getGlobalState(context, "difyBaseUrl") as Promise<string | undefined>,
 	])
 
 	let apiProvider: ApiProvider
@@ -379,6 +383,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 			shengSuanYunToken,
 			shengSuanYunModelId,
 			shengSuanYunModelInfo,
+			difyApiKey,
+			difyBaseUrl,
 		},
 		isNewUser: isNewUser ?? true,
 		lastShownAnnouncementId,
@@ -479,6 +485,8 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 		shengSuanYunToken,
 		shengSuanYunModelId,
 		shengSuanYunModelInfo,
+		difyApiKey,
+		difyBaseUrl,
 	} = apiConfiguration
 	await updateGlobalState(context, "apiProvider", apiProvider)
 	await updateGlobalState(context, "apiModelId", apiModelId)
@@ -546,6 +554,8 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 	await updateGlobalState(context, "shengSuanYunToken", shengSuanYunToken)
 	await updateGlobalState(context, "shengSuanYunModelId", shengSuanYunModelId)
 	await updateGlobalState(context, "shengSuanYunModelInfo", shengSuanYunModelInfo)
+	await storeSecret(context, "difyApiKey", difyApiKey)
+	await updateGlobalState(context, "difyBaseUrl", difyBaseUrl)
 }
 
 export async function resetExtensionState(context: vscode.ExtensionContext) {
@@ -576,6 +586,7 @@ export async function resetExtensionState(context: vscode.ExtensionContext) {
 		"shengSuanYunApiKey",
 		"cerebrasApiKey",
 		"nebiusApiKey",
+		"difyApiKey",
 	]
 	for (const key of secretKeys) {
 		await storeSecret(context, key, undefined)

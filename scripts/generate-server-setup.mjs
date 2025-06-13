@@ -21,7 +21,7 @@ function generateHandlersAndExports() {
 	let imports = []
 	let handlerSetup = []
 
-	for (const [name, def] of Object.entries(proto.clineShengsuan)) {
+	for (const [name, def] of Object.entries(proto.clineChinese)) {
 		if (!def || !("service" in def)) {
 			continue
 		}
@@ -29,17 +29,17 @@ function generateHandlersAndExports() {
 		const dir = domain.charAt(0).toLowerCase() + domain.slice(1)
 		imports.push(`// ${domain} Service`)
 		handlerSetup.push(`    // ${domain} Service`)
-		handlerSetup.push(`    server.addService(proto.clineShengsuan.${name}.service, {`)
+		handlerSetup.push(`    server.addService(proto.clineChinese.${name}.service, {`)
 		for (const [rpcName, rpc] of Object.entries(def.service)) {
 			imports.push(`import { ${rpcName} } from "../core/controller/${dir}/${rpcName}"`)
-			const requestType = "proto.clineShengsuan." + rpc.requestType.type.name
+			const requestType = "proto.clineChinese." + rpc.requestType.type.name
 			if (rpc.requestStream) {
 				throw new Error("Request streaming is not supported")
 			}
 			if (rpc.responseStream) {
 				handlerSetup.push(`        ${rpcName}: wrapStreamingResponse<${requestType},void>(${rpcName}, controller),`)
 			} else {
-				const responseType = "proto.clineShengsuan." + rpc.responseType.type.name
+				const responseType = "proto.clineChinese." + rpc.responseType.type.name
 				handlerSetup.push(`         ${rpcName}: wrapper<${requestType},${responseType}>(${rpcName}, controller),`)
 			}
 		}

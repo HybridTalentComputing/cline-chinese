@@ -1227,7 +1227,7 @@ export const ExecuteQuickWinRequest: MessageFns<ExecuteQuickWinRequest> = {
 export type TaskServiceDefinition = typeof TaskServiceDefinition;
 export const TaskServiceDefinition = {
   name: "TaskService",
-  fullName: "clineShengsuan.TaskService",
+  fullName: "clineChinese.TaskService",
   methods: {
     /** Cancels the currently running task */
     cancelTask: {

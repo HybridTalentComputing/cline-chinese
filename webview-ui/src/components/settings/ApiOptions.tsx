@@ -115,7 +115,7 @@ const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
 				paddingLeft: 4,
 				cursor: "pointer",
 			}}>
-			Balance: {formattedBalance}
+			余额: {formattedBalance}
 		</VSCodeLink>
 	)
 }
@@ -360,6 +360,7 @@ const ApiOptions = ({
 					<VSCodeOption value="litellm">LiteLLM</VSCodeOption>
 					<VSCodeOption value="nebius">Nebius AI Studio</VSCodeOption>
 					<VSCodeOption value="asksage">AskSage</VSCodeOption>
+					<VSCodeOption value="dify">Dify</VSCodeOption>
 					<VSCodeOption value="xai">xAI</VSCodeOption>
 					<VSCodeOption value="sambanova">SambaNova</VSCodeOption>
 					<VSCodeOption value="cerebras">Cerebras</VSCodeOption>
@@ -1924,7 +1925,36 @@ const ApiOptions = ({
 					</p>
 				</div>
 			)}
+			{selectedProvider === "dify" && (
+				<div>
+					<VSCodeTextField
+						value={apiConfiguration?.difyApiKey || ""}
+						style={{ width: "100%" }}
+						type="password"
+						onInput={handleInputChange("difyApiKey")}
+						placeholder="输入 API 密钥...">
+						<span style={{ fontWeight: 500 }}>Dify API 密钥</span>
+					</VSCodeTextField>
 
+					<VSCodeTextField
+						value={apiConfiguration?.difyBaseUrl || ""}
+						style={{ width: "100%", marginTop: 3 }}
+						type="url"
+						onInput={handleInputChange("difyBaseUrl")}
+						placeholder="输入 Dify 基础 URL...">
+						<span style={{ fontWeight: 500 }}>Dify 基础 URL</span>
+					</VSCodeTextField>
+
+					<p
+						style={{
+							fontSize: "12px",
+							marginTop: 3,
+							color: "var(--vscode-descriptionForeground)",
+						}}>
+						API 密钥和基础 URL 存储在本地，仅用于从此扩展发出 API 请求。
+					</p>
+				</div>
+			)}
 			{selectedProvider === "nebius" && (
 				<div>
 					<VSCodeTextField
@@ -2312,7 +2342,7 @@ const ApiOptions = ({
 }
 
 export function getOpenRouterAuthUrl(uriScheme?: string) {
-	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan/openrouter`
+	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://HybridTalentComputing.cline-chinese/openrouter`
 }
 
 export const formatPrice = (price: number) => {
@@ -2633,6 +2663,12 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 				selectedProvider: provider,
 				selectedModelId: apiConfiguration?.liteLlmModelId || "",
 				selectedModelInfo: apiConfiguration?.liteLlmModelInfo || liteLlmModelInfoSaneDefaults,
+			}
+		case "dify":
+			return {
+				selectedProvider: provider,
+				selectedModelId: "",
+				selectedModelInfo: openAiModelInfoSaneDefaults,
 			}
 		case "xai":
 			return getProviderData(xaiModels, xaiDefaultModelId)

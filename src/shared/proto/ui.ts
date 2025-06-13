@@ -2340,7 +2340,7 @@ export const ClineMessage: MessageFns<ClineMessage> = {
 export type UiServiceDefinition = typeof UiServiceDefinition;
 export const UiServiceDefinition = {
   name: "UiService",
-  fullName: "clineShengsuan.UiService",
+  fullName: "clineChinese.UiService",
   methods: {
     /** Scrolls to a specific settings section in the settings view */
     scrollToSettings: {

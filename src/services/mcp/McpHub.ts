@@ -101,16 +101,14 @@ export class McpHub {
 			try {
 				config = JSON.parse(content)
 			} catch (error) {
-				vscode.window.showErrorMessage(
-					"Invalid MCP settings format. Please ensure your settings follow the correct JSON format.",
-				)
+				vscode.window.showErrorMessage("MCP 设置格式无效。请确保您的设置遵循正确的 JSON 格式。")
 				return undefined
 			}
 
 			// Validate against schema
 			const result = McpSettingsSchema.safeParse(config)
 			if (!result.success) {
-				vscode.window.showErrorMessage("Invalid MCP settings schema.")
+				vscode.window.showErrorMessage("MCP 设置架构无效.")
 				return undefined
 			}
 
@@ -142,9 +140,9 @@ export class McpHub {
 						const settings = await this.readAndValidateMcpSettingsFile()
 						if (settings) {
 							try {
-								vscode.window.showInformationMessage("Updating MCP servers...")
+								vscode.window.showInformationMessage("更新 MCP 服务...")
 								await this.updateServerConnections(settings.mcpServers)
-								vscode.window.showInformationMessage("MCP servers updated")
+								vscode.window.showInformationMessage("MCP 服务已更新")
 							} catch (error) {
 								console.error("Failed to process MCP settings change:", error)
 							}
@@ -187,7 +185,7 @@ export class McpHub {
 			// Each MCP server requires its own transport connection and has unique capabilities, configurations, and error handling. Having separate clients also allows proper scoping of resources/tools and independent server management like reconnection.
 			const client = new Client(
 				{
-					name: "ClineShengsuan",
+					name: "clineChinese",
 					version: this.clientVersion,
 				},
 				{
@@ -579,7 +577,7 @@ export class McpHub {
 				vscode.window.showInformationMessage(`${serverName} MCP server connected`)
 			} catch (error) {
 				console.error(`Failed to restart connection for ${serverName}:`, error)
-				vscode.window.showErrorMessage(`Failed to connect to ${serverName} MCP server`)
+				vscode.window.showErrorMessage(`链接 ${serverName} MCP 服务失败`)
 			}
 		}
 
@@ -820,7 +818,7 @@ export class McpHub {
 			}
 		} catch (error) {
 			console.error("Failed to update autoApprove settings:", error)
-			vscode.window.showErrorMessage("Failed to update autoApprove settings")
+			vscode.window.showErrorMessage("更新自动保存设置失败")
 			throw error // Re-throw to ensure the error is properly handled
 		}
 	}
@@ -938,9 +936,7 @@ export class McpHub {
 			if (error instanceof Error) {
 				console.error("Error details:", error.message, error.stack)
 			}
-			vscode.window.showErrorMessage(
-				`Failed to update server timeout: ${error instanceof Error ? error.message : String(error)}`,
-			)
+			vscode.window.showErrorMessage(`更新服务器超时失败: ${error instanceof Error ? error.message : String(error)}`)
 			throw error
 		}
 	}

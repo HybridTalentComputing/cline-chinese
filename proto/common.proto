@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package clineShengsuan;
-option java_package = "bot.clineShengsuan.proto";
+package clineChinese;
+option java_package = "bot.clineChinese.proto";
 option java_multiple_files = true;
 
 message Metadata {

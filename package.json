@@ -1,22 +1,22 @@
 {
-	"name": "cline-shengsuan",
-	"displayName": "Cline-中文版",
-	"description": "Cline-中文版是一款在您的IDE中运行的强大自主编程助手，经您许可后可创建/编辑文件、运行命令、使用浏览器等。",
+	"name": "cline-chinese",
+	"displayName": "Cline Chinese",
+	"description": "Cline中文汉化版，Cline是一款在您的 IDE 中运行的自主编程助手，经您许可后可以创建/编辑文件、运行命令、使用浏览器等功能。",
 	"version": "3.17.11",
 	"icon": "assets/icons/icon.png",
 	"engines": {
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "shengsuan-cloud"
+		"name": "HybridTalentComputing"
 	},
 	"license": "Apache-2.0",
-	"publisher": "shengsuan-cloud",
+	"publisher": "HybridTalentComputing",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/SSYCloud/cline-chinese-ssy"
+		"url": "https://github.com/HybridTalentComputing/cline-chinese"
 	},
-	"homepage": "https://router.shengsuanyun.com/",
+	"homepage": "https://github.com/HybridTalentComputing/cline-chinese",
 	"categories": [
 		"AI",
 		"Chat",
@@ -51,45 +51,45 @@
 		"walkthroughs": [
 			{
 				"id": "ClineWalkthrough",
-				"title": "Meet Cline, your new coding partner",
-				"description": "Cline codes like a developer because it thinks like one. Here are 5 ways to put it to work:",
+				"title": "认识一下 Cline，你的新编码伙伴",
+				"description": "Cline 的编程方式就像开发人员一样，因为它的思维方式也像开发人员一样。以下是 5 种使用方法：",
 				"steps": [
 					{
 						"id": "welcome",
-						"title": "Start with a Goal, Not Just a Prompt",
-						"description": "Tell Cline what you want to achieve. It plans, asks, and then codes, like a true partner.",
+						"title": "从目标开始，而不仅仅是提示",
+						"description": "告诉 Cline 你想要实现的目标。它会像一位真正的合作伙伴一样，为你制定计划、提出问题，然后进行编码。",
 						"media": {
 							"markdown": "walkthrough/step1.md"
 						}
 					},
 					{
 						"id": "learn",
-						"title": "Let Cline Learn Your Codebase",
-						"description": "Point Cline to your project. It builds understanding to make smart, context-aware changes.",
+						"title": "让 Cline 了解您的代码库",
+						"description": "将 Cline 指向您的项目。它可以帮助您理解项目，从而做出智能且可感知上下文的更改。",
 						"media": {
 							"markdown": "walkthrough/step2.md"
 						}
 					},
 					{
 						"id": "advanced-features",
-						"title": "Always Use the Best AI Models",
-						"description": "Cline empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
+						"title": "始终使用最佳的 AI 模型",
+						"description": "Cline 为您提供最先进的 AI，连接顶级模型（Anthropic、Gemini、OpenAI 等）。",
 						"media": {
 							"markdown": "walkthrough/step3.md"
 						}
 					},
 					{
 						"id": "mcp",
-						"title": "Extend with Powerful Tools (MCP)",
-						"description": "Connect to databases, APIs, or discover new capabilities in the MCP Marketplace.",
+						"title": "使用强大的工具 (MCP) 进行扩展",
+						"description": "连接到数据库、API 或在 MCP 市场中发现新功能。",
 						"media": {
 							"markdown": "walkthrough/step4.md"
 						}
 					},
 					{
 						"id": "getting-started",
-						"title": "You're Always in Control",
-						"description": "Review Cline's plans and diffs. Approve changes before they happen. No surprises.",
+						"title": "你始终掌控一切",
+						"description": "审核克莱恩的计划和差异。在变更生效前批准。避免意外。",
 						"media": {
 							"markdown": "walkthrough/step5.md"
 						},
@@ -103,103 +103,103 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "cline-shengsuan-ActivityBar",
+					"id": "cline-chinese-ActivityBar",
 					"title": "Cline-中文版",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
 		},
 		"views": {
-			"cline-shengsuan-ActivityBar": [
+			"cline-chinese-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "clineShengsuan.SidebarProvider",
+					"id": "clineChinese.SidebarProvider",
 					"name": ""
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "clineShengsuan.plusButtonClicked",
+				"command": "clineChinese.plusButtonClicked",
 				"title": "新任务",
 				"icon": "$(add)"
 			},
 			{
-				"command": "clineShengsuan.mcpButtonClicked",
+				"command": "clineChinese.mcpButtonClicked",
 				"title": "MCP 服务",
 				"icon": "$(server)"
 			},
 			{
-				"command": "clineShengsuan.historyButtonClicked",
+				"command": "clineChinese.historyButtonClicked",
 				"title": "历史记录",
 				"icon": "$(history)"
 			},
 			{
-				"command": "clineShengsuan.popoutButtonClicked",
+				"command": "clineChinese.popoutButtonClicked",
 				"title": "编辑器打开",
 				"icon": "$(link-external)"
 			},
 			{
-				"command": "clineShengsuan.accountButtonClicked",
+				"command": "clineChinese.accountButtonClicked",
 				"title": "账户",
 				"icon": "$(account)"
 			},
 			{
-				"command": "clineShengsuan.settingsButtonClicked",
+				"command": "clineChinese.settingsButtonClicked",
 				"title": "设置",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "clineShengsuan.openInNewTab",
+				"command": "clineChinese.openInNewTab",
 				"title": "在新标签打开",
-				"category": "ClineShengsuan"
+				"category": "clineChinese"
 			},
 			{
-				"command": "clineShengsuan.dev.createTestTasks",
+				"command": "clineChinese.dev.createTestTasks",
 				"title": "创建测试任务",
-				"category": "ClineShengsuan",
-				"when": "clineShengsuan.isDevMode"
+				"category": "clineChinese",
+				"when": "clineChinese.isDevMode"
 			},
 			{
-				"command": "clineShengsuan.addToChat",
+				"command": "clineChinese.addToChat",
 				"title": "添加到 Cline-中文版",
-				"category": "ClineShengsuan"
+				"category": "clineChinese"
 			},
 			{
-				"command": "clineShengsuan.addTerminalOutputToChat",
+				"command": "clineChinese.addTerminalOutputToChat",
 				"title": "添加到 Cline-中文版",
-				"category": "ClineShengsuan"
+				"category": "clineChinese"
 			},
 			{
-				"command": "clineShengsuan.focusChatInput",
+				"command": "clineChinese.focusChatInput",
 				"title": "跳转到对话窗口",
-				"category": "ClineShengsuan"
+				"category": "clineChinese"
 			},
 			{
-				"command": "clineShengsuan.generateGitCommitMessage",
+				"command": "clineChinese.generateGitCommitMessage",
 				"title": "生成带有Cline的提交消息",
-				"category": "ClineShengsuan",
+				"category": "clineChinese",
 				"icon": "$(robot)"
 			},
 			{
-				"command": "clineShengsuan.explainCode",
-				"title": "Explain with Cline",
-				"category": "Cline"
+				"command": "clineChinese.explainCode",
+				"title": "用 Cline 解释代码",
+				"category": "clineChinese"
 			},
 			{
-				"command": "clineShengsuan.improveCode",
-				"title": "Improve with Cline",
-				"category": "Cline"
+				"command": "clineChinese.improveCode",
+				"title": "用 Cline 优化代码",
+				"category": "clineChinese"
 			},
 			{
-				"command": "cline.openWalkthrough",
-				"title": "Open Walkthrough",
-				"category": "Cline"
+				"command": "clineChinese.openWalkthrough",
+				"title": "打开教程",
+				"category": "clineChinese"
 			}
 		],
 		"keybindings": [
 			{
-				"command": "clineShengsuan.addToChat",
+				"command": "clineChinese.addToChat",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -207,11 +207,11 @@
 				"when": "editorHasSelection"
 			},
 			{
-				"command": "clineShengsuan.generateGitCommitMessage",
+				"command": "clineChinese.generateGitCommitMessage",
 				"when": "scmProvider == git"
 			},
 			{
-				"command": "clineShengsuan.focusChatInput",
+				"command": "clineChinese.focusChatInput",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -222,97 +222,97 @@
 		"menus": {
 			"view/title": [
 				{
-					"command": "clineShengsuan.plusButtonClicked",
+					"command": "clineChinese.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == clineChinese.SidebarProvider"
 				},
 				{
-					"command": "clineShengsuan.mcpButtonClicked",
+					"command": "clineChinese.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == clineChinese.SidebarProvider"
 				},
 				{
-					"command": "clineShengsuan.historyButtonClicked",
+					"command": "clineChinese.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == clineChinese.SidebarProvider"
 				},
 				{
-					"command": "clineShengsuan.popoutButtonClicked",
+					"command": "clineChinese.popoutButtonClicked",
 					"group": "navigation@4",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == clineChinese.SidebarProvider"
 				},
 				{
-					"command": "clineShengsuan.accountButtonClicked",
+					"command": "clineChinese.accountButtonClicked",
 					"group": "navigation@5",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == clineChinese.SidebarProvider"
 				},
 				{
-					"command": "clineShengsuan.settingsButtonClicked",
+					"command": "clineChinese.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == clineChinese.SidebarProvider"
 				}
 			],
 			"editor/title": [
 				{
-					"command": "clineShengsuan.plusButtonClicked",
+					"command": "clineChinese.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == clineChinese.TabPanelProvider"
 				},
 				{
-					"command": "clineShengsuan.mcpButtonClicked",
+					"command": "clineChinese.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == clineChinese.TabPanelProvider"
 				},
 				{
-					"command": "clineShengsuan.historyButtonClicked",
+					"command": "clineChinese.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == clineChinese.TabPanelProvider"
 				},
 				{
-					"command": "clineShengsuan.popoutButtonClicked",
+					"command": "clineChinese.popoutButtonClicked",
 					"group": "navigation@4",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == clineChinese.TabPanelProvider"
 				},
 				{
-					"command": "clineShengsuan.accountButtonClicked",
+					"command": "clineChinese.accountButtonClicked",
 					"group": "navigation@5",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == clineChinese.TabPanelProvider"
 				},
 				{
-					"command": "clineShengsuan.settingsButtonClicked",
+					"command": "clineChinese.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == clineChinese.TabPanelProvider"
 				}
 			],
 			"editor/context": [
 				{
-					"command": "clineShengsuan.addToChat",
+					"command": "clineChinese.addToChat",
 					"group": "navigation",
 					"when": "editorHasSelection"
 				}
 			],
 			"terminal/context": [
 				{
-					"command": "clineShengsuan.addTerminalOutputToChat",
+					"command": "clineChinese.addTerminalOutputToChat",
 					"group": "navigation"
 				}
 			],
 			"scm/title": [
 				{
-					"command": "clineShengsuan.generateGitCommitMessage",
+					"command": "clineChinese.generateGitCommitMessage",
 					"group": "navigation",
 					"when": "scmProvider == git"
 				}
 			],
 			"commandPalette": [
 				{
-					"command": "clineShengsuan.generateGitCommitMessage",
+					"command": "clineChinese.generateGitCommitMessage",
 					"when": "scmProvider == git"
 				}
 			]
 		},
 		"configuration": {
-			"title": "Cline-中文版",
+			"title": "Cline Chinese",
 			"properties": {}
 		}
 	},

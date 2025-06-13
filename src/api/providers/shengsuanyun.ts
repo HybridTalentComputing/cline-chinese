@@ -9,6 +9,7 @@ import { createShengsuanyunStream } from "../transform/shengsuanyun-stream"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { OpenRouterErrorResponse } from "./types"
 import { calculateApiCostOpenAI } from "../../utils/cost"
+import * as vscode from "vscode"
 
 export class ShengSuanYunHandler implements ApiHandler {
 	private options: ApiHandlerOptions
@@ -21,8 +22,8 @@ export class ShengSuanYunHandler implements ApiHandler {
 			baseURL: "https://router.shengsuanyun.com/api/v1",
 			apiKey: this.options.shengSuanYunApiKey,
 			defaultHeaders: {
-				"HTTP-Referer": "vscode://shengsuan-cloud.cline-shengsuan/ssy",
-				"X-Title": "ClineShengsuan",
+				"HTTP-Referer": `${vscode.env.uriScheme || "vscode"}://HybridTalentComputing.cline-chinese/ssy`,
+				"X-Title": "clineChinese",
 			},
 		})
 	}

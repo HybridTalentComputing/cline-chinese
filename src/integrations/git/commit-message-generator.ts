@@ -58,7 +58,7 @@ export function extractCommitMessage(aiResponse: string): string {
  */
 export async function copyCommitMessageToClipboard(message: string): Promise<void> {
 	await vscode.env.clipboard.writeText(message)
-	vscode.window.showInformationMessage("Commit message copied to clipboard")
+	vscode.window.showInformationMessage("提交信息复制到剪贴板")
 }
 
 /**
@@ -66,12 +66,12 @@ export async function copyCommitMessageToClipboard(message: string): Promise<voi
  * @param message The generated commit message
  */
 export async function showCommitMessageOptions(message: string): Promise<void> {
-	const copyAction = "Copy to Clipboard"
-	const applyAction = "Apply to Git Input"
-	const editAction = "Edit Message"
+	const copyAction = "复制到剪贴板"
+	const applyAction = "应用到 Git 输入"
+	const editAction = "编辑消息"
 
 	const selectedAction = await vscode.window.showInformationMessage(
-		"Commit message generated",
+		"生成提交信息",
 		{ modal: false, detail: message },
 		copyAction,
 		applyAction,
@@ -108,13 +108,13 @@ async function applyCommitMessageToGitInput(message: string): Promise<void> {
 		if (api && api.repositories.length > 0) {
 			const repo = api.repositories[0]
 			repo.inputBox.value = message
-			vscode.window.showInformationMessage("Commit message applied to Git input")
+			vscode.window.showInformationMessage("提交信息应用到 Git 输入")
 		} else {
-			vscode.window.showErrorMessage("No Git repositories found")
+			vscode.window.showErrorMessage("未发现 Git 库")
 			await copyCommitMessageToClipboard(message)
 		}
 	} else {
-		vscode.window.showErrorMessage("Git extension not found")
+		vscode.window.showErrorMessage("Git 扩展未找到")
 		await copyCommitMessageToClipboard(message)
 	}
 }
@@ -130,5 +130,5 @@ async function editCommitMessage(message: string): Promise<void> {
 	})
 
 	await vscode.window.showTextDocument(document)
-	vscode.window.showInformationMessage("Edit the commit message and copy when ready")
+	vscode.window.showInformationMessage("编辑提交信息并复制")
 }

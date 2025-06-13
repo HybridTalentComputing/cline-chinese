@@ -701,9 +701,9 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 											<p className="break-words m-0 p-0">
 												如果您有任何问题或反馈，请随时在这里提出问题{" "}
 												<VSCodeLink
-													href="https://github.com/SSYCloud/cline-chinese-ssy"
+													href="https://github.com/HybridTalentComputing/cline-chinese"
 													className="inline">
-													https://github.com/SSYCloud/cline-chinese-ssy
+													https://github.com/HybridTalentComputing/cline-chinese
 												</VSCodeLink>
 											</p>
 											<p className="italic mt-[10px] mb-0 p-0">v{version}</p>

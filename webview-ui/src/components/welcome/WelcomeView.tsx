@@ -45,7 +45,7 @@ const WelcomeView = memo(() => {
 				<p className="text-[var(--vscode-descriptionForeground)]">注册 & 加群，赠送 Claude 4 Sonnet. 免费使用额度。</p>
 
 				<VSCodeButton appearance="primary" onClick={handleLogin} className="w-full mt-1">
-					免费试用
+					注册胜算云
 				</VSCodeButton>
 
 				{!showApiOptions && (

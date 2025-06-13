@@ -55,7 +55,7 @@ export const createRuleFile: FileMethodHandler = async (controller: Controller, 
 		await handleFileServiceRequest(controller, "openFile", { value: filePath })
 
 		vscode.window.showInformationMessage(
-			`Created new ${request.isGlobal ? "global" : "workspace"} ${fileTypeName} file: ${request.filename}`,
+			`新建 ${request.isGlobal ? "全局" : "工作区"} ${fileTypeName} 文件: ${request.filename}`,
 		)
 	}
 

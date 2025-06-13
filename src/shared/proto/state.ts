@@ -229,7 +229,12 @@ export interface ApiConfiguration {
   shengsuanyunApiKey?: string | undefined;
   shengsuanyunModelId?: string | undefined;
   shengsuanyunModelInfo?: string | undefined;
-  shengsuanyunToken?: string | undefined;
+  shengsuanyunToken?:
+    | string
+    | undefined;
+  /** Dify */
+  difyApiKey?: string | undefined;
+  difyBaseUrl?: string | undefined;
 }
 
 function createBaseState(): State {
@@ -1258,6 +1263,8 @@ function createBaseApiConfiguration(): ApiConfiguration {
     shengsuanyunModelId: undefined,
     shengsuanyunModelInfo: undefined,
     shengsuanyunToken: undefined,
+    difyApiKey: undefined,
+    difyBaseUrl: undefined,
   };
 }
 
@@ -1487,6 +1494,12 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     }
     if (message.shengsuanyunToken !== undefined) {
       writer.uint32(602).string(message.shengsuanyunToken);
+    }
+    if (message.difyApiKey !== undefined) {
+      writer.uint32(610).string(message.difyApiKey);
+    }
+    if (message.difyBaseUrl !== undefined) {
+      writer.uint32(618).string(message.difyBaseUrl);
     }
     return writer;
   },
@@ -2098,6 +2111,22 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
           message.shengsuanyunToken = reader.string();
           continue;
         }
+        case 76: {
+          if (tag !== 610) {
+            break;
+          }
+
+          message.difyApiKey = reader.string();
+          continue;
+        }
+        case 77: {
+          if (tag !== 618) {
+            break;
+          }
+
+          message.difyBaseUrl = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2214,6 +2243,8 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
         ? globalThis.String(object.shengsuanyunModelInfo)
         : undefined,
       shengsuanyunToken: isSet(object.shengsuanyunToken) ? globalThis.String(object.shengsuanyunToken) : undefined,
+      difyApiKey: isSet(object.difyApiKey) ? globalThis.String(object.difyApiKey) : undefined,
+      difyBaseUrl: isSet(object.difyBaseUrl) ? globalThis.String(object.difyBaseUrl) : undefined,
     };
   },
 
@@ -2444,6 +2475,12 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     if (message.shengsuanyunToken !== undefined) {
       obj.shengsuanyunToken = message.shengsuanyunToken;
     }
+    if (message.difyApiKey !== undefined) {
+      obj.difyApiKey = message.difyApiKey;
+    }
+    if (message.difyBaseUrl !== undefined) {
+      obj.difyBaseUrl = message.difyBaseUrl;
+    }
     return obj;
   },
 
@@ -2527,6 +2564,8 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     message.shengsuanyunModelId = object.shengsuanyunModelId ?? undefined;
     message.shengsuanyunModelInfo = object.shengsuanyunModelInfo ?? undefined;
     message.shengsuanyunToken = object.shengsuanyunToken ?? undefined;
+    message.difyApiKey = object.difyApiKey ?? undefined;
+    message.difyBaseUrl = object.difyBaseUrl ?? undefined;
     return message;
   },
 };
@@ -2534,7 +2573,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
 export type StateServiceDefinition = typeof StateServiceDefinition;
 export const StateServiceDefinition = {
   name: "StateService",
-  fullName: "clineShengsuan.StateService",
+  fullName: "clineChinese.StateService",
   methods: {
     getLatestState: {
       name: "getLatestState",

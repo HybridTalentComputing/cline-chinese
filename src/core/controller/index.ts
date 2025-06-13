@@ -54,7 +54,7 @@ https://github.com/KumarVariable/vscode-extension-sidebar-html/blob/master/src/c
 export class Controller {
 	readonly id: string = uuidv4()
 	private postMessage: (message: ExtensionMessage) => Thenable<boolean> | undefined
-
+	public uriScheme = vscode.env.uriScheme
 	private disposables: vscode.Disposable[] = []
 	task?: Task
 	workspaceTracker: WorkspaceTracker
@@ -115,11 +115,11 @@ export class Controller {
 		try {
 			await updateGlobalState(this.context, "shengSuanYunToken", undefined)
 			await updateGlobalState(this.context, "userInfo", undefined)
-			await updateGlobalState(this.context, "apiProvider", "openrouter")
+			await updateGlobalState(this.context, "apiProvider", "shengsuanyun")
 			await this.postStateToWebview()
-			vscode.window.showInformationMessage("成功登出 Cline 账户")
+			// vscode.window.showInformationMessage("成功登出 Cline 胜算云")
 		} catch (error) {
-			vscode.window.showErrorMessage("Logout failed")
+			vscode.window.showErrorMessage("登出失败")
 		}
 	}
 
@@ -263,9 +263,8 @@ export class Controller {
 				break
 			}
 			case "accountLoginClickedSSY": {
-				const uriScheme = vscode.env.uriScheme
 				const authUrl = vscode.Uri.parse(
-					`https://router.shengsuanyun.com/auth?callback_url=${encodeURIComponent(`${uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan/ssy`)}`,
+					`https://router.shengsuanyun.com/auth?callback_url=${encodeURIComponent(`${this.uriScheme || "vscode"}://HybridTalentComputing.cline-chinese/ssy`)}`,
 				)
 				vscode.env.openExternal(authUrl)
 				break
@@ -552,7 +551,7 @@ export class Controller {
 			// vscode.window.showInformationMessage("Successfully logged in to Cline")
 		} catch (error) {
 			console.error("Failed to handle auth callback:", error)
-			vscode.window.showErrorMessage("Failed to log in to Cline")
+			vscode.window.showErrorMessage("登录失败")
 			// Even on login failure, we preserve any existing tokens
 			// Only clear tokens on explicit logout
 		}
@@ -587,7 +586,7 @@ export class Controller {
 		} catch (error) {
 			console.error("Failed to fetch MCP marketplace:", error)
 			if (!silent) {
-				const errorMessage = error instanceof Error ? error.message : "Failed to fetch MCP marketplace"
+				const errorMessage = error instanceof Error ? error.message : "获取 MCP 市场失败"
 				vscode.window.showErrorMessage(errorMessage)
 			}
 			return undefined
@@ -671,7 +670,7 @@ export class Controller {
 			}
 		} catch (error) {
 			console.error("Failed to handle cached MCP marketplace:", error)
-			const errorMessage = error instanceof Error ? error.message : "Failed to handle cached MCP marketplace"
+			const errorMessage = error instanceof Error ? error.message : "处理 MCP 市场缓存失败"
 			vscode.window.showErrorMessage(errorMessage)
 		}
 	}
@@ -712,7 +711,7 @@ export class Controller {
 		try {
 			const response = await axios.post("https://api.shengsuanyun.com/auth/keys", {
 				code: code,
-				callback_url: "vscode://shengsuan-cloud.cline-shengsuan/ssy",
+				callback_url: `${this.uriScheme || "vscode"}://HybridTalentComputing.cline-chinese/ssy`,
 			})
 			if (response.data && response.data.data && response.data.data.api_key) {
 				apiKey = response.data.data.api_key
@@ -774,7 +773,7 @@ export class Controller {
 	// 'Add to Cline' context menu in editor and code action
 	async addSelectedCodeToChat(code: string, filePath: string, languageId: string, diagnostics?: vscode.Diagnostic[]) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
+		await vscode.commands.executeCommand("clineChinese.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		// Post message to webview with the selected code
@@ -794,7 +793,7 @@ export class Controller {
 	// 'Add to Cline' context menu in Terminal
 	async addSelectedTerminalOutputToChat(output: string, terminalName: string) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
+		await vscode.commands.executeCommand("clineChinese.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		// Post message to webview with the selected terminal output
@@ -812,7 +811,7 @@ export class Controller {
 	// 'Fix with Cline' in code actions
 	async fixWithCline(code: string, filePath: string, languageId: string, diagnostics: vscode.Diagnostic[]) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
+		await vscode.commands.executeCommand("clineChinese.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		const fileMention = this.getFileMentionFromPath(filePath)
@@ -910,7 +909,7 @@ export class Controller {
 			}
 		} catch (error) {
 			vscode.window.showErrorMessage(
-				`Encountered error while deleting task history, there may be some files left behind. Error: ${error instanceof Error ? error.message : String(error)}`,
+				`删除任务历史记录时出错，可能会遗留一些文件。错误: ${error instanceof Error ? error.message : String(error)}`,
 			)
 		}
 		// await this.postStateToWebview()
@@ -945,9 +944,7 @@ export class Controller {
 				}
 			}
 		} catch (error) {
-			vscode.window.showErrorMessage(
-				`Error deleting task history: ${error instanceof Error ? error.message : String(error)}`,
-			)
+			vscode.window.showErrorMessage(`删除任务历史失败: ${error instanceof Error ? error.message : String(error)}`)
 		}
 
 		await this.postStateToWebview()
@@ -1163,14 +1160,14 @@ export class Controller {
 			// Check if there's a workspace folder open
 			const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
 			if (!cwd) {
-				vscode.window.showErrorMessage("No workspace folder open")
+				vscode.window.showErrorMessage("没有打开工作目录")
 				return
 			}
 
 			// Get the git diff
 			const gitDiff = await getWorkingState(cwd)
 			if (gitDiff === "No changes in working directory") {
-				vscode.window.showInformationMessage("No changes in workspace for commit message")
+				vscode.window.showInformationMessage("工作区中提交消息没有变化")
 				return
 			}
 
@@ -1237,25 +1234,25 @@ Commit message:`
 								if (api && api.repositories.length > 0) {
 									const repo = api.repositories[0]
 									repo.inputBox.value = commitMessage
-									vscode.window.showInformationMessage("Commit message generated and applied")
+									vscode.window.showInformationMessage("提交消息已生成并应用")
 								} else {
-									vscode.window.showErrorMessage("No Git repositories found")
+									vscode.window.showErrorMessage("未找到 Git 库")
 								}
 							} else {
-								vscode.window.showErrorMessage("Git extension not found")
+								vscode.window.showErrorMessage("未找到 Git 扩展")
 							}
 						} else {
-							vscode.window.showErrorMessage("Failed to generate commit message")
+							vscode.window.showErrorMessage("无法生成提交消息")
 						}
 					} catch (innerError) {
 						const innerErrorMessage = innerError instanceof Error ? innerError.message : String(innerError)
-						vscode.window.showErrorMessage(`Failed to generate commit message: ${innerErrorMessage}`)
+						vscode.window.showErrorMessage(`无法生成提交消息: ${innerErrorMessage}`)
 					}
 				},
 			)
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
-			vscode.window.showErrorMessage(`Failed to generate commit message: ${errorMessage}`)
+			vscode.window.showErrorMessage(`无法生成提交消息: ${errorMessage}`)
 		}
 	}
 
