@@ -25,7 +25,7 @@ describe("Extension Tests", function () {
 
 	it("should activate extension successfully", async () => {
 		// Get the extension
-		const extension = vscode.extensions.getExtension("shengsuan-cloud.cline-shengsuan")
+		const extension = vscode.extensions.getExtension("HybridTalentComputing.cline-chinese")
 		expect(extension).to.not.be.undefined
 
 		// Activate the extension if not already activated
@@ -37,7 +37,7 @@ describe("Extension Tests", function () {
 
 	it("should open sidebar view", async () => {
 		// Execute the command to open sidebar
-		await vscode.commands.executeCommand("clineShengsuan.plusButtonClicked")
+		await vscode.commands.executeCommand("clineChinese.plusButtonClicked")
 
 		// Wait for sidebar to be visible
 		await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -50,7 +50,7 @@ describe("Extension Tests", function () {
 
 	it("should handle basic commands", async () => {
 		// Test basic command execution
-		await vscode.commands.executeCommand("clineShengsuan.historyButtonClicked")
+		await vscode.commands.executeCommand("clineChinese.historyButtonClicked")
 		// Success if no error thrown
 	})
 })

@@ -21,7 +21,7 @@ const EXTENSION_DIR = path.join(process.env.CLINE_DIR, "core")
 const EXTENSION_MODE = process.env.IS_DEV === "true" ? ExtensionMode.Development : ExtensionMode.Production
 
 const extension: Extension<void> = {
-	id: "shengsuan-cloud.cline-shengsuan",
+	id: "HybridTalentComputing.cline-chinese",
 	isActive: true,
 	extensionPath: EXTENSION_DIR,
 	extensionUri: URI.file(EXTENSION_DIR),

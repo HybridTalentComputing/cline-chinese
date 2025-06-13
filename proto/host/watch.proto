@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package host;
-option java_package = "bot.clineShengsuan.host.proto";
+option java_package = "bot.clineChinese.host.proto";
 option java_multiple_files = true;
 
 import "common.proto";
@@ -14,7 +14,7 @@ service WatchService {
 
 // Request to subscribe to file changes
 message SubscribeToFileRequest {
-  clineShengsuan.Metadata metadata = 1;
+  clineChinese.Metadata metadata = 1;
   string path = 2;
 }
 

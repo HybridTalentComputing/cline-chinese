@@ -425,7 +425,7 @@ export class Task {
 							this.enableCheckpoints,
 						)
 					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : "Unknown error"
+						const errorMessage = error instanceof Error ? error.message : "未知错误"
 						console.error("Failed to initialize checkpoint tracker:", errorMessage)
 						this.checkpointTrackerErrorMessage = errorMessage
 						await this.postStateToWebview()
@@ -437,16 +437,16 @@ export class Task {
 					try {
 						await this.checkpointTracker.resetHead(message.lastCheckpointHash)
 					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : "Unknown error"
-						vscode.window.showErrorMessage("Failed to restore checkpoint: " + errorMessage)
+						const errorMessage = error instanceof Error ? error.message : "未知错误"
+						vscode.window.showErrorMessage("恢复检查点失败: " + errorMessage)
 						didWorkspaceRestoreFail = true
 					}
 				} else if (offset && lastMessageWithHash.lastCheckpointHash && this.checkpointTracker) {
 					try {
 						await this.checkpointTracker.resetHead(lastMessageWithHash.lastCheckpointHash)
 					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : "Unknown error"
-						vscode.window.showErrorMessage("Failed to restore offsetcheckpoint: " + errorMessage)
+						const errorMessage = error instanceof Error ? error.message : "未知错误"
+						vscode.window.showErrorMessage("无法恢复检查点偏移: " + errorMessage)
 						didWorkspaceRestoreFail = true
 					}
 				}
@@ -535,7 +535,7 @@ export class Task {
 			sendRelinquishControlEvent()
 		}
 		if (!this.enableCheckpoints) {
-			vscode.window.showInformationMessage("Checkpoints are disabled in settings. Cannot show diff.")
+			vscode.window.showInformationMessage("检查点被禁用. 无法显示修改.")
 			relinquishButton()
 			return
 		}
@@ -564,8 +564,8 @@ export class Task {
 					this.enableCheckpoints,
 				)
 			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : "Unknown error"
-				console.error("Failed to initialize checkpoint tracker:", errorMessage)
+				const errorMessage = error instanceof Error ? error.message : "未知错误"
+				console.error("无法初始化检查点跟踪器:", errorMessage)
 				this.checkpointTrackerErrorMessage = errorMessage
 				await this.postStateToWebview()
 				vscode.window.showErrorMessage(errorMessage)
@@ -603,7 +603,7 @@ export class Task {
 				const previousCheckpointHash = lastTaskCompletedMessageCheckpointHash || firstCheckpointMessageCheckpointHash // either use the diff between the first checkpoint and the task completion, or the diff between the latest two task completions
 
 				if (!previousCheckpointHash) {
-					vscode.window.showErrorMessage("Unexpected error: No checkpoint hash found")
+					vscode.window.showErrorMessage("意外错误：未找到检查点哈希")
 					relinquishButton()
 					return
 				}
@@ -611,7 +611,7 @@ export class Task {
 				// Get changed files between current state and commit
 				changedFiles = await this.checkpointTracker?.getDiffSet(previousCheckpointHash, hash)
 				if (!changedFiles?.length) {
-					vscode.window.showInformationMessage("No changes found")
+					vscode.window.showInformationMessage("没发现修改")
 					relinquishButton()
 					return
 				}
@@ -619,14 +619,14 @@ export class Task {
 				// Get changed files between current state and commit
 				changedFiles = await this.checkpointTracker?.getDiffSet(hash)
 				if (!changedFiles?.length) {
-					vscode.window.showInformationMessage("No changes found")
+					vscode.window.showInformationMessage("没发现修改")
 					relinquishButton()
 					return
 				}
 			}
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : "Unknown error"
-			vscode.window.showErrorMessage("Failed to retrieve diff set: " + errorMessage)
+			const errorMessage = error instanceof Error ? error.message : "未知错误"
+			vscode.window.showErrorMessage("获取修改失败: " + errorMessage)
 			relinquishButton()
 			return
 		}
@@ -3723,7 +3723,7 @@ export class Task {
 								// Derive system information values algorithmically
 								const operatingSystem = os.platform() + " " + os.release()
 								const clineVersion =
-									vscode.extensions.getExtension("shengsuan-cloud.cline-shengsuan")?.packageJSON.version ||
+									vscode.extensions.getExtension("HybridTalentComputing.cline-chinese")?.packageJSON.version ||
 									"Unknown"
 								const systemInfo = `VSCode: ${vscode.version}, Node.js: ${process.version}, Architecture: ${os.arch()}`
 								const providerAndModel = `${(await getGlobalState(this.getContext(), "apiProvider")) as string} / ${this.api.getModel().id}`

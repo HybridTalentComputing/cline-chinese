@@ -16,8 +16,8 @@ https://github.com/KumarVariable/vscode-extension-sidebar-html/blob/master/src/c
 */
 
 export class WebviewProvider implements vscode.WebviewViewProvider {
-	public static readonly sideBarId = "clineShengsuan.SidebarProvider" // used in package.json as the view's id. This value cannot be changed due to how vscode caches views based on their id, and updating the id would break existing instances of the extension.
-	public static readonly tabPanelId = "clineShengsuan.TabPanelProvider"
+	public static readonly sideBarId = "clineChinese.SidebarProvider" // used in package.json as the view's id. This value cannot be changed due to how vscode caches views based on their id, and updating the id would break existing instances of the extension.
+	public static readonly tabPanelId = "clineChinese.TabPanelProvider"
 	private static activeInstances: Set<WebviewProvider> = new Set()
 	public view?: vscode.WebviewView | vscode.WebviewPanel
 	private disposables: vscode.Disposable[] = []
@@ -146,7 +146,7 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 							await sendThemeEvent(JSON.stringify(theme))
 						}
 					}
-					if (e && e.affectsConfiguration("clineShengsuan.mcpMarketplace.enabled")) {
+					if (e && e.affectsConfiguration("clineChinese.mcpMarketplace.enabled")) {
 						// Update state when marketplace tab setting changes
 						await this.controller.postStateToWebview()
 					}
@@ -293,7 +293,7 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 			await axios.get(`http://${localServerUrl}`)
 		} catch (error) {
 			vscode.window.showErrorMessage(
-				"Cline: Local webview dev server is not running, HMR will not work. Please run 'npm run dev:webview' before launching the extension to enable HMR. Using bundled assets.",
+				"Cline: 本地 webview 开发服务器未运行，HMR 将无法工作。请在启动扩展程序之前运行“npm run dev:webview”以启用 HMR。使用捆绑资源。",
 			)
 
 			return this.getHtmlContent(webview)

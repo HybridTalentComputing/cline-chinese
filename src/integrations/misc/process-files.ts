@@ -42,14 +42,12 @@ export async function selectFiles(imagesAllowed: boolean): Promise<{ images: str
 				const dimensions = sizeOf(uint8Array) // Get dimensions from Uint8Array
 				if (dimensions.width! > 7500 || dimensions.height! > 7500) {
 					console.warn(`Image dimensions exceed 7500px, skipping: ${filePath}`)
-					vscode.window.showErrorMessage(
-						`Image too large: ${path.basename(filePath)} was skipped (dimensions exceed 7500px).`,
-					)
+					vscode.window.showErrorMessage(`图片太大: ${path.basename(filePath)} 被忽略 (dimensions exceed 7500px).`)
 					return null
 				}
 			} catch (error) {
 				console.error(`Error reading file or getting dimensions for ${filePath}:`, error)
-				vscode.window.showErrorMessage(`Could not read dimensions for ${path.basename(filePath)}, skipping.`)
+				vscode.window.showErrorMessage(`无法读取 ${path.basename(filePath)}, 被忽略.`)
 				return null
 			}
 
@@ -64,12 +62,12 @@ export async function selectFiles(imagesAllowed: boolean): Promise<{ images: str
 				const stats = await fs.stat(filePath)
 				if (stats.size > 20 * 1000 * 1024) {
 					console.warn(`File too large, skipping: ${filePath}`)
-					vscode.window.showErrorMessage(`File too large: ${path.basename(filePath)} was skipped (size exceeds 20MB).`)
+					vscode.window.showErrorMessage(`文件太大: ${path.basename(filePath)} 被忽略 (超过 20MB).`)
 					return null
 				}
 			} catch (error) {
 				console.error(`Error checking file size for ${filePath}:`, error)
-				vscode.window.showErrorMessage(`Could not check file size for ${path.basename(filePath)}, skipping.`)
+				vscode.window.showErrorMessage(`无法检查文件大小 ${path.basename(filePath)}, 被忽略.`)
 				return null
 			}
 			return { type: "file", data: filePath }

@@ -26,6 +26,7 @@ export type ApiProvider =
 	| "sambanova"
 	| "shengsuanyun"
 	| "cerebras"
+	| "dify"
 
 export interface ApiHandlerOptions {
 	apiModelId?: string
@@ -97,6 +98,8 @@ export interface ApiHandlerOptions {
 	shengSuanYunToken?: string
 	shengSuanYunModelId?: string
 	shengSuanYunModelInfo?: ModelInfo
+	difyBaseUrl?: string
+	difyApiKey?: string
 	onRetryAttempt?: (attempt: number, maxRetries: number, delay: number, error: any) => void
 }
 
@@ -2420,3 +2423,16 @@ export const shengSuanYunDefaultModelInfo: ModelInfo = {
 	cacheWritesPrice: 0,
 	cacheReadsPrice: 0,
 }
+
+// Dify
+export type DifyModelId = string
+export const difyDefaultModelId = "" // Dify doesn't have a default model, it depends on the server configuration
+export const difyModels = {
+	"dify-default": {
+		maxTokens: 4096,
+		contextWindow: 4096,
+		supportsImages: false,
+		supportsPromptCache: false,
+		description: "Dify API",
+	},
+} as const satisfies Record<string, ModelInfo>

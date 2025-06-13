@@ -1,6 +1,6 @@
 syntax = "proto3";
-package clineShengsuan;
-option java_package = "bot.clineShengsuan.proto";
+package clineChinese;
+option java_package = "bot.clineChinese.proto";
 option java_multiple_files = true;
 
 import "common.proto";
@@ -193,4 +193,8 @@ message ApiConfiguration {
   optional string shengsuanyun_model_id = 73;
   optional string shengsuanyun_model_info = 74;
   optional string shengsuanyun_token = 75;
+
+  //Dify
+  optional string dify_api_key = 76;
+  optional string dify_base_url = 77;
 }

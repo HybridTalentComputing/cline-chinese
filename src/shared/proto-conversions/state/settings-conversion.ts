@@ -118,6 +118,10 @@ export function convertApiConfigurationToProtoApiConfiguration(config: ApiConfig
 		shengsuanyunToken: config.shengSuanYunToken,
 		shengsuanyunModelId: config.shengSuanYunModelId,
 		shengsuanyunModelInfo: config.shengSuanYunModelInfo ? JSON.stringify(config.shengSuanYunModelInfo) : undefined,
+
+		// Dify specific fields
+		difyApiKey: config.difyApiKey,
+		difyBaseUrl: config.difyApiKey,
 	})
 }
 
@@ -221,6 +225,10 @@ export function convertProtoApiConfigurationToApiConfiguration(protoConfig: Prot
 		shengSuanYunApiKey: protoConfig.shengsuanyunApiKey,
 		shengSuanYunToken: protoConfig.shengsuanyunToken,
 		shengSuanYunModelId: protoConfig.shengsuanyunModelId,
+
+		// Dify specific fields
+		difyApiKey: protoConfig.difyApiKey,
+		difyBaseUrl: protoConfig.difyApiKey,
 	}
 
 	// Handle complex JSON objects

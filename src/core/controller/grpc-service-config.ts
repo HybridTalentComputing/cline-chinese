@@ -27,47 +27,47 @@ export interface ServiceHandlerConfig {
  * Map of service names to their handler configurations
  */
 export const serviceHandlers: Record<string, ServiceHandlerConfig> = {
-  "clineShengsuan.AccountService": {
+  "clineChinese.AccountService": {
     requestHandler: handleAccountServiceRequest,
     streamingHandler: handleAccountServiceStreamingRequest
   },
-  "clineShengsuan.BrowserService": {
+  "clineChinese.BrowserService": {
     requestHandler: handleBrowserServiceRequest,
     streamingHandler: handleBrowserServiceStreamingRequest
   },
-  "clineShengsuan.CheckpointsService": {
+  "clineChinese.CheckpointsService": {
     requestHandler: handleCheckpointsServiceRequest,
     streamingHandler: handleCheckpointsServiceStreamingRequest
   },
-  "clineShengsuan.FileService": {
+  "clineChinese.FileService": {
     requestHandler: handleFileServiceRequest,
     streamingHandler: handleFileServiceStreamingRequest
   },
-  "clineShengsuan.McpService": {
+  "clineChinese.McpService": {
     requestHandler: handleMcpServiceRequest,
     streamingHandler: handleMcpServiceStreamingRequest
   },
-  "clineShengsuan.StateService": {
+  "clineChinese.StateService": {
     requestHandler: handleStateServiceRequest,
     streamingHandler: handleStateServiceStreamingRequest
   },
-  "clineShengsuan.TaskService": {
+  "clineChinese.TaskService": {
     requestHandler: handleTaskServiceRequest,
     streamingHandler: handleTaskServiceStreamingRequest
   },
-  "clineShengsuan.WebService": {
+  "clineChinese.WebService": {
     requestHandler: handleWebServiceRequest,
     streamingHandler: handleWebServiceStreamingRequest
   },
-  "clineShengsuan.ModelsService": {
+  "clineChinese.ModelsService": {
     requestHandler: handleModelsServiceRequest,
     streamingHandler: handleModelsServiceStreamingRequest
   },
-  "clineShengsuan.SlashService": {
+  "clineChinese.SlashService": {
     requestHandler: handleSlashServiceRequest,
     streamingHandler: handleSlashServiceStreamingRequest
   },
-  "clineShengsuan.UiService": {
+  "clineChinese.UiService": {
     requestHandler: handleUiServiceRequest,
     streamingHandler: handleUiServiceStreamingRequest
   }

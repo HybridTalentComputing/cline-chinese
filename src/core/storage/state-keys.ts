@@ -23,6 +23,7 @@ export type SecretKey =
 	| "sambanovaApiKey"
 	| "shengSuanYunApiKey"
 	| "cerebrasApiKey"
+	| "difyApiKey"
 
 export type GlobalStateKey =
 	| "apiProvider"
@@ -98,5 +99,6 @@ export type GlobalStateKey =
 	| "shengSuanYunToken"
 	| "shengSuanYunModelId"
 	| "shengSuanYunModelInfo"
+	| "difyBaseUrl"
 
 export type LocalStateKey = "localClineRulesToggles"

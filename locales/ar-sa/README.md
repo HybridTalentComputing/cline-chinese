@@ -12,7 +12,7 @@
 <table>
 <tbody>
 <td align="center">
-<a href="https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan" target="_blank"><strong>تنزيل من متجر VS</strong></a>
+<a href="https://marketplace.visualstudio.com/items?itemName=HybridTalentComputing.cline-chinese" target="_blank"><strong>تنزيل من متجر VS</strong></a>
 </td>
 <td align="center">
 <a href="https://discord.gg/cline" target="_blank"><strong>Discord</strong></a>

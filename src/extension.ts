@@ -37,7 +37,7 @@ let outputChannel: vscode.OutputChannel
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
-	outputChannel = vscode.window.createOutputChannel("ClineShengsuan")
+	outputChannel = vscode.window.createOutputChannel("clineChinese")
 	context.subscriptions.push(outputChannel)
 
 	ErrorService.initialize()
@@ -52,7 +52,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Initialize test mode and add disposables to context
 	context.subscriptions.push(...initializeTestMode(context, sidebarWebview))
 
-	vscode.commands.executeCommand("setContext", "clineShengsuan.isDevMode", IS_DEV && IS_DEV === "true")
+	vscode.commands.executeCommand("setContext", "clineChinese.isDevMode", IS_DEV && IS_DEV === "true")
 
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(WebviewProvider.sideBarId, sidebarWebview, {
@@ -63,13 +63,13 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Perform post-update actions if necessary
 	try {
 		if (!previousVersion || currentVersion !== previousVersion) {
-			Logger.log(`Cline version changed: ${previousVersion} -> ${currentVersion}. First run or update detected.`)
+			Logger.log(`Cline 版本更新: ${previousVersion} -> ${currentVersion}. 第一次运行.`)
 			const lastShownPopupNotificationVersion = context.globalState.get<string>("clineLastPopupNotificationVersion")
 
 			if (currentVersion !== lastShownPopupNotificationVersion && previousVersion) {
 				// Show VS Code popup notification as this version hasn't been notified yet without doing it for fresh installs
-				const message = `Cline has been updated to v${currentVersion}`
-				await vscode.commands.executeCommand("clineShengsuan.SidebarProvider.focus")
+				const message = `Cline 更新到 v${currentVersion}`
+				await vscode.commands.executeCommand("clineChinese.SidebarProvider.focus")
 				await new Promise((resolve) => setTimeout(resolve, 200))
 				vscode.window.showInformationMessage(message)
 				// Record that we've shown the popup for this version.
@@ -94,7 +94,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	telemetryService.captureExtensionActivated(installId)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineShengsuan.plusButtonClicked", async (webview: any) => {
+		vscode.commands.registerCommand("clineChinese.plusButtonClicked", async (webview: any) => {
 			console.log("[DEBUG] plusButtonClicked", webview)
 			// Pass the webview type to the event sender
 			const isSidebar = !webview
@@ -121,7 +121,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineShengsuan.mcpButtonClicked", (webview: any) => {
+		vscode.commands.registerCommand("clineChinese.mcpButtonClicked", (webview: any) => {
 			console.log("[DEBUG] mcpButtonClicked", webview)
 			// Pass the webview type to the event sender
 			const isSidebar = !webview
@@ -147,7 +147,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 		const targetCol = hasVisibleEditors ? Math.max(lastCol + 1, 1) : vscode.ViewColumn.Two
 
-		const panel = vscode.window.createWebviewPanel(WebviewProvider.tabPanelId, "ClineShengsuan", targetCol, {
+		const panel = vscode.window.createWebviewPanel(WebviewProvider.tabPanelId, "clineChinese", targetCol, {
 			enableScripts: true,
 			retainContextWhenHidden: true,
 			localResourceRoots: [context.extensionUri],
@@ -165,11 +165,11 @@ export async function activate(context: vscode.ExtensionContext) {
 		await vscode.commands.executeCommand("workbench.action.lockEditorGroup")
 	}
 
-	context.subscriptions.push(vscode.commands.registerCommand("clineShengsuan.popoutButtonClicked", openclineShengsuanInNewTab))
-	context.subscriptions.push(vscode.commands.registerCommand("clineShengsuan.openInNewTab", openclineShengsuanInNewTab))
+	context.subscriptions.push(vscode.commands.registerCommand("clineChinese.popoutButtonClicked", openclineShengsuanInNewTab))
+	context.subscriptions.push(vscode.commands.registerCommand("clineChinese.openInNewTab", openclineShengsuanInNewTab))
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineShengsuan.settingsButtonClicked", (webview: any) => {
+		vscode.commands.registerCommand("clineChinese.settingsButtonClicked", (webview: any) => {
 			const isSidebar = !webview
 			const webviewType = isSidebar ? WebviewProviderTypeEnum.SIDEBAR : WebviewProviderTypeEnum.TAB
 
@@ -178,7 +178,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineShengsuan.historyButtonClicked", async (webview: any) => {
+		vscode.commands.registerCommand("clineChinese.historyButtonClicked", async (webview: any) => {
 			console.log("[DEBUG] historyButtonClicked", webview)
 			// Pass the webview type to the event sender
 			const isSidebar = !webview
@@ -190,7 +190,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineShengsuan.accountButtonClicked", (webview: any) => {
+		vscode.commands.registerCommand("clineChinese.accountButtonClicked", (webview: any) => {
 			console.log("[DEBUG] accountButtonClicked", webview)
 
 			const isSidebar = !webview
@@ -259,7 +259,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 				// Validate state parameter
 				if (!(await visibleWebview?.controller.validateAuthState(state))) {
-					vscode.window.showErrorMessage("Invalid auth state")
+					vscode.window.showErrorMessage("认证状态无效")
 					return
 				}
 				if (token && apiKey) {
@@ -297,9 +297,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
-			"clineShengsuan.addToChat",
+			"clineChinese.addToChat",
 			async (range?: vscode.Range, diagnostics?: vscode.Diagnostic[]) => {
-				await vscode.commands.executeCommand("clineShengsuan.focusChatInput") // Ensure Cline is visible and input focused
+				await vscode.commands.executeCommand("clineChinese.focusChatInput") // Ensure Cline is visible and input focused
 				await pWaitFor(() => !!WebviewProvider.getVisibleInstance())
 				const editor = vscode.window.activeTextEditor
 				if (!editor) {
@@ -332,7 +332,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineShengsuan.addTerminalOutputToChat", async () => {
+		vscode.commands.registerCommand("clineChinese.addTerminalOutputToChat", async () => {
 			const terminal = vscode.window.activeTerminal
 			if (!terminal) {
 				return
@@ -377,7 +377,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				// Ensure clipboard is restored even if an error occurs
 				await vscode.env.clipboard.writeText(tempCopyBuffer)
 				console.error("Error getting terminal contents:", error)
-				vscode.window.showErrorMessage("Failed to get terminal contents")
+				vscode.window.showErrorMessage("获取终端内容失败")
 			}
 		}),
 	)
@@ -430,27 +430,27 @@ export async function activate(context: vscode.ExtensionContext) {
 					}
 
 					// Add to Cline (Always available)
-					const addAction = new vscode.CodeAction("Add to Cline", vscode.CodeActionKind.QuickFix)
+					const addAction = new vscode.CodeAction("添加到 Cline", vscode.CodeActionKind.QuickFix)
 					addAction.command = {
-						command: "clineShengsuan.addToChat",
-						title: "Add to Cline",
+						command: "clineChinese.addToChat",
+						title: "添加到 Cline",
 						arguments: [expandedRange, context.diagnostics],
 					}
 					actions.push(addAction)
 
 					// Explain with Cline (Always available)
-					const explainAction = new vscode.CodeAction("Explain with Cline", vscode.CodeActionKind.RefactorExtract) // Using a refactor kind
+					const explainAction = new vscode.CodeAction("用 Cline 解释", vscode.CodeActionKind.RefactorExtract) // Using a refactor kind
 					explainAction.command = {
-						command: "clineShengsuan.explainCode",
+						command: "clineChinese.explainCode",
 						title: "用Cline-中文版解释",
 						arguments: [expandedRange],
 					}
 					actions.push(explainAction)
 
 					// Improve with Cline (Always available)
-					const improveAction = new vscode.CodeAction("Improve with Cline", vscode.CodeActionKind.RefactorRewrite) // Using a refactor kind
+					const improveAction = new vscode.CodeAction("用 Cline 优化", vscode.CodeActionKind.RefactorRewrite) // Using a refactor kind
 					improveAction.command = {
-						command: "clineShengsuan.improveCode",
+						command: "clineChinese.improveCode",
 						title: "用Cline-中文版优化",
 						arguments: [expandedRange],
 					}
@@ -458,11 +458,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 					// Fix with Cline (Only if diagnostics exist)
 					if (context.diagnostics.length > 0) {
-						const fixAction = new vscode.CodeAction("Fix with Cline", vscode.CodeActionKind.QuickFix)
+						const fixAction = new vscode.CodeAction("用 Cline 修复", vscode.CodeActionKind.QuickFix)
 						fixAction.isPreferred = true
 						fixAction.command = {
-							command: "clineShengsuan.fixWithCline",
-							title: "用Cline-中文版改正",
+							command: "clineChinese.fixWithCline",
+							title: "用 Cline 修改",
 							arguments: [expandedRange, context.diagnostics],
 						}
 						actions.push(fixAction)
@@ -483,10 +483,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Register the command handler
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
-			"clineShengsuan.fixWithCline",
+			"clineChinese.fixWithCline",
 			async (range: vscode.Range, diagnostics: vscode.Diagnostic[]) => {
 				// Add this line to focus the chat input first
-				await vscode.commands.executeCommand("clineShengsuan.focusChatInput")
+				await vscode.commands.executeCommand("clineChinese.focusChatInput")
 				// Wait for a webview instance to become visible after focusing
 				await pWaitFor(() => !!WebviewProvider.getVisibleInstance())
 				const editor = vscode.window.activeTextEditor
@@ -507,8 +507,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineShengsuan.explainCode", async (range: vscode.Range) => {
-			await vscode.commands.executeCommand("clineShengsuan.focusChatInput") // Ensure Cline is visible and input focused
+		vscode.commands.registerCommand("clineChinese.explainCode", async (range: vscode.Range) => {
+			await vscode.commands.executeCommand("clineChinese.focusChatInput") // Ensure Cline is visible and input focused
 			await pWaitFor(() => !!WebviewProvider.getVisibleInstance())
 			const editor = vscode.window.activeTextEditor
 			if (!editor) {
@@ -516,7 +516,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 			const selectedText = editor.document.getText(range)
 			if (!selectedText.trim()) {
-				vscode.window.showInformationMessage("Please select some code to explain.")
+				vscode.window.showInformationMessage("请选择一些代码来解释。")
 				return
 			}
 			const filePath = editor.document.uri.fsPath
@@ -529,8 +529,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineShengsuan.improveCode", async (range: vscode.Range) => {
-			await vscode.commands.executeCommand("clineShengsuan.focusChatInput") // Ensure Cline is visible and input focused
+		vscode.commands.registerCommand("clineChinese.improveCode", async (range: vscode.Range) => {
+			await vscode.commands.executeCommand("clineChinese.focusChatInput") // Ensure Cline is visible and input focused
 			await pWaitFor(() => !!WebviewProvider.getVisibleInstance())
 			const editor = vscode.window.activeTextEditor
 			if (!editor) {
@@ -538,7 +538,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 			const selectedText = editor.document.getText(range)
 			if (!selectedText.trim()) {
-				vscode.window.showInformationMessage("Please select some code to improve.")
+				vscode.window.showInformationMessage("请选择一些代码来改进。")
 				return
 			}
 			const filePath = editor.document.uri.fsPath
@@ -552,7 +552,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Register the focusChatInput command handler
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineShengsuan.focusChatInput", async () => {
+		vscode.commands.registerCommand("clineChinese.focusChatInput", async () => {
 			let activeWebviewProvider: WebviewProvider | undefined = WebviewProvider.getVisibleInstance()
 
 			// If a tab is visible and active, ensure it's fully revealed (might be redundant but safe)
@@ -561,7 +561,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				panelView.reveal(panelView.viewColumn)
 			} else if (!activeWebviewProvider) {
 				// No webview is currently visible, try to activate the sidebar
-				await vscode.commands.executeCommand("cline-shengsuan.SidebarProvider.focus")
+				await vscode.commands.executeCommand("clineChinese.SidebarProvider.focus")
 				await new Promise((resolve) => setTimeout(resolve, 200)) // Allow time for focus
 				activeWebviewProvider = WebviewProvider.getSidebarInstance()
 
@@ -581,7 +581,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 				if (!activeWebviewProvider) {
 					// No existing Cline view found at all, open a new tab
-					await vscode.commands.executeCommand("clineShengsuan.openInNewTab")
+					await vscode.commands.executeCommand("clineChinese.openInNewTab")
 					// After openInNewTab, a new webview is created. We need to get this new instance.
 					// It might take a moment for it to register.
 					await pWaitFor(
@@ -604,9 +604,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				})
 			} else {
 				console.error("FocusChatInput: Could not find or activate a Cline webview to focus.")
-				vscode.window.showErrorMessage(
-					"Could not activate Cline view. Please try opening it manually from the Activity Bar.",
-				)
+				vscode.window.showErrorMessage("无法激活 Cline 视图。请尝试从活动栏手动打开。")
 			}
 			telemetryService.captureButtonClick("command_focusChatInput", activeWebviewProvider?.controller.task?.taskId, true)
 		}),
@@ -614,7 +612,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Register the generateGitCommitMessage command handler
 	context.subscriptions.push(
-		vscode.commands.registerCommand("clineShengsuan.generateGitCommitMessage", async () => {
+		vscode.commands.registerCommand("clineChinese.generateGitCommitMessage", async () => {
 			// Get the controller from any instance, without activating the view
 			const controller = WebviewProvider.getAllInstances()[0]?.controller
 

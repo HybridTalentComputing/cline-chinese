@@ -25,17 +25,17 @@ const tsProtoPlugin = isWindows
 // To add a new service, simply add it to this map and run this script
 // The service handler will be automatically discovered and used by grpc-handler.ts
 const serviceNameMap = {
-	account: "clineShengsuan.AccountService",
-	browser: "clineShengsuan.BrowserService",
-	checkpoints: "clineShengsuan.CheckpointsService",
-	file: "clineShengsuan.FileService",
-	mcp: "clineShengsuan.McpService",
-	state: "clineShengsuan.StateService",
-	task: "clineShengsuan.TaskService",
-	web: "clineShengsuan.WebService",
-	models: "clineShengsuan.ModelsService",
-	slash: "clineShengsuan.SlashService",
-	ui: "clineShengsuan.UiService",
+	account: "clineChinese.AccountService",
+	browser: "clineChinese.BrowserService",
+	checkpoints: "clineChinese.CheckpointsService",
+	file: "clineChinese.FileService",
+	mcp: "clineChinese.McpService",
+	state: "clineChinese.StateService",
+	task: "clineChinese.TaskService",
+	web: "clineChinese.WebService",
+	models: "clineChinese.ModelsService",
+	slash: "clineChinese.SlashService",
+	ui: "clineChinese.UiService",
 	// Add new services here - no other code changes needed!
 }
 const serviceDirs = Object.keys(serviceNameMap).map((serviceKey) => path.join(ROOT_DIR, "src", "core", "controller", serviceKey))
@@ -401,14 +401,14 @@ async function ensureProtoFilesExist() {
 		if (!existingProtoServices.includes(serviceName)) {
 			console.log(chalk.yellow(`Creating template proto file for ${serviceName}...`))
 
-			// Extract service class name from full name (e.g., "clineShengsuan.ModelsService" -> "ModelsService")
+			// Extract service class name from full name (e.g., "clineChinese.ModelsService" -> "ModelsService")
 			const serviceClassName = fullServiceName.split(".").pop()
 
 			// Create template proto file
 			const protoContent = `syntax = "proto3";
 
-package clineShengsuan;
-option java_package = "bot.clineShengsuan.proto";
+package clineChinese;
+option java_package = "bot.clineChinese.proto";
 option java_multiple_files = true;
 
 import "common.proto";

@@ -1,30 +1,31 @@
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useShengSuanYunAuth } from "@/context/ShengSuanYunAuthContext"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { vscode } from "@/utils/vscode"
 
 export const ShengSuanYunAccountInfoCard = () => {
 	const { userSSY: ssyUser } = useShengSuanYunAuth()
 	const { userInfo, apiConfiguration, navigateToAccount } = useExtensionState()
-
 	let user = apiConfiguration?.shengSuanYunToken ? ssyUser || userInfo : undefined
-	const handleShowAccount = () => {
-		navigateToAccount()
-	}
 
 	return (
 		<div className="max-w-[600px]">
 			{user?.Wallet ? (
-				<VSCodeButton appearance="secondary" onClick={handleShowAccount}>
+				<VSCodeButton
+					appearance="secondary"
+					onClick={() => {
+						navigateToAccount()
+					}}>
 					查看账单与使用记录
 				</VSCodeButton>
 			) : (
-				<div>
-					<VSCodeLink
-						className="btn-link"
-						href="https://router.shengsuanyun.com/auth?callback_url=vscode://shengsuan-cloud.cline-shengsuan/ssy">
-						登录胜算云
-					</VSCodeLink>
-				</div>
+				<VSCodeButton
+					appearance="primary"
+					onClick={() => {
+						vscode.postMessage({ type: "accountLoginClickedSSY" })
+					}}>
+					登录胜算云
+				</VSCodeButton>
 			)}
 		</div>
 	)

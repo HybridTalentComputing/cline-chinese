@@ -88,12 +88,11 @@ export const TerminalSettingsSection: React.FC = () => {
 					<VSCodeCheckbox
 						checked={terminalReuseEnabled ?? true}
 						onChange={(event) => handleTerminalReuseChange(event as Event)}>
-						Enable aggressive terminal reuse
+						启用积极的终端重用
 					</VSCodeCheckbox>
 				</div>
 				<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: 0 }}>
-					When enabled, Cline will reuse existing terminal windows that aren't in the current working directory. Disable
-					this if you experience issues with task lockout after a terminal command.
+					启用后，Cline 将重用不在当前工作目录中的现有终端窗口。如果您在执行终端命令后遇到任务锁定问题，请禁用此功能。
 				</p>
 			</div>
 		</div>

@@ -11,7 +11,7 @@ import { Empty, StringRequest } from "./common";
 export type SlashServiceDefinition = typeof SlashServiceDefinition;
 export const SlashServiceDefinition = {
   name: "SlashService",
-  fullName: "clineShengsuan.SlashService",
+  fullName: "clineChinese.SlashService",
   methods: {
     /** Sends button click message */
     reportBug: {
