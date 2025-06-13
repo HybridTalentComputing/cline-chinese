@@ -263,8 +263,9 @@ export class Controller {
 				break
 			}
 			case "accountLoginClickedSSY": {
+				const id = "cline-chinese"
 				const authUrl = vscode.Uri.parse(
-					`https://router.shengsuanyun.com/auth?callback_url=${encodeURIComponent(`${this.uriScheme || "vscode"}://HybridTalentComputing.cline-chinese/ssy`)}`,
+					`https://router.shengsuanyun.com/auth?from=${id}&callback_url=${encodeURIComponent(`${this.uriScheme || "vscode"}://HybridTalentComputing.${id}/ssy`)}`,
 				)
 				vscode.env.openExternal(authUrl)
 				break
