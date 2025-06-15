@@ -1,19 +1,21 @@
-import React, { useState, useRef, forwardRef, useCallback } from "react"
 import Thumbnails from "@/components/common/Thumbnails"
-import { highlightText } from "./TaskHeader"
-import DynamicTextArea from "react-textarea-autosize"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { CheckpointsServiceClient } from "@/services/grpc-client"
 import { ClineCheckpointRestore } from "@shared/WebviewMessage"
+import { CheckpointRestoreRequest } from "@shared/proto/checkpoints"
+import React, { forwardRef, useRef, useState } from "react"
+import DynamicTextArea from "react-textarea-autosize"
+import { highlightText } from "./task-header/TaskHeader"
 
 interface UserMessageProps {
 	text?: string
+	files?: string[]
 	images?: string[]
 	messageTs?: number // Timestamp for the message, needed for checkpoint restore
-	sendMessageFromChatRow?: (text: string, images: string[]) => void
+	sendMessageFromChatRow?: (text: string, images: string[], files: string[]) => void
 }
 
-const UserMessage: React.FC<UserMessageProps> = ({ text, images, messageTs, sendMessageFromChatRow }) => {
+const UserMessage: React.FC<UserMessageProps> = ({ text, images, files, messageTs, sendMessageFromChatRow }) => {
 	const [isEditing, setIsEditing] = useState(false)
 	const [editedText, setEditedText] = useState(text || "")
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -45,14 +47,16 @@ const UserMessage: React.FC<UserMessageProps> = ({ text, images, messageTs, send
 		}
 
 		try {
-			await CheckpointsServiceClient.checkpointRestore({
-				number: messageTs,
-				restoreType: type,
-				offset: 1,
-			})
+			await CheckpointsServiceClient.checkpointRestore(
+				CheckpointRestoreRequest.create({
+					number: messageTs,
+					restoreType: type,
+					offset: 1,
+				}),
+			)
 
 			setTimeout(() => {
-				sendMessageFromChatRow?.(editedText, images || [])
+				sendMessageFromChatRow?.(editedText, images || [], files || [])
 			}, delay)
 		} catch (err) {
 			console.error("Checkpoint restore error:", err)
@@ -124,19 +128,19 @@ const UserMessage: React.FC<UserMessageProps> = ({ text, images, messageTs, send
 							<RestoreButton
 								ref={restoreAllButtonRef}
 								type="taskAndWorkspace"
-								label="Restore All"
+								label="恢复所有"
 								isPrimary={false}
 								onClick={handleRestoreWorkspace}
-								title="Restore both the chat and workspace files to this checkpoint and send your edited message"
+								title="将聊天和工作区文件恢复到此检查点，并发送您编辑过的消息。"
 							/>
 						)}
 						<RestoreButton
 							ref={restoreChatButtonRef}
 							type="task"
-							label="Restore Chat"
+							label="恢复聊天"
 							isPrimary={true}
 							onClick={handleRestoreWorkspace}
-							title="Restore just the chat to this checkpoint and send your edited message"
+							title="仅恢复聊天到此检查点并发送您编辑的信息"
 						/>
 					</div>
 				</>
@@ -145,7 +149,9 @@ const UserMessage: React.FC<UserMessageProps> = ({ text, images, messageTs, send
 					{highlightText(editedText || text)}
 				</span>
 			)}
-			{images && images.length > 0 && <Thumbnails images={images} style={{ marginTop: "8px" }} />}
+			{((images && images.length > 0) || (files && files.length > 0)) && (
+				<Thumbnails images={images ?? []} files={files ?? []} style={{ marginTop: "8px" }} />
+			)}
 		</div>
 	)
 }

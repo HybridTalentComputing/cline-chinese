@@ -3,6 +3,7 @@ import { Empty, StringRequest } from "../../../shared/proto/common"
 import { McpServer, McpDownloadResponse } from "@shared/mcp"
 import axios from "axios"
 import * as vscode from "vscode"
+import { sendChatButtonClickedEvent } from "../ui/subscribeToChatButtonClicked"
 
 /**
  * Download an MCP server from the marketplace
@@ -77,26 +78,23 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 
 		// Initialize task and show chat view
 		await controller.initTask(task)
-		await controller.postMessageToWebview({
-			type: "action",
-			action: "chatButtonClicked",
-		})
+		await sendChatButtonClickedEvent(controller.id)
 
 		// Return an empty response - the client only cares if the call succeeded
 		return Empty.create()
 	} catch (error) {
-		console.error("Failed to download MCP:", error)
-		let errorMessage = "Failed to download MCP"
+		console.error("下载 MCP 失败:", error)
+		let errorMessage = "下载 MCP 失败"
 
 		if (axios.isAxiosError(error)) {
 			if (error.code === "ECONNABORTED") {
-				errorMessage = "Request timed out. Please try again."
+				errorMessage = "超时，请重试."
 			} else if (error.response?.status === 404) {
-				errorMessage = "MCP server not found in marketplace."
+				errorMessage = "MCP 在市场没有找到."
 			} else if (error.response?.status === 500) {
-				errorMessage = "Internal server error. Please try again later."
+				errorMessage = "网络错误.请稍后重试."
 			} else if (!error.response && error.request) {
-				errorMessage = "Network error. Please check your internet connection."
+				errorMessage = "网络错误. 请检查你的网络链接."
 			}
 		} else if (error instanceof Error) {
 			errorMessage = error.message

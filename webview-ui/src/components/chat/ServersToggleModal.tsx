@@ -1,16 +1,18 @@
 import React, { useRef, useState, useEffect } from "react"
 import { useClickAway, useWindowSize } from "react-use"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { useNavigator } from "@/hooks/useNavigator"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import ServersToggleList from "@/components/mcp/configuration/tabs/installed/ServersToggleList"
-import { vscode } from "@/utils/vscode"
+
+import { McpServiceClient } from "@/services/grpc-client"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import Tooltip from "@/components/common/Tooltip"
+import { McpServers } from "@shared/proto/mcp"
+import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
+import { EmptyRequest } from "@shared/proto/common"
 
 const ServersToggleModal: React.FC = () => {
-	const { mcpServers } = useExtensionState()
-	const { navigateToMcp } = useNavigator()
+	const { mcpServers, navigateToMcp, setMcpServers } = useExtensionState()
 	const [isVisible, setIsVisible] = useState(false)
 	const buttonRef = useRef<HTMLDivElement>(null)
 	const modalRef = useRef<HTMLDivElement>(null)
@@ -18,12 +20,12 @@ const ServersToggleModal: React.FC = () => {
 	const [arrowPosition, setArrowPosition] = useState(0)
 	const [menuPosition, setMenuPosition] = useState(0)
 
-	// 点击模态框外部时关闭
+	// Close modal when clicking outside
 	useClickAway(modalRef, () => {
 		setIsVisible(false)
 	})
 
-	// 计算模态框和箭头的位置
+	// Calculate positions for modal and arrow
 	useEffect(() => {
 		if (isVisible && buttonRef.current) {
 			const buttonRect = buttonRef.current.getBoundingClientRect()
@@ -37,18 +39,26 @@ const ServersToggleModal: React.FC = () => {
 
 	useEffect(() => {
 		if (isVisible) {
-			// 从 Hub 获取最新的 MCP 服务器
-			vscode.postMessage({ type: "fetchLatestMcpServersFromHub" })
+			McpServiceClient.getLatestMcpServers(EmptyRequest.create({}))
+				.then((response: McpServers) => {
+					if (response.mcpServers) {
+						const mcpServers = convertProtoMcpServersToMcpServers(response.mcpServers)
+						setMcpServers(mcpServers)
+					}
+				})
+				.catch((error) => {
+					console.error("Failed to fetch MCP servers:", error)
+				})
 		}
 	}, [isVisible])
 
 	return (
 		<div ref={modalRef}>
 			<div ref={buttonRef} className="inline-flex min-w-0 max-w-full">
-				<Tooltip tipText="管理 MCP 服务器" visible={isVisible ? false : undefined}>
+				<Tooltip tipText="管理 MCP 服务" visible={isVisible ? false : undefined}>
 					<VSCodeButton
 						appearance="icon"
-						aria-label="MCP 服务器"
+						aria-label="MCP 服务"
 						onClick={() => setIsVisible(!isVisible)}
 						style={{ padding: "0px 0px", height: "20px" }}>
 						<div className="flex items-center gap-1 text-xs whitespace-nowrap min-w-0 w-full">
@@ -80,12 +90,12 @@ const ServersToggleModal: React.FC = () => {
 					/>
 
 					<div className="flex justify-between items-center mb-2.5">
-						<div className="m-0 text-base font-semibold">MCP 服务器</div>
+						<div className="m-0 text-base font-semibold">MCP 服务</div>
 						<VSCodeButton
 							appearance="icon"
 							onClick={() => {
 								setIsVisible(false)
-								navigateToMcp("installed") // "installed" 是一个标识符，保持英文
+								navigateToMcp("installed")
 							}}>
 							<span className="codicon codicon-gear text-[10px]"></span>
 						</VSCodeButton>

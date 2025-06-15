@@ -28,7 +28,7 @@ class CheckpointTracker {
 	): Promise<CheckpointTracker | undefined> {
 		try {
 			if (!provider) {
-				throw new Error("Provider is required to create a checkpoint tracker")
+				throw new Error("需要 Provider 才能创建检查点跟踪器")
 			}
 
 			if (!enableCheckpointsSetting) {
@@ -39,7 +39,7 @@ class CheckpointTracker {
 			try {
 				await simpleGit().version()
 			} catch (error) {
-				throw new Error("Git must be installed to use checkpoints.") // FIXME: must match what we check for in TaskHeader to show link
+				throw new Error("必须安装 Git 才能使用检查点.") // FIXME: must match what we check for in TaskHeader to show link
 			}
 
 			const cwd = await CheckpointTracker.getWorkingDirectory()
@@ -47,7 +47,7 @@ class CheckpointTracker {
 			await newTracker.initShadowGit()
 			return newTracker
 		} catch (error) {
-			console.error("Failed to create CheckpointTracker:", error)
+			console.error("创建 CheckpointTracker 失败:", error)
 			throw error
 		}
 	}
@@ -55,7 +55,7 @@ class CheckpointTracker {
 	private static async getWorkingDirectory(): Promise<string> {
 		const cwd = vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0)
 		if (!cwd) {
-			throw new Error("No workspace detected. Please open Cline in a workspace to use checkpoints.")
+			throw new Error("未检测到工作区。请在工作区中打开 Cline 以使用检查点。")
 		}
 		const homedir = os.homedir()
 		const desktopPath = path.join(homedir, "Desktop")
@@ -64,13 +64,13 @@ class CheckpointTracker {
 
 		switch (cwd) {
 			case homedir:
-				throw new Error("Cannot use checkpoints in home directory")
+				throw new Error("不能在主目录中使用检查点")
 			case desktopPath:
-				throw new Error("Cannot use checkpoints in Desktop directory")
+				throw new Error("Desktop 目录中无法使用检查点")
 			case documentsPath:
-				throw new Error("Cannot use checkpoints in Documents directory")
+				throw new Error("Documents 目录中无法使用检查点")
 			case downloadsPath:
-				throw new Error("Cannot use checkpoints in Downloads directory")
+				throw new Error("Downloads 目录中无法使用检查点")
 			default:
 				return cwd
 		}
@@ -79,7 +79,7 @@ class CheckpointTracker {
 	private async getShadowGitPath(): Promise<string> {
 		const globalStoragePath = this.providerRef.deref()?.context.globalStorageUri.fsPath
 		if (!globalStoragePath) {
-			throw new Error("Global storage uri is invalid")
+			throw new Error("全局存储 URI 无效")
 		}
 		const checkpointsDir = path.join(globalStoragePath, "tasks", this.taskId, "checkpoints")
 		await fs.mkdir(checkpointsDir, { recursive: true })
@@ -102,7 +102,7 @@ class CheckpointTracker {
 			// Make sure it's the same cwd as the configured worktree
 			const worktree = await this.getShadowGitConfigWorkTree()
 			if (worktree !== this.cwd) {
-				throw new Error("Checkpoints can only be used in the original workspace: " + worktree)
+				throw new Error("检查点只能在原始工作区中使用: " + worktree)
 			}
 
 			return gitPath

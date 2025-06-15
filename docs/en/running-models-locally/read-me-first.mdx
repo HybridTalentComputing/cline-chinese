@@ -12,10 +12,10 @@ When you run a "local version" of a model, you're actually running a drastically
 
 Local models are created by training a smaller model to imitate a larger one, but they typically only retain 1-26% of the original model's capacity. This massive reduction means:
 
--   Less ability to understand complex contexts
--   Reduced capability for multi-step reasoning
--   Limited tool-use abilities
--   Simplified decision-making process
+- Less ability to understand complex contexts
+- Reduced capability for multi-step reasoning
+- Limited tool-use abilities
+- Simplified decision-making process
 
 Think of it like running your development environment on a calculator instead of a computer – it might handle basic tasks, but complex operations become unreliable or impossible.
 
@@ -32,26 +32,26 @@ When you run a local model with Cline:
 
 #### Performance Impact 📉
 
--   Responses are 5-10x slower than cloud services
--   System resources (CPU, GPU, RAM) get heavily utilized
--   Your computer may become less responsive for other tasks
+- Responses are 5-10x slower than cloud services
+- System resources (CPU, GPU, RAM) get heavily utilized
+- Your computer may become less responsive for other tasks
 
 #### Tool Reliability Issues 🛠️
 
--   Code analysis becomes less accurate
--   File operations may be unreliable
--   Browser automation capabilities are reduced
--   Terminal commands might fail more often
--   Complex multi-step tasks often break down
+- Code analysis becomes less accurate
+- File operations may be unreliable
+- Browser automation capabilities are reduced
+- Terminal commands might fail more often
+- Complex multi-step tasks often break down
 
 ### Hardware Requirements 💻
 
 You'll need at minimum:
 
--   Modern GPU with 8GB+ VRAM (RTX 3070 or better)
--   32GB+ system RAM
--   Fast SSD storage
--   Good cooling solution
+- Modern GPU with 8GB+ VRAM (RTX 3070 or better)
+- 32GB+ system RAM
+- Fast SSD storage
+- Good cooling solution
 
 Even with this hardware, you'll be running smaller, less capable versions of models:
 
@@ -81,20 +81,20 @@ Put simply, the cloud (API) versions of these models are the full-bore version o
 
 #### If You Must Go Local
 
--   Start with smaller models
--   Keep tasks simple and focused
--   Save work frequently
--   Be prepared to switch to cloud models for complex operations
--   Monitor system resources
+- Start with smaller models
+- Keep tasks simple and focused
+- Save work frequently
+- Be prepared to switch to cloud models for complex operations
+- Monitor system resources
 
 ### Common Issues 🚨
 
--   **"Tool execution failed":** Local models often struggle with complex tool chains. Simplify your prompt.
--   **"No connection could be made because the target machine actively refused it":** This usually means that the Ollama or LM Studio server isn't running, or is running on a different port/address than Cline is configured to use. Double-check the Base URL address in your API Provider settings.
--   **"Cline is having trouble...":** Increase your model's context length to its maximum size.
--   **Slow or incomplete responses:** Local models can be slower than cloud-based models, especially on less powerful hardware. If performance is an issue, try using a smaller model. Expect significantly longer processing times.
--   **System stability:** Watch for high GPU/CPU usage and temperature
--   **Context limitations:** Local models often have smaller context windows than cloud models. Break tasks down into smaller pieces.
+- **"Tool execution failed":** Local models often struggle with complex tool chains. Simplify your prompt.
+- **"No connection could be made because the target machine actively refused it":** This usually means that the Ollama or LM Studio server isn't running, or is running on a different port/address than Cline is configured to use. Double-check the Base URL address in your API Provider settings.
+- **"Cline is having trouble...":** Increase your model's context length to its maximum size.
+- **Slow or incomplete responses:** Local models can be slower than cloud-based models, especially on less powerful hardware. If performance is an issue, try using a smaller model. Expect significantly longer processing times.
+- **System stability:** Watch for high GPU/CPU usage and temperature
+- **Context limitations:** Local models often have smaller context windows than cloud models. Break tasks down into smaller pieces.
 
 ### Looking Ahead 🔮
 
@@ -102,8 +102,8 @@ Local model capabilities are improving, but they're not yet a complete replaceme
 
 ### Need Help? 🤝
 
--   Join our [Discord](https://discord.gg/cline) community and [r/cline](https://www.reddit.com/r/CLine/)
--   Check the latest compatibility guides
--   Share your experiences with other developers
+- Join our [Discord](https://discord.gg/cline) community and [r/cline](https://www.reddit.com/r/CLine/)
+- Check the latest compatibility guides
+- Share your experiences with other developers
 
 Remember: When in doubt, prioritize reliability over cost savings for important development work.

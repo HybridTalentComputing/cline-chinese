@@ -1,15 +1,16 @@
-import { VSCodeButton, VSCodeTextField, VSCodeRadioGroup, VSCodeRadio, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { vscode } from "@/utils/vscode"
-import { Virtuoso } from "react-virtuoso"
-import { memo, useMemo, useState, useEffect, useCallback } from "react"
-import Fuse, { FuseResult } from "fuse.js"
-import { TaskServiceClient } from "@/services/grpc-client"
-import { formatLargeNumber } from "@/utils/format"
-import { formatSize } from "@/utils/format"
-import { ExtensionMessage } from "@shared/ExtensionMessage"
-import { useEvent } from "react-use"
 import DangerButton from "@/components/common/DangerButton"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { TaskServiceClient } from "@/services/grpc-client"
+import { formatLargeNumber, formatSize } from "@/utils/format"
+import { vscode } from "@/utils/vscode"
+import { ExtensionMessage } from "@shared/ExtensionMessage"
+import { EmptyRequest, StringArrayRequest, StringRequest } from "@shared/proto/common"
+import { GetTaskHistoryRequest, TaskFavoriteRequest } from "@shared/proto/task"
+import { VSCodeButton, VSCodeCheckbox, VSCodeRadio, VSCodeRadioGroup, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import Fuse, { FuseResult } from "fuse.js"
+import { memo, useCallback, useEffect, useMemo, useState } from "react"
+import { useEvent } from "react-use"
+import { Virtuoso } from "react-virtuoso"
 
 type HistoryViewProps = {
 	onDone: () => void
@@ -17,8 +18,8 @@ type HistoryViewProps = {
 
 type SortOption = "newest" | "oldest" | "mostExpensive" | "mostTokens" | "mostRelevant"
 
-// Tailwind 样式的单选按钮，支持自定义图标 - 独立于 VSCodeRadioGroup 工作，但外观相同
-// 用于工作区和收藏夹过滤器
+// Tailwind-styled radio with custom icon support - works independently of VSCodeRadioGroup but looks the same
+// Used for workspace and favorites filters
 
 interface CustomFilterRadioProps {
 	checked: boolean
@@ -47,7 +48,8 @@ const CustomFilterRadio = ({ checked, onChange, icon, label }: CustomFilterRadio
 }
 
 const HistoryView = ({ onDone }: HistoryViewProps) => {
-	const { taskHistory, totalTasksSize, filePaths } = useExtensionState()
+	const extensionStateContext = useExtensionState()
+	const { taskHistory, filePaths, onRelinquishControl } = extensionStateContext
 	const [searchQuery, setSearchQuery] = useState("")
 	const [sortOption, setSortOption] = useState<SortOption>("newest")
 	const [lastNonRelevantSort, setLastNonRelevantSort] = useState<SortOption | null>("newest")
@@ -56,31 +58,33 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
 	const [showCurrentWorkspaceOnly, setShowCurrentWorkspaceOnly] = useState(false)
 
-	// 跟踪待处理的收藏切换操作
+	// Keep track of pending favorite toggle operations
 	const [pendingFavoriteToggles, setPendingFavoriteToggles] = useState<Record<string, boolean>>({})
 
-	// 使用 gRPC 加载过滤后的任务历史记录
+	// Load filtered task history with gRPC
 	const [filteredTasks, setFilteredTasks] = useState<any[]>([])
 
-	// 加载并刷新任务历史记录
+	// Load and refresh task history
 	const loadTaskHistory = useCallback(async () => {
 		try {
-			const response = await TaskServiceClient.getTaskHistory({
-				favoritesOnly: showFavoritesOnly,
-				searchQuery: searchQuery || undefined,
-				sortBy: sortOption,
-				currentWorkspaceOnly: showCurrentWorkspaceOnly,
-			})
+			const response = await TaskServiceClient.getTaskHistory(
+				GetTaskHistoryRequest.create({
+					favoritesOnly: showFavoritesOnly,
+					searchQuery: searchQuery || undefined,
+					sortBy: sortOption,
+					currentWorkspaceOnly: showCurrentWorkspaceOnly,
+				}),
+			)
 			setFilteredTasks(response.tasks || [])
 		} catch (error) {
-			console.error("加载任务历史记录时出错：", error)
+			console.error("Error loading task history:", error)
 		}
 	}, [showFavoritesOnly, showCurrentWorkspaceOnly, searchQuery, sortOption, taskHistory])
 
-	// 过滤器更改时加载
+	// Load when filters change
 	useEffect(() => {
-		// 当两个过滤器都激活时强制完全刷新
-		// 以确保正确的组合过滤
+		// Force a complete refresh when both filters are active
+		// to ensure proper combined filtering
 		if (showFavoritesOnly && showCurrentWorkspaceOnly) {
 			setFilteredTasks([])
 		}
@@ -89,29 +93,31 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 
 	const toggleFavorite = useCallback(
 		async (taskId: string, currentValue: boolean) => {
-			// 乐观 UI 更新
+			// Optimistic UI update
 			setPendingFavoriteToggles((prev) => ({ ...prev, [taskId]: !currentValue }))
 
 			try {
-				await TaskServiceClient.toggleTaskFavorite({
-					taskId,
-					isFavorited: !currentValue,
-				})
+				await TaskServiceClient.toggleTaskFavorite(
+					TaskFavoriteRequest.create({
+						taskId,
+						isFavorited: !currentValue,
+					}),
+				)
 
-				// 如果任一过滤器激活则刷新，以确保正确的组合过滤
+				// Refresh if either filter is active to ensure proper combined filtering
 				if (showFavoritesOnly || showCurrentWorkspaceOnly) {
 					loadTaskHistory()
 				}
 			} catch (err) {
-				console.error(`[收藏切换界面] 任务 ${taskId} 出错：`, err)
-				// 恢复乐观更新
+				console.error(`[FAVORITE_TOGGLE_UI] Error for task ${taskId}:`, err)
+				// Revert optimistic update
 				setPendingFavoriteToggles((prev) => {
 					const updated = { ...prev }
 					delete updated[taskId]
 					return updated
 				})
 			} finally {
-				// 1 秒后清理待处理状态
+				// Clean up pending state after 1 second
 				setTimeout(() => {
 					setPendingFavoriteToggles((prev) => {
 						const updated = { ...prev }
@@ -124,17 +130,30 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		[showFavoritesOnly, loadTaskHistory],
 	)
 
-	const handleMessage = useCallback((event: MessageEvent<ExtensionMessage>) => {
-		if (event.data.type === "relinquishControl") {
-			setDeleteAllDisabled(false)
-		}
-	}, [])
-	useEvent("message", handleMessage)
-
-	// 组件挂载时请求任务总大小
+	// Use the onRelinquishControl hook instead of message event
 	useEffect(() => {
-		vscode.postMessage({ type: "requestTotalTasksSize" })
-	}, [])
+		return onRelinquishControl(() => {
+			setDeleteAllDisabled(false)
+		})
+	}, [onRelinquishControl])
+
+	const { totalTasksSize, setTotalTasksSize } = extensionStateContext
+
+	const fetchTotalTasksSize = useCallback(async () => {
+		try {
+			const response = await TaskServiceClient.getTotalTasksSize(EmptyRequest.create({}))
+			if (response && typeof response.value === "number") {
+				setTotalTasksSize?.(response.value || 0)
+			}
+		} catch (error) {
+			console.error("Error getting total tasks size:", error)
+		}
+	}, [setTotalTasksSize])
+
+	// Request total tasks size when component mounts
+	useEffect(() => {
+		fetchTotalTasksSize()
+	}, [fetchTotalTasksSize])
 
 	useEffect(() => {
 		if (searchQuery && sortOption !== "mostRelevant" && !lastNonRelevantSort) {
@@ -147,7 +166,9 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	}, [searchQuery, sortOption, lastNonRelevantSort])
 
 	const handleShowTaskWithId = useCallback((id: string) => {
-		TaskServiceClient.showTaskWithId({ value: id }).catch((error) => console.error("显示任务时出错：", error))
+		TaskServiceClient.showTaskWithId(StringRequest.create({ value: id })).catch((error) =>
+			console.error("Error showing task:", error),
+		)
 	}, [])
 
 	const handleHistorySelect = useCallback((itemId: string, checked: boolean) => {
@@ -160,27 +181,40 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		})
 	}, [])
 
-	const handleDeleteHistoryItem = useCallback((id: string) => {
-		TaskServiceClient.deleteTasksWithIds({ value: [id] })
-	}, [])
+	const handleDeleteHistoryItem = useCallback(
+		(id: string) => {
+			TaskServiceClient.deleteTasksWithIds(StringArrayRequest.create({ value: [id] }))
+				.then(() => fetchTotalTasksSize())
+				.catch((error) => console.error("Error deleting task:", error))
+		},
+		[fetchTotalTasksSize],
+	)
 
-	const handleDeleteSelectedHistoryItems = useCallback((ids: string[]) => {
-		if (ids.length > 0) {
-			TaskServiceClient.deleteTasksWithIds({ value: ids })
-			setSelectedItems([])
-		}
-	}, [])
+	const handleDeleteSelectedHistoryItems = useCallback(
+		(ids: string[]) => {
+			if (ids.length > 0) {
+				TaskServiceClient.deleteTasksWithIds(StringArrayRequest.create({ value: ids }))
+					.then(() => fetchTotalTasksSize())
+					.catch((error) => console.error("Error deleting tasks:", error))
+				setSelectedItems([])
+			}
+		},
+		[fetchTotalTasksSize],
+	)
 
-	const formatDate = useCallback((timestamp: number) => {
+	const formatDate = useCallback((timestamp: number, tz: string = "en-US") => {
 		const date = new Date(timestamp)
 		return date
-			.toLocaleString("zh-CN", {
+			?.toLocaleString(tz, {
 				month: "long",
 				day: "numeric",
 				hour: "numeric",
 				minute: "2-digit",
-				hour12: false, // 使用24小时制，更常见于中文技术界面
+				hour12: true,
 			})
+			.replace(", ", " ")
+			.replace(" at", ",")
+			.toUpperCase()
 	}, [])
 
 	const presentableTasks = useMemo(() => filteredTasks, [filteredTasks])
@@ -215,8 +249,8 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						((a.tokensIn || 0) + (a.tokensOut || 0) + (a.cacheWrites || 0) + (a.cacheReads || 0))
 					)
 				case "mostRelevant":
-					// 注意：切勿直接对对象进行排序，否则会导致成员重新排序
-					return searchQuery ? 0 : b.ts - a.ts // 如果正在搜索，则保留 fuse 顺序，否则按最新排序
+					// NOTE: you must never sort directly on object since it will cause members to be reordered
+					return searchQuery ? 0 : b.ts - a.ts // Keep fuse order if searching, otherwise sort by newest
 				case "newest":
 				default:
 					return b.ts - a.ts
@@ -226,7 +260,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		return results
 	}, [presentableTasks, searchQuery, fuse, sortOption])
 
-	// 计算所选项目的总大小
+	// Calculate total size of selected items
 	const selectedItemsSize = useMemo(() => {
 		if (selectedItems.length === 0) return 0
 
@@ -291,7 +325,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						}}>
 						历史记录
 					</h3>
-					<VSCodeButton onClick={onDone}>完成</VSCodeButton>
+					<VSCodeButton onClick={onDone}>确定</VSCodeButton>
 				</div>
 				<div style={{ padding: "5px 17px 6px 17px" }}>
 					<div
@@ -302,7 +336,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						}}>
 						<VSCodeTextField
 							style={{ width: "100%" }}
-							placeholder="模糊搜索历史记录..."
+							placeholder="查找历史..."
 							value={searchQuery}
 							onInput={(e) => {
 								const newValue = (e.target as HTMLInputElement)?.value
@@ -323,7 +357,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							{searchQuery && (
 								<div
 									className="input-icon-button codicon codicon-close"
-									aria-label="清除搜索"
+									aria-label="清除"
 									onClick={() => setSearchQuery("")}
 									slot="end"
 									style={{
@@ -342,7 +376,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							<VSCodeRadio value="newest">最新</VSCodeRadio>
 							<VSCodeRadio value="oldest">最早</VSCodeRadio>
 							<VSCodeRadio value="mostExpensive">最贵</VSCodeRadio>
-							<VSCodeRadio value="mostTokens">最多令牌</VSCodeRadio>
+							<VSCodeRadio value="mostTokens">Tokens最多</VSCodeRadio>
 							<VSCodeRadio value="mostRelevant" disabled={!searchQuery} style={{ opacity: searchQuery ? 1 : 0.5 }}>
 								最相关
 							</VSCodeRadio>
@@ -356,7 +390,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								checked={showFavoritesOnly}
 								onChange={() => setShowFavoritesOnly(!showFavoritesOnly)}
 								icon="star-full"
-								label="收藏夹"
+								label="收藏"
 							/>
 						</VSCodeRadioGroup>
 
@@ -390,7 +424,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							<span
 								className="codicon codicon-robot"
 								style={{ fontSize: "60px", marginBottom: "10px" }}></span>
-							<div>开始一个任务以在此处查看</div>
+							<div>Start a task to see it here</div>
 						</div>
 					)} */}
 					<Virtuoso
@@ -440,12 +474,12 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 												color: "var(--vscode-descriptionForeground)",
 												fontWeight: 500,
 												fontSize: "0.85em",
-												textTransform: "uppercase", // 注意：中文通常不使用大写
+												textTransform: "uppercase",
 											}}>
-											{formatDate(item.ts)}
+											{formatDate(item.ts, "zh-CN")}
 										</span>
 										<div style={{ display: "flex", gap: "4px" }}>
-											{/* 仅当任务未收藏时显示删除按钮 */}
+											{/* only show delete button if task not favorited */}
 											{!(pendingFavoriteToggles[item.id] ?? item.isFavorited) && (
 												<VSCodeButton
 													appearance="icon"
@@ -545,7 +579,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 														fontWeight: 500,
 														color: "var(--vscode-descriptionForeground)",
 													}}>
-													令牌：
+													Tokens:
 												</span>
 												<span
 													style={{
@@ -598,7 +632,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 														fontWeight: 500,
 														color: "var(--vscode-descriptionForeground)",
 													}}>
-													缓存：
+													Cache:
 												</span>
 												<span
 													style={{
@@ -655,7 +689,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 															fontWeight: 500,
 															color: "var(--vscode-descriptionForeground)",
 														}}>
-														API 成本：
+														API 费用:
 													</span>
 													<span
 														style={{
@@ -684,7 +718,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							onClick={() => {
 								handleDeleteSelectedHistoryItems(selectedItems)
 							}}>
-							删除{selectedItems.length > 1 ? ` ${selectedItems.length} 个` : ""}选定项
+							删除 {selectedItems.length > 1 ? selectedItems.length : ""} 选中
 							{selectedItemsSize > 0 ? ` (${formatSize(selectedItemsSize)})` : ""}
 						</DangerButton>
 					) : (
@@ -695,7 +729,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								setDeleteAllDisabled(true)
 								vscode.postMessage({ type: "clearAllTaskHistory" })
 							}}>
-							删除全部历史记录{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
+							删除所有历史{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
 						</DangerButton>
 					)}
 				</div>
@@ -710,9 +744,11 @@ const ExportButton = ({ itemId }: { itemId: string }) => (
 		appearance="icon"
 		onClick={(e) => {
 			e.stopPropagation()
-			TaskServiceClient.exportTaskWithId({ value: itemId }).catch((err) => console.error("导出任务失败：", err))
+			TaskServiceClient.exportTaskWithId(StringRequest.create({ value: itemId })).catch((err) =>
+				console.error("Failed to export task:", err),
+			)
 		}}>
-		<div style={{ fontSize: "11px", fontWeight: 500, opacity: 1 }}>导出</div>
+		<div style={{ fontSize: "11px", fontWeight: 500, opacity: 1 }}>EXPORT</div>
 	</VSCodeButton>
 )
 
@@ -729,11 +765,11 @@ export const highlight = (fuseSearchResult: FuseResult<any>[], highlightClassNam
 		obj[pathValue[i]] = value
 	}
 
-	// 合并重叠区域的函数
+	// Function to merge overlapping regions
 	const mergeRegions = (regions: [number, number][]): [number, number][] => {
 		if (regions.length === 0) return regions
 
-		// 按起始索引对区域进行排序
+		// Sort regions by start index
 		regions.sort((a, b) => a[0] - b[0])
 
 		const merged: [number, number][] = [regions[0]]
@@ -743,7 +779,7 @@ export const highlight = (fuseSearchResult: FuseResult<any>[], highlightClassNam
 			const current = regions[i]
 
 			if (current[0] <= last[1] + 1) {
-				// 重叠或相邻区域
+				// Overlapping or adjacent regions
 				last[1] = Math.max(last[1], current[1])
 			} else {
 				merged.push(current)
@@ -758,7 +794,7 @@ export const highlight = (fuseSearchResult: FuseResult<any>[], highlightClassNam
 			return inputText
 		}
 
-		// 排序并合并重叠区域
+		// Sort and merge overlapping regions
 		const mergedRegions = mergeRegions(regions)
 
 		let content = ""
@@ -788,10 +824,9 @@ export const highlight = (fuseSearchResult: FuseResult<any>[], highlightClassNam
 		.filter(({ matches }) => matches && matches.length)
 		.map(({ item, matches }) => {
 			const highlightedItem = { ...item }
-
 			matches?.forEach((match) => {
 				if (match.key && typeof match.value === "string" && match.indices) {
-					// 在生成高亮文本之前合并重叠区域
+					// Merge overlapping regions before generating highlighted text
 					const mergedIndices = mergeRegions([...match.indices])
 					set(highlightedItem, match.key, generateHighlightedText(match.value, mergedIndices))
 				}

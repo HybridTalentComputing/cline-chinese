@@ -1,10 +1,9 @@
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { EmptyRequest, StringRequest } from "@shared/proto/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
 import styled from "styled-components"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { vscode } from "@/utils/vscode"
-import { CODE_BLOCK_BG_COLOR } from "../common/CodeBlock"
-import { BrowserServiceClient } from "../../services/grpc-client"
+import { BrowserServiceClient, UiServiceClient } from "../../services/grpc-client"
 
 interface ConnectionInfo {
 	isConnected: boolean
@@ -13,7 +12,7 @@ interface ConnectionInfo {
 }
 
 export const BrowserSettingsMenu = () => {
-	const { browserSettings } = useExtensionState()
+	const { browserSettings, navigateToSettings } = useExtensionState()
 	const containerRef = useRef<HTMLDivElement>(null)
 	const [showInfoPopover, setShowInfoPopover] = useState(false)
 	const [connectionInfo, setConnectionInfo] = useState<ConnectionInfo>({
@@ -23,13 +22,13 @@ export const BrowserSettingsMenu = () => {
 	})
 	const popoverRef = useRef<HTMLDivElement>(null)
 
-	// 使用 gRPC 从浏览器会话中获取实际连接信息
+	// Get actual connection info from the browser session using gRPC
 	useEffect(() => {
-		// 获取连接信息的函数
+		// Function to fetch connection info
 		;(async () => {
 			try {
 				console.log("[DEBUG] SENDING BROWSER CONNECTION INFO REQUEST")
-				const info = await BrowserServiceClient.getBrowserConnectionInfo({})
+				const info = await BrowserServiceClient.getBrowserConnectionInfo(EmptyRequest.create({}))
 				console.log("[DEBUG] GOT BROWSER REPLY:", info, typeof info)
 				setConnectionInfo({
 					isConnected: info.isConnected,
@@ -41,10 +40,10 @@ export const BrowserSettingsMenu = () => {
 			}
 		})()
 
-		// 不再需要消息事件监听器！
+		// No need for message event listeners anymore!
 	}, [browserSettings.remoteBrowserHost, browserSettings.remoteBrowserEnabled])
 
-	// 点击外部时关闭弹出框
+	// Close popover when clicking outside
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			if (
@@ -65,28 +64,27 @@ export const BrowserSettingsMenu = () => {
 	}, [showInfoPopover])
 
 	const openBrowserSettings = () => {
-		// 首先打开设置面板
-		vscode.postMessage({
-			type: "openSettings",
-		})
+		// First open the settings panel using direct navigation
+		navigateToSettings()
 
-		// 短暂延迟后，发送消息以滚动到浏览器设置
-		setTimeout(() => {
-			vscode.postMessage({
-				type: "scrollToSettings",
-				text: "browser-settings-section", // 这是一个ID，保持英文
-			})
-		}, 300) // 给设置面板打开的时间
+		// After a short delay, send a message to scroll to browser settings
+		setTimeout(async () => {
+			try {
+				await UiServiceClient.scrollToSettings(StringRequest.create({ value: "browser" }))
+			} catch (error) {
+				console.error("Error scrolling to browser settings:", error)
+			}
+		}, 300) // Give the settings panel time to open
 	}
 
 	const toggleInfoPopover = () => {
 		setShowInfoPopover(!showInfoPopover)
 
-		// 使用 gRPC 打开弹出框时请求更新连接信息
+		// Request updated connection info when opening the popover using gRPC
 		if (!showInfoPopover) {
 			const fetchConnectionInfo = async () => {
 				try {
-					const info = await BrowserServiceClient.getBrowserConnectionInfo({})
+					const info = await BrowserServiceClient.getBrowserConnectionInfo(EmptyRequest.create({}))
 					setConnectionInfo({
 						isConnected: info.isConnected,
 						isRemote: info.isRemote,
@@ -101,7 +99,7 @@ export const BrowserSettingsMenu = () => {
 		}
 	}
 
-	// 根据连接状态确定图标
+	// Determine icon based on connection state
 	const getIconClass = () => {
 		if (connectionInfo.isRemote) {
 			return "codicon-remote"
@@ -110,7 +108,7 @@ export const BrowserSettingsMenu = () => {
 		}
 	}
 
-	// 根据连接状态确定图标颜色
+	// Determine icon color based on connection state
 	const getIconColor = () => {
 		if (connectionInfo.isRemote) {
 			return connectionInfo.isConnected ? "var(--vscode-charts-blue)" : "var(--vscode-foreground)"
@@ -121,12 +119,12 @@ export const BrowserSettingsMenu = () => {
 		}
 	}
 
-	// 每秒检查连接状态以使用 gRPC 保持图标同步
+	// Check connection status every second to keep icon in sync using gRPC
 	useEffect(() => {
-		// 获取连接信息的函数
+		// Function to fetch connection info
 		const fetchConnectionInfo = async () => {
 			try {
-				const info = await BrowserServiceClient.getBrowserConnectionInfo({})
+				const info = await BrowserServiceClient.getBrowserConnectionInfo(EmptyRequest.create({}))
 				setConnectionInfo({
 					isConnected: info.isConnected,
 					isRemote: info.isRemote,
@@ -137,10 +135,10 @@ export const BrowserSettingsMenu = () => {
 			}
 		}
 
-		// 立即请求连接信息
+		// Request connection info immediately
 		fetchConnectionInfo()
 
-		// 设置每秒刷新一次的间隔
+		// Set up interval to refresh every second
 		const intervalId = setInterval(fetchConnectionInfo, 1000)
 
 		return () => clearInterval(intervalId)
@@ -152,7 +150,7 @@ export const BrowserSettingsMenu = () => {
 				appearance="icon"
 				className="browser-info-icon"
 				onClick={toggleInfoPopover}
-				title="浏览器连接信息"
+				title="Browser connection info"
 				style={{ marginRight: "4px" }}>
 				<i
 					className={`codicon ${getIconClass()}`}
@@ -165,27 +163,27 @@ export const BrowserSettingsMenu = () => {
 
 			{showInfoPopover && (
 				<InfoPopover ref={popoverRef}>
-					<h4 style={{ margin: "0 0 8px 0" }}>浏览器连接</h4>
+					<h4 style={{ margin: "0 0 8px 0" }}>Browser Connection</h4>
 					<InfoRow>
-						<InfoLabel>状态:</InfoLabel>
+						<InfoLabel>Status:</InfoLabel>
 						<InfoValue
 							style={{
 								color: connectionInfo.isConnected
 									? "var(--vscode-charts-green)"
 									: "var(--vscode-errorForeground)",
 							}}>
-							{connectionInfo.isConnected ? "已连接" : "已断开"}
+							{connectionInfo.isConnected ? "Connected" : "Disconnected"}
 						</InfoValue>
 					</InfoRow>
 					{connectionInfo.isConnected && (
 						<InfoRow>
-							<InfoLabel>类型:</InfoLabel>
-							<InfoValue>{connectionInfo.isRemote ? "远程" : "本地"}</InfoValue>
+							<InfoLabel>Type:</InfoLabel>
+							<InfoValue>{connectionInfo.isRemote ? "Remote" : "Local"}</InfoValue>
 						</InfoRow>
 					)}
 					{connectionInfo.isConnected && connectionInfo.isRemote && connectionInfo.host && (
 						<InfoRow>
-							<InfoLabel>远程主机:</InfoLabel>
+							<InfoLabel>Remote Host:</InfoLabel>
 							<InfoValue>{connectionInfo.host}</InfoValue>
 						</InfoRow>
 					)}

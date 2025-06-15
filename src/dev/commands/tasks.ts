@@ -11,7 +11,7 @@ import { ClineMessage } from "@shared/ExtensionMessage"
  */
 export function registerTaskCommands(context: vscode.ExtensionContext, controller: Controller): vscode.Disposable[] {
 	return [
-		vscode.commands.registerCommand("clineChinese.dev.createTestTasks", async () => {
+		vscode.commands.registerCommand("cline.dev.createTestTasks", async () => {
 			const count = await vscode.window.showInputBox({
 				title: "Test Tasks",
 				prompt: "How many test tasks to create?",
@@ -96,7 +96,7 @@ export function registerTaskCommands(context: vscode.ExtensionContext, controlle
 					// Update the UI to show the new tasks
 					await controller.postStateToWebview()
 
-					vscode.window.showInformationMessage(`Created ${tasksCount} test tasks`)
+					vscode.window.showInformationMessage(`创建 ${tasksCount} 测试任务`)
 				},
 			)
 		}),

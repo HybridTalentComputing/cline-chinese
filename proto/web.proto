@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package cline;
-option java_package = "bot.cline.proto";
+package clineChinese;
+option java_package = "bot.clineChinese.proto";
 option java_multiple_files = true;
 
 import "common.proto";
@@ -9,6 +9,7 @@ import "common.proto";
 service WebService {
   rpc checkIsImageUrl(StringRequest) returns (IsImageUrl);
   rpc fetchOpenGraphData(StringRequest) returns (OpenGraphData);
+  rpc openInBrowser(StringRequest) returns (Empty);
 }
 
 message IsImageUrl {

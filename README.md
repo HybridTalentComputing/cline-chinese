@@ -1,6 +1,18 @@
 # Cline-Chinese (Cline中文汉化版) 🌏
 
-> 🎉 截止到2025.05.19，Cline Chinese在VS Code插件市场的下载量突破58k啦！感谢大家的支持！
+> 🎉 截止到2025.06.15，Cline Chinese在VS Code插件市场的下载量突破67k啦！感谢大家的支持！
+<!-- >
+> 🎉 Cline Chinese与胜算云Router达成合作啦！【营销内容】
+					【营销内容】
+					【营销内容】
+					【营销内容】
+					【营销内容】
+					【营销内容】
+					【营销内容】
+					【营销内容】
+					【营销内容】
+					点击此处进行注册：[胜算云Router](https://router.shengsuanyun.com/auth?callback_url=vscode://HybridTalentComputing.cline-chinese/) -->
+
 
 <p align="center">
 

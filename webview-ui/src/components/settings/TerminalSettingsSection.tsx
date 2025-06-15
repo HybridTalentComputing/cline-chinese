@@ -1,11 +1,12 @@
 import React, { useState } from "react"
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { vscode } from "@/utils/vscode"
+import { StateServiceClient } from "@/services/grpc-client"
+import { Int64, Int64Request } from "@shared/proto/common"
 
 export const TerminalSettingsSection: React.FC = () => {
-	const { shellIntegrationTimeout, setShellIntegrationTimeout } = useExtensionState()
-	// 将 shellIntegrationTimeout 从毫秒转换为秒，并初始化 inputValue
+	const { shellIntegrationTimeout, setShellIntegrationTimeout, terminalReuseEnabled, setTerminalReuseEnabled } =
+		useExtensionState()
 	const [inputValue, setInputValue] = useState((shellIntegrationTimeout / 1000).toString())
 	const [inputError, setInputError] = useState<string | null>(null)
 
@@ -13,50 +14,62 @@ export const TerminalSettingsSection: React.FC = () => {
 		const target = event.target as HTMLInputElement
 		const value = target.value
 
-		setInputValue(value) // 更新输入框的显示值
+		setInputValue(value)
 
-		const seconds = parseFloat(value) // 将输入值解析为浮点数
+		const seconds = parseFloat(value)
 		if (isNaN(seconds) || seconds <= 0) {
-			setInputError("请输入一个正数") // 如果输入无效，则设置错误消息
+			setInputError("请输入一个正数")
 			return
 		}
 
-		setInputError(null) // 清除错误消息
-		const timeout = Math.round(seconds * 1000) // 将秒转换为毫秒并四舍五入
+		setInputError(null)
+		const timeout = Math.round(seconds * 1000) // Convert to milliseconds
 
-		// 更新本地状态
+		// Update local state
 		setShellIntegrationTimeout(timeout)
 
-		// 发送到扩展程序
-		vscode.postMessage({
-			type: "updateTerminalConnectionTimeout", // 消息类型，保持英文
-			shellIntegrationTimeout: timeout,
-		})
+		// Send to extension using gRPC
+		StateServiceClient.updateTerminalConnectionTimeout({
+			value: timeout,
+		} as Int64Request)
+			.then((response: Int64) => {
+				setShellIntegrationTimeout(response.value)
+				setInputValue((response.value / 1000).toString())
+			})
+			.catch((error) => {
+				console.error("Failed to update terminal connection timeout:", error)
+			})
 	}
 
 	const handleInputBlur = () => {
-		// 如果存在错误，则将输入重置为当前有效值
+		// If there was an error, reset the input to the current valid value
 		if (inputError) {
-			setInputValue((shellIntegrationTimeout / 1000).toString()) // 将输入值重置为存储的超时时间（秒）
-			setInputError(null) // 清除错误消息
+			setInputValue((shellIntegrationTimeout / 1000).toString())
+			setInputError(null)
 		}
 	}
 
+	const handleTerminalReuseChange = (event: Event) => {
+		const target = event.target as HTMLInputElement
+		const checked = target.checked
+
+		// Update local state
+		setTerminalReuseEnabled(checked)
+
+		// TODO: Send to extension using gRPC when the backend is ready
+		// For now, we'll just update the local state
+	}
+
 	return (
-		<div
-			id="terminal-settings-section" // ID 保持英文
-			style={{ marginBottom: 20, borderTop: "1px solid var(--vscode-panel-border)", paddingTop: 15 }}>
-			<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 10px 0", fontSize: "14px" }}>终端设置</h3>
+		<div id="terminal-settings-section" style={{ marginBottom: 20 }}>
 			<div style={{ marginBottom: 15 }}>
 				<div style={{ marginBottom: 8 }}>
-					<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>
-						Shell 集成超时时间 (秒)
-					</label>
+					<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>Shell 集成超时 (秒)</label>
 					<div style={{ display: "flex", alignItems: "center" }}>
 						<VSCodeTextField
 							style={{ width: "100%" }}
 							value={inputValue}
-							placeholder="输入超时时间（秒）"
+							placeholder="输入超时值(秒)"
 							onChange={(event) => handleTimeoutChange(event as Event)}
 							onBlur={handleInputBlur}
 						/>
@@ -66,7 +79,20 @@ export const TerminalSettingsSection: React.FC = () => {
 					)}
 				</div>
 				<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: 0 }}>
-					设置 Cline 在执行命令前等待 Shell 集成激活的时间。如果您遇到终端连接超时问题，请增加此值。
+					设置执行命令之前等待 Shell 集成激活的时间。如果您遇到终端连接超时，请增加该值。
+				</p>
+			</div>
+
+			<div style={{ marginBottom: 15 }}>
+				<div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+					<VSCodeCheckbox
+						checked={terminalReuseEnabled ?? true}
+						onChange={(event) => handleTerminalReuseChange(event as Event)}>
+						启用积极的终端重用
+					</VSCodeCheckbox>
+				</div>
+				<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: 0 }}>
+					启用后，Cline 将重用不在当前工作目录中的现有终端窗口。如果您在执行终端命令后遇到任务锁定问题，请禁用此功能。
 				</p>
 			</div>
 		</div>

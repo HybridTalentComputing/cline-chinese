@@ -7,6 +7,8 @@ import { Controller } from "@core/controller/index"
 import { findLast } from "@shared/array"
 import { readFile } from "fs/promises"
 import path from "node:path"
+import { WebviewProviderType } from "@/shared/webview/types"
+import { sendThemeEvent } from "@core/controller/ui/subscribeToTheme"
 
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -24,6 +26,7 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 	constructor(
 		readonly context: vscode.ExtensionContext,
 		private readonly outputChannel: vscode.OutputChannel,
+		private readonly providerType: WebviewProviderType = WebviewProviderType.TAB, // Default to tab provider
 	) {
 		WebviewProvider.activeInstances.add(this)
 		this.controller = new Controller(context, outputChannel, (message) => this.view?.webview.postMessage(message))
@@ -57,6 +60,13 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 
 	public static getTabInstances(): WebviewProvider[] {
 		return Array.from(this.activeInstances).filter((instance) => instance.view && "onDidChangeViewState" in instance.view)
+	}
+
+	public static async disposeAllInstances() {
+		const instances = Array.from(this.activeInstances)
+		for (const instance of instances) {
+			await instance.dispose()
+		}
 	}
 
 	async resolveWebviewView(webviewView: vscode.WebviewView | vscode.WebviewPanel) {
@@ -130,13 +140,13 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 			vscode.workspace.onDidChangeConfiguration(
 				async (e) => {
 					if (e && e.affectsConfiguration("workbench.colorTheme")) {
-						// Sends latest theme name to webview
-						await this.controller.postMessageToWebview({
-							type: "theme",
-							text: JSON.stringify(await getTheme()),
-						})
+						// Send theme update via gRPC subscription
+						const theme = await getTheme()
+						if (theme) {
+							await sendThemeEvent(JSON.stringify(theme))
+						}
 					}
-					if (e && e.affectsConfiguration("cline.mcpMarketplace.enabled")) {
+					if (e && e.affectsConfiguration("clineChinese.mcpMarketplace.enabled")) {
 						// Update state when marketplace tab setting changes
 						await this.controller.postStateToWebview()
 					}
@@ -149,6 +159,8 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 			this.controller.clearTask()
 
 			this.outputChannel.appendLine("Webview view resolved")
+
+			// Title setting logic removed to allow VSCode to use the container title primarily.
 		}
 	}
 
@@ -224,12 +236,16 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 				<link rel="stylesheet" type="text/css" href="${stylesUri}">
 				<link href="${codiconsUri}" rel="stylesheet" />
 				<link href="${katexCssUri}" rel="stylesheet" />
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src https://*.posthog.com https://*.firebaseauth.com https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com; font-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} https: data:; script-src 'nonce-${nonce}' 'unsafe-eval';">
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src https://*.shengsuanyun.com https://*.cline.bot https://*.posthog.com https://*.firebaseauth.com https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com; font-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} https: data:; script-src https://*.posthog.com 'nonce-${nonce}' 'unsafe-eval';">
 				<title>Cline</title>
 			</head>
 			<body>
 				<noscript>You need to enable JavaScript to run this app.</noscript>
 				<div id="root"></div>
+				 <script type="text/javascript" nonce="${nonce}">
+                    // Inject the provider type
+                    window.WEBVIEW_PROVIDER_TYPE = ${JSON.stringify(this.providerType)};
+                </script>
 				<script type="module" nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 		</html>
@@ -277,7 +293,7 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 			await axios.get(`http://${localServerUrl}`)
 		} catch (error) {
 			vscode.window.showErrorMessage(
-				"Cline: Local webview dev server is not running, HMR will not work. Please run 'npm run dev:webview' before launching the extension to enable HMR. Using bundled assets.",
+				"Cline: 本地 webview 开发服务器未运行，HMR 将无法工作。请在启动扩展程序之前运行“npm run dev:webview”以启用 HMR。使用捆绑资源。",
 			)
 
 			return this.getHtmlContent(webview)
@@ -320,7 +336,7 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 			`font-src ${webview.cspSource} data:`,
 			`style-src ${webview.cspSource} 'unsafe-inline' https://* http://${localServerUrl} http://0.0.0.0:${localPort}`,
 			`img-src ${webview.cspSource} https: data:`,
-			`script-src 'unsafe-eval' https://* http://${localServerUrl} http://0.0.0.0:${localPort} 'nonce-${nonce}'`,
+			`script-src 'unsafe-eval' https://* http://${localServerUrl} https://data.cline.bot http://0.0.0.0:${localPort} 'nonce-${nonce}'`,
 			`connect-src https://* ws://${localServerUrl} ws://0.0.0.0:${localPort} http://${localServerUrl} http://0.0.0.0:${localPort}`,
 		]
 
@@ -339,6 +355,10 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 				</head>
 				<body>
 					<div id="root"></div>
+					<script type="text/javascript" nonce="${nonce}">
+						// Inject the provider type
+						window.WEBVIEW_PROVIDER_TYPE = ${JSON.stringify(this.providerType)};
+					</script>
 					${reactRefresh}
 					<script type="module" src="${scriptUri}"></script>
 				</body>

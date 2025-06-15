@@ -22,10 +22,10 @@ export function formatDollars(cents?: number): string {
 	return (cents / 100).toFixed(2)
 }
 
-export function formatTimestamp(timestamp: string): string {
+export function formatTimestamp(timestamp: string, tz: string = "en-US"): string {
 	const date = new Date(timestamp)
 
-	const dateFormatter = new Intl.DateTimeFormat("en-US", {
+	const dateFormatter = new Intl.DateTimeFormat(tz, {
 		month: "2-digit",
 		day: "2-digit",
 		year: "2-digit",

@@ -5,18 +5,18 @@ description: "When working with AI coding assistants, it's easy to lose control 
 
 Checkpoints automatically save snapshots of your workspace after each step in a task. This powerful feature lets you:
 
--   Track and review changes made during a task
--   Roll back to any previous point if needed
--   Experiment confidently with auto-approve mode
--   Maintain full control over your workspace
+- Track and review changes made during a task
+- Roll back to any previous point if needed
+- Experiment confidently with auto-approve mode
+- Maintain full control over your workspace
 
 ### ⚙️ How Checkpoints Work
 
 Cline creates a checkpoint after each tool use (file edits, commands, etc.). These checkpoints:
 
--   Work alongside your Git workflow without interference
--   Maintain context between restores
--   Use a shadow Git repository to track changes
+- Work alongside your Git workflow without interference
+- Maintain context between restores
+- Use a shadow Git repository to track changes
 
 For example, if you're working on a feature and Cline makes multiple file changes, each change creates a checkpoint. This means you can review each modification and, if needed, roll back to any point without affecting your main Git repository.
 
@@ -52,15 +52,15 @@ Checkpoints let you be more experimental with Cline. While human coding is often
 
 #### 1. Using Auto-Approve Mode
 
--   Provides safety net for rapid iterations
--   Makes it easy to undo unexpected results
+- Provides safety net for rapid iterations
+- Makes it easy to undo unexpected results
 
 #### 2. Testing Different Approaches
 
--   Try multiple solutions confidently
--   Compare different implementations
--   Quickly revert to working states
--   Ideal for exploring different design patterns or architectural approaches
+- Try multiple solutions confidently
+- Compare different implementations
+- Quickly revert to working states
+- Ideal for exploring different design patterns or architectural approaches
 
 <Frame caption="In this case, I didn't like the changes Cline made to my robot dog-walking website (still working on the robots) and I wanted to revert both the codebase and the task to before any changes were made so I could start fresh.">
 	<img src="https://storage.googleapis.com/cline_public_images/docs/assets/checkpointsDemo.gif" alt="Checkpoint restore demo" />
@@ -90,21 +90,21 @@ Cline allows you to edit chat messages in a task after they've been submitted (w
 
 Perhaps you didn't get the results you wanted, thought of a better way to phrase your request, or need to add more information. Editing your message allows you to re-submit a request without starting over or restoring your files or workspace with checkpoints. There are two Restore options:
 
--   **"Restore Chat"** restores just the task state and re-submits an API request to your provider with your edited message.
+- **"Restore Chat"** restores just the task state and re-submits an API request to your provider with your edited message.
 
--   **"Restore All"** restores both the task state and workspace state before re-submitting an API request. "Workspace state" refers to the condition of your workspace (files, content, etc.) at different points in the conversation.
+- **"Restore All"** restores both the task state and workspace state before re-submitting an API request. "Workspace state" refers to the condition of your workspace (files, content, etc.) at different points in the conversation.
 
 **Interactive Editing:**
 
--   Messages can be clicked to enter edit mode
--   Cline automatically selects all text when entering edit mode
+- Messages can be clicked to enter edit mode
+- Cline automatically selects all text when entering edit mode
 
 **Keyboard Shortcuts:**
 
--   Escape: Exit edit mode
--   Enter: Restore just the task
--   Cmd/Ctrl + Enter: Restore the task and workspace
--   Shift + Enter: Insert new line / line break
+- Escape: Exit edit mode
+- Enter: Restore just the task
+- Cmd/Ctrl + Enter: Restore the task and workspace
+- Shift + Enter: Insert new line / line break
 
 <Frame>
 	<img

@@ -116,12 +116,12 @@ export async function spawnVSCode(workspacePath: string, vsixPath?: string): Pro
 		"workbench.startupEditor": "none",
 
 		// Auto-open Cline on startup
-		"cline.autoOpenOnStartup": true,
+		"clineChinese.autoOpenOnStartup": true,
 
 		// Show the activity bar and sidebar
 		"workbench.activityBar.visible": true,
 		"workbench.sideBar.visible": true,
-		"workbench.view.extension.saoudrizwan.claude-dev-ActivityBar.visible": true,
+		"workbench.view.extension.HybridTalentComputing.cline-chinese-ActivityBar.visible": true,
 		"workbench.view.alwaysShowHeaderActions": true,
 		"workbench.editor.openSideBySideDirection": "right",
 
@@ -145,13 +145,13 @@ export async function spawnVSCode(workspacePath: string, vsixPath?: string): Pro
 	const keybindings = [
 		{
 			key: "alt+c",
-			command: "workbench.view.extension.saoudrizwan.claude-dev-ActivityBar",
-			when: "viewContainer.workbench.view.extension.saoudrizwan.claude-dev-ActivityBar.enabled",
+			command: "workbench.view.extension.HybridTalentComputing.cline-chinese-ActivityBar",
+			when: "viewContainer.workbench.view.extension.HybridTalentComputing.cline-chinese-ActivityBar.enabled",
 		},
 		{
 			key: "alt+shift+c",
-			command: "cline.openInNewTab",
-			when: "viewContainer.workbench.view.extension.saoudrizwan.claude-dev-ActivityBar.enabled",
+			command: "clineChinese.openInNewTab",
+			when: "viewContainer.workbench.view.extension.HybridTalentComputing.cline-chinese-ActivityBar.enabled",
 		},
 	]
 	fs.writeFileSync(keybindingsPath, JSON.stringify(keybindings, null, 2))
@@ -171,10 +171,10 @@ export async function spawnVSCode(workspacePath: string, vsixPath?: string): Pro
 		workspacePath,
 		// Force the extension to be activated on startup
 		"--start-up-extension",
-		"saoudrizwan.claude-dev",
+		"HybridTalentComputing.cline-chinese",
 		// Run a command on startup to open Cline
 		"--command",
-		"workbench.view.extension.saoudrizwan.claude-dev-ActivityBar",
+		"workbench.view.extension.HybridTalentComputing.cline-chinese-ActivityBar",
 		// Additional flags to help with extension activation
 		"--disable-gpu=false",
 		"--max-memory=4096",
@@ -186,11 +186,11 @@ export async function spawnVSCode(workspacePath: string, vsixPath?: string): Pro
 		// This script will be executed when VS Code starts
 		setTimeout(() => {
 			// Try to open Cline in the sidebar
-			require('vscode').commands.executeCommand('workbench.view.extension.saoudrizwan.claude-dev-ActivityBar');
+			require('vscode').commands.executeCommand('workbench.view.extension.HybridTalentComputing.cline-chinese-ActivityBar');
 			
 			// Also try to open Cline in a tab as a fallback
 			setTimeout(() => {
-				require('vscode').commands.executeCommand('cline.openInNewTab');
+				require('vscode').commands.executeCommand('clineChinese.openInNewTab');
 			}, 5000);
 		}, 5000);
 	`
@@ -270,7 +270,7 @@ export async function spawnVSCode(workspacePath: string, vsixPath?: string): Pro
 				let disposable = vscode.commands.registerCommand('cline-activator.activate', async function () {
 					try {
 						// Make sure the Cline extension is activated
-						const extension = vscode.extensions.getExtension('saoudrizwan.claude-dev');
+						const extension = vscode.extensions.getExtension('HybridTalentComputing.cline-chinese');
 						if (!extension) {
 							console.error('Cline extension not found');
 							return;
@@ -283,14 +283,14 @@ export async function spawnVSCode(workspacePath: string, vsixPath?: string): Pro
 						
 						// Show the Cline sidebar
 						console.log('Opening Cline sidebar...');
-						await vscode.commands.executeCommand('workbench.view.extension.saoudrizwan.claude-dev-ActivityBar');
+						await vscode.commands.executeCommand('workbench.view.extension.HybridTalentComputing.cline-chinese-ActivityBar');
 						
 						// Wait a moment for the sidebar to initialize
 						await new Promise(resolve => setTimeout(resolve, 2000));
 						
 						// Also open Cline in a tab as a fallback
 						console.log('Opening Cline in a tab...');
-						await vscode.commands.executeCommand('cline.openInNewTab');
+						await vscode.commands.executeCommand('clineChinese.openInNewTab');
 						
 						// Wait a moment for the tab to initialize
 						await new Promise(resolve => setTimeout(resolve, 2000));
@@ -334,7 +334,7 @@ export async function spawnVSCode(workspacePath: string, vsixPath?: string): Pro
 		let serverStarted = false
 
 		// Create an activation script to run in VS Code
-		const activationScriptPath = path.join(settingsDir, "activate-cline.js")
+		const activationScriptPath = path.join(settingsDir, "activate-clineChinese.js")
 		const activationScript = `
 			// This script will be executed to activate Cline and start the test server
 			const vscode = require('vscode');

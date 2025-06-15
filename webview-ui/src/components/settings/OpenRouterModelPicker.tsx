@@ -1,18 +1,18 @@
+import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { StateServiceClient } from "@/services/grpc-client"
+import { openRouterDefaultModelId } from "@shared/api"
+import { StringRequest } from "@shared/proto/common"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
 import { useRemark } from "react-remark"
 import { useMount } from "react-use"
 import styled from "styled-components"
-import { openRouterDefaultModelId } from "@shared/api"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { ModelsServiceClient, StateServiceClient } from "@/services/grpc-client"
-import { vscode } from "@/utils/vscode"
 import { highlight } from "../history/HistoryView"
 import { ModelInfoView, normalizeApiConfiguration } from "./ApiOptions"
-import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
 import FeaturedModelCard from "./FeaturedModelCard"
+import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
 
 // Star icon for favorites
 const StarIcon = ({ isFavorite, onClick }: { isFavorite: boolean; onClick: (e: React.MouseEvent) => void }) => {
@@ -43,7 +43,7 @@ export interface OpenRouterModelPickerProps {
 const featuredModels = [
 	{
 		id: "anthropic/claude-3.7-sonnet",
-		description: "Leading model for agentic coding",
+		description: "Recommended for agentic coding in Cline",
 		label: "Best",
 	},
 	{
@@ -59,7 +59,7 @@ const featuredModels = [
 ]
 
 const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }) => {
-	const { apiConfiguration, setApiConfiguration, openRouterModels } = useExtensionState()
+	const { apiConfiguration, setApiConfiguration, openRouterModels, refreshOpenRouterModels } = useExtensionState()
 	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.openRouterModelId || openRouterDefaultModelId)
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -84,11 +84,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 		return normalizeApiConfiguration(apiConfiguration)
 	}, [apiConfiguration])
 
-	useMount(() => {
-		ModelsServiceClient.refreshOpenRouterModels({}).catch((error: Error) =>
-			console.error("Failed to refresh OpenRouter models:", error),
-		)
-	})
+	useMount(refreshOpenRouterModels)
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -199,6 +195,8 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 
 	const showBudgetSlider = useMemo(() => {
 		return (
+			selectedModelId?.toLowerCase().includes("claude-sonnet-4") ||
+			selectedModelId?.toLowerCase().includes("claude-opus-4") ||
 			selectedModelId?.toLowerCase().includes("claude-3-7-sonnet") ||
 			selectedModelId?.toLowerCase().includes("claude-3.7-sonnet") ||
 			selectedModelId?.toLowerCase().includes("claude-3.7-sonnet:thinking")
@@ -217,7 +215,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 			</style>
 			<div style={{ display: "flex", flexDirection: "column" }}>
 				<label htmlFor="model-search">
-					<span style={{ fontWeight: 500 }}>Model</span>
+					<span style={{ fontWeight: 500 }}>模型</span>
 				</label>
 
 				{apiConfiguration?.apiProvider === "cline" && (
@@ -241,7 +239,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField
 						id="model-search"
-						placeholder="Search and select a model..."
+						placeholder="查找模型..."
 						value={searchTerm}
 						onInput={(e) => {
 							handleModelChange((e.target as HTMLInputElement)?.value?.toLowerCase())
@@ -257,7 +255,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 						{searchTerm && (
 							<div
 								className="input-icon-button codicon codicon-close"
-								aria-label="Clear search"
+								aria-label="清除"
 								onClick={() => {
 									handleModelChange("")
 									setIsDropdownVisible(true)
@@ -292,9 +290,9 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 												isFavorite={isFavorite}
 												onClick={(e) => {
 													e.stopPropagation()
-													StateServiceClient.toggleFavoriteModel({ value: item.id }).catch((error) =>
-														console.error("Failed to toggle favorite model:", error),
-													)
+													StateServiceClient.toggleFavoriteModel(
+														StringRequest.create({ value: item.id }),
+													).catch((error) => console.error("Failed to toggle favorite model:", error))
 												}}
 											/>
 										</div>
@@ -328,17 +326,17 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					<>
-						The extension automatically fetches the latest list of models available on{" "}
+						插件自动获取最新模型列表{" "}
 						<VSCodeLink style={{ display: "inline", fontSize: "inherit" }} href="https://openrouter.ai/models">
 							OpenRouter.
 						</VSCodeLink>
-						If you're unsure which model to choose, Cline works best with{" "}
+						如果你不确定使用哪个模型, Cline 使用{" "}
 						<VSCodeLink
 							style={{ display: "inline", fontSize: "inherit" }}
 							onClick={() => handleModelChange("anthropic/claude-3.7-sonnet")}>
 							anthropic/claude-3.7-sonnet.
 						</VSCodeLink>
-						You can also try searching "free" for no-cost options currently available.
+						你也可以尝试使用 "free" 搜索免费模型
 					</>
 				</p>
 			)}
@@ -516,7 +514,7 @@ export const ModelDescriptionMarkdown = memo(
 									backgroundColor: isPopup ? CODE_BLOCK_BG_COLOR : "var(--vscode-sideBar-background)",
 								}}
 								onClick={() => setIsExpanded(true)}>
-								See more
+								更多
 							</VSCodeLink>
 						</div>
 					)}

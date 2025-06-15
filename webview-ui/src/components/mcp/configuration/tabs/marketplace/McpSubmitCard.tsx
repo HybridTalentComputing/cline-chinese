@@ -11,10 +11,10 @@ const McpSubmitCard = () => {
 				backgroundColor: "var(--vscode-textBlockQuote-background)",
 				borderRadius: "6px",
 			}}>
-			{/* 图标 */}
+			{/* Icon */}
 			<i className="codicon codicon-add" style={{ fontSize: "18px" }} />
 
-			{/* 内容 */}
+			{/* Content */}
 			<div
 				style={{
 					display: "flex",
@@ -31,12 +31,10 @@ const McpSubmitCard = () => {
 						fontWeight: 600,
 						color: "var(--vscode-foreground)",
 					}}>
-					提交 MCP 服务器
+					提交 MCP 服务
 				</h3>
 				<p style={{ fontSize: "13px", margin: 0, color: "var(--vscode-descriptionForeground)" }}>
-					通过向{" "}
-					<a href="https://github.com/cline/mcp-marketplace">github.com/cline/mcp-marketplace</a> 提交 issue
-					来帮助他人发现优秀的 MCP 服务器
+					提交问题到 <a href="https://github.com/cline/mcp-marketplace">github.com/cline/mcp-marketplace</a>
 				</p>
 			</div>
 		</div>

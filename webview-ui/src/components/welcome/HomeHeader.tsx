@@ -8,12 +8,12 @@ const HomeHeader = () => {
 				<ClineLogoVariable className="size-16" />
 			</div>
 			<div className="text-center flex items-center justify-center">
-				<h2 className="m-0 text-[var(--vscode-font-size)]">{"我能为您做什么？"}</h2>
+				<h2 className="m-0 text-[var(--vscode-font-size)]">{"我能为你做什么？"}</h2>
 				<HeroTooltip
 					placement="bottom"
 					className="max-w-[300px]"
 					content={
-						"我可以逐步开发软件，包括编辑文件、探索项目、运行命令和使用浏览器。我甚至可以通过MCP工具扩展我的能力，以提供超出基本代码补全的帮助。"
+						"我可以通过逐步编辑文件、探索项目、运行命令和使用浏览器来开发软件。我甚至可以通过使用MCP工具扩展我的能力，帮助实现超出基本代码补全的功能。"
 					}>
 					<span
 						className="codicon codicon-info ml-2 cursor-pointer"

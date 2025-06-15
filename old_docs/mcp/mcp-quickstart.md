@@ -140,7 +140,7 @@ The `path_to_asdf_bin_dir` can often be found in your shell config (e.g. `.zshrc
 
 Now for some good news. While not perfect, you can get Cline to do this for you fairly reliably for subsequent server install. Add the following to your "Custom Instructions" in the Cline settings (top-right toolbar button):
 
-> When installing MCP servers and editing the cline_mcp_settings.json, if the server requires use of `npx` as the command, you must copy the "env" entry from the "mcp-installer" entry and add it to the new entry. This is vital to getting the server to work properly when in use.
+> When installing MCP servers and editing the cline_chinese_mcp_settings.json, if the server requires use of `npx` as the command, you must copy the "env" entry from the "mcp-installer" entry and add it to the new entry. This is vital to getting the server to work properly when in use.
 
 ### 2. I'm Still Getting an Error When I Run the MCP Installer
 

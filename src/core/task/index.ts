@@ -25,7 +25,7 @@ import { BrowserSession } from "@services/browser/BrowserSession"
 import { UrlContentFetcher } from "@services/browser/UrlContentFetcher"
 import { listFiles } from "@services/glob/list-files"
 import { regexSearchFiles } from "@services/ripgrep"
-import { telemetryService } from "@/services/posthog/telemetry/TelemetryService"
+import { telemetryService } from "@services/posthog/telemetry/TelemetryService"
 import { parseSourceCodeForDefinitionsTopLevel } from "@services/tree-sitter"
 import { ApiConfiguration } from "@shared/api"
 import { findLast, findLastIndex, parsePartialArrayString } from "@shared/array"
@@ -60,12 +60,21 @@ import { fileExistsAtPath } from "@utils/fs"
 import { createAndOpenGitHubIssue } from "@utils/github-url-utils"
 import { arePathsEqual, getReadablePath, isLocatedInWorkspace } from "@utils/path"
 import { fixModelHtmlEscaping, removeInvalidChars } from "@utils/string"
-import { AssistantMessageContent, parseAssistantMessageV2, ToolParamName, ToolUseName } from "@core/assistant-message"
+import {
+	AssistantMessageContent,
+	parseAssistantMessageV2,
+	parseAssistantMessageV3,
+	ToolParamName,
+	ToolUseName,
+} from "@core/assistant-message"
 import { constructNewFileContent } from "@core/assistant-message/diff"
 import { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
 import { parseMentions } from "@core/mentions"
 import { formatResponse } from "@core/prompts/responses"
 import { addUserInstructions, SYSTEM_PROMPT } from "@core/prompts/system"
+import { sendPartialMessageEvent } from "@core/controller/ui/subscribeToPartialMessage"
+import { sendRelinquishControlEvent } from "@core/controller/ui/subscribeToRelinquishControl"
+import { convertClineMessageToProto } from "@shared/proto-conversions/cline-message"
 import { getContextWindowInfo } from "@core/context/context-management/context-window-utils"
 import { FileContextTracker } from "@core/context/context-tracking/FileContextTracker"
 import { ModelContextTracker } from "@core/context/context-tracking/ModelContextTracker"
@@ -101,7 +110,11 @@ import { parseSlashCommands } from "@core/slash-commands"
 import WorkspaceTracker from "@integrations/workspace/WorkspaceTracker"
 import { McpHub } from "@services/mcp/McpHub"
 import { isInTestMode } from "../../services/test/TestMode"
-import { featureFlagsService } from "@/services/posthog/feature-flags/FeatureFlagsService"
+import { processFilesIntoText } from "@integrations/misc/extract-text"
+import { featureFlagsService } from "@services/posthog/feature-flags/FeatureFlagsService"
+import { StreamingJsonReplacer, ChangeLocation } from "@core/assistant-message/diff-json"
+
+export const USE_EXPERIMENTAL_CLAUDE4_FEATURES = false
 
 export const cwd =
 	vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0) ?? path.join(os.homedir(), "Desktop") // may or may not exist but fs checking existence would immediately ask for permission which would be bad UX, need to come up with a better solution
@@ -110,6 +123,9 @@ type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlo
 type UserContent = Array<Anthropic.ContentBlockParam>
 
 export class Task {
+	private streamingJsonReplacer?: StreamingJsonReplacer
+	private lastProcessedJsonLength: number = 0
+
 	// dependencies
 	private context: vscode.ExtensionContext
 	private mcpHub: McpHub
@@ -138,6 +154,7 @@ export class Task {
 	private askResponse?: ClineAskResponse
 	private askResponseText?: string
 	private askResponseImages?: string[]
+	private askResponseFiles?: string[]
 	private lastMessageTs?: number
 	private consecutiveAutoApprovedRequestsCount: number = 0
 	private consecutiveMistakeCount: number = 0
@@ -149,6 +166,7 @@ export class Task {
 	checkpointTrackerErrorMessage?: string
 	conversationHistoryDeletedRange?: [number, number]
 	isInitialized = false
+	private initTaskPromise?: Promise<void>
 	isAwaitingPlanResponse = false
 	didRespondToPlanAskBySwitchingMode = false
 
@@ -185,10 +203,12 @@ export class Task {
 		browserSettings: BrowserSettings,
 		chatSettings: ChatSettings,
 		shellIntegrationTimeout: number,
+		terminalReuseEnabled: boolean,
 		enableCheckpointsSetting: boolean,
 		customInstructions?: string,
 		task?: string,
 		images?: string[],
+		files?: string[],
 		historyItem?: HistoryItem,
 	) {
 		this.context = context
@@ -203,6 +223,7 @@ export class Task {
 		// Initialization moved to startTask/resumeTaskFromHistory
 		this.terminalManager = new TerminalManager()
 		this.terminalManager.setShellIntegrationTimeout(shellIntegrationTimeout)
+		this.terminalManager.setTerminalReuseEnabled(terminalReuseEnabled ?? true)
 		this.urlContentFetcher = new UrlContentFetcher(context)
 		this.browserSession = new BrowserSession(context, browserSettings)
 		this.contextManager = new ContextManager()
@@ -218,7 +239,7 @@ export class Task {
 			this.taskId = historyItem.id
 			this.taskIsFavorited = historyItem.isFavorited
 			this.conversationHistoryDeletedRange = historyItem.conversationHistoryDeletedRange
-		} else if (task || images) {
+		} else if (task || images || files) {
 			this.taskId = Date.now().toString()
 		} else {
 			throw new Error("Either historyItem or task/images must be provided")
@@ -240,26 +261,26 @@ export class Task {
 							this.clineMessages[lastApiReqStartedIndex].text || "{}",
 						)
 						currentApiReqInfo.retryStatus = {
-							attempt: attempt, // attempt 已经是 retry.ts 中的 1-indexed
-							maxAttempts: maxRetries, // 总尝试次数
+							attempt: attempt, // attempt is already 1-indexed from retry.ts
+							maxAttempts: maxRetries, // total attempts
 							delaySec: Math.round(delay / 1000),
 							errorSnippet: error?.message ? `${String(error.message).substring(0, 50)}...` : undefined,
 						}
-						// 如果正在重试，清除之前的 cancelReason 和 streamingFailedMessage
+						// Clear previous cancelReason and streamingFailedMessage if we are retrying
 						delete currentApiReqInfo.cancelReason
 						delete currentApiReqInfo.streamingFailedMessage
 						this.clineMessages[lastApiReqStartedIndex].text = JSON.stringify(currentApiReqInfo)
 
-						// 将更新后的状态发布到 webview，以便 UI 反映重试尝试
+						// Post the updated state to the webview so the UI reflects the retry attempt
 						this.postStateToWebview().catch((e) =>
-							console.error("在 onRetryAttempt 中向 webview 发布状态时出错:", e),
+							console.error("Error posting state to webview in onRetryAttempt:", e),
 						)
 
 						console.log(
-							`[任务 ${this.taskId}] API 自动重试状态更新: 尝试 ${attempt}/${maxRetries}, 延迟: ${delay}ms`,
+							`[Task ${this.taskId}] API Auto-Retry Status Update: Attempt ${attempt}/${maxRetries}, Delay: ${delay}ms`,
 						)
 					} catch (e) {
-						console.error(`[任务 ${this.taskId}] 更新 api_req_started 的 retryStatus 时出错:`, e)
+						console.error(`[Task ${this.taskId}] Error updating api_req_started with retryStatus:`, e)
 					}
 				}
 			},
@@ -269,40 +290,40 @@ export class Task {
 			effectiveApiConfiguration.reasoningEffort = chatSettings.openAIReasoningEffort
 		}
 
-		// taskId 初始化后，我们就可以构建 API 处理器了
+		// Now that taskId is initialized, we can build the API handler
 		this.api = buildApiHandler(effectiveApiConfiguration)
 
-		// 在 browserSession 上设置 taskId 用于遥测跟踪
+		// Set taskId on browserSession for telemetry tracking
 		this.browserSession.setTaskId(this.taskId)
 
-		// 继续任务初始化
+		// Continue with task initialization
 		if (historyItem) {
-			this.resumeTaskFromHistory()
-		} else if (task || images) {
-			this.startTask(task, images)
+			this.initTaskPromise = this.resumeTaskFromHistory()
+		} else if (task || images || files) {
+			this.initTaskPromise = this.startTask(task, images, files)
 		}
 
-		// 初始化遥测
+		// initialize telemetry
 		if (historyItem) {
-			// 从历史记录打开任务
+			// Open task from history
 			telemetryService.captureTaskRestarted(this.taskId, apiConfiguration.apiProvider)
 		} else {
-			// 新任务已启动
+			// New task started
 			telemetryService.captureTaskCreated(this.taskId, apiConfiguration.apiProvider)
 		}
 	}
 
-	// 当任务被控制器引用时，它将始终有权访问扩展上下文
-	// 如果控制器在例如中止任务后取消引用任务，则会抛出此错误
+	// While a task is ref'd by a controller, it will always have access to the extension context
+	// This error is thrown if the controller derefs the task after e.g., aborting the task
 	private getContext(): vscode.ExtensionContext {
 		const context = this.context
 		if (!context) {
-			throw new Error("无法访问扩展上下文")
+			throw new Error("Unable to access extension context")
 		}
 		return context
 	}
 
-	// 将任务存储到磁盘以供历史记录使用
+	// Storing task to disk for history
 	private async addToApiConversationHistory(message: Anthropic.MessageParam) {
 		this.apiConversationHistory.push(message)
 		await saveApiConversationHistory(this.getContext(), this.taskId, this.apiConversationHistory)
@@ -314,9 +335,9 @@ export class Task {
 	}
 
 	private async addToClineMessages(message: ClineMessage) {
-		// 这些值允许我们重建创建此 cline 消息时的对话历史记录
-		// 在添加 cline 消息之前初始化 apiConversationHistory 很重要
-		message.conversationHistoryIndex = this.apiConversationHistory.length - 1 // 注意：这是最后添加的消息的索引，即用户消息，一旦呈现了 clinemessages，我们就会用完成的助手消息更新 apiconversationhistory。这意味着在重置到某个消息时，我们需要将此索引 +1 以获取此工具使用对应的正确助手消息
+		// these values allow us to reconstruct the conversation history at the time this cline message was created
+		// it's important that apiConversationHistory is initialized before we add cline messages
+		message.conversationHistoryIndex = this.apiConversationHistory.length - 1 // NOTE: this is the index of the last added message which is the user message, and once the clinemessages have been presented we update the apiconversationhistory with the completed assistant message. This means when resetting to a message, we need to +1 this index to get the correct assistant message that this tool use corresponds to
 		message.conversationHistoryDeletedRange = this.conversationHistoryDeletedRange
 		this.clineMessages.push(message)
 		await this.saveClineMessagesAndUpdateHistory()
@@ -331,9 +352,9 @@ export class Task {
 		try {
 			await saveClineMessages(this.getContext(), this.taskId, this.clineMessages)
 
-			// 像在 ChatView 中一样组合
+			// combined as they are in ChatView
 			const apiMetrics = getApiMetrics(combineApiRequests(combineCommandSequences(this.clineMessages.slice(1))))
-			const taskMessage = this.clineMessages[0] // 第一条消息始终是任务 say
+			const taskMessage = this.clineMessages[0] // first message is always the task say
 			const lastRelevantMessage =
 				this.clineMessages[
 					findLastIndex(this.clineMessages, (m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"))
@@ -341,11 +362,11 @@ export class Task {
 			const taskDir = await ensureTaskDirectoryExists(this.getContext(), this.taskId)
 			let taskDirSize = 0
 			try {
-				// getFolderSize.loose 会静默忽略错误
-				// 返回字节数，size/1000/1000 = MB
+				// getFolderSize.loose silently ignores errors
+				// returns # of bytes, size/1000/1000 = MB
 				taskDirSize = await getFolderSize.loose(taskDir)
 			} catch (error) {
-				console.error("获取任务目录大小时失败:", taskDir, error)
+				console.error("Failed to get task directory size:", taskDir, error)
 			}
 			await this.updateTaskHistory({
 				id: this.taskId,
@@ -363,19 +384,23 @@ export class Task {
 				isFavorited: this.taskIsFavorited,
 			})
 		} catch (error) {
-			console.error("保存 cline 消息失败:", error)
+			console.error("Failed to save cline messages:", error)
 		}
 	}
 
 	async restoreCheckpoint(messageTs: number, restoreType: ClineCheckpointRestore, offset?: number) {
+		if (this.initTaskPromise && !this.isInitialized) {
+			await this.initTaskPromise
+		}
+
 		const messageIndex = this.clineMessages.findIndex((m) => m.ts === messageTs) - (offset || 0)
-		// 查找 messageIndex 之前最后一条具有 lastCheckpointHash 的消息
+		// Find the last message before messageIndex that has a lastCheckpointHash
 		const lastHashIndex = findLastIndex(this.clineMessages.slice(0, messageIndex), (m) => m.lastCheckpointHash !== undefined)
 		const message = this.clineMessages[messageIndex]
 		const lastMessageWithHash = this.clineMessages[lastHashIndex]
 
 		if (!message) {
-			console.error("未找到消息", this.clineMessages)
+			console.error("Message not found", this.clineMessages)
 			return
 		}
 
@@ -387,7 +412,7 @@ export class Task {
 			case "taskAndWorkspace":
 			case "workspace":
 				if (!this.enableCheckpoints) {
-					vscode.window.showErrorMessage("检查点在设置中已禁用。")
+					vscode.window.showErrorMessage("设置中禁用了检查点.")
 					didWorkspaceRestoreFail = true
 					break
 				}
@@ -401,7 +426,7 @@ export class Task {
 						)
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : "未知错误"
-						console.error("初始化检查点跟踪器失败:", errorMessage)
+						console.error("Failed to initialize checkpoint tracker:", errorMessage)
 						this.checkpointTrackerErrorMessage = errorMessage
 						await this.postStateToWebview()
 						vscode.window.showErrorMessage(errorMessage)
@@ -421,7 +446,7 @@ export class Task {
 						await this.checkpointTracker.resetHead(lastMessageWithHash.lastCheckpointHash)
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : "未知错误"
-						vscode.window.showErrorMessage("恢复偏移检查点失败: " + errorMessage)
+						vscode.window.showErrorMessage("无法恢复检查点偏移: " + errorMessage)
 						didWorkspaceRestoreFail = true
 					}
 				}
@@ -436,21 +461,21 @@ export class Task {
 					const newConversationHistory = this.apiConversationHistory.slice(
 						0,
 						(message.conversationHistoryIndex || 0) + 2,
-					) // +1 因为此索引对应于最后一条用户消息，再 +1 因为 slice 结束索引是独占的
+					) // +1 since this index corresponds to the last user message, and another +1 since slice end index is exclusive
 					await this.overwriteApiConversationHistory(newConversationHistory)
 
-					// 更新上下文历史记录状态
+					// update the context history state
 					await this.contextManager.truncateContextHistory(
 						message.ts,
 						await ensureTaskDirectoryExists(this.getContext(), this.taskId),
 					)
 
-					// 聚合已删除的 api reqs 信息，这样我们就不会丢失成本/令牌
+					// aggregate deleted api reqs info so we don't lose costs/tokens
 					const deletedMessages = this.clineMessages.slice(messageIndex + 1)
 					const deletedApiReqsMetrics = getApiMetrics(combineApiRequests(combineCommandSequences(deletedMessages)))
 
 					const newClineMessages = this.clineMessages.slice(0, messageIndex + 1)
-					await this.overwriteClineMessages(newClineMessages) // 调用 saveClineMessages，它会保存 historyItem
+					await this.overwriteClineMessages(newClineMessages) // calls saveClineMessages which saves historyItem
 
 					await this.say(
 						"deleted_api_reqs",
@@ -480,12 +505,12 @@ export class Task {
 			}
 
 			if (restoreType !== "task") {
-				// 在消息上设置 isCheckpointCheckedOut 标志
-				// 查找此消息之前的所有检查点消息
+				// Set isCheckpointCheckedOut flag on the message
+				// Find all checkpoint messages before this one
 				const checkpointMessages = this.clineMessages.filter((m) => m.say === "checkpoint_created")
 				const currentMessageIndex = checkpointMessages.findIndex((m) => m.ts === messageTs)
 
-				// 将所有检查点消息的 isCheckpointCheckedOut 设置为 false
+				// Set isCheckpointCheckedOut to false for all checkpoint messages
 				checkpointMessages.forEach((m, i) => {
 					m.isCheckpointCheckedOut = i === currentMessageIndex
 				})
@@ -493,20 +518,24 @@ export class Task {
 
 			await this.saveClineMessagesAndUpdateHistory()
 
-			await this.postMessageToWebview({ type: "relinquishControl" })
+			sendRelinquishControlEvent()
 
-			this.cancelTask() // 任务已被提供程序事先取消，但我们需要重新初始化以获取更新的消息
+			this.cancelTask() // the task is already cancelled by the provider beforehand, but we need to re-init to get the updated messages
 		} else {
-			await this.postMessageToWebview({ type: "relinquishControl" })
+			sendRelinquishControlEvent()
 		}
 	}
 
 	async presentMultifileDiff(messageTs: number, seeNewChangesSinceLastTaskCompletion: boolean) {
+		if (this.initTaskPromise && !this.isInitialized) {
+			await this.initTaskPromise
+		}
+
 		const relinquishButton = () => {
-			this.postMessageToWebview({ type: "relinquishControl" })
+			sendRelinquishControlEvent()
 		}
 		if (!this.enableCheckpoints) {
-			vscode.window.showInformationMessage("检查点在设置中已禁用。无法显示差异。")
+			vscode.window.showInformationMessage("检查点被禁用. 无法显示修改.")
 			relinquishButton()
 			return
 		}
@@ -515,18 +544,18 @@ export class Task {
 		const messageIndex = this.clineMessages.findIndex((m) => m.ts === messageTs)
 		const message = this.clineMessages[messageIndex]
 		if (!message) {
-			console.error("未找到消息")
+			console.error("Message not found")
 			relinquishButton()
 			return
 		}
 		const hash = message.lastCheckpointHash
 		if (!hash) {
-			console.error("未找到检查点哈希")
+			console.error("No checkpoint hash found")
 			relinquishButton()
 			return
 		}
 
-		// TODO: 处理从原始工作区外部调用此函数的情况，在这种情况下，我们需要向用户显示错误消息，告知我们无法在工作区外部显示差异？
+		// TODO: handle if this is called from outside original workspace, in which case we need to show user error message we can't show diff outside of workspace?
 		if (!this.checkpointTracker && this.enableCheckpoints && !this.checkpointTrackerErrorMessage) {
 			try {
 				this.checkpointTracker = await CheckpointTracker.create(
@@ -536,7 +565,7 @@ export class Task {
 				)
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : "未知错误"
-				console.error("初始化检查点跟踪器失败:", errorMessage)
+				console.error("无法初始化检查点跟踪器:", errorMessage)
 				this.checkpointTrackerErrorMessage = errorMessage
 				await this.postStateToWebview()
 				vscode.window.showErrorMessage(errorMessage)
@@ -556,22 +585,22 @@ export class Task {
 
 		try {
 			if (seeNewChangesSinceLastTaskCompletion) {
-				// 获取上次任务完成情况
+				// Get last task completed
 				const lastTaskCompletedMessageCheckpointHash = findLast(
 					this.clineMessages.slice(0, messageIndex),
 					(m) => m.say === "completion_result",
-				)?.lastCheckpointHash // ask 仅用于放弃控制权，我们关心的是最后的 say
-				// 如果未定义，则我们从 git 的开头获取差异
+				)?.lastCheckpointHash // ask is only used to relinquish control, its the last say we care about
+				// if undefined, then we get diff from beginning of git
 				// if (!lastTaskCompletedMessage) {
-				// 	console.error("未找到先前的任务完成消息")
+				// 	console.error("No previous task completion message found")
 				// 	return
 				// }
-				// 此值 *应该* 始终存在
+				// This value *should* always exist
 				const firstCheckpointMessageCheckpointHash = this.clineMessages.find(
 					(m) => m.say === "checkpoint_created",
 				)?.lastCheckpointHash
 
-				const previousCheckpointHash = lastTaskCompletedMessageCheckpointHash || firstCheckpointMessageCheckpointHash // 要么使用第一个检查点和任务完成之间的差异，要么使用最新的两个任务完成之间的差异
+				const previousCheckpointHash = lastTaskCompletedMessageCheckpointHash || firstCheckpointMessageCheckpointHash // either use the diff between the first checkpoint and the task completion, or the diff between the latest two task completions
 
 				if (!previousCheckpointHash) {
 					vscode.window.showErrorMessage("意外错误：未找到检查点哈希")
@@ -579,44 +608,44 @@ export class Task {
 					return
 				}
 
-				// 获取当前状态和提交之间的已更改文件
+				// Get changed files between current state and commit
 				changedFiles = await this.checkpointTracker?.getDiffSet(previousCheckpointHash, hash)
 				if (!changedFiles?.length) {
-					vscode.window.showInformationMessage("未找到任何更改")
+					vscode.window.showInformationMessage("没发现修改")
 					relinquishButton()
 					return
 				}
 			} else {
-				// 获取当前状态和提交之间的已更改文件
+				// Get changed files between current state and commit
 				changedFiles = await this.checkpointTracker?.getDiffSet(hash)
 				if (!changedFiles?.length) {
-					vscode.window.showInformationMessage("未找到任何更改")
+					vscode.window.showInformationMessage("没发现修改")
 					relinquishButton()
 					return
 				}
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : "未知错误"
-			vscode.window.showErrorMessage("检索差异集失败: " + errorMessage)
+			vscode.window.showErrorMessage("获取修改失败: " + errorMessage)
 			relinquishButton()
 			return
 		}
 
-		// 检查 VS Code 设置中是否启用了多重差异编辑器
+		// Check if multi-diff editor is enabled in VS Code settings
 		// const config = vscode.workspace.getConfiguration()
 		// const isMultiDiffEnabled = config.get("multiDiffEditor.experimental.enabled")
 
 		// if (!isMultiDiffEnabled) {
 		// 	vscode.window.showErrorMessage(
-		// 		"请在您的 VS Code 设置中启用 'multiDiffEditor.experimental.enabled' 以使用此功能。",
+		// 		"Please enable 'multiDiffEditor.experimental.enabled' in your VS Code settings to use this feature.",
 		// 	)
 		// 	relinquishButton()
 		// 	return
 		// }
-		// 打开多重差异编辑器
+		// Open multi-diff editor
 		await vscode.commands.executeCommand(
 			"vscode.changes",
-			seeNewChangesSinceLastTaskCompletion ? "新更改" : "自快照以来的更改",
+			seeNewChangesSinceLastTaskCompletion ? "New changes" : "Changes since snapshot",
 			changedFiles.map((file) => [
 				vscode.Uri.file(file.absolutePath),
 				vscode.Uri.parse(`${DIFF_VIEW_URI_SCHEME}:${file.relativePath}`).with({
@@ -631,6 +660,10 @@ export class Task {
 	}
 
 	async doesLatestTaskCompletionHaveNewChanges() {
+		if (this.initTaskPromise && !this.isInitialized) {
+			await this.initTaskPromise
+		}
+
 		if (!this.enableCheckpoints) {
 			return false
 		}
@@ -638,12 +671,12 @@ export class Task {
 		const messageIndex = findLastIndex(this.clineMessages, (m) => m.say === "completion_result")
 		const message = this.clineMessages[messageIndex]
 		if (!message) {
-			console.error("未找到完成消息")
+			console.error("Completion message not found")
 			return false
 		}
 		const hash = message.lastCheckpointHash
 		if (!hash) {
-			console.error("未找到检查点哈希")
+			console.error("No checkpoint hash found")
 			return false
 		}
 
@@ -655,50 +688,50 @@ export class Task {
 					this.enableCheckpoints,
 				)
 			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : "未知错误"
-				console.error("初始化检查点跟踪器失败:", errorMessage)
+				const errorMessage = error instanceof Error ? error.message : "Unknown error"
+				console.error("Failed to initialize checkpoint tracker:", errorMessage)
 				return false
 			}
 		}
 
-		// 获取上次任务完成情况
+		// Get last task completed
 		const lastTaskCompletedMessage = findLast(this.clineMessages.slice(0, messageIndex), (m) => m.say === "completion_result")
 
 		try {
-			// 获取上次任务完成情况
-			const lastTaskCompletedMessageCheckpointHash = lastTaskCompletedMessage?.lastCheckpointHash // ask 仅用于放弃控制权，我们关心的是最后的 say
-			// 如果未定义，则我们从 git 的开头获取差异
+			// Get last task completed
+			const lastTaskCompletedMessageCheckpointHash = lastTaskCompletedMessage?.lastCheckpointHash // ask is only used to relinquish control, its the last say we care about
+			// if undefined, then we get diff from beginning of git
 			// if (!lastTaskCompletedMessage) {
-			// 	console.error("未找到先前的任务完成消息")
+			// 	console.error("No previous task completion message found")
 			// 	return
 			// }
-			// 此值 *应该* 始终存在
+			// This value *should* always exist
 			const firstCheckpointMessageCheckpointHash = this.clineMessages.find(
 				(m) => m.say === "checkpoint_created",
 			)?.lastCheckpointHash
 
-			const previousCheckpointHash = lastTaskCompletedMessageCheckpointHash || firstCheckpointMessageCheckpointHash // 要么使用第一个检查点和任务完成之间的差异，要么使用最新的两个任务完成之间的差异
+			const previousCheckpointHash = lastTaskCompletedMessageCheckpointHash || firstCheckpointMessageCheckpointHash // either use the diff between the first checkpoint and the task completion, or the diff between the latest two task completions
 
 			if (!previousCheckpointHash) {
 				return false
 			}
 
-			// 获取当前状态和提交之间已更改文件的计数
+			// Get count of changed files between current state and commit
 			const changedFilesCount = (await this.checkpointTracker?.getDiffCount(previousCheckpointHash, hash)) || 0
 			if (changedFilesCount > 0) {
 				return true
 			}
 		} catch (error) {
-			console.error("获取差异集失败:", error)
+			console.error("Failed to get diff set:", error)
 			return false
 		}
 
 		return false
 	}
 
-	// 与 webview 通信
+	// Communicate with webview
 
-	// partial 有三种有效状态：true（部分消息）、false（部分消息的完成）、undefined（单个完整消息）
+	// partial has three valid states true (partial message), false (completion of partial message), undefined (individual complete message)
 	async ask(
 		type: ClineAsk,
 		text?: string,
@@ -707,10 +740,11 @@ export class Task {
 		response: ClineAskResponse
 		text?: string
 		images?: string[]
+		files?: string[]
 	}> {
-		// 如果此 Cline 实例被提供程序中止，那么唯一使我们保持活动状态的是仍在后台运行的 promise，在这种情况下，我们不希望将其结果发送到 webview，因为它现在附加到一个新的 Cline 实例。因此，我们可以安全地忽略任何活动 promise 的结果，并且此类将被释放。（尽管我们在提供程序中将 Cline 设置为 undefined，但这只是删除了对此实例的引用，但该实例在 promise 解析或拒绝之前仍然存在。）
+		// If this Cline instance was aborted by the provider, then the only thing keeping us alive is a promise still running in the background, in which case we don't want to send its result to the webview as it is attached to a new instance of Cline now. So we can safely ignore the result of any active promises, and this class will be deallocated. (Although we set Cline = undefined in provider, that simply removes the reference to this instance, but the instance is still alive until this promise resolves or rejects.)
 		if (this.abort) {
-			throw new Error("Cline 实例已中止")
+			throw new Error("Cline instance aborted")
 		}
 		let askTs: number
 		if (partial !== undefined) {
@@ -719,19 +753,17 @@ export class Task {
 				lastMessage && lastMessage.partial && lastMessage.type === "ask" && lastMessage.ask === type
 			if (partial) {
 				if (isUpdatingPreviousPartial) {
-					// 现有部分消息，因此更新它
+					// existing partial message, so update it
 					lastMessage.text = text
 					lastMessage.partial = partial
-					// todo 更有效地保存和发布新数据或一次发布整个消息，因此忽略部分保存，并且只发布部分消息的部分而不是新侦听器中的整个数组
+					// todo be more efficient about saving and posting only new data or one whole message at a time so ignore partial for saves, and only post parts of partial message instead of whole array in new listener
 					// await this.saveClineMessagesAndUpdateHistory()
 					// await this.postStateToWebview()
-					await this.postMessageToWebview({
-						type: "partialMessage",
-						partialMessage: lastMessage,
-					})
-					throw new Error("当前 ask promise 已被忽略 1")
+					const protoMessage = convertClineMessageToProto(lastMessage)
+					await sendPartialMessageEvent(protoMessage)
+					throw new Error("Current ask promise was ignored 1")
 				} else {
-					// 这是一个新的部分消息，因此使用部分状态添加它
+					// this is a new partial message, so add it with partial state
 					// this.askResponse = undefined
 					// this.askResponseText = undefined
 					// this.askResponseImages = undefined
@@ -745,21 +777,22 @@ export class Task {
 						partial,
 					})
 					await this.postStateToWebview()
-					throw new Error("当前 ask promise 已被忽略 2")
+					throw new Error("Current ask promise was ignored 2")
 				}
 			} else {
-				// partial=false 表示它是先前部分消息的完整版本
+				// partial=false means its a complete version of a previously partial message
 				if (isUpdatingPreviousPartial) {
-					// 这是先前部分消息的完整版本，因此用完整版本替换部分版本
+					// this is the complete version of a previously partial message, so replace the partial with the complete version
 					this.askResponse = undefined
 					this.askResponseText = undefined
 					this.askResponseImages = undefined
+					this.askResponseFiles = undefined
 
 					/*
-					历史上的错误：
-					在 webview 中，我们使用 ts 作为 virtuoso 列表的 chatrow 键。由于我们会在流式传输结束时更新此 ts，因此会导致视图闪烁。key prop 必须稳定，否则 react 在渲染之间协调项目时会遇到麻烦，从而导致组件卸载和重新挂载（闪烁）。
-					这里的教训是，如果在渲染列表时看到闪烁，则可能是因为 key prop 不稳定。
-					因此，在这种情况下，我们必须确保在首次设置消息 ts 后永远不会更改它。
+					Bug for the history books:
+					In the webview we use the ts as the chatrow key for the virtuoso list. Since we would update this ts right at the end of streaming, it would cause the view to flicker. The key prop has to be stable otherwise react has trouble reconciling items between renders, causing unmounting and remounting of components (flickering).
+					The lesson here is if you see flickering when rendering lists, it's likely because the key prop is not stable.
+					So in this case we must make sure that the message ts is never altered after first setting it.
 					*/
 					askTs = lastMessage.ts
 					this.lastMessageTs = askTs
@@ -768,15 +801,14 @@ export class Task {
 					lastMessage.partial = false
 					await this.saveClineMessagesAndUpdateHistory()
 					// await this.postStateToWebview()
-					await this.postMessageToWebview({
-						type: "partialMessage",
-						partialMessage: lastMessage,
-					})
+					const protoMessage = convertClineMessageToProto(lastMessage)
+					await sendPartialMessageEvent(protoMessage)
 				} else {
-					// 这是一个新的 partial=false 消息，因此像往常一样添加它
+					// this is a new partial=false message, so add it like normal
 					this.askResponse = undefined
 					this.askResponseText = undefined
 					this.askResponseImages = undefined
+					this.askResponseFiles = undefined
 					askTs = Date.now()
 					this.lastMessageTs = askTs
 					await this.addToClineMessages({
@@ -789,11 +821,12 @@ export class Task {
 				}
 			}
 		} else {
-			// 这是一个新的非部分消息，因此像往常一样添加它
+			// this is a new non-partial message, so add it like normal
 			// const lastMessage = this.clineMessages.at(-1)
 			this.askResponse = undefined
 			this.askResponseText = undefined
 			this.askResponseImages = undefined
+			this.askResponseFiles = undefined
 			askTs = Date.now()
 			this.lastMessageTs = askTs
 			await this.addToClineMessages({
@@ -807,28 +840,31 @@ export class Task {
 
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
 		if (this.lastMessageTs !== askTs) {
-			throw new Error("当前 ask promise 已被忽略") // 如果我们连续发送多个 ask（例如使用 command_output），则可能会发生这种情况。重要的是，当我们知道 ask 可能会失败时，要优雅地处理它
+			throw new Error("Current ask promise was ignored") // could happen if we send multiple asks in a row i.e. with command_output. It's important that when we know an ask could fail, it is handled gracefully
 		}
 		const result = {
 			response: this.askResponse!,
 			text: this.askResponseText,
 			images: this.askResponseImages,
+			files: this.askResponseFiles,
 		}
 		this.askResponse = undefined
 		this.askResponseText = undefined
 		this.askResponseImages = undefined
+		this.askResponseFiles = undefined
 		return result
 	}
 
-	async handleWebviewAskResponse(askResponse: ClineAskResponse, text?: string, images?: string[]) {
+	async handleWebviewAskResponse(askResponse: ClineAskResponse, text?: string, images?: string[], files?: string[]) {
 		this.askResponse = askResponse
 		this.askResponseText = text
 		this.askResponseImages = images
+		this.askResponseFiles = files
 	}
 
-	async say(type: ClineSay, text?: string, images?: string[], partial?: boolean): Promise<undefined> {
+	async say(type: ClineSay, text?: string, images?: string[], files?: string[], partial?: boolean): Promise<undefined> {
 		if (this.abort) {
-			throw new Error("Cline 实例已中止")
+			throw new Error("Cline instance aborted")
 		}
 
 		if (partial !== undefined) {
@@ -837,16 +873,15 @@ export class Task {
 				lastMessage && lastMessage.partial && lastMessage.type === "say" && lastMessage.say === type
 			if (partial) {
 				if (isUpdatingPreviousPartial) {
-					// 现有部分消息，因此更新它
+					// existing partial message, so update it
 					lastMessage.text = text
 					lastMessage.images = images
+					lastMessage.files = files
 					lastMessage.partial = partial
-					await this.postMessageToWebview({
-						type: "partialMessage",
-						partialMessage: lastMessage,
-					})
+					const protoMessage = convertClineMessageToProto(lastMessage)
+					await sendPartialMessageEvent(protoMessage)
 				} else {
-					// 这是一个新的部分消息，因此使用部分状态添加它
+					// this is a new partial message, so add it with partial state
 					const sayTs = Date.now()
 					this.lastMessageTs = sayTs
 					await this.addToClineMessages({
@@ -855,29 +890,29 @@ export class Task {
 						say: type,
 						text,
 						images,
+						files,
 						partial,
 					})
 					await this.postStateToWebview()
 				}
 			} else {
-				// partial=false 表示它是先前部分消息的完整版本
+				// partial=false means its a complete version of a previously partial message
 				if (isUpdatingPreviousPartial) {
-					// 这是先前部分消息的完整版本，因此用完整版本替换部分版本
+					// this is the complete version of a previously partial message, so replace the partial with the complete version
 					this.lastMessageTs = lastMessage.ts
 					// lastMessage.ts = sayTs
 					lastMessage.text = text
 					lastMessage.images = images
+					lastMessage.files = files // Ensure files is updated
 					lastMessage.partial = false
 
-					// 我们不流式传输 partialMessage 事件，而是像往常一样进行保存和发布以持久化到磁盘
+					// instead of streaming partialMessage events, we do a save and post like normal to persist to disk
 					await this.saveClineMessagesAndUpdateHistory()
 					// await this.postStateToWebview()
-					await this.postMessageToWebview({
-						type: "partialMessage",
-						partialMessage: lastMessage,
-					}) // 比整个 postStateToWebview 更高效
+					const protoMessage = convertClineMessageToProto(lastMessage)
+					await sendPartialMessageEvent(protoMessage) // more performant than an entire postStateToWebview
 				} else {
-					// 这是一个新的 partial=false 消息，因此像往常一样添加它
+					// this is a new partial=false message, so add it like normal
 					const sayTs = Date.now()
 					this.lastMessageTs = sayTs
 					await this.addToClineMessages({
@@ -886,12 +921,13 @@ export class Task {
 						say: type,
 						text,
 						images,
+						files,
 					})
 					await this.postStateToWebview()
 				}
 			}
 		} else {
-			// 这是一个新的非部分消息，因此像往常一样添加它
+			// this is a new non-partial message, so add it like normal
 			const sayTs = Date.now()
 			this.lastMessageTs = sayTs
 			await this.addToClineMessages({
@@ -900,6 +936,7 @@ export class Task {
 				say: type,
 				text,
 				images,
+				files,
 			})
 			await this.postStateToWebview()
 		}
@@ -908,9 +945,9 @@ export class Task {
 	async sayAndCreateMissingParamError(toolName: ToolUseName, paramName: string, relPath?: string) {
 		await this.say(
 			"error",
-			`Cline 尝试使用 ${toolName}${
-				relPath ? ` 为 '${relPath.toPosix()}'` : ""
-			} 但缺少必需参数 '${paramName}' 的值。正在重试...`,
+			`Cline tried to use ${toolName}${
+				relPath ? ` for '${relPath.toPosix()}'` : ""
+			} without value for required parameter '${paramName}'. Retrying...`,
 		)
 		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
 	}
@@ -924,53 +961,66 @@ export class Task {
 		}
 	}
 
-	// 任务生命周期
+	// Task lifecycle
 
-	private async startTask(task?: string, images?: string[]): Promise<void> {
+	private async startTask(task?: string, images?: string[], files?: string[]): Promise<void> {
 		try {
 			await this.clineIgnoreController.initialize()
 		} catch (error) {
-			console.error("初始化 ClineIgnoreController 失败:", error)
-			// 可选地，通知用户或适当地处理错误
+			console.error("Failed to initialize ClineIgnoreController:", error)
+			// Optionally, inform the user or handle the error appropriately
 		}
-		// conversationHistory (用于 API) 和 clineMessages (用于 webview) 需要同步
-		// 如果扩展进程被终止，则在重新启动时 clineMessages 可能不为空，因此在创建新的 Cline 客户端时需要将其设置为空数组 [] (否则 webview 会显示先前会话的过时消息)
+		// conversationHistory (for API) and clineMessages (for webview) need to be in sync
+		// if the extension process were killed, then on restart the clineMessages might not be empty, so we need to set it to [] when we create a new Cline client (otherwise webview would show stale messages from previous session)
 		this.clineMessages = []
 		this.apiConversationHistory = []
 
 		await this.postStateToWebview()
 
-		await this.say("text", task, images)
+		await this.say("text", task, images, files)
 
 		this.isInitialized = true
 
 		let imageBlocks: Anthropic.ImageBlockParam[] = formatResponse.imageBlocks(images)
-		await this.initiateTaskLoop([
+
+		let userContent: UserContent = [
 			{
 				type: "text",
 				text: `<task>\n${task}\n</task>`,
 			},
 			...imageBlocks,
-		])
+		]
+
+		if (files && files.length > 0) {
+			const fileContentString = await processFilesIntoText(files)
+			if (fileContentString) {
+				userContent.push({
+					type: "text",
+					text: fileContentString,
+				})
+			}
+		}
+
+		await this.initiateTaskLoop(userContent)
 	}
 
 	private async resumeTaskFromHistory() {
 		try {
 			await this.clineIgnoreController.initialize()
 		} catch (error) {
-			console.error("初始化 ClineIgnoreController 失败:", error)
-			// 可选地，通知用户或适当地处理错误
+			console.error("Failed to initialize ClineIgnoreController:", error)
+			// Optionally, inform the user or handle the error appropriately
 		}
-		// 更新：我们不再需要这个了，因为大多数任务现在都是在启用检查点的情况下创建的
-		// 现在我们允许用户为旧任务初始化检查点，假设他们是从同一个工作区继续这些任务（我们从未将工作区与任务绑定，因此无法知道是否在正确的工作区中打开）
+		// UPDATE: we don't need this anymore since most tasks are now created with checkpoints enabled
+		// right now we let users init checkpoints for old tasks, assuming they're continuing them from the same workspace (which we never tied to tasks, so no way for us to know if it's opened in the right workspace)
 		// const doesShadowGitExist = await CheckpointTracker.doesShadowGitExist(this.taskId, this.controllerRef.deref())
 		// if (!doesShadowGitExist) {
-		// 	this.checkpointTrackerErrorMessage = "检查点仅适用于新任务"
+		// 	this.checkpointTrackerErrorMessage = "Checkpoints are only available for new tasks"
 		// }
 
 		const modifiedClineMessages = await getSavedClineMessages(this.getContext(), this.taskId)
 
-		// 删除之前可能已添加的任何恢复消息
+		// Remove any resume messages that may have been added before
 		const lastRelevantMessageIndex = findLastIndex(
 			modifiedClineMessages,
 			(m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"),
@@ -979,7 +1029,7 @@ export class Task {
 			modifiedClineMessages.splice(lastRelevantMessageIndex + 1)
 		}
 
-		// 由于我们不再使用 api_req_finished，我们需要检查最后一个 api_req_started 是否具有成本值，如果没有并且没有取消原因可呈现，则删除它，因为它表示一个没有任何部分内容流式传输的 api 请求
+		// since we don't use api_req_finished anymore, we need to check if the last api_req_started has a cost value, if it doesn't and no cancellation reason to present, then we remove it since it indicates an api request without any partial content streamed
 		const lastApiReqStartedIndex = findLastIndex(
 			modifiedClineMessages,
 			(m) => m.type === "say" && m.say === "api_req_started",
@@ -995,17 +1045,17 @@ export class Task {
 		await this.overwriteClineMessages(modifiedClineMessages)
 		this.clineMessages = await getSavedClineMessages(this.getContext(), this.taskId)
 
-		// 现在向用户显示 cline 消息并询问他们是否要恢复（注意：我们之前遇到过一个错误，即打开旧任务时 apiconversationhistory 不会初始化，这是因为我们正在等待恢复）
-		// 这很重要，以防用户在未先恢复任务的情况下删除消息
+		// Now present the cline messages to the user and ask if they want to resume (NOTE: we ran into a bug before where the apiconversationhistory wouldn't be initialized when opening a old task, and it was because we were waiting for resume)
+		// This is important in case the user deletes messages without resuming the task first
 		this.apiConversationHistory = await getSavedApiConversationHistory(this.getContext(), this.taskId)
 
-		// 加载上下文历史记录状态
+		// load the context history state
 		await this.contextManager.initializeContextHistory(await ensureTaskDirectoryExists(this.getContext(), this.taskId))
 
 		const lastClineMessage = this.clineMessages
 			.slice()
 			.reverse()
-			.find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task")) // 可能是多个恢复任务
+			.find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task")) // could be multiple resume tasks
 
 		let askType: ClineAsk
 		if (lastClineMessage?.ask === "completion_result") {
@@ -1016,26 +1066,28 @@ export class Task {
 
 		this.isInitialized = true
 
-		const { response, text, images } = await this.ask(askType) // 调用 poststatetowebview
+		const { response, text, images, files } = await this.ask(askType) // calls poststatetowebview
 		let responseText: string | undefined
 		let responseImages: string[] | undefined
+		let responseFiles: string[] | undefined
 		if (response === "messageResponse") {
-			await this.say("user_feedback", text, images)
+			await this.say("user_feedback", text, images, files)
 			await this.saveCheckpoint()
 			responseText = text
 			responseImages = images
+			responseFiles = files
 		}
 
-		// 需要确保 api 对话历史记录可以被 api 恢复，即使它与 cline 消息不同步
+		// need to make sure that the api conversation history can be resumed by the api, even if it goes out of sync with cline messages
 
 		const existingApiConversationHistory: Anthropic.Messages.MessageParam[] = await getSavedApiConversationHistory(
 			this.getContext(),
 			this.taskId,
 		)
 
-		// 删除最后一条用户消息，以便我们可以用恢复消息更新它
-		let modifiedOldUserContent: UserContent // 要么是最后一条消息（如果是用户消息），要么是最后一条（助手）消息之前的用户消息
-		let modifiedApiConversationHistory: Anthropic.Messages.MessageParam[] // 需要删除最后一条用户消息以替换为新的修改后的用户消息
+		// Remove the last user message so we can update it with the resume message
+		let modifiedOldUserContent: UserContent // either the last message if its user message, or the user message before the last (assistant) message
+		let modifiedApiConversationHistory: Anthropic.Messages.MessageParam[] // need to remove the last user message to replace with new modified user message
 		if (existingApiConversationHistory.length > 0) {
 			const lastMessage = existingApiConversationHistory[existingApiConversationHistory.length - 1]
 			if (lastMessage.role === "assistant") {
@@ -1048,10 +1100,10 @@ export class Task {
 				modifiedApiConversationHistory = existingApiConversationHistory.slice(0, -1)
 				modifiedOldUserContent = [...existingUserContent]
 			} else {
-				throw new Error("意外：最后一条消息不是用户或助手消息")
+				throw new Error("Unexpected: Last message is not a user or assistant message")
 			}
 		} else {
-			throw new Error("意外：没有现有的 API 对话历史记录")
+			throw new Error("Unexpected: No existing API conversation history")
 		}
 
 		let newUserContent: UserContent = [...modifiedOldUserContent]
@@ -1065,15 +1117,15 @@ export class Task {
 			const days = Math.floor(hours / 24)
 
 			if (days > 0) {
-				return `${days} 天前`
+				return `${days} day${days > 1 ? "s" : ""} ago`
 			}
 			if (hours > 0) {
-				return `${hours} 小时前`
+				return `${hours} hour${hours > 1 ? "s" : ""} ago`
 			}
 			if (minutes > 0) {
-				return `${minutes} 分钟前`
+				return `${minutes} minute${minutes > 1 ? "s" : ""} ago`
 			}
-			return "刚刚"
+			return "just now"
 		})()
 
 		const wasRecent = lastClineMessage?.ts && Date.now() - lastClineMessage.ts < 30_000
@@ -1104,6 +1156,16 @@ export class Task {
 			newUserContent.push(...formatResponse.imageBlocks(responseImages))
 		}
 
+		if (responseFiles && responseFiles.length > 0) {
+			const fileContentString = await processFilesIntoText(responseFiles)
+			if (fileContentString) {
+				newUserContent.push({
+					type: "text",
+					text: fileContentString,
+				})
+			}
+		}
+
 		await this.overwriteApiConversationHistory(modifiedApiConversationHistory)
 		await this.initiateTaskLoop(newUserContent)
 	}
@@ -1113,20 +1175,20 @@ export class Task {
 		let includeFileDetails = true
 		while (!this.abort) {
 			const didEndLoop = await this.recursivelyMakeClineRequests(nextUserContent, includeFileDetails)
-			includeFileDetails = false // 我们只在第一次需要文件详细信息
+			includeFileDetails = false // we only need file details the first time
 
-			//  这个代理循环的工作方式是，cline 将被赋予一个任务，然后他调用工具来完成该任务。除非有 attempt_completion 调用，否则我们会一直用他的工具的响应来回应他，直到他 attempt_completion 或不再使用任何工具。如果他不再使用任何工具，我们会要求他考虑是否已完成任务，然后调用 attempt_completion，否则继续完成任务。
-			// 有一个 MAX_REQUESTS_PER_TASK 限制以防止无限请求，但会提示 Cline 尽可能高效地完成任务。
+			//  The way this agentic loop works is that cline will be given a task that he then calls tools to complete. unless there's an attempt_completion call, we keep responding back to him with his tool's responses until he either attempt_completion or does not use anymore tools. If he does not use anymore tools, we ask him to consider if he's completed the task and then call attempt_completion, otherwise proceed with completing the task.
+			// There is a MAX_REQUESTS_PER_TASK limit to prevent infinite requests, but Cline is prompted to finish the task as efficiently as he can.
 
 			//const totalCost = this.calculateApiCost(totalInputTokens, totalOutputTokens)
 			if (didEndLoop) {
-				// 目前任务永远不会“完成”。这只会在用户达到最大请求数并拒绝重置计数时发生。
-				//this.say("task_completed", `任务已完成。API 使用总成本：${totalCost}`)
+				// For now a task never 'completes'. This will only happen if the user hits max requests and denies resetting the count.
+				//this.say("task_completed", `Task completed. Total API usage cost: ${totalCost}`)
 				break
 			} else {
 				// this.say(
 				// 	"tool",
-				// 	"Cline 仅使用文本块进行了响应，但尚未调用 attempt_completion。正在强制他继续执行任务..."
+				// 	"Cline responded with only text blocks but has not called attempt_completion yet. Forcing him to continue with task..."
 				// )
 				nextUserContent = [
 					{
@@ -1140,23 +1202,27 @@ export class Task {
 	}
 
 	async abortTask() {
-		this.abort = true // 将停止任何自主运行的 promise
+		this.abort = true // will stop any autonomously running promises
 		this.terminalManager.disposeAll()
 		this.urlContentFetcher.closeBrowser()
 		await this.browserSession.dispose()
 		this.clineIgnoreController.dispose()
 		this.fileContextTracker.dispose()
-		await this.diffViewProvider.revertChanges() // 需要等待，以确保在从检查点重新启动任务之前恢复目录/文件
+		await this.diffViewProvider.revertChanges() // need to await for when we want to make sure directories/files are reverted before re-starting the task from a checkpoint
 	}
 
 	// Checkpoints
 
 	async saveCheckpoint(isAttemptCompletionMessage: boolean = false) {
+		if (this.initTaskPromise && !this.isInitialized) {
+			await this.initTaskPromise
+		}
+
 		if (!this.enableCheckpoints) {
-			// 如果禁用了检查点，则不执行任何操作。
+			// If checkpoints are disabled, do nothing.
 			return
 		}
-		// 将所有 checkpoint_created 消息的 isCheckpointCheckedOut 设置为 false
+		// Set isCheckpointCheckedOut to false for all checkpoint_created messages
 		this.clineMessages.forEach((message) => {
 			if (message.say === "checkpoint_created") {
 				message.isCheckpointCheckedOut = false
@@ -1164,13 +1230,13 @@ export class Task {
 		})
 
 		if (!isAttemptCompletionMessage) {
-			// 确保我们没有创建重复的检查点
+			// ensure we aren't creating a duplicate checkpoint
 			const lastMessage = this.clineMessages.at(-1)
 			if (lastMessage?.say === "checkpoint_created") {
 				return
 			}
 
-			// 对于非尝试完成的情况，我们只记录检查点
+			// For non-attempt completion we just say checkpoints
 			await this.say("checkpoint_created")
 			this.checkpointTracker?.commit().then(async (commitHash) => {
 				const lastCheckpointMessage = findLast(this.clineMessages, (m) => m.say === "checkpoint_created")
@@ -1178,37 +1244,57 @@ export class Task {
 					lastCheckpointMessage.lastCheckpointHash = commitHash
 					await this.saveClineMessagesAndUpdateHistory()
 				}
-			}) // 目前静默失败
+			}) // silently fails for now
 
 			//
 		} else {
-			// 尝试完成需要检查点同步，以便在 attempt_completion 后显示按钮
-			const commitHash = await this.checkpointTracker?.commit()
-			// 对于 attempt_completion，找到最后一条 completion_result 消息并设置其检查点哈希。这将用于显示“查看新更改”按钮
-			const lastCompletionResultMessage = findLast(
-				this.clineMessages,
-				(m) => m.say === "completion_result" || m.ask === "completion_result",
-			)
-			if (lastCompletionResultMessage) {
-				lastCompletionResultMessage.lastCheckpointHash = commitHash
-				await this.saveClineMessagesAndUpdateHistory()
+			// attempt completion requires checkpoint to be sync so that we can present button after attempt_completion
+			// Check if checkpoint tracker exists, if not, create it
+			if (!this.checkpointTracker) {
+				try {
+					this.checkpointTracker = await CheckpointTracker.create(
+						this.taskId,
+						this.context.globalStorageUri.fsPath,
+						this.enableCheckpoints,
+					)
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : "Unknown error"
+					console.error("Failed to initialize checkpoint tracker for attempt completion:", errorMessage)
+					return
+				}
+			}
+
+			if (this.checkpointTracker) {
+				const commitHash = await this.checkpointTracker.commit()
+
+				// For attempt_completion, find the last completion_result message and set its checkpoint hash. This will be used to present the 'see new changes' button
+				const lastCompletionResultMessage = findLast(
+					this.clineMessages,
+					(m) => m.say === "completion_result" || m.ask === "completion_result",
+				)
+				if (lastCompletionResultMessage) {
+					lastCompletionResultMessage.lastCheckpointHash = commitHash
+					await this.saveClineMessagesAndUpdateHistory()
+				}
+			} else {
+				console.error("Checkpoint tracker does not exist and could not be initialized for attempt completion")
 			}
 		}
 
 		// if (commitHash) {
 
-		// 以前我们为每条消息都创建检查点，但这过于频繁且没有必要。
-		// // 从末尾开始向前查找，直到找到工具使用或另一条带有哈希的消息
+		// Previously we checkpointed every message, but this is excessive and unnecessary.
+		// // Start from the end and work backwards until we find a tool use or another message with a hash
 		// for (let i = this.clineMessages.length - 1; i >= 0; i--) {
 		// 	const message = this.clineMessages[i]
 		// 	if (message.lastCheckpointHash) {
-		// 		// 找到带有哈希的消息，可以停止
+		// 		// Found a message with a hash, so we can stop
 		// 		break
 		// 	}
-		// 	// 用哈希更新此消息
+		// 	// Update this message with a hash
 		// 	message.lastCheckpointHash = commitHash
 
-		// 	// 我们只关心将哈希添加到最后一次工具使用中（我们不想将此哈希添加到之前的每条消息中，例如对于检查点之前的任务）
+		// 	// We only care about adding the hash to the last tool use (we don't want to add this hash to every prior message ie for tasks pre-checkpoint)
 		// 	const isToolUse =
 		// 		message.say === "tool" ||
 		// 		message.ask === "tool" ||
@@ -1227,76 +1313,76 @@ export class Task {
 		// 		break
 		// 	}
 		// }
-		// // 保存更新后的消息
+		// // Save the updated messages
 		// await this.saveClineMessagesAndUpdateHistory()
 		// }
 	}
 
-	// 工具
+	// Tools
 
 	/**
-	 * 直接在 Node.js 中使用 execa 执行命令
-	 * 这用于测试模式，以捕获完整输出，而无需使用 VS Code 终端
-	 * 命令在使用 Promise.race 30 秒后自动终止
+	 * Executes a command directly in Node.js using execa
+	 * This is used in test mode to capture the full output without using the VS Code terminal
+	 * Commands are automatically terminated after 30 seconds using Promise.race
 	 */
 	private async executeCommandInNode(command: string): Promise<[boolean, ToolResponse]> {
 		try {
-			// 创建子进程
+			// Create a child process
 			const childProcess = execa(command, {
 				shell: true,
 				cwd,
 				reject: false,
-				all: true, // 合并 stdout 和 stderr
+				all: true, // Merge stdout and stderr
 			})
 
-			// 设置变量以收集输出
+			// Set up variables to collect output
 			let output = ""
 
-			// 实时收集输出
+			// Collect output in real-time
 			if (childProcess.all) {
 				childProcess.all.on("data", (data) => {
 					output += data.toString()
 				})
 			}
 
-			// 创建一个在 30 秒后拒绝的超时 Promise
+			// Create a timeout promise that rejects after 30 seconds
 			const timeoutPromise = new Promise<never>((_, reject) => {
 				setTimeout(() => {
 					if (childProcess.pid) {
-						childProcess.kill("SIGKILL") // 使用 SIGKILL 进行更强制的终止
+						childProcess.kill("SIGKILL") // Use SIGKILL for more forceful termination
 					}
 					reject(new Error("Command timeout after 30s"))
 				}, 30000)
 			})
 
-			// 命令完成与超时之间的竞争
+			// Race between command completion and timeout
 			const result = await Promise.race([childProcess, timeoutPromise]).catch((error) => {
-				// 如果由于超时到达此处，则返回带有超时标志的部分结果
+				// If we get here due to timeout, return a partial result with timeout flag
 				Logger.info(`Command timed out after 30s: ${command}`)
 				return {
 					stdout: "",
 					stderr: "",
-					exitCode: 124, // 标准超时退出代码
+					exitCode: 124, // Standard timeout exit code
 					timedOut: true,
 				}
 			})
 
-			// 检查是否发生超时
+			// Check if timeout occurred
 			const wasTerminated = result.timedOut === true
 
-			// 使用收集到的输出或结果输出
+			// Use collected output or result output
 			if (!output) {
 				output = result.stdout || result.stderr || ""
 			}
 
 			Logger.info(`Command executed in Node: ${command}\nOutput:\n${output}`)
 
-			// 如果命令已终止，则添加终止消息
+			// Add termination message if the command was terminated
 			if (wasTerminated) {
 				output += "\nCommand was taking a while to run so it was auto terminated after 30s"
 			}
 
-			// 格式化结果以类似于终端输出
+			// Format the result similar to terminal output
 			return [
 				false,
 				`Command executed${wasTerminated ? " (terminated after 30s)" : ""} with exit code ${
@@ -1304,7 +1390,7 @@ export class Task {
 				}.${output.length > 0 ? `\nOutput:\n${output}` : ""}`,
 			]
 		} catch (error) {
-			// 处理可能发生的任何错误
+			// Handle any errors that might occur
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			return [false, `Error executing command: ${errorMessage}`]
 		}
@@ -1313,22 +1399,22 @@ export class Task {
 	async executeCommandTool(command: string): Promise<[boolean, ToolResponse]> {
 		Logger.info("IS_TEST: " + isInTestMode())
 
-		// 检查是否处于测试模式
+		// Check if we're in test mode
 		if (isInTestMode()) {
-			// 在测试模式下，直接在 Node 中执行命令
+			// In test mode, execute the command directly in Node
 			Logger.info("Executing command in Node: " + command)
 			return this.executeCommandInNode(command)
 		}
 		Logger.info("Executing command in VS code terminal: " + command)
 
 		const terminalInfo = await this.terminalManager.getOrCreateTerminal(cwd)
-		terminalInfo.terminal.show() // 创建新终端时（即使是手动创建）出现的奇怪视觉错误，顶部会有一个空格。
+		terminalInfo.terminal.show() // weird visual bug when creating new terminals (even manually) where there's an empty space at the top.
 		const process = this.terminalManager.runCommand(terminalInfo, command)
 
-		let userFeedback: { text?: string; images?: string[] } | undefined
+		let userFeedback: { text?: string; images?: string[]; files?: string[] } | undefined
 		let didContinue = false
 
-		// 分块终端输出缓冲
+		// Chunked terminal output buffering
 		const CHUNK_LINE_COUNT = 20
 		const CHUNK_BYTE_SIZE = 2048 // 2KB
 		const CHUNK_DEBOUNCE_MS = 100
@@ -1341,7 +1427,7 @@ export class Task {
 		const flushBuffer = async (force = false) => {
 			if (chunkEnroute || outputBuffer.length === 0) {
 				if (force && !chunkEnroute && outputBuffer.length > 0) {
-					// 如果 force 为 true且没有正在传输的块，则无论如何都刷新
+					// If force is true and no chunkEnroute, flush anyway
 				} else {
 					return
 				}
@@ -1351,11 +1437,11 @@ export class Task {
 			outputBufferSize = 0
 			chunkEnroute = true
 			try {
-				const { response, text, images } = await this.ask("command_output", chunk)
+				const { response, text, images, files } = await this.ask("command_output", chunk)
 				if (response === "yesButtonClicked") {
-					// 运行时继续
+					// proceed while running
 				} else {
-					userFeedback = { text, images }
+					userFeedback = { text, images, files }
 				}
 				didContinue = true
 				process.continue()
@@ -1363,7 +1449,7 @@ export class Task {
 				Logger.error("Error while asking for command output")
 			} finally {
 				chunkEnroute = false
-				// 如果在块传输期间累积了更多输出，则再次刷新
+				// If more output accumulated while chunkEnroute, flush again
 				if (outputBuffer.length > 0) {
 					await flushBuffer()
 				}
@@ -1384,7 +1470,7 @@ export class Task {
 			if (!didContinue) {
 				outputBuffer.push(line)
 				outputBufferSize += Buffer.byteLength(line, "utf8")
-				// 如果缓冲区足够大则刷新
+				// Flush if buffer is large enough
 				if (outputBuffer.length >= CHUNK_LINE_COUNT || outputBufferSize >= CHUNK_BYTE_SIZE) {
 					await flushBuffer()
 				} else {
@@ -1398,7 +1484,7 @@ export class Task {
 		let completed = false
 		process.once("completed", async () => {
 			completed = true
-			// 刷新所有剩余的缓冲输出
+			// Flush any remaining buffered output
 			if (!didContinue && outputBuffer.length > 0) {
 				if (chunkTimer) {
 					clearTimeout(chunkTimer)
@@ -1414,18 +1500,24 @@ export class Task {
 
 		await process
 
-		// 等待一小段时间以确保所有消息都发送到 webview
-		// 此延迟允许创建非等待的 promise
-		// 并将其关联的消息发送到 webview，从而保持
-		// 消息的正确顺序（尽管 webview 很智能
-		// 无论如何都会对 command_output 消息进行分组，即使存在间隙）
+		// Wait for a short delay to ensure all messages are sent to the webview
+		// This delay allows time for non-awaited promises to be created and
+		// for their associated messages to be sent to the webview, maintaining
+		// the correct order of messages (although the webview is smart about
+		// grouping command_output messages despite any gaps anyways)
 		await setTimeoutPromise(50)
 
 		result = result.trim()
 
 		if (userFeedback) {
-			await this.say("user_feedback", userFeedback.text, userFeedback.images)
+			await this.say("user_feedback", userFeedback.text, userFeedback.images, userFeedback.files)
 			await this.saveCheckpoint()
+
+			let fileContentString = ""
+			if (userFeedback.files && userFeedback.files.length > 0) {
+				fileContentString = await processFilesIntoText(userFeedback.files)
+			}
+
 			return [
 				true,
 				formatResponse.toolResult(
@@ -1433,6 +1525,7 @@ export class Task {
 						result.length > 0 ? `\nHere's the output so far:\n${result}` : ""
 					}\n\nThe user provided the following feedback:\n<feedback>\n${userFeedback.text}\n</feedback>`,
 					userFeedback.images,
+					fileContentString,
 				),
 			]
 		}
@@ -1449,8 +1542,8 @@ export class Task {
 		}
 	}
 
-	// 根据设置检查工具是否应自动批准
-	// 对于大多数工具返回布尔值，对于具有嵌套设置的工具返回元组
+	// Check if the tool should be auto-approved based on the settings
+	// Returns bool for most tools, and tuple for tools with nested settings
 	shouldAutoApproveTool(toolName: ToolUseName): boolean | [boolean, boolean] {
 		if (this.autoApprovalSettings.enabled) {
 			switch (toolName) {
@@ -1476,6 +1569,8 @@ export class Task {
 					]
 				case "browser_action":
 					return this.autoApprovalSettings.actions.useBrowser
+				case "web_fetch":
+					return this.autoApprovalSettings.actions.useBrowser
 				case "access_mcp_resource":
 				case "use_mcp_tool":
 					return this.autoApprovalSettings.actions.useMcp
@@ -1484,19 +1579,20 @@ export class Task {
 		return false
 	}
 
-	// 根据设置检查工具是否应自动批准
-	// 以及操作的路径。如果工具应根据用户设置和操作路径自动批准，则返回 true
+	// Check if the tool should be auto-approved based on the settings
+	// and the path of the action. Returns true if the tool should be auto-approved
+	// based on the user's settings and the path of the action.
 	shouldAutoApproveToolWithPath(blockname: ToolUseName, autoApproveActionpath: string | undefined): boolean {
 		let isLocalRead: boolean = false
 		if (autoApproveActionpath) {
 			const absolutePath = path.resolve(cwd, autoApproveActionpath)
 			isLocalRead = absolutePath.startsWith(cwd)
 		} else {
-			// 如果由于某种原因我们没有获取到路径，则默认为（更安全的）false 返回
+			// If we do not get a path for some reason, default to a (safer) false return
 			isLocalRead = false
 		}
 
-		// 获取本地和外部编辑的自动批准设置
+		// Get auto-approve settings for local and external edits
 		const autoApproveResult = this.shouldAutoApproveTool(blockname)
 		const [autoApproveLocal, autoApproveExternal] = Array.isArray(autoApproveResult)
 			? autoApproveResult
@@ -1513,12 +1609,12 @@ export class Task {
 		const statusCode = error.status || error.statusCode || (error.response && error.response.status)
 		const message = error.message ?? JSON.stringify(serializeError(error), null, 2)
 
-		// 仅当状态码尚未成为消息的一部分时才在其前面添加
+		// Only prepend the statusCode if it's not already part of the message
 		return statusCode && !message.includes(statusCode.toString()) ? `${statusCode} - ${message}` : message
 	}
 
 	/**
-	 * 将 disableBrowserTool 设置从 VSCode 配置迁移到 browserSettings
+	 * Migrates the disableBrowserTool setting from VSCode configuration to browserSettings
 	 */
 	private async migrateDisableBrowserToolSetting(): Promise<void> {
 		const config = vscode.workspace.getConfiguration("cline")
@@ -1526,7 +1622,7 @@ export class Task {
 
 		if (disableBrowserTool !== undefined) {
 			this.browserSettings.disableToolUse = disableBrowserTool
-			// 从 VSCode 配置中移除
+			// Remove from VSCode configuration
 			await config.update("disableBrowserTool", undefined, true)
 		}
 	}
@@ -1536,32 +1632,39 @@ export class Task {
 		const preferredLanguage = config.get<LanguageDisplay>("preferredLanguage")
 		if (preferredLanguage !== undefined) {
 			this.chatSettings.preferredLanguage = preferredLanguage
-			// 从 VSCode 配置中移除
+			// Remove from VSCode configuration
 			await config.update("preferredLanguage", undefined, true)
 		}
 	}
 
+	private async isClaude4ModelFamily(): Promise<boolean> {
+		const model = this.api.getModel()
+		const modelId = model.id
+		return modelId.includes("sonnet-4") || modelId.includes("opus-4")
+	}
+
 	async *attemptApiRequest(previousApiReqIndex: number): ApiStream {
-		// 等待 MCP 服务器连接后再生成系统提示
+		// Wait for MCP servers to be connected before generating system prompt
 		await pWaitFor(() => this.mcpHub.isConnecting !== true, { timeout: 10_000 }).catch(() => {
 			console.error("MCP servers failed to connect in time")
 		})
 
 		await this.migrateDisableBrowserToolSetting()
 		const disableBrowserTool = this.browserSettings.disableToolUse ?? false
-		// cline 浏览器工具使用图像识别进行导航（需要模型图像支持）。
+		// cline browser tool uses image recognition for navigation (requires model image support).
 		const modelSupportsBrowserUse = this.api.getModel().info.supportsImages ?? false
 
-		const supportsBrowserUse = modelSupportsBrowserUse && !disableBrowserTool // 仅当模型支持且用户未禁用浏览器使用时才启用
+		const supportsBrowserUse = modelSupportsBrowserUse && !disableBrowserTool // only enable browser use if the model supports it and the user hasn't disabled it
 
-		let systemPrompt = await SYSTEM_PROMPT(cwd, supportsBrowserUse, this.mcpHub, this.browserSettings)
+		const isClaude4ModelFamily = await this.isClaude4ModelFamily()
+		let systemPrompt = await SYSTEM_PROMPT(cwd, supportsBrowserUse, this.mcpHub, this.browserSettings, isClaude4ModelFamily)
 
 		let settingsCustomInstructions = this.customInstructions?.trim()
 		await this.migratePreferredLanguageToolSetting()
 		const preferredLanguage = getLanguageKey(this.chatSettings.preferredLanguage as LanguageDisplay)
 		const preferredLanguageInstructions =
 			preferredLanguage && preferredLanguage !== DEFAULT_LANGUAGE_SETTINGS
-				? `# 首选语言\n\nSpeak in ${preferredLanguage}.`
+				? `# Preferred Language\n\nSpeak in ${preferredLanguage}.`
 				: ""
 
 		const { globalToggles, localToggles } = await refreshClineRulesToggles(this.getContext(), cwd)
@@ -1593,7 +1696,7 @@ export class Task {
 			clineIgnoreInstructions ||
 			preferredLanguageInstructions
 		) {
-			// 在任务中途更改系统提示会破坏提示缓存，但从长远来看，这种情况不会经常发生，因此最好不要像处理 <potentially relevant details> 那样用它来污染用户消息
+			// altering the system prompt mid-task will break the prompt cache, but in the grand scheme this will not change often so it's better to not pollute user messages with it the way we have to with <potentially relevant details>
 			const userInstructions = addUserInstructions(
 				settingsCustomInstructions,
 				globalClineRulesFileInstructions,
@@ -1617,7 +1720,7 @@ export class Task {
 
 		if (contextManagementMetadata.updatedConversationHistoryDeletedRange) {
 			this.conversationHistoryDeletedRange = contextManagementMetadata.conversationHistoryDeletedRange
-			await this.saveClineMessagesAndUpdateHistory() // 保存任务历史记录项，我们用它来跟踪对话历史记录的已删除范围
+			await this.saveClineMessagesAndUpdateHistory() // saves task history item which we use to keep track of conversation history deleted range
 		}
 
 		let stream = this.api.createMessage(systemPrompt, contextManagementMetadata.truncatedConversationHistory)
@@ -1625,7 +1728,7 @@ export class Task {
 		const iterator = stream[Symbol.asyncIterator]()
 
 		try {
-			// 等待第一个数据块以查看是否会引发错误
+			// awaiting first chunk to see if it will throw an error
 			this.isWaitingForFirstChunk = true
 			const firstChunk = await iterator.next()
 			yield firstChunk.value
@@ -1640,7 +1743,7 @@ export class Task {
 				this.conversationHistoryDeletedRange = this.contextManager.getNextTruncationRange(
 					this.apiConversationHistory,
 					this.conversationHistoryDeletedRange,
-					"quarter", // 强制积极截断
+					"quarter", // Force aggressive truncation
 				)
 				await this.saveClineMessagesAndUpdateHistory()
 				await this.contextManager.triggerApplyStandardContextTruncationNoticeChange(
@@ -1654,7 +1757,7 @@ export class Task {
 					this.conversationHistoryDeletedRange = this.contextManager.getNextTruncationRange(
 						this.apiConversationHistory,
 						this.conversationHistoryDeletedRange,
-						"quarter", // 强制积极截断
+						"quarter", // Force aggressive truncation
 					)
 					await this.saveClineMessagesAndUpdateHistory()
 					await this.contextManager.triggerApplyStandardContextTruncationNoticeChange(
@@ -1667,8 +1770,8 @@ export class Task {
 				await setTimeoutPromise(1000)
 				this.didAutomaticallyRetryFailedApiRequest = true
 			} else {
-				// 自动重试一次后请求失败，询问用户是否要再次重试
-				// 请注意，此 api_req_failed 请求的独特之处在于，仅当 API 尚未流式传输任何内容时（即由于第一个数据块而失败），我们才会提供此选项，因为这将允许他们点击重试按钮。但是，如果 API 在流式传输中途失败，它可能处于任何任意状态，某些工具可能已经执行，因此该错误的处理方式不同，需要完全取消任务。
+				// request failed after retrying automatically once, ask user if they want to retry again
+				// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
 
 				if (isOpenRouterContextWindowError || isAnthropicContextWindowError) {
 					const truncatedConversationHistory = this.contextManager.getTruncatedMessages(
@@ -1676,8 +1779,8 @@ export class Task {
 						this.conversationHistoryDeletedRange,
 					)
 
-					// 如果对话包含超过 3 条消息，我们可以再次截断。否则，对话将无法继续。
-					// 待办：如果出现这种情况，允许用户更改其输入。
+					// If the conversation has more than 3 messages, we can truncate again. If not, then the conversation is bricked.
+					// ToDo: Allow the user to change their input if this is the case.
 					if (truncatedConversationHistory.length > 3) {
 						error = new Error("Context window exceeded. Click retry to truncate the conversation and try again.")
 						this.didAutomaticallyRetryFailedApiRequest = false
@@ -1686,38 +1789,166 @@ export class Task {
 
 				const errorMessage = this.formatErrorWithStatusCode(error)
 
-				// 更新 'api_req_started' 消息以反映最终失败，然后再要求用户手动重试
+				// Update the 'api_req_started' message to reflect final failure before asking user to manually retry
 				const lastApiReqStartedIndex = findLastIndex(this.clineMessages, (m) => m.say === "api_req_started")
 				if (lastApiReqStartedIndex !== -1) {
 					const currentApiReqInfo: ClineApiReqInfo = JSON.parse(this.clineMessages[lastApiReqStartedIndex].text || "{}")
 					delete currentApiReqInfo.retryStatus
 
 					this.clineMessages[lastApiReqStartedIndex].text = JSON.stringify({
-						...currentApiReqInfo, // 展开修改后的信息（已移除 retryStatus）
-						cancelReason: "retries_exhausted", // 表明自动重试已用尽
+						...currentApiReqInfo, // Spread the modified info (with retryStatus removed)
+						cancelReason: "retries_exhausted", // Indicate that automatic retries failed
 						streamingFailedMessage: errorMessage,
 					} satisfies ClineApiReqInfo)
-					// this.ask 将触发 postStateToWebview，因此应获取此更改。
+					// this.ask will trigger postStateToWebview, so this change should be picked up.
 				}
 
 				const { response } = await this.ask("api_req_failed", errorMessage)
 
 				if (response !== "yesButtonClicked") {
-					// 这永远不会发生，因为如果点击了 noButtonClicked，我们将清除当前任务，从而中止此实例
+					// this will never happen since if noButtonClicked, we will clear current task, aborting this instance
 					throw new Error("API request failed")
 				}
 
 				await this.say("api_req_retried")
 			}
-			// 委托来自递归调用的生成器输出
+			// delegate generator output from the recursive call
 			yield* this.attemptApiRequest(previousApiReqIndex)
 			return
 		}
 
-		// 没有错误，因此我们可以继续产生所有剩余的数据块
-		// （需要放在 try/catch 之外，因为我们希望调用者处理的错误不是 api_req_failed，该错误仅保留给第一个数据块失败的情况）
-		// 这会将控制权委托给另一个生成器或可迭代对象。在这种情况下，它表示“从此迭代器产生所有剩余的值”。这有效地传递了原始流中的所有后续数据块。
+		// no error, so we can continue to yield all remaining chunks
+		// (needs to be placed outside of try/catch since it we want caller to handle errors not with api_req_failed as that is reserved for first chunk failures only)
+		// this delegates to another generator or iterable object. In this case, it's saying "yield all remaining values from this iterator". This effectively passes along all subsequent chunks from the original stream.
 		yield* iterator
+	}
+
+	// Handle streaming JSON replacement for Claude 4 model family
+	private async handleStreamingJsonReplacement(
+		block: any,
+		relPath: string,
+		currentFullJson: string,
+	): Promise<{ shouldBreak: boolean; newContent?: string; error?: string }> {
+		// Calculate the delta - what's new since last time
+		const newJsonChunk = currentFullJson.substring(this.lastProcessedJsonLength)
+		if (block.partial) {
+			// Initialize on first chunk
+			if (!this.streamingJsonReplacer) {
+				if (!this.diffViewProvider.isEditing) {
+					await this.diffViewProvider.open(relPath)
+				}
+
+				// Set up callbacks
+				const onContentUpdated = (newContent: string, _isFinalItem: boolean, changeLocation?: ChangeLocation) => {
+					// Update diff view incrementally
+					this.diffViewProvider.update(newContent, false, changeLocation)
+				}
+
+				const onError = (error: Error) => {
+					console.error("StreamingJsonReplacer error:", error)
+					console.log("Failed StreamingJsonReplacer update:")
+					// Handle error: push tool result, cleanup
+					this.userMessageContent.push({
+						type: "text",
+						text: formatResponse.toolError(`JSON replacement error: ${error.message}`),
+					})
+					this.didAlreadyUseTool = true
+					this.userMessageContentReady = true
+					this.streamingJsonReplacer = undefined
+					this.lastProcessedJsonLength = 0
+					throw error
+				}
+
+				this.streamingJsonReplacer = new StreamingJsonReplacer(
+					this.diffViewProvider.originalContent || "",
+					onContentUpdated,
+					onError,
+				)
+				this.lastProcessedJsonLength = 0
+			}
+
+			// Feed only the new chunk
+			if (newJsonChunk.length > 0) {
+				try {
+					this.streamingJsonReplacer.write(newJsonChunk)
+					this.lastProcessedJsonLength = currentFullJson.length
+				} catch (e) {
+					// Handle write error
+					return { shouldBreak: true, error: `Write error: ${e}` }
+				}
+
+				const newContentParsed = this.streamingJsonReplacer.getSuccessfullyParsedItems()
+			}
+
+			return { shouldBreak: true } // Wait for more chunks
+		} else {
+			// Final chunk (!block.partial)
+			if (!this.streamingJsonReplacer) {
+				// JSON came all at once, initialize
+				if (!this.diffViewProvider.isEditing) {
+					await this.diffViewProvider.open(relPath)
+				}
+
+				// Initialize StreamingJsonReplacer for non-streaming case
+				const onContentUpdated = (newContent: string, _isFinalItem: boolean, changeLocation?: ChangeLocation) => {
+					// Update diff view incrementally
+					this.diffViewProvider.update(newContent, false, changeLocation)
+				}
+
+				const onError = (error: Error) => {
+					console.error("StreamingJsonReplacer error:", error)
+					// Handle error
+					this.userMessageContent.push({
+						type: "text",
+						text: formatResponse.toolError(`JSON replacement error: ${error.message}`),
+					})
+					this.didAlreadyUseTool = true
+					this.userMessageContentReady = true
+					throw error
+				}
+
+				this.streamingJsonReplacer = new StreamingJsonReplacer(
+					this.diffViewProvider.originalContent || "",
+					onContentUpdated,
+					onError,
+				)
+
+				// Write the entire JSON at once
+				this.streamingJsonReplacer.write(currentFullJson)
+
+				// Get the final content
+				const newContent = this.streamingJsonReplacer.getCurrentContent()
+
+				// Cleanup
+				this.streamingJsonReplacer = undefined
+				this.lastProcessedJsonLength = 0
+
+				// Update diff view with final content
+				await this.diffViewProvider.update(newContent, true)
+
+				return { shouldBreak: false, newContent }
+			}
+
+			// Feed final delta
+			if (newJsonChunk.length > 0) {
+				this.streamingJsonReplacer.write(newJsonChunk)
+			}
+
+			const newContent = this.streamingJsonReplacer.getCurrentContent()
+
+			// Get final list of replacements
+			const allReplacements = this.streamingJsonReplacer.getSuccessfullyParsedItems()
+			// console.log(`Total replacements applied: ${allReplacements.length}`)
+
+			// Cleanup
+			this.streamingJsonReplacer = undefined
+			this.lastProcessedJsonLength = 0
+
+			// Update diff view with final content
+			await this.diffViewProvider.update(newContent, true)
+
+			return { shouldBreak: false, newContent }
+		}
 	}
 
 	async presentAssistantMessage() {
@@ -1733,17 +1964,17 @@ export class Task {
 		this.presentAssistantMessageHasPendingUpdates = false
 
 		if (this.currentStreamingContentIndex >= this.assistantMessageContent.length) {
-			// 如果最后一个内容块在流式传输完成之前已完成，则可能会发生这种情况。如果流式传输已完成，并且我们超出范围，则意味着我们已经呈现/执行了最后一个内容块，并准备好继续下一个请求
+			// this may happen if the last content block was completed before streaming could finish. if streaming is finished, and we're out of bounds then this means we already presented/executed the last content block and are ready to continue to next request
 			if (this.didCompleteReadingStream) {
 				this.userMessageContentReady = true
 			}
 			// console.log("no more content blocks to stream! this shouldn't happen?")
 			this.presentAssistantMessageLocked = false
 			return
-			//throw new Error("No more content blocks to stream! This shouldn't happen...") // 删除并在测试后直接返回
+			//throw new Error("No more content blocks to stream! This shouldn't happen...") // remove and just return after testing
 		}
 
-		const block = cloneDeep(this.assistantMessageContent[this.currentStreamingContentIndex]) // 需要创建副本，因为当流更新数组时，它也可能更新引用块的属性
+		const block = cloneDeep(this.assistantMessageContent[this.currentStreamingContentIndex]) // need to create copy bc while stream is updating the array, it could be updating the reference block properties too
 		switch (block.type) {
 			case "text": {
 				if (this.didRejectTool || this.didAlreadyUseTool) {
@@ -1751,36 +1982,36 @@ export class Task {
 				}
 				let content = block.content
 				if (content) {
-					// （对于部分和完整的内容都必须这样做，因为发送到 Markdown 渲染器的 thinking 标签中的内容会自动删除）
-					// 删除 <thinking 或 </thinking 的末尾子字符串（下面的 XML 解析仅适用于开始标签）
-					// （现在通过下面的 XML 解析完成此操作，但在此处保留以供参考）
+					// (have to do this for partial and complete since sending content in thinking tags to markdown renderer will automatically be removed)
+					// Remove end substrings of <thinking or </thinking (below xml parsing is only for opening tags)
+					// (this is done with the xml parsing below now, but keeping here for reference)
 					// content = content.replace(/<\/?t(?:h(?:i(?:n(?:k(?:i(?:n(?:g)?)?)?)?)?)?)?$/, "")
-					// 删除所有 <thinking>（其后可选换行符）和 </thinking>（其前可选换行符）的实例
-					// - 需要分开处理，因为我们不想删除第一个标签之前的换行符
-					// - 需要在下面的 XML 解析之前发生
+					// Remove all instances of <thinking> (with optional line break after) and </thinking> (with optional line break before)
+					// - Needs to be separate since we dont want to remove the line break before the first tag
+					// - Needs to happen before the xml parsing below
 					content = content.replace(/<thinking>\s?/g, "")
 					content = content.replace(/\s?<\/thinking>/g, "")
 
-					// 删除内容末尾的部分 XML 标签（用于工具使用和 thinking 标签）
-					// （防止在自动删除标签时滚动视图跳动）
+					// Remove partial XML tag at the very end of the content (for tool use and thinking tags)
+					// (prevents scrollview from jumping when tags are automatically removed)
 					const lastOpenBracketIndex = content.lastIndexOf("<")
 					if (lastOpenBracketIndex !== -1) {
 						const possibleTag = content.slice(lastOpenBracketIndex)
-						// 检查最后一个 '<' 之后是否有 '>'（即标签是否完整）（完整的 thinking 和 tool 标签此时应该已经被删除）
+						// Check if there's a '>' after the last '<' (i.e., if the tag is complete) (complete thinking and tool tags will have been removed by now)
 						const hasCloseBracket = possibleTag.includes(">")
 						if (!hasCloseBracket) {
-							// 提取潜在的标签名称
+							// Extract the potential tag name
 							let tagContent: string
 							if (possibleTag.startsWith("</")) {
 								tagContent = possibleTag.slice(2).trim()
 							} else {
 								tagContent = possibleTag.slice(1).trim()
 							}
-							// 检查 tagContent 是否可能是未完成的标签名称（仅包含字母和下划线）
+							// Check if tagContent is likely an incomplete tag name (letters and underscores only)
 							const isLikelyTagName = /^[a-zA-Z_]+$/.test(tagContent)
-							// 预先删除 < 或 </ 以防止这些片段出现在聊天中（也处理闭合的 thinking 标签）
+							// Preemptively remove < or </ to keep from these artifacts showing up in chat (also handles closing thinking tags)
 							const isOpeningOrClosing = possibleTag === "<" || possibleTag === "</"
-							// 如果标签未完成且位于末尾，则从内容中删除它
+							// If the tag is incomplete and at the end, remove it from the content
 							if (isOpeningOrClosing || isLikelyTagName) {
 								content = content.slice(0, lastOpenBracketIndex).trim()
 							}
@@ -1789,8 +2020,8 @@ export class Task {
 				}
 
 				if (!block.partial) {
-					// 某些模型会在文本内容末尾添加代码块片段（围绕工具调用）
-					// 匹配字符串末尾以 ``` 开头且最后一个反引号后至少有一个字符的模式
+					// Some models add code block artifacts (around the tool calls) which show up at the end of text content
+					// matches ``` with at least one char after the last backtick, at the end of the string
 					const match = content?.trimEnd().match(/```[a-zA-Z0-9_-]+$/)
 					if (match) {
 						const matchLength = match[0].length
@@ -1798,7 +2029,7 @@ export class Task {
 					}
 				}
 
-				await this.say("text", content, undefined, block.partial)
+				await this.say("text", content, undefined, undefined, block.partial)
 				break
 			}
 			case "tool_use":
@@ -1842,18 +2073,20 @@ export class Task {
 							return `[${block.name}]`
 						case "new_rule":
 							return `[${block.name} for '${block.params.path}']`
+						case "web_fetch":
+							return `[${block.name} for '${block.params.url}']`
 					}
 				}
 
 				if (this.didRejectTool) {
-					// 用户拒绝一次工具后，忽略任何工具内容
+					// ignore any tool content after user has rejected tool once
 					if (!block.partial) {
 						this.userMessageContent.push({
 							type: "text",
 							text: `Skipping tool ${toolDescription()} due to user rejecting a previous tool.`,
 						})
 					} else {
-						// 用户拒绝先前工具后的部分工具
+						// partial tool after user rejected a previous tool
 						this.userMessageContent.push({
 							type: "text",
 							text: `Tool ${toolDescription()} was interrupted and not executed due to user rejecting a previous tool.`,
@@ -1863,7 +2096,7 @@ export class Task {
 				}
 
 				if (this.didAlreadyUseTool) {
-					// 工具已使用后忽略任何内容
+					// ignore any content after a tool has already been used
 					this.userMessageContent.push({
 						type: "text",
 						text: formatResponse.toolAlreadyUsed(block.name),
@@ -1871,31 +2104,43 @@ export class Task {
 					break
 				}
 
-				const pushToolResult = (content: ToolResponse) => {
-					this.userMessageContent.push({
-						type: "text",
-						text: `${toolDescription()} Result:`,
-					})
+				const pushToolResult = (content: ToolResponse, isClaude4ModelFamily: boolean = false) => {
 					if (typeof content === "string") {
-						this.userMessageContent.push({
-							type: "text",
-							text: content || "(tool did not return anything)",
-						})
+						const resultText = content || "(tool did not return anything)"
+
+						if (isClaude4ModelFamily && USE_EXPERIMENTAL_CLAUDE4_FEATURES) {
+							// Claude 4 family: Use function_results format
+							this.userMessageContent.push({
+								type: "text",
+								text: `<function_results>\n${resultText}\n</function_results>`,
+							})
+						} else {
+							// Non-Claude 4: Use traditional format with header
+							this.userMessageContent.push({
+								type: "text",
+								text: `${toolDescription()} Result:`,
+							})
+							this.userMessageContent.push({
+								type: "text",
+								text: resultText,
+							})
+						}
 					} else {
 						this.userMessageContent.push(...content)
 					}
-					// 一旦收集到工具结果，忽略所有其他工具使用，因为每个消息只应呈现一个工具结果
+					// once a tool result has been collected, ignore all other tool uses since we should only ever present one tool result per message
 					this.didAlreadyUseTool = true
 				}
 
-				// 用户可以批准、拒绝或提供反馈（拒绝）。但是，用户也可能在批准的同时发送消息，在这种情况下，我们会添加一条单独的用户消息以及此反馈。
-				const pushAdditionalToolFeedback = (feedback?: string, images?: string[]) => {
-					if (!feedback && !images) {
+				// The user can approve, reject, or provide feedback (rejection). However the user may also send a message along with an approval, in which case we add a separate user message with this feedback.
+				const pushAdditionalToolFeedback = (feedback?: string, images?: string[], fileContentString?: string) => {
+					if (!feedback && (!images || images.length === 0) && !fileContentString) {
 						return
 					}
 					const content = formatResponse.toolResult(
 						`The user provided the following feedback:\n<feedback>\n${feedback}\n</feedback>`,
 						images,
+						fileContentString,
 					)
 					if (typeof content === "string") {
 						this.userMessageContent.push({
@@ -1908,22 +2153,32 @@ export class Task {
 				}
 
 				const askApproval = async (type: ClineAsk, partialMessage?: string) => {
-					const { response, text, images } = await this.ask(type, partialMessage, false)
+					const { response, text, images, files } = await this.ask(type, partialMessage, false)
 					if (response !== "yesButtonClicked") {
-						// 用户按下了拒绝按钮或通过消息回应，我们将其视为拒绝
+						// User pressed reject button or responded with a message, which we treat as a rejection
 						pushToolResult(formatResponse.toolDenied())
-						if (text || images?.length) {
-							pushAdditionalToolFeedback(text, images)
-							await this.say("user_feedback", text, images)
+						if (text || (images && images.length > 0) || (files && files.length > 0)) {
+							let fileContentString = ""
+							if (files && files.length > 0) {
+								fileContentString = await processFilesIntoText(files)
+							}
+
+							pushAdditionalToolFeedback(text, images, fileContentString)
+							await this.say("user_feedback", text, images, files)
 							await this.saveCheckpoint()
 						}
-						this.didRejectTool = true // 阻止在此消息中进一步使用工具
+						this.didRejectTool = true // Prevent further tool uses in this message
 						return false
 					} else {
-						// 用户点击了批准按钮，并且可能提供了反馈
-						if (text || images?.length) {
-							pushAdditionalToolFeedback(text, images)
-							await this.say("user_feedback", text, images)
+						// User hit the approve button, and may have provided feedback
+						if (text || (images && images.length > 0) || (files && files.length > 0)) {
+							let fileContentString = ""
+							if (files && files.length > 0) {
+								fileContentString = await processFilesIntoText(files)
+							}
+
+							pushAdditionalToolFeedback(text, images, fileContentString)
+							await this.say("user_feedback", text, images, files)
 							await this.saveCheckpoint()
 						}
 						return true
@@ -1933,31 +2188,27 @@ export class Task {
 				const showNotificationForApprovalIfAutoApprovalEnabled = (message: string) => {
 					if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 						showSystemNotification({
-							subtitle: "需要批准",
+							subtitle: "Approval Required",
 							message,
 						})
 					}
 				}
 
-				const handleError = async (action: string, error: Error) => {
+				const handleError = async (action: string, error: Error, isClaude4ModelFamily: boolean = false) => {
 					if (this.abandoned) {
-						console.log("任务已放弃，忽略错误（例如，重置后取消任务）")
+						console.log("Ignoring error since task was abandoned (i.e. from task cancellation after resetting)")
 						return
 					}
-					const errorString = `操作 ${action} 出错：${JSON.stringify(serializeError(error))}`
+					const errorString = `Error ${action}: ${JSON.stringify(serializeError(error))}`
 					await this.say(
 						"error",
-						`操作 ${action} 出错：\n${error.message ?? JSON.stringify(serializeError(error), null, 2)}`,
+						`Error ${action}:\n${error.message ?? JSON.stringify(serializeError(error), null, 2)}`,
 					)
-					// this.toolResults.push({
-					// 	type: "tool_result",
-					// 	tool_use_id: toolUseId,
-					// 	content: await this.formatToolError(errorString),
-					// })
-					pushToolResult(formatResponse.toolError(errorString))
+
+					pushToolResult(formatResponse.toolError(errorString), isClaude4ModelFamily)
 				}
 
-				// 如果块是部分的，则删除部分结束标签，使其不呈现给用户
+				// If block is partial, remove partial closing tag so its not presented to user
 				const removeClosingTag = (tag: ToolParamName, text?: string) => {
 					if (!block.partial) {
 						return text || ""
@@ -1965,9 +2216,9 @@ export class Task {
 					if (!text) {
 						return ""
 					}
-					// 此正则表达式动态构建一个模式以匹配结束标签：
-					// - 可选地匹配标签前的空白字符
-					// - 匹配 '<' 或 '</'，其后可选地跟有标签名称中的任何字符子集
+					// This regex dynamically constructs a pattern to match the closing tag:
+					// - Optionally matches whitespace before the tag
+					// - Matches '<' or '</' optionally followed by any subset of characters from the tag name
 					const tagRegex = new RegExp(
 						`\\s?<\/?${tag
 							.split("")
@@ -1990,8 +2241,8 @@ export class Task {
 						let content: string | undefined = block.params.content // for write_to_file
 						let diff: string | undefined = block.params.diff // for replace_in_file
 						if (!relPath || (!content && !diff)) {
-							// 检查 content/diff 以确保 relPath 完整
-							// 等待，以便我们可以确定是新文件还是编辑现有文件
+							// checking for content/diff ensures relPath is complete
+							// wait so we can determine if it's a new file or editing an existing file
 							break
 						}
 
@@ -2003,7 +2254,7 @@ export class Task {
 							break
 						}
 
-						// 使用缓存的映射或 fs.access 检查文件是否存在
+						// Check if file exists using cached map or fs.access
 						let fileExists: boolean
 						if (this.diffViewProvider.editType !== undefined) {
 							fileExists = this.diffViewProvider.editType === "modify"
@@ -2014,55 +2265,89 @@ export class Task {
 						}
 
 						try {
-							// 从 diff 构建 newContent
+							// Construct newContent from diff
 							let newContent: string
+							newContent = "" // default to original content if not editing
 							if (diff) {
 								if (!this.api.getModel().id.includes("claude")) {
-									// deepseek 模型倾向于在 diff 中使用未转义的 html 实体
+									// deepseek models tend to use unescaped html entities in diffs
 									diff = fixModelHtmlEscaping(diff)
 									diff = removeInvalidChars(diff)
 								}
 
-								// 如果编辑器尚未打开，则打开它。这是为了修复当模型提供正确的搜索替换文本但 Cline 因文件未打开而引发错误时的 diff 错误。
+								// open the editor if not done already.  This is to fix diff error when model provides correct search-replace text but Cline throws error
+								// because file is not open.
 								if (!this.diffViewProvider.isEditing) {
 									await this.diffViewProvider.open(relPath)
 								}
 
-								try {
-									newContent = await constructNewFileContent(
-										diff,
-										this.diffViewProvider.originalContent || "",
-										!block.partial,
+								const currentFullJson = block.params.diff
+								// Check if we should use streaming (e.g., for specific models)
+								const isClaude4ModelFamily = await this.isClaude4ModelFamily()
+								// Going through claude family of models
+								if (isClaude4ModelFamily && USE_EXPERIMENTAL_CLAUDE4_FEATURES && currentFullJson) {
+									console.log("[EDIT] Streaming JSON replacement")
+									const streamingResult = await this.handleStreamingJsonReplacement(
+										block,
+										relPath,
+										currentFullJson,
 									)
-								} catch (error) {
-									await this.say("diff_error", relPath)
 
-									// 如果可能，从错误消息中提取错误类型，或使用通用类型
-									const errorType =
-										error instanceof Error && error.message.includes("does not match anything")
-											? "search_not_found"
-											: "other_diff_error"
+									if (streamingResult.error) {
+										await this.say("diff_error", relPath)
+										pushToolResult(formatResponse.toolError(streamingResult.error))
+										await this.diffViewProvider.revertChanges()
+										await this.diffViewProvider.reset()
+										await this.saveCheckpoint()
+										break
+									}
 
-									// 为 diff 编辑失败添加遥测
-									telemetryService.captureDiffEditFailure(this.taskId, this.api.getModel().id, errorType)
+									if (streamingResult.shouldBreak) {
+										break // Wait for more chunks or handle initialization
+									}
 
-									pushToolResult(
-										formatResponse.toolError(
-											`${(error as Error)?.message}\n\n` +
-												formatResponse.diffError(relPath, this.diffViewProvider.originalContent),
-										),
-									)
-									await this.diffViewProvider.revertChanges()
-									await this.diffViewProvider.reset()
-									await this.saveCheckpoint()
-									break
+									// If we get here, we have the final content
+									if (streamingResult.newContent) {
+										newContent = streamingResult.newContent
+										// Continue with approval flow...
+									}
+								} else {
+									try {
+										newContent = await constructNewFileContent(
+											diff,
+											this.diffViewProvider.originalContent || "",
+											!block.partial,
+										)
+									} catch (error) {
+										await this.say("diff_error", relPath)
+
+										// Extract error type from error message if possible, or use a generic type
+										const errorType =
+											error instanceof Error && error.message.includes("does not match anything")
+												? "search_not_found"
+												: "other_diff_error"
+
+										// Add telemetry for diff edit failure
+										telemetryService.captureDiffEditFailure(this.taskId, this.api.getModel().id, errorType)
+
+										pushToolResult(
+											formatResponse.toolError(
+												`${(error as Error)?.message}\n\n` +
+													formatResponse.diffError(relPath, this.diffViewProvider.originalContent),
+											),
+										)
+										await this.diffViewProvider.revertChanges()
+										await this.diffViewProvider.reset()
+										await this.saveCheckpoint()
+										break
+									}
 								}
 							} else if (content) {
 								newContent = content
 
-								// 对 newContent 进行预处理，以处理较弱模型可能添加诸如 markdown 代码块标记 (deepseek/llama) 或额外转义字符 (gemini) 等伪影的情况
+								// pre-processing newContent for cases where weaker models might add artifacts like markdown codeblock markers (deepseek/llama) or extra escape characters (gemini)
 								if (newContent.startsWith("```")) {
-									// 这处理了它包含语言说明符（如 ```python ```js）的情况
+									// this handles cases where it includes language specifiers like ```python ```js
 									newContent = newContent.split("\n").slice(1).join("\n").trim()
 								}
 								if (newContent.endsWith("```")) {
@@ -2070,16 +2355,16 @@ export class Task {
 								}
 
 								if (!this.api.getModel().id.includes("claude")) {
-									// 似乎不仅 llama 模型会这样做，gemini 和其他模型也可能这样做
+									// it seems not just llama models are doing this, but also gemini and potentially others
 									newContent = fixModelHtmlEscaping(newContent)
 									newContent = removeInvalidChars(newContent)
 								}
 							} else {
-								// 不可能发生，因为我们上面已经检查了 content/diff。但需要这样做以避免类型错误
+								// can't happen, since we already checked for content/diff above. but need to do this for type error
 								break
 							}
 
-							newContent = newContent.trimEnd() // 删除任何尾随换行符，因为编辑器会自动插入
+							newContent = newContent.trimEnd() // remove any trailing newlines, since it's automatically inserted by the editor
 
 							const sharedMessageProps: ClineSayTool = {
 								tool: fileExists ? "editedExistingFile" : "newFileCreated",
@@ -2089,22 +2374,22 @@ export class Task {
 							}
 
 							if (block.partial) {
-								// 更新 gui 消息
+								// update gui message
 								const partialMessage = JSON.stringify(sharedMessageProps)
 
 								if (this.shouldAutoApproveToolWithPath(block.name, relPath)) {
-									this.removeLastPartialMessageIfExistsWithType("ask", "tool") // 以防用户在流式传输过程中更改自动批准设置
-									await this.say("tool", partialMessage, undefined, block.partial)
+									this.removeLastPartialMessageIfExistsWithType("ask", "tool") // in case the user changes auto-approval settings mid stream
+									await this.say("tool", partialMessage, undefined, undefined, block.partial)
 								} else {
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									await this.ask("tool", partialMessage, block.partial).catch(() => {})
 								}
-								// 更新编辑器
+								// update editor
 								if (!this.diffViewProvider.isEditing) {
-									// 打开编辑器并准备流式传输内容
+									// open the editor and prepare to stream content in
 									await this.diffViewProvider.open(relPath)
 								}
-								// 编辑器已打开，流式传输内容
+								// editor is open, stream content in
 								await this.diffViewProvider.update(newContent, false)
 								break
 							} else {
@@ -2139,17 +2424,17 @@ export class Task {
 
 								this.consecutiveMistakeCount = 0
 
-								// 如果 isEditingFile 为 false，则表示我们已经拥有文件的完整内容。
-								// 重要的是要注意此函数的工作方式，您不能假设 block.partial 条件将始终被调用，因为它可能立即获取完整的、非部分的数据。因此，这部分逻辑将始终被调用。
-								// 换句话说，您必须始终在此处重复 block.partial 逻辑
+								// if isEditingFile false, that means we have the full contents of the file already.
+								// it's important to note how this function works, you can't make the assumption that the block.partial conditional will always be called since it may immediately get complete, non-partial data. So this part of the logic will always be called.
+								// in other words, you must always repeat the block.partial logic here
 								if (!this.diffViewProvider.isEditing) {
-									// 在显示编辑动画之前显示 gui 消息
+									// show gui message before showing edit animation
 									const partialMessage = JSON.stringify(sharedMessageProps)
-									await this.ask("tool", partialMessage, true).catch(() => {}) // 即使不是部分消息，也发送 true，这会在内容流式传输到编辑器之前显示编辑行
+									await this.ask("tool", partialMessage, true).catch(() => {}) // sending true for partial even though it's not a partial, this shows the edit row before the content is streamed into the editor
 									await this.diffViewProvider.open(relPath)
 								}
 								await this.diffViewProvider.update(newContent, true)
-								await setTimeoutPromise(300) // 等待 diff 视图更新
+								await setTimeoutPromise(300) // wait for diff view to update
 								this.diffViewProvider.scrollToFirstDiff()
 								// showOmissionWarning(this.diffViewProvider.originalContent || "", newContent)
 
@@ -2166,45 +2451,72 @@ export class Task {
 								} satisfies ClineSayTool)
 								if (this.shouldAutoApproveToolWithPath(block.name, relPath)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
-									await this.say("tool", completeMessage, undefined, false)
+									await this.say("tool", completeMessage, undefined, undefined, false)
 									this.consecutiveAutoApprovedRequestsCount++
-									telemetryService.captureToolUsage(this.taskId, block.name, true, true)
+									telemetryService.captureToolUsage(this.taskId, block.name, this.api.getModel().id, true, true)
 
-									// 我们需要人为延迟以使诊断赶上更改
+									// we need an artificial delay to let the diagnostics catch up to the changes
 									await setTimeoutPromise(3_500)
 								} else {
-									// 如果启用了自动批准但此工具未自动批准，则发送通知
+									// If auto-approval is enabled but this tool wasn't auto-approved, send notification
 									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline 想要${fileExists ? "编辑" : "创建"} ${path.basename(relPath)}`,
+										`Cline 需要 ${fileExists ? "编辑" : "创建"} ${path.basename(relPath)}`,
 									)
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 
-									// 需要更自定义的文件编辑工具响应，以突出显示文件未更新的事实（对于 deepseek 尤其重要）
+									// Need a more customized tool response for file edits to highlight the fact that the file was not updated (particularly important for deepseek)
 									let didApprove = true
-									const { response, text, images } = await this.ask("tool", completeMessage, false)
+									const {
+										response,
+										text,
+										images,
+										files: askFiles,
+									} = await this.ask("tool", completeMessage, false)
 									if (response !== "yesButtonClicked") {
-										// 用户发送了消息或按下了拒绝按钮
-										// TODO: 为其他工具拒绝响应添加类似的上下文，以强调例如命令未运行
+										// User either sent a message or pressed reject button
+										// TODO: add similar context for other tool denial responses, to emphasize ie that a command was not run
 										const fileDeniedNote = fileExists
-											? "文件未更新，并保留其原始内容。"
-											: "文件未创建。"
-										pushToolResult(`用户拒绝了此操作。${fileDeniedNote}`)
-										if (text || images?.length) {
-											pushAdditionalToolFeedback(text, images)
-											await this.say("user_feedback", text, images)
+											? "The file was not updated, and maintains its original contents."
+											: "The file was not created."
+										pushToolResult(`The user denied this operation. ${fileDeniedNote}`)
+										if (text || (images && images.length > 0) || (askFiles && askFiles.length > 0)) {
+											let fileContentString = ""
+											if (askFiles && askFiles.length > 0) {
+												fileContentString = await processFilesIntoText(askFiles)
+											}
+
+											pushAdditionalToolFeedback(text, images, fileContentString)
+											await this.say("user_feedback", text, images, askFiles)
 											await this.saveCheckpoint()
 										}
 										this.didRejectTool = true
 										didApprove = false
-										telemetryService.captureToolUsage(this.taskId, block.name, false, false)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											false,
+										)
 									} else {
-										// 用户点击了批准按钮，并且可能提供了反馈
-										if (text || images?.length) {
-											pushAdditionalToolFeedback(text, images)
-											await this.say("user_feedback", text, images)
+										// User hit the approve button, and may have provided feedback
+										if (text || (images && images.length > 0) || (askFiles && askFiles.length > 0)) {
+											let fileContentString = ""
+											if (askFiles && askFiles.length > 0) {
+												fileContentString = await processFilesIntoText(askFiles)
+											}
+
+											pushAdditionalToolFeedback(text, images, fileContentString)
+											await this.say("user_feedback", text, images, askFiles)
 											await this.saveCheckpoint()
 										}
-										telemetryService.captureToolUsage(this.taskId, block.name, false, true)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											true,
+										)
 									}
 
 									if (!didApprove) {
@@ -2214,18 +2526,18 @@ export class Task {
 									}
 								}
 
-								// 将文件标记为由 Cline 编辑，以防止错误的“最近修改”警告
+								// Mark the file as edited by Cline to prevent false "recently modified" warnings
 								this.fileContextTracker.markFileAsEditedByCline(relPath)
 
 								const { newProblemsMessage, userEdits, autoFormattingEdits, finalContent } =
 									await this.diffViewProvider.saveChanges()
-								this.didEditFile = true // 用于确定在发送 api 请求之前是否应等待繁忙的终端更新
+								this.didEditFile = true // used to determine if we should wait for busy terminal to update before sending api request
 
-								// 跟踪文件编辑操作
+								// Track file edit operation
 								await this.fileContextTracker.trackFileContext(relPath, "cline_edited")
 
 								if (userEdits) {
-									// 跟踪文件编辑操作
+									// Track file edit operation
 									await this.fileContextTracker.trackFileContext(relPath, "user_edited")
 
 									await this.say(
@@ -2267,7 +2579,7 @@ export class Task {
 								break
 							}
 						} catch (error) {
-							await handleError("写入文件", error)
+							await handleError("writing file", error)
 							await this.diffViewProvider.revertChanges()
 							await this.diffViewProvider.reset()
 							await this.saveCheckpoint()
@@ -2289,7 +2601,7 @@ export class Task {
 								} satisfies ClineSayTool)
 								if (this.shouldAutoApproveToolWithPath(block.name, block.params.path)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
-									await this.say("tool", partialMessage, undefined, block.partial)
+									await this.say("tool", partialMessage, undefined, undefined, block.partial)
 								} else {
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									await this.ask("tool", partialMessage, block.partial).catch(() => {})
@@ -2320,26 +2632,38 @@ export class Task {
 								} satisfies ClineSayTool)
 								if (this.shouldAutoApproveToolWithPath(block.name, block.params.path)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
-									await this.say("tool", completeMessage, undefined, false) // 需要发送 partialValue 布尔值，因为 undefined 有其自身的用途，即消息既不被视为部分消息，也不被视为部分消息的完成，而是被视为单个完整的消息
+									await this.say("tool", completeMessage, undefined, undefined, false) // need to be sending partialValue bool, since undefined has its own purpose in that the message is treated neither as a partial or completion of a partial, but as a single complete message
 									this.consecutiveAutoApprovedRequestsCount++
-									telemetryService.captureToolUsage(this.taskId, block.name, true, true)
+									telemetryService.captureToolUsage(this.taskId, block.name, this.api.getModel().id, true, true)
 								} else {
 									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline 想要读取 ${path.basename(absolutePath)}`,
+										`Cline 需要读取 ${path.basename(absolutePath)}`,
 									)
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									const didApprove = await askApproval("tool", completeMessage)
 									if (!didApprove) {
 										await this.saveCheckpoint()
-										telemetryService.captureToolUsage(this.taskId, block.name, false, false)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											false,
+										)
 										break
 									}
-									telemetryService.captureToolUsage(this.taskId, block.name, false, true)
+									telemetryService.captureToolUsage(
+										this.taskId,
+										block.name,
+										this.api.getModel().id,
+										false,
+										true,
+									)
 								}
-								// 现在像往常一样执行工具
+								// now execute the tool like normal
 								const content = await extractTextFromFile(absolutePath)
 
-								// 跟踪文件读取操作
+								// Track file read operation
 								await this.fileContextTracker.trackFileContext(relPath, "read_tool")
 
 								pushToolResult(content)
@@ -2347,12 +2671,13 @@ export class Task {
 								break
 							}
 						} catch (error) {
-							await handleError("读取文件", error)
+							await handleError("reading file", error)
 							await this.saveCheckpoint()
 							break
 						}
 					}
 					case "list_files": {
+						const isClaude4ModelFamily = await this.isClaude4ModelFamily()
 						const relDirPath: string | undefined = block.params.path
 						const recursiveRaw: string | undefined = block.params.recursive
 						const recursive = recursiveRaw?.toLowerCase() === "true"
@@ -2369,7 +2694,7 @@ export class Task {
 								} satisfies ClineSayTool)
 								if (this.shouldAutoApproveToolWithPath(block.name, block.params.path)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
-									await this.say("tool", partialMessage, undefined, block.partial)
+									await this.say("tool", partialMessage, undefined, undefined, block.partial)
 								} else {
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									await this.ask("tool", partialMessage, block.partial).catch(() => {})
@@ -2378,7 +2703,10 @@ export class Task {
 							} else {
 								if (!relDirPath) {
 									this.consecutiveMistakeCount++
-									pushToolResult(await this.sayAndCreateMissingParamError("list_files", "path"))
+									pushToolResult(
+										await this.sayAndCreateMissingParamError("list_files", "path"),
+										isClaude4ModelFamily,
+									)
 									await this.saveCheckpoint()
 									break
 								}
@@ -2401,28 +2729,40 @@ export class Task {
 								} satisfies ClineSayTool)
 								if (this.shouldAutoApproveToolWithPath(block.name, block.params.path)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
-									await this.say("tool", completeMessage, undefined, false)
+									await this.say("tool", completeMessage, undefined, undefined, false)
 									this.consecutiveAutoApprovedRequestsCount++
-									telemetryService.captureToolUsage(this.taskId, block.name, true, true)
+									telemetryService.captureToolUsage(this.taskId, block.name, this.api.getModel().id, true, true)
 								} else {
 									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline 想要查看目录 ${path.basename(absolutePath)}/`,
+										`Cline 需要查看目录 ${path.basename(absolutePath)}/`,
 									)
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									const didApprove = await askApproval("tool", completeMessage)
 									if (!didApprove) {
-										telemetryService.captureToolUsage(this.taskId, block.name, false, false)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											false,
+										)
 										await this.saveCheckpoint()
 										break
 									}
-									telemetryService.captureToolUsage(this.taskId, block.name, false, true)
+									telemetryService.captureToolUsage(
+										this.taskId,
+										block.name,
+										this.api.getModel().id,
+										false,
+										true,
+									)
 								}
-								pushToolResult(result)
+								pushToolResult(result, isClaude4ModelFamily)
 								await this.saveCheckpoint()
 								break
 							}
 						} catch (error) {
-							await handleError("列出文件", error)
+							await handleError("listing files", error, isClaude4ModelFamily)
 							await this.saveCheckpoint()
 							break
 						}
@@ -2442,7 +2782,7 @@ export class Task {
 								} satisfies ClineSayTool)
 								if (this.shouldAutoApproveToolWithPath(block.name, block.params.path)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
-									await this.say("tool", partialMessage, undefined, block.partial)
+									await this.say("tool", partialMessage, undefined, undefined, block.partial)
 								} else {
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									await this.ask("tool", partialMessage, block.partial).catch(() => {})
@@ -2471,33 +2811,46 @@ export class Task {
 								} satisfies ClineSayTool)
 								if (this.shouldAutoApproveToolWithPath(block.name, block.params.path)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
-									await this.say("tool", completeMessage, undefined, false)
+									await this.say("tool", completeMessage, undefined, undefined, false)
 									this.consecutiveAutoApprovedRequestsCount++
-									telemetryService.captureToolUsage(this.taskId, block.name, true, true)
+									telemetryService.captureToolUsage(this.taskId, block.name, this.api.getModel().id, true, true)
 								} else {
 									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline 想要查看 ${path.basename(absolutePath)}/ 中的源代码定义`,
+										`Cline 需要查看 ${path.basename(absolutePath)}/ 中的代码`,
 									)
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									const didApprove = await askApproval("tool", completeMessage)
 									if (!didApprove) {
-										telemetryService.captureToolUsage(this.taskId, block.name, false, false)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											false,
+										)
 										await this.saveCheckpoint()
 										break
 									}
-									telemetryService.captureToolUsage(this.taskId, block.name, false, true)
+									telemetryService.captureToolUsage(
+										this.taskId,
+										block.name,
+										this.api.getModel().id,
+										false,
+										true,
+									)
 								}
 								pushToolResult(result)
 								await this.saveCheckpoint()
 								break
 							}
 						} catch (error) {
-							await handleError("解析源代码定义", error)
+							await handleError("parsing source code definitions", error)
 							await this.saveCheckpoint()
 							break
 						}
 					}
 					case "search_files": {
+						const isClaude4ModelFamily = await this.isClaude4ModelFamily()
 						const relDirPath: string | undefined = block.params.path
 						const regex: string | undefined = block.params.regex
 						const filePattern: string | undefined = block.params.file_pattern
@@ -2516,7 +2869,7 @@ export class Task {
 								} satisfies ClineSayTool)
 								if (this.shouldAutoApproveToolWithPath(block.name, block.params.path)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
-									await this.say("tool", partialMessage, undefined, block.partial)
+									await this.say("tool", partialMessage, undefined, undefined, block.partial)
 								} else {
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									await this.ask("tool", partialMessage, block.partial).catch(() => {})
@@ -2525,13 +2878,19 @@ export class Task {
 							} else {
 								if (!relDirPath) {
 									this.consecutiveMistakeCount++
-									pushToolResult(await this.sayAndCreateMissingParamError("search_files", "path"))
+									pushToolResult(
+										await this.sayAndCreateMissingParamError("search_files", "path"),
+										isClaude4ModelFamily,
+									)
 									await this.saveCheckpoint()
 									break
 								}
 								if (!regex) {
 									this.consecutiveMistakeCount++
-									pushToolResult(await this.sayAndCreateMissingParamError("search_files", "regex"))
+									pushToolResult(
+										await this.sayAndCreateMissingParamError("search_files", "regex"),
+										isClaude4ModelFamily,
+									)
 									await this.saveCheckpoint()
 									break
 								}
@@ -2553,28 +2912,40 @@ export class Task {
 								} satisfies ClineSayTool)
 								if (this.shouldAutoApproveToolWithPath(block.name, block.params.path)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
-									await this.say("tool", completeMessage, undefined, false)
+									await this.say("tool", completeMessage, undefined, undefined, false)
 									this.consecutiveAutoApprovedRequestsCount++
-									telemetryService.captureToolUsage(this.taskId, block.name, true, true)
+									telemetryService.captureToolUsage(this.taskId, block.name, this.api.getModel().id, true, true)
 								} else {
 									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline 想要在 ${path.basename(absolutePath)}/ 中搜索文件`,
+										`Cline wants to search files in ${path.basename(absolutePath)}/`,
 									)
 									this.removeLastPartialMessageIfExistsWithType("say", "tool")
 									const didApprove = await askApproval("tool", completeMessage)
 									if (!didApprove) {
-										telemetryService.captureToolUsage(this.taskId, block.name, false, false)
+										telemetryService.captureToolUsage(
+											this.taskId,
+											block.name,
+											this.api.getModel().id,
+											false,
+											false,
+										)
 										await this.saveCheckpoint()
 										break
 									}
-									telemetryService.captureToolUsage(this.taskId, block.name, false, true)
+									telemetryService.captureToolUsage(
+										this.taskId,
+										block.name,
+										this.api.getModel().id,
+										false,
+										true,
+									)
 								}
-								pushToolResult(results)
+								pushToolResult(results, isClaude4ModelFamily)
 								await this.saveCheckpoint()
 								break
 							}
 						} catch (error) {
-							await handleError("搜索文件", error)
+							await handleError("searching files", error, isClaude4ModelFamily)
 							await this.saveCheckpoint()
 							break
 						}
@@ -2585,9 +2956,9 @@ export class Task {
 						const coordinate: string | undefined = block.params.coordinate
 						const text: string | undefined = block.params.text
 						if (!action || !browserActions.includes(action)) {
-							// 检查 action 以确保其完整且有效
+							// checking for action to ensure it is complete and valid
 							if (!block.partial) {
-								// 如果块已完成且我们没有有效的 action，则这是一个错误
+								// if the block is complete and we don't have a valid action this is a mistake
 								this.consecutiveMistakeCount++
 								pushToolResult(await this.sayAndCreateMissingParamError("browser_action", "action"))
 								await this.browserSession.closeBrowser()
@@ -2604,6 +2975,7 @@ export class Task {
 										await this.say(
 											"browser_action_launch",
 											removeClosingTag("url", url),
+											undefined,
 											undefined,
 											block.partial,
 										)
@@ -2624,6 +2996,7 @@ export class Task {
 											text: removeClosingTag("text", text),
 										} satisfies ClineSayBrowserAction),
 										undefined,
+										undefined,
 										block.partial,
 									)
 								}
@@ -2642,11 +3015,11 @@ export class Task {
 
 									if (this.shouldAutoApproveTool(block.name)) {
 										this.removeLastPartialMessageIfExistsWithType("ask", "browser_action_launch")
-										await this.say("browser_action_launch", url, undefined, false)
+										await this.say("browser_action_launch", url, undefined, undefined, false)
 										this.consecutiveAutoApprovedRequestsCount++
 									} else {
 										showNotificationForApprovalIfAutoApprovalEnabled(
-											`Cline 想要使用浏览器并启动 ${url}`,
+											`Cline wants to use a browser and launch ${url}`,
 										)
 										this.removeLastPartialMessageIfExistsWithType("say", "browser_action_launch")
 										const didApprove = await askApproval("browser_action_launch", url)
@@ -2656,16 +3029,16 @@ export class Task {
 										}
 									}
 
-									// 注意：调用此消息是可以的，因为部分 inspect_site 已完成流式传输。我们唯一需要避免的情况是在消息数组末尾存在部分消息时发送消息。例如，api_req_finished 消息会干扰部分消息，因此我们需要删除它。
-									// await this.say("inspect_site_result", "") // 没有结果，启动加载微调器等待结果
-									await this.say("browser_action_result", "") // 启动加载微调器
+									// NOTE: it's okay that we call this message since the partial inspect_site is finished streaming. The only scenario we have to avoid is sending messages WHILE a partial message exists at the end of the messages array. For example the api_req_finished message would interfere with the partial message, so we needed to remove that.
+									// await this.say("inspect_site_result", "") // no result, starts the loading spinner waiting for result
+									await this.say("browser_action_result", "") // starts loading spinner
 
-									// 重新创建 browserSession 以确保应用最新设置
+									// Re-make browserSession to make sure latest settings apply
 									if (this.context) {
 										await this.browserSession.dispose()
 										this.browserSession = new BrowserSession(this.context, this.browserSettings)
 									} else {
-										console.warn("browserSession 没有可用的控制器上下文")
+										console.warn("no controller context available for browserSession")
 									}
 									await this.browserSession.launchBrowser()
 									browserActionResult = await this.browserSession.navigateToUrl(url)
@@ -2678,7 +3051,7 @@ export class Task {
 											)
 											await this.browserSession.closeBrowser()
 											await this.saveCheckpoint()
-											break // 不能在内部 switch 中
+											break // can't be within an inner switch
 										}
 									}
 									if (action === "type") {
@@ -2698,6 +3071,7 @@ export class Task {
 											coordinate,
 											text,
 										} satisfies ClineSayBrowserAction),
+										undefined,
 										undefined,
 										false,
 									)
@@ -2729,9 +3103,9 @@ export class Task {
 										await this.say("browser_action_result", JSON.stringify(browserActionResult))
 										pushToolResult(
 											formatResponse.toolResult(
-												`浏览器操作已执行。控制台日志和屏幕截图已捕获供您分析。\n\n控制台日志：\n${
-													browserActionResult.logs || "(无新日志)"
-												}\n\n（请记住：如果您需要继续使用非 \`browser_action\` 工具或启动新浏览器，则必须首先关闭此浏览器。例如，如果在分析日志和屏幕截图后需要编辑文件，则必须先关闭浏览器才能使用 write_to_file 工具。）`,
+												`The browser action has been executed. The console logs and screenshot have been captured for your analysis.\n\nConsole logs:\n${
+													browserActionResult.logs || "(No new logs)"
+												}\n\n(REMEMBER: if you need to proceed to using non-\`browser_action\` tools or launch a new browser, you MUST first close this browser. For example, if after analyzing the logs and screenshot you need to edit a file, you must first close the browser before you can use the write_to_file tool.)`,
 												browserActionResult.screenshot ? [browserActionResult.screenshot] : [],
 											),
 										)
@@ -2740,7 +3114,7 @@ export class Task {
 									case "close":
 										pushToolResult(
 											formatResponse.toolResult(
-												`浏览器已关闭。您现在可以继续使用其他工具。`,
+												`The browser has been closed. You may now proceed to using other tools.`,
 											),
 										)
 										await this.saveCheckpoint()
@@ -2750,8 +3124,8 @@ export class Task {
 								break
 							}
 						} catch (error) {
-							await this.browserSession.closeBrowser() // 如果发生任何错误，浏览器会话将终止
-							await handleError("执行浏览器操作", error)
+							await this.browserSession.closeBrowser() // if any error occurs, the browser session is terminated
+							await handleError("executing browser action", error)
 							await this.saveCheckpoint()
 							break
 						}
@@ -2764,7 +3138,7 @@ export class Task {
 						try {
 							if (block.partial) {
 								if (this.shouldAutoApproveTool(block.name)) {
-									// 由于取决于即将到来的参数 requiresApproval，这可能会变成一个 ask - 我们不能过早地部分流式传输 say。因此，在这种特殊情况下，我们必须等待 requiresApproval 参数完成后才能呈现它。
+									// since depending on an upcoming parameter, requiresApproval this may become an ask - we can't partially stream a say prematurely. So in this particular case we have to wait for the requiresApproval parameter to be completed before presenting it.
 									// await this.say(
 									// 	"command",
 									// 	removeClosingTag("command", command),
@@ -2772,7 +3146,7 @@ export class Task {
 									// 	block.partial,
 									// ).catch(() => {})
 								} else {
-									// 不需要删除最后一个部分，因为我们无法流式传输 say
+									// don't need to remove last partial since we couldn't have streamed a say
 									await this.ask("command", removeClosingTag("command", command), block.partial).catch(() => {})
 								}
 								break
@@ -2793,7 +3167,7 @@ export class Task {
 								}
 								this.consecutiveMistakeCount = 0
 
-								// gemini 模型倾向于在命令中使用未转义的 html 实体
+								// gemini models tend to use unescaped html entities in commands
 								if (this.api.getModel().id.includes("gemini")) {
 									command = fixModelHtmlEscaping(command)
 								}
@@ -2810,8 +3184,8 @@ export class Task {
 
 								let didAutoApprove = false
 
-								// 如果模型认为此命令是安全的，并且安全命令的自动批准为 true，则执行该命令
-								// 如果模型认为该命令有风险，但*两个*自动批准设置都为 true，则执行该命令
+								// If the model says this command is safe and auto approval for safe commands is true, execute the command
+								// If the model says the command is risky, but *BOTH* auto approve settings are true, execute the command
 								const autoApproveResult = this.shouldAutoApproveTool(block.name)
 								const [autoApproveSafe, autoApproveAll] = Array.isArray(autoApproveResult)
 									? autoApproveResult
@@ -2822,18 +3196,16 @@ export class Task {
 									(requiresApprovalPerLLM && autoApproveSafe && autoApproveAll)
 								) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "command")
-									await this.say("command", command, undefined, false)
+									await this.say("command", command, undefined, undefined, false)
 									this.consecutiveAutoApprovedRequestsCount++
 									didAutoApprove = true
 								} else {
-									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline 想要执行命令：${command}`,
-									)
+									showNotificationForApprovalIfAutoApprovalEnabled(`Cline 需要执行命令: ${command}`)
 									// this.removeLastPartialMessageIfExistsWithType("say", "command")
 									const didApprove = await askApproval(
 										"command",
 										command +
-											`${this.shouldAutoApproveTool(block.name) && requiresApprovalPerLLM ? COMMAND_REQ_APP_STRING : ""}`, // 丑陋的 hack，直到我们重构 combineCommandSequences
+											`${this.shouldAutoApproveTool(block.name) && requiresApprovalPerLLM ? COMMAND_REQ_APP_STRING : ""}`, // ugly hack until we refactor combineCommandSequences
 									)
 									if (!didApprove) {
 										await this.saveCheckpoint()
@@ -2843,12 +3215,11 @@ export class Task {
 
 								let timeoutId: NodeJS.Timeout | undefined
 								if (didAutoApprove && this.autoApprovalSettings.enableNotifications) {
-									// 如果命令已自动批准，并且运行时间较长，我们需要在一段时间后通知用户
+									// if the command was auto-approved, and it's long running we need to notify the user after some time has passed without proceeding
 									timeoutId = setTimeout(() => {
 										showSystemNotification({
-											subtitle: "命令仍在运行",
-											message:
-												"一个自动批准的命令已运行 30 秒，可能需要您的注意。",
+											subtitle: "命令任在执行",
+											message: "一个自动批准的命令运行了 30秒, 也许你需要关注它.",
 										})
 									}, 30_000)
 								}
@@ -2861,7 +3232,7 @@ export class Task {
 									this.didRejectTool = true
 								}
 
-								// 重新填充文件路径，以防命令修改了工作区（除非用户手动创建/删除文件，否则 vscode 侦听器不会触发）
+								// Re-populate file paths in case the command modified the workspace (vscode listeners do not trigger unless the user manually creates/deletes files)
 								this.workspaceTracker.populateFilePaths()
 
 								pushToolResult(result)
@@ -2871,7 +3242,7 @@ export class Task {
 								break
 							}
 						} catch (error) {
-							await handleError("执行命令", error)
+							await handleError("executing command", error)
 							await this.saveCheckpoint()
 							break
 						}
@@ -2891,7 +3262,7 @@ export class Task {
 
 								if (this.shouldAutoApproveTool(block.name)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "use_mcp_server")
-									await this.say("use_mcp_server", partialMessage, undefined, block.partial)
+									await this.say("use_mcp_server", partialMessage, undefined, undefined, block.partial)
 								} else {
 									this.removeLastPartialMessageIfExistsWithType("say", "use_mcp_server")
 									await this.ask("use_mcp_server", partialMessage, block.partial).catch(() => {})
@@ -2911,7 +3282,7 @@ export class Task {
 									await this.saveCheckpoint()
 									break
 								}
-								// 参数是可选的，但如果提供，则必须是有效的 JSON
+								// arguments are optional, but if they are provided they must be valid JSON
 								// if (!mcp_arguments) {
 								// 	this.consecutiveMistakeCount++
 								// 	pushToolResult(await this.sayAndCreateMissingParamError("use_mcp_tool", "arguments"))
@@ -2923,10 +3294,7 @@ export class Task {
 										parsedArguments = JSON.parse(mcp_arguments)
 									} catch (error) {
 										this.consecutiveMistakeCount++
-										await this.say(
-											"error",
-											`Cline 尝试使用 ${tool_name} 但 JSON 参数无效。正在重试...`,
-										)
+										await this.say("error", `Cline 使用 ${tool_name} 但是 JSON 参数无效. 正在重试...`)
 										pushToolResult(
 											formatResponse.toolError(
 												formatResponse.invalidMcpToolArgumentError(server_name, tool_name),
@@ -2950,11 +3318,11 @@ export class Task {
 
 								if (this.shouldAutoApproveTool(block.name) && isToolAutoApproved) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "use_mcp_server")
-									await this.say("use_mcp_server", completeMessage, undefined, false)
+									await this.say("use_mcp_server", completeMessage, undefined, undefined, false)
 									this.consecutiveAutoApprovedRequestsCount++
 								} else {
 									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline 想要在 ${server_name} 上使用 ${tool_name}`,
+										`Cline wants to use ${tool_name} on ${server_name}`,
 									)
 									this.removeLastPartialMessageIfExistsWithType("say", "use_mcp_server")
 									const didApprove = await askApproval("use_mcp_server", completeMessage)
@@ -2964,18 +3332,21 @@ export class Task {
 									}
 								}
 
-								// 现在执行工具
-								await this.say("mcp_server_request_started") // 与 browser_action_result 相同
+								// now execute the tool
+								await this.say("mcp_server_request_started") // same as browser_action_result
 								const toolResult = await this.mcpHub.callTool(server_name, tool_name, parsedArguments)
 
-								// TODO: 添加进度指示器
+								// TODO: add progress indicator
 
 								const toolResultImages =
 									toolResult?.content
 										.filter((item) => item.type === "image")
-										.map((item) => `data:${item.mimeType};base64,${item.data}`) || []
+										.map(
+											(item) =>
+												`data:${(item as { mimeType: string }).mimeType};base64,${(item as { data: string }).data}`,
+										) || []
 								let toolResultText =
-									(toolResult?.isError ? "错误：\n" : "") +
+									(toolResult?.isError ? "Error:\n" : "") +
 										toolResult?.content
 											.map((item) => {
 												if (item.type === "text") {
@@ -2988,19 +3359,19 @@ export class Task {
 												return ""
 											})
 											.filter(Boolean)
-											.join("\n\n") || "(无响应)"
-								// webview 从文本响应中提取图像以在 UI 中显示
+											.join("\n\n") || "(No response)"
+								// webview extracts images from the text response to display in the UI
 								const toolResultToDisplay =
 									toolResultText + toolResultImages?.map((image) => `\n\n${image}`).join("")
 								await this.say("mcp_server_response", toolResultToDisplay)
 
-								// MCP 可能会返回图像以显示给用户，但模型可能不支持它们
+								// MCP's might return images to display to the user, but the model may not support them
 								const supportsImages = this.api.getModel().info.supportsImages ?? false
 								if (toolResultImages.length > 0 && !supportsImages) {
-									toolResultText += `\n\n[响应中提供了 ${toolResultImages.length} 张图像，虽然它们已显示给用户，但您无法查看它们。]`
+									toolResultText += `\n\n[${toolResultImages.length} 响应中提供了图像，虽然它们显示给用户，但您无法查看它们。]`
 								}
 
-								// 仅当模型支持时才传入图像
+								// only passes in images if model supports them
 								pushToolResult(
 									formatResponse.toolResult(toolResultText, supportsImages ? toolResultImages : undefined),
 								)
@@ -3010,7 +3381,7 @@ export class Task {
 								break
 							}
 						} catch (error) {
-							await handleError("执行 MCP 工具", error)
+							await handleError("executing MCP tool", error)
 							await this.saveCheckpoint()
 							break
 						}
@@ -3028,7 +3399,7 @@ export class Task {
 
 								if (this.shouldAutoApproveTool(block.name)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "use_mcp_server")
-									await this.say("use_mcp_server", partialMessage, undefined, block.partial)
+									await this.say("use_mcp_server", partialMessage, undefined, undefined, block.partial)
 								} else {
 									this.removeLastPartialMessageIfExistsWithType("say", "use_mcp_server")
 									await this.ask("use_mcp_server", partialMessage, block.partial).catch(() => {})
@@ -3057,11 +3428,11 @@ export class Task {
 
 								if (this.shouldAutoApproveTool(block.name)) {
 									this.removeLastPartialMessageIfExistsWithType("ask", "use_mcp_server")
-									await this.say("use_mcp_server", completeMessage, undefined, false)
+									await this.say("use_mcp_server", completeMessage, undefined, undefined, false)
 									this.consecutiveAutoApprovedRequestsCount++
 								} else {
 									showNotificationForApprovalIfAutoApprovalEnabled(
-										`Cline 想要在 ${server_name} 上访问 ${uri}`,
+										`Cline wants to access ${uri} on ${server_name}`,
 									)
 									this.removeLastPartialMessageIfExistsWithType("say", "use_mcp_server")
 									const didApprove = await askApproval("use_mcp_server", completeMessage)
@@ -3083,14 +3454,14 @@ export class Task {
 											return ""
 										})
 										.filter(Boolean)
-										.join("\n\n") || "(空响应)"
+										.join("\n\n") || "(Empty response)"
 								await this.say("mcp_server_response", resourceResultPretty)
 								pushToolResult(formatResponse.toolResult(resourceResultPretty))
 								await this.saveCheckpoint()
 								break
 							}
 						} catch (error) {
-							await handleError("访问 MCP 资源", error)
+							await handleError("accessing MCP resource", error)
 							await this.saveCheckpoint()
 							break
 						}
@@ -3117,20 +3488,24 @@ export class Task {
 
 								if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 									showSystemNotification({
-										subtitle: "Cline 有一个问题...",
+										subtitle: "Cline 有个疑问...",
 										message: question.replace(/\n/g, " "),
 									})
 								}
 
-								// 存储选项数量以进行遥测
+								// Store the number of options for telemetry
 								const options = parsePartialArrayString(optionsRaw || "[]")
 
-								const { text, images } = await this.ask("followup", JSON.stringify(sharedMessage), false)
+								const {
+									text,
+									images,
+									files: followupFiles,
+								} = await this.ask("followup", JSON.stringify(sharedMessage), false)
 
-								// 检查选项是否包含文本响应
+								// Check if options contains the text response
 								if (optionsRaw && text && parsePartialArrayString(optionsRaw).includes(text)) {
-									// 选择了有效选项，不在 UI 中显示用户消息
-									// 使用选定选项更新最后一条跟进消息
+									// Valid option selected, don't show user message in UI
+									// Update last followup message with selected option
 									const lastFollowupMessage = findLast(this.clineMessages, (m) => m.ask === "followup")
 									if (lastFollowupMessage) {
 										lastFollowupMessage.text = JSON.stringify({
@@ -3141,17 +3516,24 @@ export class Task {
 										telemetryService.captureOptionSelected(this.taskId, options.length, "act")
 									}
 								} else {
-									// 未选择选项，发送用户反馈
+									// Option not selected, send user feedback
 									telemetryService.captureOptionsIgnored(this.taskId, options.length, "act")
-									await this.say("user_feedback", text ?? "", images)
+									await this.say("user_feedback", text ?? "", images, followupFiles)
 								}
 
-								pushToolResult(formatResponse.toolResult(`<answer>\n${text}\n</answer>`, images))
+								let fileContentString = ""
+								if (followupFiles && followupFiles.length > 0) {
+									fileContentString = await processFilesIntoText(followupFiles)
+								}
+
+								pushToolResult(
+									formatResponse.toolResult(`<answer>\n${text}\n</answer>`, images, fileContentString),
+								)
 								await this.saveCheckpoint()
 								break
 							}
 						} catch (error) {
-							await handleError("提问问题", error)
+							await handleError("asking question", error)
 							await this.saveCheckpoint()
 							break
 						}
@@ -3173,33 +3555,37 @@ export class Task {
 
 								if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 									showSystemNotification({
-										subtitle: "Cline 想要开始一个新任务...",
-										message: `Cline 建议使用以下内容开始一个新任务: ${context}`,
+										subtitle: "Cline 开始一个新任务...",
+										message: `Cline 建议使用: ${context} 开始一个新任务`,
 									})
 								}
 
-								const { text, images } = await this.ask("new_task", context, false)
+								const { text, images, files: newTaskFiles } = await this.ask("new_task", context, false)
 
-								// 如果用户提供了响应，则将其视为反馈
-								if (text || images?.length) {
-									await this.say("user_feedback", text ?? "", images)
+								// If the user provided a response, treat it as feedback
+								if (text || (images && images.length > 0) || (newTaskFiles && newTaskFiles.length > 0)) {
+									let fileContentString = ""
+									if (newTaskFiles && newTaskFiles.length > 0) {
+										fileContentString = await processFilesIntoText(newTaskFiles)
+									}
+
+									await this.say("user_feedback", text ?? "", images, newTaskFiles)
 									pushToolResult(
 										formatResponse.toolResult(
-											`用户提供了反馈，而不是创建新任务：\n<feedback>\n${text}\n</feedback>`,
+											`用户提供反馈而不是创建新任务:\n<feedback>\n${text}\n</feedback>`,
 											images,
+											fileContentString,
 										),
 									)
 								} else {
-									// 如果没有响应，则用户点击了“创建新任务”按钮
-									pushToolResult(
-										formatResponse.toolResult(`用户已使用提供的上下文创建了一个新任务。`),
-									)
+									// If no response, the user clicked the "Create New Task" button
+									pushToolResult(formatResponse.toolResult(`用户已使用提供的上下文创建新任务.`))
 								}
 								await this.saveCheckpoint()
 								break
 							}
 						} catch (error) {
-							await handleError("创建新任务", error)
+							await handleError("creating new task", error)
 							await this.saveCheckpoint()
 							break
 						}
@@ -3221,31 +3607,37 @@ export class Task {
 
 								if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 									showSystemNotification({
-										subtitle: "Cline 想要精简对话...",
-										message: `Cline 建议使用以下内容精简您的对话: ${context}`,
+										subtitle: "Cline 需要压缩当前会话上下文...",
+										message: `Cline 需要用${context} 压缩当前会话上下文`,
 									})
 								}
 
-								const { text, images } = await this.ask("condense", context, false)
+								const { text, images, files: condenseFiles } = await this.ask("condense", context, false)
 
-								// 如果用户提供了响应，则将其视为反馈
-								if (text || images?.length) {
-									await this.say("user_feedback", text ?? "", images)
+								// If the user provided a response, treat it as feedback
+								if (text || (images && images.length > 0) || (condenseFiles && condenseFiles.length > 0)) {
+									let fileContentString = ""
+									if (condenseFiles && condenseFiles.length > 0) {
+										fileContentString = await processFilesIntoText(condenseFiles)
+									}
+
+									await this.say("user_feedback", text ?? "", images, condenseFiles)
 									pushToolResult(
 										formatResponse.toolResult(
-											`用户对精简的对话摘要提供了反馈：\n<feedback>\n${text}\n</feedback>`,
+											`The user provided feedback on the condensed conversation summary:\n<feedback>\n${text}\n</feedback>`,
 											images,
+											fileContentString,
 										),
 									)
 								} else {
-									// 如果没有响应，则用户接受了精简版本
+									// If no response, the user accepted the condensed version
 									pushToolResult(formatResponse.toolResult(formatResponse.condense()))
 
 									const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
 									const summaryAlreadyAppended = lastMessage && lastMessage.role === "assistant"
 									const keepStrategy = summaryAlreadyAppended ? "lastTwo" : "none"
 
-									// 此时清除上下文历史记录
+									// clear the context history at this point in time
 									this.conversationHistoryDeletedRange = this.contextManager.getNextTruncationRange(
 										this.apiConversationHistory,
 										this.conversationHistoryDeletedRange,
@@ -3261,7 +3653,7 @@ export class Task {
 								break
 							}
 						} catch (error) {
-							await handleError("精简上下文窗口", error)
+							await handleError("condensing context window", error)
 							await this.saveCheckpoint()
 							break
 						}
@@ -3323,51 +3715,58 @@ export class Task {
 
 								if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 									showSystemNotification({
-										subtitle: "Cline 想要创建一个 github 问题...",
-										message: `Cline 建议使用标题创建 github 问题: ${title}`,
+										subtitle: "Cline 需要创建一个 github issue...",
+										message: `Cline 需要用: ${title}为标题创建一个 github issue `,
 									})
 								}
 
-								// 通过算法派生系统信息值
+								// Derive system information values algorithmically
 								const operatingSystem = os.platform() + " " + os.release()
 								const clineVersion =
-									vscode.extensions.getExtension("saoudrizwan.claude-dev")?.packageJSON.version || "未知"
+									vscode.extensions.getExtension("HybridTalentComputing.cline-chinese")?.packageJSON.version ||
+									"Unknown"
 								const systemInfo = `VSCode: ${vscode.version}, Node.js: ${process.version}, Architecture: ${os.arch()}`
 								const providerAndModel = `${(await getGlobalState(this.getContext(), "apiProvider")) as string} / ${this.api.getModel().id}`
 
-								// 请求用户确认
+								// Ask user for confirmation
 								const bugReportData = JSON.stringify({
 									title,
 									what_happened,
 									steps_to_reproduce,
 									api_request_output,
 									additional_context,
-									// 在 JSON 中包含派生值以供显示
+									// Include derived values in the JSON for display purposes
 									provider_and_model: providerAndModel,
 									operating_system: operatingSystem,
 									system_info: systemInfo,
 									cline_version: clineVersion,
 								})
 
-								const { text, images } = await this.ask("report_bug", bugReportData, false)
+								const { text, images, files: reportBugFiles } = await this.ask("report_bug", bugReportData, false)
 
-								// 如果用户提供了响应，则将其视为反馈
-								if (text || images?.length) {
-									await this.say("user_feedback", text ?? "", images)
+								// If the user provided a response, treat it as feedback
+								if (text || (images && images.length > 0) || (reportBugFiles && reportBugFiles.length > 0)) {
+									let fileContentString = ""
+									if (reportBugFiles && reportBugFiles.length > 0) {
+										fileContentString = await processFilesIntoText(reportBugFiles)
+									}
+
+									await this.say("user_feedback", text ?? "", images, reportBugFiles)
 									pushToolResult(
 										formatResponse.toolResult(
-											`用户未提交错误，而是对生成的 Github 问题提供了反馈：\n<feedback>\n${text}\n</feedback>`,
+											`The user did not submit the bug, and provided feedback on the Github issue generated instead:\n<feedback>\n${text}\n</feedback>`,
 											images,
+											fileContentString,
 										),
 									)
 								} else {
-									// 如果没有响应，则用户接受了创建 Github 问题
+									// If no response, the user accepted the condensed version
 									pushToolResult(
-										formatResponse.toolResult(`用户接受了创建 Github 问题。`),
+										formatResponse.toolResult(`The user accepted the creation of the Github issue.`),
 									)
 
 									try {
-										// 为 GitHub 问题创建一个参数映射
+										// Create a Map of parameters for the GitHub issue
 										const params = new Map<string, string>()
 										params.set("title", title)
 										params.set("operating-system", operatingSystem)
@@ -3379,18 +3778,116 @@ export class Task {
 										params.set("provider-model", providerAndModel)
 										params.set("logs", api_request_output)
 
-										// 使用我们的实用函数创建并打开 GitHub 问题 URL
-										// 这绕过了 VS Code 处理特殊字符时的 URI 问题
+										// Use our utility function to create and open the GitHub issue URL
+										// This bypasses VS Code's URI handling issues with special characters
 										await createAndOpenGitHubIssue("cline", "cline", "bug_report.yml", params)
 									} catch (error) {
-										console.error(`尝试报告错误时发生错误: ${error}`)
+										console.error(`An error occurred while attempting to report the bug: ${error}`)
 									}
 								}
 								await this.saveCheckpoint()
 								break
 							}
 						} catch (error) {
-							await handleError("报告错误", error)
+							await handleError("reporting bug", error)
+							await this.saveCheckpoint()
+							break
+						}
+					}
+					case "web_fetch": {
+						const url: string | undefined = block.params.url
+						// TODO: Implement caching for web_fetch
+						const sharedMessageProps: ClineSayTool = {
+							tool: "webFetch",
+							path: removeClosingTag("url", url),
+							content: `Fetching URL: ${removeClosingTag("url", url)}`,
+						}
+
+						try {
+							if (block.partial) {
+								const partialMessage = JSON.stringify({
+									...sharedMessageProps,
+									operationIsLocatedInWorkspace: false, // web_fetch is always external
+								} satisfies ClineSayTool)
+
+								// WebFetch is a read-only operation, generally safe.
+								// Let's assume it follows similar auto-approval logic to read_file for now.
+								// We might need a dedicated auto-approval setting for it later.
+								if (this.shouldAutoApproveTool("web_fetch" as ToolUseName)) {
+									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
+									await this.say("tool", partialMessage, undefined, undefined, block.partial)
+								} else {
+									this.removeLastPartialMessageIfExistsWithType("say", "tool")
+									await this.ask("tool", partialMessage, block.partial).catch(() => {})
+								}
+								break
+							} else {
+								if (!url) {
+									this.consecutiveMistakeCount++
+									pushToolResult(await this.sayAndCreateMissingParamError("web_fetch", "url"))
+									await this.saveCheckpoint()
+									break
+								}
+
+								this.consecutiveMistakeCount = 0
+								const completeMessage = JSON.stringify({
+									...sharedMessageProps,
+									operationIsLocatedInWorkspace: false,
+								} satisfies ClineSayTool)
+
+								if (this.shouldAutoApproveTool("web_fetch" as ToolUseName)) {
+									this.removeLastPartialMessageIfExistsWithType("ask", "tool")
+									await this.say("tool", completeMessage, undefined, undefined, false)
+									this.consecutiveAutoApprovedRequestsCount++
+									telemetryService.captureToolUsage(
+										this.taskId,
+										"web_fetch" as ToolUseName,
+										this.api.getModel().id,
+										true,
+										true,
+									)
+								} else {
+									showNotificationForApprovalIfAutoApprovalEnabled(`Cline wants to fetch content from ${url}`)
+									this.removeLastPartialMessageIfExistsWithType("say", "tool")
+									const didApprove = await askApproval("tool", completeMessage)
+									if (!didApprove) {
+										telemetryService.captureToolUsage(
+											this.taskId,
+											"web_fetch" as ToolUseName,
+											this.api.getModel().id,
+											false,
+											false,
+										)
+										await this.saveCheckpoint()
+										break
+									}
+									telemetryService.captureToolUsage(
+										this.taskId,
+										"web_fetch" as ToolUseName,
+										this.api.getModel().id,
+										false,
+										true,
+									)
+								}
+
+								// Fetch Markdown contentcc
+								await this.urlContentFetcher.launchBrowser()
+								const markdownContent = await this.urlContentFetcher.urlToMarkdown(url)
+								await this.urlContentFetcher.closeBrowser()
+
+								// TODO: Implement secondary AI call to process markdownContent with prompt
+								// For now, returning markdown directly.
+								// This will be a significant sub-task.
+								// Placeholder for processed summary:
+								const processedSummary = `Fetched Markdown for ${url}:\n\n${markdownContent}`
+
+								pushToolResult(formatResponse.toolResult(processedSummary))
+								await this.saveCheckpoint()
+								break
+							}
+						} catch (error) {
+							await this.urlContentFetcher.closeBrowser() // Ensure browser is closed on error
+							await handleError("fetching web content", error)
 							await this.saveCheckpoint()
 							break
 						}
@@ -3417,27 +3914,31 @@ export class Task {
 
 								// if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 								// 	showSystemNotification({
-								// 		subtitle: "Cline 有一个响应...",
+								// 		subtitle: "Cline has a response...",
 								// 		message: response.replace(/\n/g, " "),
 								// 	})
 								// }
 
-								// 存储选项数量以进行遥测
+								// Store the number of options for telemetry
 								const options = parsePartialArrayString(optionsRaw || "[]")
 
 								this.isAwaitingPlanResponse = true
-								let { text, images } = await this.ask("plan_mode_respond", JSON.stringify(sharedMessage), false)
+								let {
+									text,
+									images,
+									files: planResponseFiles,
+								} = await this.ask("plan_mode_respond", JSON.stringify(sharedMessage), false)
 								this.isAwaitingPlanResponse = false
 
-								// webview 调用 sendMessage 将发送此标记，以便将 webview 置于正确状态（响应询问）并作为用户切换到 ACT 模式的扩展标志。
+								// webview invoke sendMessage will send this marker in order to put webview into the proper state (responding to an ask) and as a flag to extension that the user switched to ACT mode.
 								if (text === "PLAN_MODE_TOGGLE_RESPONSE") {
 									text = ""
 								}
 
-								// 检查选项是否包含文本响应
+								// Check if options contains the text response
 								if (optionsRaw && text && parsePartialArrayString(optionsRaw).includes(text)) {
-									// 选择了有效选项，不在 UI 中显示用户消息
-									// 使用选定选项更新最后一条计划消息
+									// Valid option selected, don't show user message in UI
+									// Update last followup message with selected option
 									const lastPlanMessage = findLast(this.clineMessages, (m) => m.ask === "plan_mode_respond")
 									if (lastPlanMessage) {
 										lastPlanMessage.text = JSON.stringify({
@@ -3448,34 +3949,50 @@ export class Task {
 										telemetryService.captureOptionSelected(this.taskId, options.length, "plan")
 									}
 								} else {
-									// 未选择选项，发送用户反馈
-									if (text || images?.length) {
+									// Option not selected, send user feedback
+									if (
+										text ||
+										(images && images.length > 0) ||
+										(planResponseFiles && planResponseFiles.length > 0)
+									) {
 										telemetryService.captureOptionsIgnored(this.taskId, options.length, "plan")
-										await this.say("user_feedback", text ?? "", images)
+										await this.say("user_feedback", text ?? "", images, planResponseFiles)
 										await this.saveCheckpoint()
 									}
+								}
+
+								let fileContentString = ""
+								if (planResponseFiles && planResponseFiles.length > 0) {
+									fileContentString = await processFilesIntoText(planResponseFiles)
 								}
 
 								if (this.didRespondToPlanAskBySwitchingMode) {
 									pushToolResult(
 										formatResponse.toolResult(
-											`[用户已切换到行动模式，因此您现在可以继续执行任务。]` +
+											`[The user has switched to ACT MODE, so you may now proceed with the task.]` +
 												(text
-													? `\n\n用户在切换到行动模式时还提供了以下消息：\n<user_message>\n${text}\n</user_message>`
+													? `\n\nThe user also provided the following message when switching to ACT MODE:\n<user_message>\n${text}\n</user_message>`
 													: ""),
 											images,
+											fileContentString,
 										),
 									)
 								} else {
-									// 如果我们没有切换到行动模式，那么我们可以只发送 user_feedback 消息
-									pushToolResult(formatResponse.toolResult(`<user_message>\n${text}\n</user_message>`, images))
+									// if we didn't switch to ACT MODE, then we can just send the user_feedback message
+									pushToolResult(
+										formatResponse.toolResult(
+											`<user_message>\n${text}\n</user_message>`,
+											images,
+											fileContentString,
+										),
+									)
 								}
 
 								//
 								break
 							}
 						} catch (error) {
-							await handleError("响应查询", error)
+							await handleError("responding to inquiry", error)
 							//
 							break
 						}
@@ -3483,15 +4000,15 @@ export class Task {
 					case "load_mcp_documentation": {
 						try {
 							if (block.partial) {
-								// 不应该发生
+								// shouldn't happen
 								break
 							} else {
-								await this.say("load_mcp_documentation", "", undefined, false)
+								await this.say("load_mcp_documentation", "", undefined, undefined, false)
 								pushToolResult(await loadMcpDocumentation(this.mcpHub))
 								break
 							}
 						} catch (error) {
-							await handleError("加载 MCP 文档", error)
+							await handleError("loading MCP documentation", error)
 							break
 						}
 					}
@@ -3501,17 +4018,17 @@ export class Task {
 						let resultToSend = result
 						if (command) {
 							await this.say("completion_result", resultToSend)
-							// TODO: 目前我们不处理此命令失败的情况，让 cline知道并重试可能很有用
+							// TODO: currently we don't handle if this command fails, it could be useful to let cline know and retry
 							const [didUserReject, commandResult] = await this.executeCommand(command, true)
-							// 如果我们收到非空字符串，则命令被拒绝或失败
+							// if we received non-empty string, the command was rejected or failed
 							if (commandResult) {
 								return [didUserReject, commandResult]
 							}
 							resultToSend = ""
 						}
-						const { response, text, images } = await this.ask("completion_result", resultToSend) // 这将提示 webview 显示“新任务”按钮，并启用文本输入（此处为“文本”）
+						const { response, text, images } = await this.ask("completion_result", resultToSend) // this prompts webview to show 'new task' button, and enable text input (which would be the 'text' here)
 						if (response === "yesButtonClicked") {
-							return [false, ""] // 向递归循环发出停止信号（目前这永远不会发生，因为 yesButtonClicked 将触发一个新任务）
+							return [false, ""] // signals to recursive loop to stop (for now this never happens since yesButtonClicked will trigger a new task)
 						}
 						await this.say("user_feedback", text ?? "", images)
 						return [
@@ -3520,7 +4037,7 @@ export class Task {
 						const command: string | undefined = block.params.command
 
 						const addNewChangesFlagToLastCompletionResultMessage = async () => {
-							// 如果工作区有新更改，则添加 newchanges 标志
+							// Add newchanges flag if there are new changes to the workspace
 
 							const hasNewChanges = await this.doesLatestTaskCompletionHaveNewChanges()
 							const lastCompletionResultMessage = findLast(this.clineMessages, (m) => m.say === "completion_result")
@@ -3538,20 +4055,26 @@ export class Task {
 							const lastMessage = this.clineMessages.at(-1)
 							if (block.partial) {
 								if (command) {
-									// attempt_completion 文本已完成，现在我们正在获取命令
-									// 删除先前的部分 attempt_completion ask，替换为 say，将状态发布到 webview，然后流式传输命令
+									// the attempt_completion text is done, now we're getting command
+									// remove the previous partial attempt_completion ask, replace with say, post state to webview, then stream command
 
 									// const secondLastMessage = this.clineMessages.at(-2)
-									// 注意：我们不希望自动批准作为 attempt_completion 工具一部分运行的命令
+									// NOTE: we do not want to auto approve a command run as part of the attempt_completion tool
 									if (lastMessage && lastMessage.ask === "command") {
-										// 更新命令
+										// update command
 										await this.ask("command", removeClosingTag("command", command), block.partial).catch(
 											() => {},
 										)
 									} else {
-										// 最后一条消息是 completion_result
-										// 我们有命令字符串，这意味着我们也有结果，所以完成它（它不必已经存在）
-										await this.say("completion_result", removeClosingTag("result", result), undefined, false)
+										// last message is completion_result
+										// we have command string, which means we have the result as well, so finish it (doesn't have to exist yet)
+										await this.say(
+											"completion_result",
+											removeClosingTag("result", result),
+											undefined,
+											undefined,
+											false,
+										)
 										await this.saveCheckpoint(true)
 										await addNewChangesFlagToLastCompletionResultMessage()
 										await this.ask("command", removeClosingTag("command", command), block.partial).catch(
@@ -3559,10 +4082,11 @@ export class Task {
 										)
 									}
 								} else {
-									// 没有命令，仍在输出部分结果
+									// no command, still outputting partial result
 									await this.say(
 										"completion_result",
 										removeClosingTag("result", result),
+										undefined,
 										undefined,
 										block.partial,
 									)
@@ -3578,7 +4102,7 @@ export class Task {
 
 								if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 									showSystemNotification({
-										subtitle: "任务已完成",
+										subtitle: "Task Completed",
 										message: result.replace(/\n/g, " "),
 									})
 								}
@@ -3586,17 +4110,17 @@ export class Task {
 								let commandResult: ToolResponse | undefined
 								if (command) {
 									if (lastMessage && lastMessage.ask !== "command") {
-										// 尚未发送命令消息，因此首先发送 completion_result 然后发送命令
-										await this.say("completion_result", result, undefined, false)
+										// haven't sent a command message yet so first send completion_result then command
+										await this.say("completion_result", result, undefined, undefined, false)
 										await this.saveCheckpoint(true)
 										await addNewChangesFlagToLastCompletionResultMessage()
 										telemetryService.captureTaskCompleted(this.taskId)
 									} else {
-										// 我们已经发送了一条命令消息，这意味着完整的 completion 消息也已发送
+										// we already sent a command message, meaning the complete completion message has also been sent
 										await this.saveCheckpoint(true)
 									}
 
-									// 完成命令消息
+									// complete command message
 									const didApprove = await askApproval("command", command)
 									if (!didApprove) {
 										await this.saveCheckpoint()
@@ -3609,22 +4133,27 @@ export class Task {
 										await this.saveCheckpoint()
 										break
 									}
-									// 用户没有拒绝，但命令可能有输出
+									// user didn't reject, but the command may have output
 									commandResult = execCommandResult
 								} else {
-									await this.say("completion_result", result, undefined, false)
+									await this.say("completion_result", result, undefined, undefined, false)
 									await this.saveCheckpoint(true)
 									await addNewChangesFlagToLastCompletionResultMessage()
 									telemetryService.captureTaskCompleted(this.taskId)
 								}
 
-								// 我们已经发送了 completion_result says，空字符串的 asks 会放弃对按钮和字段的控制
-								const { response, text, images } = await this.ask("completion_result", "", false)
+								// we already sent completion_result says, an empty string asks relinquishes control over button and field
+								const {
+									response,
+									text,
+									images,
+									files: completionFiles,
+								} = await this.ask("completion_result", "", false)
 								if (response === "yesButtonClicked") {
-									pushToolResult("") // 向递归循环发出停止信号（目前这永远不会发生，因为 yesButtonClicked 将触发一个新任务）
+									pushToolResult("") // signals to recursive loop to stop (for now this never happens since yesButtonClicked will trigger a new task)
 									break
 								}
-								await this.say("user_feedback", text ?? "", images)
+								await this.say("user_feedback", text ?? "", images, completionFiles)
 								await this.saveCheckpoint()
 
 								const toolResults: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = []
@@ -3640,20 +4169,32 @@ export class Task {
 								}
 								toolResults.push({
 									type: "text",
-									text: `用户对结果提供了反馈。请考虑他们的输入以继续任务，然后再次尝试完成。\n<feedback>\n${text}\n</feedback>`,
+									text: `The user has provided feedback on the results. Consider their input to continue the task, and then attempt completion again.\n<feedback>\n${text}\n</feedback>`,
 								})
 								toolResults.push(...formatResponse.imageBlocks(images))
 								this.userMessageContent.push({
 									type: "text",
-									text: `${toolDescription()} 结果:`,
+									text: `${toolDescription()} Result:`,
 								})
 								this.userMessageContent.push(...toolResults)
+
+								let fileContentString = ""
+								if (completionFiles && completionFiles.length > 0) {
+									fileContentString = await processFilesIntoText(completionFiles)
+								}
+
+								if (fileContentString) {
+									this.userMessageContent.push({
+										type: "text",
+										text: fileContentString,
+									})
+								}
 
 								//
 								break
 							}
 						} catch (error) {
-							await handleError("尝试完成", error)
+							await handleError("attempting completion", error)
 							await this.saveCheckpoint()
 							break
 						}
@@ -3663,31 +4204,31 @@ export class Task {
 		}
 
 		/*
-		看到越界是正常的，这意味着下一个工具调用正在构建中，并准备好添加到 assistantMessageContent 以进行呈现。
-		当您在此期间看到 UI 不活动时，这意味着某个工具在没有呈现任何 UI 的情况下中断了。例如，当 relpath 未定义时，write_to_file 工具会中断，对于无效的 relpath，它从未呈现 UI。
+		Seeing out of bounds is fine, it means that the next too call is being built up and ready to add to assistantMessageContent to present. 
+		When you see the UI inactive during this, it means that a tool is breaking without presenting any UI. For example the write_to_file tool was breaking when relpath was undefined, and for invalid relpath it never presented UI.
 		*/
-		this.presentAssistantMessageLocked = false // 这需要放在这里，否则下面调用 this.presentAssistantMessage 会（有时）因为被锁定而失败
-		// 注意：当工具被拒绝时，迭代器流会中断并等待 userMessageContentReady 为 true。未来的 present 调用将跳过执行，因为 didRejectTool 并迭代直到 contentIndex 设置为消息长度，并且它自己将 userMessageContentReady 设置为 true（而不是在迭代器中抢先执行）
+		this.presentAssistantMessageLocked = false // this needs to be placed here, if not then calling this.presentAssistantMessage below would fail (sometimes) since it's locked
+		// NOTE: when tool is rejected, iterator stream is interrupted and it waits for userMessageContentReady to be true. Future calls to present will skip execution since didRejectTool and iterate until contentIndex is set to message length and it sets userMessageContentReady to true itself (instead of preemptively doing it in iterator)
 		if (!block.partial || this.didRejectTool || this.didAlreadyUseTool) {
-			// 块已完成流式传输和执行
+			// block is finished streaming and executing
 			if (this.currentStreamingContentIndex === this.assistantMessageContent.length - 1) {
-				// 如果我们增加 !didCompleteReadingStream 也没关系，它只会因为越界而返回，并且随着流式传输的继续，如果新块准备就绪，它将调用 presentAssistantMessage。如果流式传输完成，则当越界时我们将 userMessageContentReady 设置为 true。这优雅地允许流继续进行并呈现所有潜在的内容块。
-				// 最后一个块已完成并且已执行完毕
-				this.userMessageContentReady = true // 将允许 pwaitfor 继续
+				// its okay that we increment if !didCompleteReadingStream, it'll just return bc out of bounds and as streaming continues it will call presentAssistantMessage if a new block is ready. if streaming is finished then we set userMessageContentReady to true when out of bounds. This gracefully allows the stream to continue on and all potential content blocks be presented.
+				// last block is complete and it is finished executing
+				this.userMessageContentReady = true // will allow pwaitfor to continue
 			}
 
-			// 如果存在下一个块则调用它（如果不存在，则读取流将在准备就绪时调用它）
-			this.currentStreamingContentIndex++ // 无论如何都需要增加，因此当读取流再次调用此函数时，它将流式传输下一个块
+			// call next block if it exists (if not then read stream will call it when its ready)
+			this.currentStreamingContentIndex++ // need to increment regardless, so when read stream calls this function again it will be streaming the next block
 
 			if (this.currentStreamingContentIndex < this.assistantMessageContent.length) {
-				// 已经有更多的内容块要流式传输，所以我们将自己调用这个函数
+				// there are already more content blocks to stream, so we'll call this function ourselves
 				// await this.presentAssistantContent()
 
 				this.presentAssistantMessage()
 				return
 			}
 		}
-		// 块是部分的，但读取流可能已经完成
+		// block is partial, but the read stream may have finished
 		if (this.presentAssistantMessageHasPendingUpdates) {
 			this.presentAssistantMessage()
 		}
@@ -3695,10 +4236,10 @@ export class Task {
 
 	async recursivelyMakeClineRequests(userContent: UserContent, includeFileDetails: boolean = false): Promise<boolean> {
 		if (this.abort) {
-			throw new Error("Cline 实例已中止")
+			throw new Error("Cline instance aborted")
 		}
 
-		// 用于了解任务中使用了哪些模型，以便用户在需要导出元数据以进行错误报告时使用
+		// Used to know what models were used in the task if user wants to export metadata for error reporting purposes
 		const currentProviderId = (await getGlobalState(this.getContext(), "apiProvider")) as string
 		if (currentProviderId && this.api.getModel().id) {
 			try {
@@ -3709,26 +4250,40 @@ export class Task {
 		if (this.consecutiveMistakeCount >= 3) {
 			if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
 				showSystemNotification({
-					subtitle: "错误",
-					message: "Cline 遇到了麻烦。您想继续执行任务吗？",
+					subtitle: "Error",
+					message: "Cline 发生了错误. 你要继续任务吗?",
 				})
 			}
-			const { response, text, images } = await this.ask(
+			const { response, text, images, files } = await this.ask(
 				"mistake_limit_reached",
 				this.api.getModel().id.includes("claude")
-					? `这可能表明其思考过程失败或无法正确使用工具，可以通过一些用户指导来缓解（例如，“尝试将任务分解为更小的步骤”）。`
-					: "Cline 使用复杂的提示和迭代任务执行，这对于能力较弱的模型可能具有挑战性。为获得最佳结果，建议使用 Claude 3.7 Sonnet，因为它具有先进的代理编码能力。",
+					? `选择的模型推理过程失败或无法正确使用工具，这可以通过一些用户指南来缓解（例如，“尝试将任务分解成更小的步骤”）。`
+					: "Cline 使用复杂的提示和迭代任务执行，这对于功能较弱的模型可能具有挑战性。为获得最佳效果，建议使用 Claude 3.7 Sonnet 的高级代理编码功能。",
 			)
 			if (response === "messageResponse") {
-				userContent.push(
-					...[
-						{
-							type: "text",
-							text: formatResponse.tooManyMistakes(text),
-						} as Anthropic.Messages.TextBlockParam,
-						...formatResponse.imageBlocks(images),
-					],
-				)
+				// This userContent is for the *next* API call.
+				const feedbackUserContent: UserContent = []
+				feedbackUserContent.push({
+					type: "text",
+					text: formatResponse.tooManyMistakes(text),
+				})
+				if (images && images.length > 0) {
+					feedbackUserContent.push(...formatResponse.imageBlocks(images))
+				}
+
+				let fileContentString = ""
+				if (files && files.length > 0) {
+					fileContentString = await processFilesIntoText(files)
+				}
+
+				if (fileContentString) {
+					feedbackUserContent.push({
+						type: "text",
+						text: fileContentString,
+					})
+				}
+
+				userContent = feedbackUserContent
 			}
 			this.consecutiveMistakeCount = 0
 		}
@@ -3739,34 +4294,34 @@ export class Task {
 		) {
 			if (this.autoApprovalSettings.enableNotifications) {
 				showSystemNotification({
-					subtitle: "已达到最大请求数",
-					message: `Cline 已自动批准 ${this.autoApprovalSettings.maxRequests.toString()} 个 API 请求。`,
+					subtitle: "Max Requests Reached",
+					message: `Cline has auto-approved ${this.autoApprovalSettings.maxRequests.toString()} API requests.`,
 				})
 			}
 			await this.ask(
 				"auto_approval_max_req_reached",
-				`Cline 已自动批准 ${this.autoApprovalSettings.maxRequests.toString()} 个 API 请求。您想重置计数并继续执行任务吗？`,
+				`Cline has auto-approved ${this.autoApprovalSettings.maxRequests.toString()} API requests. Would you like to reset the count and proceed with the task?`,
 			)
-			// 如果我们通过了 promise，则意味着用户已批准并且没有开始新任务
+			// if we get past the promise it means the user approved and did not start a new task
 			this.consecutiveAutoApprovedRequestsCount = 0
 		}
 
-		// 获取先前 api 请求的索引以检查令牌使用情况并确定是否需要截断对话历史记录
+		// get previous api req's index to check token usage and determine if we need to truncate conversation history
 		const previousApiReqIndex = findLastIndex(this.clineMessages, (m) => m.say === "api_req_started")
 
-		// 如果是第一个 API 请求，则保存检查点
+		// Save checkpoint if this is the first API request
 		const isFirstRequest = this.clineMessages.filter((m) => m.say === "api_req_started").length === 0
 
-		// 获取详细信息是一项昂贵的操作，它使用 globby 自上而下构建项目的文件结构，对于大型项目可能需要几秒钟
-		// 为了获得最佳用户体验，我们在此过程中显示一个带有加载指示器的占位符 api_req_started 消息
+		// getting verbose details is an expensive operation, it uses globby to top-down build file structure of project which for large projects can take a few seconds
+		// for the best UX we show a placeholder api_req_started message with a loading spinner as this happens
 		await this.say(
 			"api_req_started",
 			JSON.stringify({
-				request: userContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n") + "\n\n加载中...",
+				request: userContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n") + "\n\nLoading...",
 			}),
 		)
 
-		// 如果已启用并且是第一个请求，则首先初始化检查点跟踪器
+		// Initialize checkpoint tracker first if enabled and it's the first request
 		if (isFirstRequest && this.enableCheckpoints && !this.checkpointTracker && !this.checkpointTrackerErrorMessage) {
 			try {
 				this.checkpointTracker = await pTimeout(
@@ -3774,44 +4329,46 @@ export class Task {
 					{
 						milliseconds: 15_000,
 						message:
-							"检查点初始化时间过长。请考虑在使​​用 git 的项目中重新打开 Cline，或禁用检查点。",
+							"Checkpoints taking too long to initialize. Consider re-opening Cline in a project that uses git, or disabling checkpoints.",
 					},
 				)
 			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : "未知错误"
-				console.error("初始化检查点跟踪器失败：", errorMessage)
-				this.checkpointTrackerErrorMessage = errorMessage // 将立即显示，因为我们接下来会保存 saveClineMessages，它会将状态发布到 webview
+				const errorMessage = error instanceof Error ? error.message : "Unknown error"
+				console.error("Failed to initialize checkpoint tracker:", errorMessage)
+				this.checkpointTrackerErrorMessage = errorMessage // will be displayed right away since we saveClineMessages next which posts state to webview
 			}
 		}
 
-		// 现在，如果是第一个请求并且检查点已启用并且跟踪器已成功初始化，则说“checkpoint_created”并执行提交。
+		// Now, if it's the first request AND checkpoints are enabled AND tracker was successfully initialized,
+		// then say "checkpoint_created" and perform the commit.
 		if (isFirstRequest && this.enableCheckpoints && this.checkpointTracker) {
-			await this.say("checkpoint_created") // 现在这是有条件的
-			const commitHash = await this.checkpointTracker.commit() // 实际提交
+			await this.say("checkpoint_created") // Now this is conditional
+			const commitHash = await this.checkpointTracker.commit() // Actual commit
 			const lastCheckpointMessage = findLast(this.clineMessages, (m) => m.say === "checkpoint_created")
 			if (lastCheckpointMessage) {
 				lastCheckpointMessage.lastCheckpointHash = commitHash
-				// saveClineMessagesAndUpdateHistory 将在 API 响应后稍后调用，因此除非这是对此消息的唯一修改，否则无需在此处调用它。
-				// 目前，假设稍后处理。
+				// saveClineMessagesAndUpdateHistory will be called later after API response,
+				// so no need to call it here unless this is the only modification to this message.
+				// For now, assuming it's handled later.
 			}
 		} else if (isFirstRequest && this.enableCheckpoints && !this.checkpointTracker && this.checkpointTrackerErrorMessage) {
-			// 检查点已启用，但跟踪器初始化失败。
-			// checkpointTrackerErrorMessage 已设置并将成为状态的一部分。
-			// 此处没有明确的 UI 消息，错误消息将在 ExtensionState 中。
+			// Checkpoints are enabled, but tracker failed to initialize.
+			// checkpointTrackerErrorMessage is already set and will be part of the state.
+			// No explicit UI message here, error message will be in ExtensionState.
 		}
 
 		const [parsedUserContent, environmentDetails, clinerulesError] = await this.loadContext(userContent, includeFileDetails)
 
-		// 如果用户使用 /newrule 命令并且其 .clinerules 是文件，则进行错误处理，因为文件读取操作无法正常工作
+		// error handling if the user uses the /newrule command & their .clinerules is a file, for file read operations didnt work properly
 		if (clinerulesError === true) {
 			await this.say(
 				"error",
-				"处理 /newrule 命令时出现问题。请仔细检查，如果“.clinerules”已存在，它是否是目录而不是文件。否则，引用此文件/目录时出现问题。",
+				"Issue with processing the /newrule command. Double check that, if '.clinerules' already exists, it's a directory and not a file. Otherwise there was an issue referencing this file/directory.",
 			)
 		}
 
 		userContent = parsedUserContent
-		// 将环境详细信息添加为其自己的文本块，与工具结果分开
+		// add environment details as its own text block, separate from tool results
 		userContent.push({ type: "text", text: environmentDetails })
 
 		await this.addToApiConversationHistory({
@@ -3821,7 +4378,7 @@ export class Task {
 
 		telemetryService.captureConversationTurnEvent(this.taskId, currentProviderId, this.api.getModel().id, "user", true)
 
-		// 由于我们在等待实际启动 API 请求（例如加载潜在详细信息）时发送了一个占位符 api_req_started 消息以更新 webview，因此我们需要更新该消息的文本
+		// since we sent off a placeholder api_req_started message to update the webview while waiting to actually start the API request (to load potential details for example), we need to update the text of that message
 		const lastApiReqIndex = findLastIndex(this.clineMessages, (m) => m.say === "api_req_started")
 		this.clineMessages[lastApiReqIndex].text = JSON.stringify({
 			request: userContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n"),
@@ -3836,15 +4393,15 @@ export class Task {
 			let outputTokens = 0
 			let totalCost: number | undefined
 
-			// 更新 api_req_started。我们不能再使用 api_req_finished，因为它是一种特殊情况，它可能出现在流式消息之后（即在更新或执行过程中）
-			// 幸运的是，api_req_finished 总是为 GUI 解析出来，因此它仅用于遗留目的，以跟踪历史任务中的价格
-			// （几个月后值得删除）
+			// update api_req_started. we can't use api_req_finished anymore since it's a unique case where it could come after a streaming message (ie in the middle of being updated or executed)
+			// fortunately api_req_finished was always parsed out for the gui anyways, so it remains solely for legacy purposes to keep track of prices in tasks from history
+			// (it's worth removing a few months from now)
 			const updateApiReqMsg = (cancelReason?: ClineApiReqCancelReason, streamingFailedMessage?: string) => {
 				const currentApiReqInfo: ClineApiReqInfo = JSON.parse(this.clineMessages[lastApiReqIndex].text || "{}")
-				delete currentApiReqInfo.retryStatus // 请求最终确定后清除重试状态
+				delete currentApiReqInfo.retryStatus // Clear retry status when request is finalized
 
 				this.clineMessages[lastApiReqIndex].text = JSON.stringify({
-					...currentApiReqInfo, // 传播修改后的信息（已删除 retryStatus）
+					...currentApiReqInfo, // Spread the modified info (with retryStatus removed)
 					tokensIn: inputTokens,
 					tokensOut: outputTokens,
 					cacheWrites: cacheWriteTokens,
@@ -3865,20 +4422,20 @@ export class Task {
 
 			const abortStream = async (cancelReason: ClineApiReqCancelReason, streamingFailedMessage?: string) => {
 				if (this.diffViewProvider.isEditing) {
-					await this.diffViewProvider.revertChanges() // 关闭差异视图
+					await this.diffViewProvider.revertChanges() // closes diff view
 				}
 
-				// 如果最后一条消息是部分的，我们需要更新并保存它
+				// if last message is a partial we need to update and save it
 				const lastMessage = this.clineMessages.at(-1)
 				if (lastMessage && lastMessage.partial) {
-					// 不要更新 ts，因为它用作 virtuoso 列表的键
+					// lastMessage.ts = Date.now() DO NOT update ts since it is used as a key for virtuoso list
 					lastMessage.partial = false
-					// 我们不流式传输 partialMessage 事件，而是像往常一样保存并发布以持久化到磁盘
-					console.log("更新部分消息", lastMessage)
+					// instead of streaming partialMessage events, we do a save and post like normal to persist to disk
+					console.log("updating partial message", lastMessage)
 					// await this.saveClineMessagesAndUpdateHistory()
 				}
 
-				// 让助手知道他们的响应在任务恢复时被中断了
+				// Let assistant know their response was interrupted for when task is resumed
 				await this.addToApiConversationHistory({
 					role: "assistant",
 					content: [
@@ -3888,14 +4445,14 @@ export class Task {
 								assistantMessage +
 								`\n\n[${
 									cancelReason === "streaming_failed"
-										? "响应因 API 错误而中断"
-										: "响应被用户中断"
+										? "Response interrupted by API Error"
+										: "Response interrupted by user"
 								}]`,
 						},
 					],
 				})
 
-				// 更新 api_req_started 以包含已取消和成本，以便我们可以显示部分流的成本
+				// update api_req_started to have cancelled and cost, so that we can display the cost of the partial stream
 				updateApiReqMsg(cancelReason, streamingFailedMessage)
 				await this.saveClineMessagesAndUpdateHistory()
 
@@ -3907,11 +4464,11 @@ export class Task {
 					true,
 				)
 
-				// 向提供程序发出信号，表明它可以从磁盘检索保存的消息，因为 abortTask 本质上不能被等待
+				// signals to provider that it can retrieve the saved messages from disk, as abortTask can not be awaited on in nature
 				this.didFinishAbortingStream = true
 			}
 
-			// 重置流状态
+			// reset streaming state
 			this.currentStreamingContentIndex = 0
 			this.assistantMessageContent = []
 			this.didCompleteReadingStream = false
@@ -3924,7 +4481,7 @@ export class Task {
 			this.didAutomaticallyRetryFailedApiRequest = false
 			await this.diffViewProvider.reset()
 
-			const stream = this.attemptApiRequest(previousApiReqIndex) // 仅当第一个块成功时才产生，否则将允许用户重试请求（很可能是由于速率限制错误，该错误在第一个块上抛出）
+			const stream = this.attemptApiRequest(previousApiReqIndex) // yields only if the first chunk is successful, otherwise will allow the user to retry the request (most likely due to rate limit error, which gets thrown on the first chunk)
 			let assistantMessage = ""
 			let reasoningMessage = ""
 			this.isStreaming = true
@@ -3944,58 +4501,65 @@ export class Task {
 							totalCost = chunk.totalCost
 							break
 						case "reasoning":
-							// 推理将始终在助手消息之前
+							// reasoning will always come before assistant message
 							reasoningMessage += chunk.reasoning
-							// 修复了取消任务 > 中止任务 > for 循环可能在流式传输推理过程中 > say 函数在​​我们有机会正确清理和取消任务之前抛出错误的 bug。
+							// fixes bug where cancelling task > aborts task > for loop may be in middle of streaming reasoning > say function throws error before we get a chance to properly clean up and cancel the task.
 							if (!this.abort) {
-								await this.say("reasoning", reasoningMessage, undefined, true)
+								await this.say("reasoning", reasoningMessage, undefined, undefined, true)
 							}
 							break
 						case "text":
 							if (reasoningMessage && assistantMessage.length === 0) {
-								// 完成推理消息
-								await this.say("reasoning", reasoningMessage, undefined, false)
+								// complete reasoning message
+								await this.say("reasoning", reasoningMessage, undefined, undefined, false)
 							}
 							assistantMessage += chunk.text
-							// 将原始助手消息解析为内容块
+							// parse raw assistant message into content blocks
 							const prevLength = this.assistantMessageContent.length
-							this.assistantMessageContent = parseAssistantMessageV2(assistantMessage)
-							if (this.assistantMessageContent.length > prevLength) {
-								this.userMessageContentReady = false // 我们需要呈现的新内容，如果先前的内容将其设置为 true，则重置为 false
+							const isClaude4ModelFamily = await this.isClaude4ModelFamily()
+
+							if (isClaude4ModelFamily && USE_EXPERIMENTAL_CLAUDE4_FEATURES) {
+								this.assistantMessageContent = parseAssistantMessageV3(assistantMessage)
+							} else {
+								this.assistantMessageContent = parseAssistantMessageV2(assistantMessage)
 							}
-							// 向用户呈现内容
+
+							if (this.assistantMessageContent.length > prevLength) {
+								this.userMessageContentReady = false // new content we need to present, reset to false in case previous content set this to true
+							}
+							// present content to user
 							this.presentAssistantMessage()
 							break
 					}
 
 					if (this.abort) {
-						console.log("正在中止流...")
+						console.log("aborting stream...")
 						if (!this.abandoned) {
-							// 仅当此实例未被放弃时才需要正常中止（有时 openrouter 流会挂起，在这种情况下会影响 cline 的未来实例）
+							// only need to gracefully abort if this instance isn't abandoned (sometimes openrouter stream hangs, in which case this would affect future instances of cline)
 							await abortStream("user_cancelled")
 						}
-						break // 中止流
+						break // aborts the stream
 					}
 
 					if (this.didRejectTool) {
-						// userContent 有一个工具拒绝，因此中断助手的响应以呈现用户的反馈
-						assistantMessage += "\n\n[响应被用户反馈中断]"
-						// 我们不抢先设置它，而是允许 present 迭代器完成并在准备就绪时设置 userMessageContentReady
+						// userContent has a tool rejection, so interrupt the assistant's response to present the user's feedback
+						assistantMessage += "\n\n[Response interrupted by user feedback]"
+						// this.userMessageContentReady = true // instead of setting this preemptively, we allow the present iterator to finish and set userMessageContentReady when its ready
 						break
 					}
 
-					// 先前：我们需要让请求完成，以便 openrouter 获取生成详细信息
-					// 更新：以无法检索 API 成本为代价中断请求是更好的用户体验
+					// PREV: we need to let the request finish for openrouter to get generation details
+					// UPDATE: it's better UX to interrupt the request at the cost of the api cost not being retrieved
 					if (this.didAlreadyUseTool) {
 						assistantMessage +=
-							"\n\n[响应被工具使用结果中断。一次只能使用一个工具，并且应将其放在消息的末尾。]"
+							"\n\n[Response interrupted by a tool use result. Only one tool may be used at a time and should be placed at the end of the message.]"
 						break
 					}
 				}
 			} catch (error) {
-				// 当扩展不再等待 cline 实例完成中止时会发生放弃（当 for 循环中的任何函数由于 this.abort 而抛出错误时会在此处抛出错误）
+				// abandoned happens when extension is no longer waiting for the cline instance to finish aborting (error is thrown here when any function in the for loop throws due to this.abort)
 				if (!this.abandoned) {
-					this.abortTask() // 如果流失败，任务可能处于各种状态（即可能已经流式传输了用户可能已执行的一些工具），因此我们只采取复制取消任务的方法
+					this.abortTask() // if the stream failed, there's various states the task could be in (i.e. could have streamed some tools the user may have executed), so we just resort to replicating a cancel task
 					const errorMessage = this.formatErrorWithStatusCode(error)
 
 					await abortStream("streaming_failed", errorMessage)
@@ -4005,8 +4569,8 @@ export class Task {
 				this.isStreaming = false
 			}
 
-			// OpenRouter/Cline 可能不会在流中返回令牌使用情况（因为它可能会提前中止），因此我们在流完成后获取
-			// （下面的 updateApiReq 将使用使用详细信息更新 api_req_started 消息。我们异步执行此操作，以便它在后台更新 api_req_started 消息）
+			// OpenRouter/Cline may not return token usage as part of the stream (since it may abort early), so we fetch after the stream is finished
+			// (updateApiReq below will update the api_req_started message with the usage details. we do this async so it updates the api_req_started message in the background)
 			if (!didReceiveUsageChunk) {
 				this.api.getApiStreamUsage?.().then(async (apiStreamUsage) => {
 					if (apiStreamUsage) {
@@ -4022,30 +4586,30 @@ export class Task {
 				})
 			}
 
-			// 如果流被中止，需要在此处调用
+			// need to call here in case the stream was aborted
 			if (this.abort) {
-				throw new Error("Cline 实例已中止")
+				throw new Error("Cline instance aborted")
 			}
 
 			this.didCompleteReadingStream = true
 
-			// 将任何块设置为完成，以允许 presentAssistantMessage 完成并将 userMessageContentReady 设置为 true
-			// （可能是一个没有后续工具使用的文本块，或者是一个位于最末尾的文本块，或者是一个无效的工具使用等。无论如何，presentAssistantMessage 依赖于这些块要么完成，要么用户拒绝一个块才能继续并最终将 userMessageContentReady 设置为 true）
+			// set any blocks to be complete to allow presentAssistantMessage to finish and set userMessageContentReady to true
+			// (could be a text block that had no subsequent tool uses, or a text block at the very end, or an invalid tool use, etc. whatever the case, presentAssistantMessage relies on these blocks either to be completed or the user to reject a block in order to proceed and eventually set userMessageContentReady to true)
 			const partialBlocks = this.assistantMessageContent.filter((block) => block.partial)
 			partialBlocks.forEach((block) => {
 				block.partial = false
 			})
-			// this.assistantMessageContent.forEach((e) => (e.partial = false)) // 不能这样做，因为工具可能正在执行中 ()
+			// this.assistantMessageContent.forEach((e) => (e.partial = false)) // can't just do this bc a tool could be in the middle of executing ()
 			if (partialBlocks.length > 0) {
-				this.presentAssistantMessage() // 如果有内容要更新，它将完成并将 this.userMessageContentReady 更新为 true，我们在发出下一个请求之前等待它。所有这些实际上只是呈现我们刚刚设置为完成的最后一条部分消息
+				this.presentAssistantMessage() // if there is content to update then it will complete and update this.userMessageContentReady to true, which we pwaitfor before making the next request. all this is really doing is presenting the last partial message that we just set to complete
 			}
 
 			updateApiReqMsg()
 			await this.saveClineMessagesAndUpdateHistory()
 			await this.postStateToWebview()
 
-			// 现在添加到 apiconversationhistory
-			// 在继续使用工具之前需要将助手响应保存到文件，因为用户随时可能退出，我们将无法保存助手的响应
+			// now add to apiconversationhistory
+			// need to save assistant responses to file before proceeding to tool use since user can exit at any moment and we wouldn't be able to save the assistant's response
 			let didEndLoop = false
 			if (assistantMessage.length > 0) {
 				telemetryService.captureConversationTurnEvent(
@@ -4061,21 +4625,21 @@ export class Task {
 					content: [{ type: "text", text: assistantMessage }],
 				})
 
-				// 注意：此注释供将来参考 - 这是 userMessageContent 未设置为 true 的一种解决方法。这是因为它在 didRejectTool 时没有递归调用部分块，因此它会卡住等待部分块完成才能继续。
-				// 以防内容块完成
-				// API 流可能在最后一个解析的内容块执行后完成，因此我们能够检测到越界并将 userMessageContentReady 设置为 true（注意，您不应调用 presentAssistantMessage，因为如果最后一个块已完成，它将再次呈现）
-				// const completeBlocks = this.assistantMessageContent.filter((block) => !block.partial) // 如果在流结束后有任何部分块，我们可以认为它们无效
+				// NOTE: this comment is here for future reference - this was a workaround for userMessageContent not getting set to true. It was due to it not recursively calling for partial blocks when didRejectTool, so it would get stuck waiting for a partial block to complete before it could continue.
+				// in case the content blocks finished
+				// it may be the api stream finished after the last parsed content block was executed, so  we are able to detect out of bounds and set userMessageContentReady to true (note you should not call presentAssistantMessage since if the last block is completed it will be presented again)
+				// const completeBlocks = this.assistantMessageContent.filter((block) => !block.partial) // if there are any partial blocks after the stream ended we can consider them invalid
 				// if (this.currentStreamingContentIndex >= completeBlocks.length) {
 				// 	this.userMessageContentReady = true
 				// }
 
 				await pWaitFor(() => this.userMessageContentReady)
 
-				// 如果模型没有使用工具，那么我们需要告诉它要么使用工具，要么尝试完成
+				// if the model did not tool use, then we need to tell it to either use a tool or attempt_completion
 				const didToolUse = this.assistantMessageContent.some((block) => block.type === "tool_use")
 
 				if (!didToolUse) {
-					// 需要使用工具的正常请求
+					// normal request where tool use is required
 					this.userMessageContent.push({
 						type: "text",
 						text: formatResponse.noToolsUsed(),
@@ -4086,43 +4650,43 @@ export class Task {
 				const recDidEndLoop = await this.recursivelyMakeClineRequests(this.userMessageContent)
 				didEndLoop = recDidEndLoop
 			} else {
-				// 如果没有 assistant_responses，这意味着我们没有从 API 获取任何文本或 tool_use 内容块，我们应该假定这是一个错误
+				// if there's no assistant_responses, that means we got no text or tool_use content blocks from API which we should assume is an error
 				await this.say(
 					"error",
-					"意外的 API 响应：语言模型未提供任何助手消息。这可能表示 API 或模型的输出存在问题。",
+					"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
 				)
 				await this.addToApiConversationHistory({
 					role: "assistant",
 					content: [
 						{
 							type: "text",
-							text: "失败：我没有提供响应。",
+							text: "Failure: I did not provide a response.",
 						},
 					],
 				})
 			}
 
-			return didEndLoop // 目前将始终为 false
+			return didEndLoop // will always be false for now
 		} catch (error) {
-			// 这不应该发生，因为唯一可能抛出错误的是 attemptApiRequest，它被包装在一个 try catch 中，该 try catch 发送一个 ask，如果 noButtonClicked，将清除当前任务并销毁此实例。但是，为了避免未处理的 promise 拒绝，我们将结束此循环，这将结束此实例的执行（请参阅 startTask）
-			return true // 需要为 true，以便父循环知道结束任务
+			// this should never happen since the only thing that can throw an error is the attemptApiRequest, which is wrapped in a try catch that sends an ask where if noButtonClicked, will clear current task and destroy this instance. However to avoid unhandled promise rejection, we will end this loop which will end execution of this instance (see startTask)
+			return true // needs to be true so parent loop knows to end task
 		}
 	}
 
 	async loadContext(userContent: UserContent, includeFileDetails: boolean = false): Promise<[UserContent, string, boolean]> {
-		// 跟踪是否需要检查 clinerulesFile
+		// Track if we need to check clinerulesFile
 		let needsClinerulesFileCheck = false
 
-		const workflowToggles = await refreshWorkflowToggles(this.getContext(), cwd)
+		const { localWorkflowToggles, globalWorkflowToggles } = await refreshWorkflowToggles(this.getContext(), cwd)
 
 		const processUserContent = async () => {
-			// 这是一种从工具结果中动态加载上下文提及的临时解决方案。它检查是否存在指示工具被拒绝并提供了反馈的标签（请参阅 formatToolDeniedFeedback、attemptCompletion、executeCommand 和 consecutiveMistakeCount >= 3）或“<answer>”（请参阅 askFollowupQuestion），我们将所有用户生成的内容放在这些标签中，以便它们可以有效地用作我们应该解析提及的标记）。但是，如果我们将来允许多个工具响应，我们将需要专门在用户内容标签中解析提及。
-			// （注意：这导致了 @/ 导入别名错误，其中文件内容也被解析，因为 v2 将工具结果转换为文本块）
+			// This is a temporary solution to dynamically load context mentions from tool results. It checks for the presence of tags that indicate that the tool was rejected and feedback was provided (see formatToolDeniedFeedback, attemptCompletion, executeCommand, and consecutiveMistakeCount >= 3) or "<answer>" (see askFollowupQuestion), we place all user generated content in these tags so they can effectively be used as markers for when we should parse mentions). However if we allow multiple tools responses in the future, we will need to parse mentions specifically within the user content tags.
+			// (Note: this caused the @/ import alias bug where file contents were being parsed as well, since v2 converted tool results to text blocks)
 			return await Promise.all(
 				userContent.map(async (block) => {
 					if (block.type === "text") {
-						// 我们需要确保任何用户生成的内容都包含在这些标签之一中，以便我们知道要解析提及
-						// FIXME：仅解析这些标签之间的文本，而不是可能包含其他工具结果的整个文本块。这是我们首先不应该使用正则表达式解析提及（即对于文件路径包含空格的情况）这一更大问题的一部分
+						// We need to ensure any user generated content is wrapped in one of these tags so that we know to parse mentions
+						// FIXME: Only parse text in between these tags instead of the entire text block which may contain other tool results. This is part of a larger issue where we shouldn't be using regex to parse mentions in the first place (ie for cases where file paths have spaces)
 						if (
 							block.text.includes("<feedback>") ||
 							block.text.includes("<answer>") ||
@@ -4136,10 +4700,11 @@ export class Task {
 								this.fileContextTracker,
 							)
 
-							// 解析斜杠命令时，我们仍然希望允许用户提供他们期望的上下文
+							// when parsing slash commands, we still want to allow the user to provide their desired context
 							const { processedText, needsClinerulesFileCheck: needsCheck } = await parseSlashCommands(
 								parsedText,
-								workflowToggles,
+								localWorkflowToggles,
+								globalWorkflowToggles,
 							)
 
 							if (needsCheck) {
@@ -4157,33 +4722,33 @@ export class Task {
 			)
 		}
 
-		// 并行运行初始 promise
+		// Run initial promises in parallel
 		const [processedUserContent, environmentDetails] = await Promise.all([
 			processUserContent(),
 			this.getEnvironmentDetails(includeFileDetails),
 		])
 
-		// 处理内容后，如果需要，检查 clinerulesData
+		// After processing content, check clinerulesData if needed
 		let clinerulesError = false
 		if (needsClinerulesFileCheck) {
 			clinerulesError = await ensureLocalClineDirExists(cwd, GlobalFileNames.clineRules)
 		}
 
-		// 返回所有结果
+		// Return all results
 		return [processedUserContent, environmentDetails, clinerulesError]
 	}
 
 	async getEnvironmentDetails(includeFileDetails: boolean = false) {
 		let details = ""
 
-		// 让 cline 知道用户是否在消息之间从一个或没有文件切换到另一个文件可能很有用，因此我们始终包含此上下文
-		details += "\n\n# VSCode 可见文件"
+		// It could be useful for cline to know if the user went from one or no file to another between messages, so we always include this context
+		details += "\n\n# VSCode Visible Files"
 		const visibleFilePaths = vscode.window.visibleTextEditors
 			?.map((editor) => editor.document?.uri?.fsPath)
 			.filter(Boolean)
 			.map((absolutePath) => path.relative(cwd, absolutePath))
 
-		// 通过 clineIgnoreController 过滤路径
+		// Filter paths through clineIgnoreController
 		const allowedVisibleFiles = this.clineIgnoreController
 			.filterPaths(visibleFilePaths)
 			.map((p) => p.toPosix())
@@ -4192,17 +4757,17 @@ export class Task {
 		if (allowedVisibleFiles) {
 			details += `\n${allowedVisibleFiles}`
 		} else {
-			details += "\n(没有可见文件)"
+			details += "\n(No visible files)"
 		}
 
-		details += "\n\n# VSCode 打开的选项卡"
+		details += "\n\n# VSCode Open Tabs"
 		const openTabPaths = vscode.window.tabGroups.all
 			.flatMap((group) => group.tabs)
 			.map((tab) => (tab.input as vscode.TabInputText)?.uri?.fsPath)
 			.filter(Boolean)
 			.map((absolutePath) => path.relative(cwd, absolutePath))
 
-		// 通过 clineIgnoreController 过滤路径
+		// Filter paths through clineIgnoreController
 		const allowedOpenTabs = this.clineIgnoreController
 			.filterPaths(openTabPaths)
 			.map((p) => p.toPosix())
@@ -4211,7 +4776,7 @@ export class Task {
 		if (allowedOpenTabs) {
 			details += `\n${allowedOpenTabs}`
 		} else {
-			details += "\n(没有打开的选项卡)"
+			details += "\n(No open tabs)"
 		}
 
 		const busyTerminals = this.terminalManager.getTerminals(true)
@@ -4220,12 +4785,12 @@ export class Task {
 
 		if (busyTerminals.length > 0 && this.didEditFile) {
 			//  || this.didEditFile
-			await setTimeoutPromise(300) // 保存文件后延迟以使终端赶上
+			await setTimeoutPromise(300) // delay after saving file to let terminals catch up
 		}
 
 		// let terminalWasBusy = false
 		if (busyTerminals.length > 0) {
-			// 等待终端冷却
+			// wait for terminals to cool down
 			// terminalWasBusy = allTerminals.some((t) => this.terminalManager.isProcessHot(t.id))
 			await pWaitFor(() => busyTerminals.every((t) => !this.terminalManager.isProcessHot(t.id)), {
 				interval: 100,
@@ -4233,41 +4798,41 @@ export class Task {
 			}).catch(() => {})
 		}
 
-		// 我们希望在终端冷却后获取诊断信息，原因有几个：终端可能正在搭建项目，开发服务器（如 webpack 等编译器）会首先重新编译然后发送诊断信息等
+		// we want to get diagnostics AFTER terminal cools down for a few reasons: terminal could be scaffolding a project, dev servers (compilers like webpack) will first re-compile and then send diagnostics, etc
 		/*
 		let diagnosticsDetails = ""
-		const diagnostics = await this.diagnosticsMonitor.getCurrentDiagnostics(this.didEditFile || terminalWasBusy) // 如果 cline 运行了命令（例如 npm install）或编辑了工作区，则等待一段时间以获取更新的诊断信息
+		const diagnostics = await this.diagnosticsMonitor.getCurrentDiagnostics(this.didEditFile || terminalWasBusy) // if cline ran a command (ie npm install) or edited the workspace then wait a bit for updated diagnostics
 		for (const [uri, fileDiagnostics] of diagnostics) {
 			const problems = fileDiagnostics.filter((d) => d.severity === vscode.DiagnosticSeverity.Error)
 			if (problems.length > 0) {
 				diagnosticsDetails += `\n## ${path.relative(cwd, uri.fsPath)}`
 				for (const diagnostic of problems) {
 					// let severity = diagnostic.severity === vscode.DiagnosticSeverity.Error ? "Error" : "Warning"
-					const line = diagnostic.range.start.line + 1 // VSCode 行是 0 索引的
+					const line = diagnostic.range.start.line + 1 // VSCode lines are 0-indexed
 					const source = diagnostic.source ? `[${diagnostic.source}] ` : ""
 					diagnosticsDetails += `\n- ${source}Line ${line}: ${diagnostic.message}`
 				}
 			}
 		}
 		*/
-		this.didEditFile = false // 重置，这让我们知道何时等待保存的文件更新终端
+		this.didEditFile = false // reset, this lets us know when to wait for saved files to update terminals
 
-		// 等待更新的诊断信息使终端输出尽可能最新
+		// waiting for updated diagnostics lets terminal output be the most up-to-date possible
 		let terminalDetails = ""
 		if (busyTerminals.length > 0) {
-			// 终端已冷却，让我们检索它们的输出
-			terminalDetails += "\n\n# 活动运行的终端"
+			// terminals are cool, let's retrieve their output
+			terminalDetails += "\n\n# Actively Running Terminals"
 			for (const busyTerminal of busyTerminals) {
-				terminalDetails += `\n## 原始命令: \`${busyTerminal.lastCommand}\``
+				terminalDetails += `\n## Original command: \`${busyTerminal.lastCommand}\``
 				const newOutput = this.terminalManager.getUnretrievedOutput(busyTerminal.id)
 				if (newOutput) {
-					terminalDetails += `\n### 新输出\n${newOutput}`
+					terminalDetails += `\n### New Output\n${newOutput}`
 				} else {
-					// details += `\n(Still running, no new output)` // 不希望在运行命令后立即显示此内容
+					// details += `\n(Still running, no new output)` // don't want to show this right after running the command
 				}
 			}
 		}
-		// 仅当有输出要显示时才显示非活动终端
+		// only show inactive terminals if there's output to show
 		if (inactiveTerminals.length > 0) {
 			const inactiveTerminalOutputs = new Map<number, string>()
 			for (const inactiveTerminal of inactiveTerminals) {
@@ -4277,39 +4842,39 @@ export class Task {
 				}
 			}
 			if (inactiveTerminalOutputs.size > 0) {
-				terminalDetails += "\n\n# 非活动终端"
+				terminalDetails += "\n\n# Inactive Terminals"
 				for (const [terminalId, newOutput] of inactiveTerminalOutputs) {
 					const inactiveTerminal = inactiveTerminals.find((t) => t.id === terminalId)
 					if (inactiveTerminal) {
 						terminalDetails += `\n## ${inactiveTerminal.lastCommand}`
-						terminalDetails += `\n### 新输出\n${newOutput}`
+						terminalDetails += `\n### New Output\n${newOutput}`
 					}
 				}
 			}
 		}
 
-		// details += "\n\n# VSCode 工作区错误"
+		// details += "\n\n# VSCode Workspace Errors"
 		// if (diagnosticsDetails) {
 		// 	details += diagnosticsDetails
 		// } else {
-		// 	details += "\n(未检测到错误)"
+		// 	details += "\n(No errors detected)"
 		// }
 
 		if (terminalDetails) {
 			details += terminalDetails
 		}
 
-		// 添加最近修改的文件部分
+		// Add recently modified files section
 		const recentlyModifiedFiles = this.fileContextTracker.getAndClearRecentlyModifiedFiles()
 		if (recentlyModifiedFiles.length > 0) {
 			details +=
-				"\n\n# 最近修改的文件\n自您上次访问这些文件以来，这些文件已被修改（文件刚刚编辑过，因此您可能需要在编辑之前重新阅读）："
+				"\n\n# Recently Modified Files\nThese files have been modified since you last accessed them (file was just edited so you may need to re-read it before editing):"
 			for (const filePath of recentlyModifiedFiles) {
 				details += `\n${filePath}`
 			}
 		}
 
-		// 添加带时区的当前时间信息
+		// Add current time information with timezone
 		const now = new Date()
 		const formatter = new Intl.DateTimeFormat(undefined, {
 			year: "numeric",
@@ -4321,16 +4886,16 @@ export class Task {
 			hour12: true,
 		})
 		const timeZone = formatter.resolvedOptions().timeZone
-		const timeZoneOffset = -now.getTimezoneOffset() / 60 // 转换为小时并反转符号以匹配常规表示法
+		const timeZoneOffset = -now.getTimezoneOffset() / 60 // Convert to hours and invert sign to match conventional notation
 		const timeZoneOffsetStr = `${timeZoneOffset >= 0 ? "+" : ""}${timeZoneOffset}:00`
-		details += `\n\n# 当前时间\n${formatter.format(now)} (${timeZone}, UTC${timeZoneOffsetStr})`
+		details += `\n\n# Current Time\n${formatter.format(now)} (${timeZone}, UTC${timeZoneOffsetStr})`
 
 		if (includeFileDetails) {
-			details += `\n\n# 当前工作目录 (${cwd.toPosix()}) 文件\n`
+			details += `\n\n# Current Working Directory (${cwd.toPosix()}) Files\n`
 			const isDesktop = arePathsEqual(cwd, path.join(os.homedir(), "Desktop"))
 			if (isDesktop) {
-				// 不希望立即访问桌面，因为它会显示权限弹出窗口
-				details += "（桌面文件不会自动显示。如果需要，请使用 list_files 进行浏览。）"
+				// don't want to immediately access desktop since it would show permission popup
+				details += "(Desktop files not shown automatically. Use list_files to explore if needed.)"
 			} else {
 				const [files, didHitLimit] = await listFiles(cwd, true, 200)
 				const result = formatResponse.formatFilesList(cwd, files, didHitLimit, this.clineIgnoreController)
@@ -4338,10 +4903,10 @@ export class Task {
 			}
 		}
 
-		// 添加上下文窗口使用信息
+		// Add context window usage information
 		const { contextWindow, maxAllowedSize } = getContextWindowInfo(this.api)
 
-		// 从最近的 API 请求中获取令牌计数以准确反映上下文管理
+		// Get the token count from the most recent API request to accurately reflect context management
 		const getTotalTokensFromApiReqMessage = (msg: ClineMessage) => {
 			if (!msg.text) {
 				return 0
@@ -4365,10 +4930,10 @@ export class Task {
 		const lastApiReqTotalTokens = lastApiReqMessage ? getTotalTokensFromApiReqMessage(lastApiReqMessage) : 0
 		const usagePercentage = Math.round((lastApiReqTotalTokens / contextWindow) * 100)
 
-		details += "\n\n# 上下文窗口使用情况"
-		details += `\n${lastApiReqTotalTokens.toLocaleString()} / ${(contextWindow / 1000).toLocaleString()}K 令牌已使用 (${usagePercentage}%)`
+		details += "\n\n# Context Window Usage"
+		details += `\n${lastApiReqTotalTokens.toLocaleString()} / ${(contextWindow / 1000).toLocaleString()}K tokens used (${usagePercentage}%)`
 
-		details += "\n\n# 当前模式"
+		details += "\n\n# Current Mode"
 		if (this.chatSettings.mode === "plan") {
 			details += "\nPLAN MODE\n" + formatResponse.planModeInstructions()
 		} else {

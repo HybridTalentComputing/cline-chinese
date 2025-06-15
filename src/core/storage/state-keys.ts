@@ -19,7 +19,11 @@ export type SecretKey =
 	| "authNonce"
 	| "asksageApiKey"
 	| "xaiApiKey"
+	| "nebiusApiKey"
 	| "sambanovaApiKey"
+	| "shengSuanYunApiKey"
+	| "cerebrasApiKey"
+	| "difyApiKey"
 
 export type GlobalStateKey =
 	| "apiProvider"
@@ -54,6 +58,7 @@ export type GlobalStateKey =
 	| "openRouterProviderSorting"
 	| "autoApprovalSettings"
 	| "globalClineRulesToggles"
+	| "globalWorkflowToggles"
 	| "browserSettings"
 	| "chatSettings"
 	| "vsCodeLmModelSelector"
@@ -88,6 +93,12 @@ export type GlobalStateKey =
 	| "favoritedModelIds"
 	| "requestTimeoutMs"
 	| "shellIntegrationTimeout"
+	| "mcpResponsesCollapsed"
+	| "terminalReuseEnabled"
 	| "isNewUser"
+	| "shengSuanYunToken"
+	| "shengSuanYunModelId"
+	| "shengSuanYunModelInfo"
+	| "difyBaseUrl"
 
 export type LocalStateKey = "localClineRulesToggles"

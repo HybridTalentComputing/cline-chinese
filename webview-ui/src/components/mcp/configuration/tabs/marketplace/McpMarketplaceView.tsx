@@ -13,36 +13,34 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { vscode } from "@/utils/vscode"
 import McpMarketplaceCard from "./McpMarketplaceCard"
 import McpSubmitCard from "./McpSubmitCard"
-
 const McpMarketplaceView = () => {
-	const { mcpServers } = useExtensionState()
-	const [items, setItems] = useState<McpMarketplaceItem[]>([])
-	const [isLoading, setIsLoading] = useState(true) // 是否正在加载
-	const [error, setError] = useState<string | null>(null) // 错误信息
-	const [isRefreshing, setIsRefreshing] = useState(false) // 是否正在刷新
-	const [searchQuery, setSearchQuery] = useState("") // 搜索查询
-	const [selectedCategory, setSelectedCategory] = useState<string | null>(null) // 选中的分类
-	const [sortBy, setSortBy] = useState<"newest" | "stars" | "name" | "downloadCount">("downloadCount") // 排序方式
+	const { mcpServers, mcpMarketplaceCatalog } = useExtensionState()
+	const [isLoading, setIsLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
+	const [isRefreshing, setIsRefreshing] = useState(false)
+	const [searchQuery, setSearchQuery] = useState("")
+	const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+	const [sortBy, setSortBy] = useState<"newest" | "stars" | "name" | "downloadCount">("downloadCount")
 
-	// 提取所有唯一的分类并排序
+	const items = mcpMarketplaceCatalog?.items || []
+
 	const categories = useMemo(() => {
 		const uniqueCategories = new Set(items.map((item) => item.category))
 		return Array.from(uniqueCategories).sort()
 	}, [items])
 
-	// 根据搜索、分类和排序条件过滤和排序 MCP 条目
 	const filteredItems = useMemo(() => {
 		return items
 			.filter((item) => {
-				const matchesSearch = // 检查是否匹配搜索查询
+				const matchesSearch =
 					searchQuery === "" ||
 					item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
 					item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
 					item.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-				const matchesCategory = !selectedCategory || item.category === selectedCategory // 检查是否匹配选中分类
+				const matchesCategory = !selectedCategory || item.category === selectedCategory
 				return matchesSearch && matchesCategory
 			})
-			.sort((a, b) => { // 根据排序条件排序
+			.sort((a, b) => {
 				switch (sortBy) {
 					case "downloadCount":
 						return b.downloadCount - a.downloadCount
@@ -58,29 +56,19 @@ const McpMarketplaceView = () => {
 			})
 	}, [items, searchQuery, selectedCategory, sortBy])
 
-	// 处理来自扩展的消息，并获取市场目录
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
 			const message = event.data
-			if (message.type === "mcpMarketplaceCatalog") { // 处理市场目录消息
+			if (message.type === "mcpDownloadDetails") {
 				if (message.error) {
 					setError(message.error)
-				} else {
-					setItems(message.mcpMarketplaceCatalog?.items || [])
-					setError(null)
-				}
-				setIsLoading(false)
-				setIsRefreshing(false)
-			} else if (message.type === "mcpDownloadDetails") { // 处理 MCP 下载详情消息
-				if (message.error) {
-					setError(message.error) // 注意：这里可能需要更具体的错误处理，例如针对特定 MCP 卡片显示错误
 				}
 			}
 		}
 
 		window.addEventListener("message", handleMessage)
 
-		// 获取市场目录
+		// Fetch marketplace catalog on initial load
 		fetchMarketplace()
 
 		return () => {
@@ -88,7 +76,15 @@ const McpMarketplaceView = () => {
 		}
 	}, [])
 
-	// 获取市场目录数据
+	useEffect(() => {
+		// Update loading state when catalog arrives
+		if (mcpMarketplaceCatalog?.items) {
+			setIsLoading(false)
+			setIsRefreshing(false)
+			setError(null)
+		}
+	}, [mcpMarketplaceCatalog])
+
 	const fetchMarketplace = (forceRefresh: boolean = false) => {
 		if (forceRefresh) {
 			setIsRefreshing(true)
@@ -99,7 +95,6 @@ const McpMarketplaceView = () => {
 		vscode.postMessage({ type: "fetchMcpMarketplace", bool: forceRefresh })
 	}
 
-	// 加载或刷新状态显示
 	if (isLoading || isRefreshing) {
 		return (
 			<div
@@ -115,7 +110,6 @@ const McpMarketplaceView = () => {
 		)
 	}
 
-	// 错误状态显示
 	if (error) {
 		return (
 			<div
@@ -137,7 +131,6 @@ const McpMarketplaceView = () => {
 		)
 	}
 
-	// 主视图渲染
 	return (
 		<div
 			style={{
@@ -145,12 +138,11 @@ const McpMarketplaceView = () => {
 				flexDirection: "column",
 				width: "100%",
 			}}>
-			{/* 搜索、筛选和排序区域 */}
 			<div style={{ padding: "20px 20px 5px", display: "flex", flexDirection: "column", gap: "16px" }}>
-				{/* 搜索行 */}
+				{/* Search row */}
 				<VSCodeTextField
 					style={{ width: "100%" }}
-					placeholder="搜索 MCP..."
+					placeholder="搜索 MCPs..."
 					value={searchQuery}
 					onInput={(e) => setSearchQuery((e.target as HTMLInputElement).value)}>
 					<div
@@ -164,7 +156,7 @@ const McpMarketplaceView = () => {
 					{searchQuery && (
 						<div
 							className="codicon codicon-close"
-							aria-label="清除搜索"
+							aria-label="清除"
 							onClick={() => setSearchQuery("")}
 							slot="end"
 							style={{
@@ -178,7 +170,7 @@ const McpMarketplaceView = () => {
 					)}
 				</VSCodeTextField>
 
-				{/* 筛选行 */}
+				{/* Filter row */}
 				<div
 					style={{
 						display: "flex",
@@ -193,12 +185,12 @@ const McpMarketplaceView = () => {
 							fontWeight: 500,
 							flexShrink: 0,
 						}}>
-						筛选:
+						过滤:
 					</span>
 					<div
 						style={{
 							position: "relative",
-							zIndex: 2, // 确保下拉菜单在其他元素之上
+							zIndex: 2,
 							flex: 1,
 						}}>
 						<VSCodeDropdown
@@ -207,7 +199,7 @@ const McpMarketplaceView = () => {
 							}}
 							value={selectedCategory || ""}
 							onChange={(e) => setSelectedCategory((e.target as HTMLSelectElement).value || null)}>
-							<VSCodeOption value="">所有分类</VSCodeOption>
+							<VSCodeOption value="">所有类别</VSCodeOption>
 							{categories.map((category) => (
 								<VSCodeOption key={category} value={category}>
 									{category}
@@ -217,7 +209,7 @@ const McpMarketplaceView = () => {
 					</div>
 				</div>
 
-				{/* 排序行 */}
+				{/* Sort row */}
 				<div
 					style={{
 						display: "flex",
@@ -229,47 +221,45 @@ const McpMarketplaceView = () => {
 							color: "var(--vscode-descriptionForeground)",
 							textTransform: "uppercase",
 							fontWeight: 500,
-							marginTop: "3px", // 垂直对齐
+							marginTop: "3px",
 						}}>
 						排序:
 					</span>
 					<VSCodeRadioGroup
 						style={{
 							display: "flex",
-							flexWrap: "wrap", // 允许换行
-							marginTop: "-2.5px", // 微调垂直对齐
+							flexWrap: "wrap",
+							marginTop: "-2.5px",
 						}}
 						value={sortBy}
 						onChange={(e) => setSortBy((e.target as HTMLInputElement).value as typeof sortBy)}>
-						<VSCodeRadio value="downloadCount">最多安装</VSCodeRadio>
+						<VSCodeRadio value="downloadCount">安装量</VSCodeRadio>
 						<VSCodeRadio value="newest">最新</VSCodeRadio>
-						<VSCodeRadio value="stars">GitHub 星标</VSCodeRadio>
+						<VSCodeRadio value="stars">GitHub Stars</VSCodeRadio>
 						<VSCodeRadio value="name">名称</VSCodeRadio>
 					</VSCodeRadioGroup>
 				</div>
 			</div>
 
-			{/* 自定义样式，确保输入框和下拉框样式统一 */}
 			<style>
 				{`
 				.mcp-search-input,
 				.mcp-select {
-				box-sizing: border-box; /* 确保 padding 和 border 不会增加元素的总宽度/高度 */
+				box-sizing: border-box;
 				}
 				.mcp-search-input {
-				min-width: 140px; /* 搜索框最小宽度 */
+				min-width: 140px;
 				}
 				.mcp-search-input:focus,
 				.mcp-select:focus {
-				border-color: var(--vscode-focusBorder) !important; /* 聚焦时边框颜色 */
+				border-color: var(--vscode-focusBorder) !important;
 				}
 				.mcp-search-input:hover,
 				.mcp-select:hover {
-				opacity: 0.9; /* 悬停时透明度 */
+				opacity: 0.9;
 				}
 			`}
 			</style>
-			{/* MCP 条目列表 */}
 			<div style={{ display: "flex", flexDirection: "column" }}>
 				{filteredItems.length === 0 ? (
 					<div
@@ -281,9 +271,7 @@ const McpMarketplaceView = () => {
 							padding: "20px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						{searchQuery || selectedCategory
-							? "未找到匹配的 MCP 服务器"
-							: "市场中未找到 MCP 服务器"}
+						{searchQuery || selectedCategory ? "未找到匹配的 MCP 服务器" : "在市场上找不到 MCP 服务器"}
 					</div>
 				) : (
 					filteredItems.map((item) => <McpMarketplaceCard key={item.mcpId} item={item} installedServers={mcpServers} />)

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package cline;
-option java_package = "bot.cline.proto";
+package clineChinese;
+option java_package = "bot.clineChinese.proto";
 option java_multiple_files = true;
 
 import "common.proto";
@@ -12,6 +12,7 @@ service BrowserService {
   rpc discoverBrowser(EmptyRequest) returns (BrowserConnection);
   rpc getDetectedChromePath(EmptyRequest) returns (ChromePath);
   rpc updateBrowserSettings(UpdateBrowserSettingsRequest) returns (Boolean);
+  rpc relaunchChromeDebugMode(EmptyRequest) returns (String);
 }
 
 message BrowserConnectionInfo {

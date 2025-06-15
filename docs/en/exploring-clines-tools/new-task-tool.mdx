@@ -25,18 +25,23 @@ Two fundamental capabilities enable advanced context management:
 
 As a quick alternative to Cline suggesting the `newtask` tool or defining complex rules, you can directly initiate the process using a Slash Command.
 
--   **How:** Simply type `/newtask` in the chat input field.
--   **Action:** Cline will propose creating a new task, typically suggesting context based on the current session (similar to its default behavior when using the tool). You will still get the `ask_followup_question` prompt to confirm and potentially modify the context before the new task is created.
--   **Benefit:** Provides a fast, user-initiated way to leverage the `new_task` functionality for branching explorations or managing long sessions without waiting for Cline to suggest it.
+- **How:** Simply type `/newtask` in the chat input field.
+- **Action:** Cline will propose creating a new task, typically suggesting context based on the current session (similar to its default behavior when using the tool). You will still get the `ask_followup_question` prompt to confirm and potentially modify the context before the new task is created.
+- **Benefit:** Provides a fast, user-initiated way to leverage the `new_task` functionality for branching explorations or managing long sessions without waiting for Cline to suggest it.
+
+<Note>
+	For more details on using the `/newtask` slash command, see the [New Task Command](/features/slash-commands/new-task)
+	documentation.
+</Note>
 
 #### Default Behavior (Without `.clinerules`)
 
 By default, without specific `.clinerules` dictating its behavior:
 
--   **Tool Availability:** The `new_task` tool exists, and Cline _can_ choose to use it.
--   **Context Awareness:** Cline _is_ aware of its context usage percentage.
--   **No Automatic Trigger:** Cline **will not** automatically initiate a task handoff _solely_ based on context usage reaching a specific percentage (like 50%). The decision to suggest using `new_task` comes from the AI model's reasoning based on the overall task progress and prompt instructions.
--   **Basic Context Preloading:** If `new_task` is used without specific rules defining the `<context>` block structure, Cline will attempt to preload relevant information based on its current understanding (e.g., a basic summary of progress and next steps), but this may be less comprehensive than a rule-driven approach.
+- **Tool Availability:** The `new_task` tool exists, and Cline _can_ choose to use it.
+- **Context Awareness:** Cline _is_ aware of its context usage percentage.
+- **No Automatic Trigger:** Cline **will not** automatically initiate a task handoff _solely_ based on context usage reaching a specific percentage (like 50%). The decision to suggest using `new_task` comes from the AI model's reasoning based on the overall task progress and prompt instructions.
+- **Basic Context Preloading:** If `new_task` is used without specific rules defining the `<context>` block structure, Cline will attempt to preload relevant information based on its current understanding (e.g., a basic summary of progress and next steps), but this may be less comprehensive than a rule-driven approach.
 
 #### The Power of `.clinerules`: Enabling Custom Workflows
 
@@ -44,13 +49,13 @@ While the core capabilities exist by default, the true power, automation, and cu
 
 Key benefits of using `.clinerules` with `new_task`:
 
--   **Automated Context Management:** Define rules to automatically trigger handoffs at specific context percentages (e.g., >50%, >70%) or token counts, ensuring optimal performance and preventing context loss.
--   **Model-Specific Optimization:** Tailor handoff triggers based on known thresholds for different LLMs (e.g., trigger earlier for models known to degrade past a certain token count).
--   **Intelligent Breakpoints:** Instruct Cline via rules to find logical stopping points (e.g., after completing a function or test) _after_ a context threshold is passed, ensuring cleaner handoffs.
--   **Structured Task Decomposition:** Use Plan Mode to define subtasks, then use `.clinerules` to have Cline automatically create a new task via `new_task` upon completing each subtask, preloading the context for the _next_ subtask.
--   **Custom Context Packaging:** Mandate the exact structure and content of the `<context>` block in `.clinerules` for highly detailed and consistent handoffs (see example below).
--   **Improved Memory Persistence:** Use `new_task` context blocks as a primary, integrated way to persist information across sessions, potentially replacing or supplementing file-based memory systems.
--   **Workflow Automation:** Define rules for specific scenarios, like always preloading certain setup instructions or project boilerplate when starting tasks of a particular type.
+- **Automated Context Management:** Define rules to automatically trigger handoffs at specific context percentages (e.g., >50%, >70%) or token counts, ensuring optimal performance and preventing context loss.
+- **Model-Specific Optimization:** Tailor handoff triggers based on known thresholds for different LLMs (e.g., trigger earlier for models known to degrade past a certain token count).
+- **Intelligent Breakpoints:** Instruct Cline via rules to find logical stopping points (e.g., after completing a function or test) _after_ a context threshold is passed, ensuring cleaner handoffs.
+- **Structured Task Decomposition:** Use Plan Mode to define subtasks, then use `.clinerules` to have Cline automatically create a new task via `new_task` upon completing each subtask, preloading the context for the _next_ subtask.
+- **Custom Context Packaging:** Mandate the exact structure and content of the `<context>` block in `.clinerules` for highly detailed and consistent handoffs (see example below).
+- **Improved Memory Persistence:** Use `new_task` context blocks as a primary, integrated way to persist information across sessions, potentially replacing or supplementing file-based memory systems.
+- **Workflow Automation:** Define rules for specific scenarios, like always preloading certain setup instructions or project boilerplate when starting tasks of a particular type.
 
 #### Example Rule-Driven Workflow: Task Handoff Process
 
@@ -74,22 +79,22 @@ A common workflow, **driven by specific `.clinerules` like the example below**, 
 
 The effectiveness of rule-driven handoffs depends heavily on how `.clinerules` define the `<context>` block. A comprehensive structure often includes:
 
--   **`## Completed Work`**: Detailed list of accomplishments, files modified/created, key decisions.
--   **`## Current State`**: Project status, running processes, key file states.
--   **`## Next Steps`**: Clear, prioritized list of remaining tasks, implementation details, known challenges.
--   **`## Reference Information`**: Links, code snippets, patterns, user preferences.
--   **Actionable Start:** A clear instruction for the immediate next action.
+- **`## Completed Work`**: Detailed list of accomplishments, files modified/created, key decisions.
+- **`## Current State`**: Project status, running processes, key file states.
+- **`## Next Steps`**: Clear, prioritized list of remaining tasks, implementation details, known challenges.
+- **`## Reference Information`**: Links, code snippets, patterns, user preferences.
+- **Actionable Start:** A clear instruction for the immediate next action.
 
 #### Potential Use Cases & Workflows
 
 The flexibility of `new_task` combined with `.clinerules` opens up many possibilities:
 
--   **Proactive Context Window Management:** Automatically trigger handoffs at specific percentages (e.g., 50%, 70%) or token counts to maintain optimal performance.
--   **Intelligent Breakpoints:** Instruct Cline to find logical stopping points (e.g., after completing a function or test) _after_ a context threshold is passed, ensuring cleaner handoffs.
--   **Structured Task Decomposition:** Use Plan Mode to define subtasks, then use `.clinerules` to have Cline automatically create a new task via `new_task` upon completing each subtask.
--   **Automated Session Summaries:** Configure the `<context>` block to always include a summary of the previous session's key discussion points.
--   **Preloading Boilerplate/Setup:** Start new tasks related to specific projects preloaded with standard setup instructions or file templates.
--   **"Memory Bank" Alternative:** Use `new_task` context blocks as the primary way to persist information across sessions, potentially replacing file-based memory systems.
+- **Proactive Context Window Management:** Automatically trigger handoffs at specific percentages (e.g., 50%, 70%) or token counts to maintain optimal performance.
+- **Intelligent Breakpoints:** Instruct Cline to find logical stopping points (e.g., after completing a function or test) _after_ a context threshold is passed, ensuring cleaner handoffs.
+- **Structured Task Decomposition:** Use Plan Mode to define subtasks, then use `.clinerules` to have Cline automatically create a new task via `new_task` upon completing each subtask.
+- **Automated Session Summaries:** Configure the `<context>` block to always include a summary of the previous session's key discussion points.
+- **Preloading Boilerplate/Setup:** Start new tasks related to specific projects preloaded with standard setup instructions or file templates.
+- **"Memory Bank" Alternative:** Use `new_task` context blocks as the primary way to persist information across sessions, potentially replacing file-based memory systems.
 
 Experimenting with `.clinerules` is encouraged to discover workflows that best suit your needs!
 
@@ -130,23 +135,23 @@ Plan Mode is specifically designed for analyzing complex tasks and breaking them
 
 ### 1. Initial Task Analysis - REQUIRED
 
--   **MUST** begin by thoroughly understanding the full scope of the user's request
--   **MUST** identify all major components and dependencies of the task
--   **MUST** consider potential challenges, edge cases, and prerequisites
+- **MUST** begin by thoroughly understanding the full scope of the user's request
+- **MUST** identify all major components and dependencies of the task
+- **MUST** consider potential challenges, edge cases, and prerequisites
 
 ### 2. Strategic Task Decomposition - REQUIRED
 
--   **MUST** break the overall task into logical, discrete subtasks
--   **MUST** prioritize subtasks based on dependencies (what must be completed first)
--   **MUST** aim for subtasks that can be completed within a single session (15-30 minutes of work)
--   **MUST** consider natural breaking points where context switching makes sense
+- **MUST** break the overall task into logical, discrete subtasks
+- **MUST** prioritize subtasks based on dependencies (what must be completed first)
+- **MUST** aim for subtasks that can be completed within a single session (15-30 minutes of work)
+- **MUST** consider natural breaking points where context switching makes sense
 
 ### 3. Creating a Task Roadmap - REQUIRED
 
--   **MUST** present a clear, numbered list of subtasks to the user
--   **MUST** explain dependencies between subtasks
--   **MUST** provide time estimates for each subtask when possible
--   **MUST** use Mermaid diagrams to visualize task flow and dependencies when helpful
+- **MUST** present a clear, numbered list of subtasks to the user
+- **MUST** explain dependencies between subtasks
+- **MUST** provide time estimates for each subtask when possible
+- **MUST** use Mermaid diagrams to visualize task flow and dependencies when helpful
 
 \`\`\`mermaid
 graph TD
@@ -160,10 +165,10 @@ C --> D
 
 ### 4. Getting User Approval - REQUIRED
 
--   **MUST** ask for user feedback on the proposed task breakdown
--   **MUST** adjust the plan based on user priorities or additional requirements
--   **MUST** confirm which subtask to begin with
--   **MUST** request the user to toggle to Act Mode when ready to implement
+- **MUST** ask for user feedback on the proposed task breakdown
+- **MUST** adjust the plan based on user priorities or additional requirements
+- **MUST** confirm which subtask to begin with
+- **MUST** request the user to toggle to Act Mode when ready to implement
 
 ## Task Implementation and Handoff Process - MANDATORY PROCEDURES
 
@@ -171,19 +176,19 @@ When implementing tasks in Act Mode, you **MUST** follow these guidelines for ef
 
 ### 1. Focused Implementation - REQUIRED
 
--   **MUST** focus on completing the current subtask fully
--   **MUST** document progress clearly through comments and commit messages
--   **MUST** create checkpoints at logical completion points
+- **MUST** focus on completing the current subtask fully
+- **MUST** document progress clearly through comments and commit messages
+- **MUST** create checkpoints at logical completion points
 
 ### 2. Recognizing Completion Points - CRITICAL
 
 You **MUST** identify natural handoff points when:
 
--   The current subtask is fully completed
--   You've reached a logical stopping point in a larger subtask
--   The implementation is taking longer than expected and can be continued later
--   The task scope has expanded beyond the original plan
--   **CRITICAL**: The context window usage exceeds 50% (e.g., 100,000+ tokens for a 200K context window)
+- The current subtask is fully completed
+- You've reached a logical stopping point in a larger subtask
+- The implementation is taking longer than expected and can be continued later
+- The task scope has expanded beyond the original plan
+- **CRITICAL**: The context window usage exceeds 50% (e.g., 100,000+ tokens for a 200K context window)
 
 ### 3. Initiating the Handoff Process - MANDATORY ACTION
 
@@ -212,27 +217,27 @@ If the user agrees to create a new task, you **MUST** use the `new_task` tool wi
 
 ## Completed Work
 
--   [Detailed list of completed items]
--   [Include specific files modified/created]
--   [Note any important decisions made]
+- [Detailed list of completed items]
+- [Include specific files modified/created]
+- [Note any important decisions made]
 
 ## Current State
 
--   [Description of the current state of the project]
--   [Any running processes or environment setup]
--   [Key files and their current state]
+- [Description of the current state of the project]
+- [Any running processes or environment setup]
+- [Key files and their current state]
 
 ## Next Steps
 
--   [Detailed list of remaining tasks]
--   [Specific implementation details to address]
--   [Any known challenges to be aware of]
+- [Detailed list of remaining tasks]
+- [Specific implementation details to address]
+- [Any known challenges to be aware of]
 
 ## Reference Information
 
--   [Links to relevant documentation]
--   [Important code snippets or patterns to follow]
--   [Any user preferences noted during the current session]
+- [Links to relevant documentation]
+- [Important code snippets or patterns to follow]
+- [Any user preferences noted during the current session]
 
 Please continue the implementation by [specific next action].
 </context>
@@ -245,60 +250,60 @@ When creating a new task, you **MUST** always include:
 
 #### Project Context - REQUIRED
 
--   **MUST** include the overall goal and purpose of the project
--   **MUST** include key architectural decisions and patterns
--   **MUST** include technology stack and dependencies
+- **MUST** include the overall goal and purpose of the project
+- **MUST** include key architectural decisions and patterns
+- **MUST** include technology stack and dependencies
 
 #### Implementation Details - REQUIRED
 
--   **MUST** list files created or modified in the current session
--   **MUST** describe specific functions, classes, or components implemented
--   **MUST** explain design patterns being followed
--   **MUST** outline testing approach
+- **MUST** list files created or modified in the current session
+- **MUST** describe specific functions, classes, or components implemented
+- **MUST** explain design patterns being followed
+- **MUST** outline testing approach
 
 #### Progress Tracking - REQUIRED
 
--   **MUST** provide checklist of completed items
--   **MUST** provide checklist of remaining items
--   **MUST** note any blockers or challenges encountered
+- **MUST** provide checklist of completed items
+- **MUST** provide checklist of remaining items
+- **MUST** note any blockers or challenges encountered
 
 #### User Preferences - REQUIRED
 
--   **MUST** note coding style preferences mentioned by the user
--   **MUST** document specific approaches requested by the user
--   **MUST** highlight priority areas identified by the user
+- **MUST** note coding style preferences mentioned by the user
+- **MUST** document specific approaches requested by the user
+- **MUST** highlight priority areas identified by the user
 
 ## Best Practices for Effective Handoffs - MANDATORY GUIDELINES
 
 ### 1. Maintain Continuity - REQUIRED
 
--   **MUST** use consistent terminology between tasks
--   **MUST** reference previous decisions and their rationale
--   **MUST** maintain the same architectural approach unless explicitly changing direction
+- **MUST** use consistent terminology between tasks
+- **MUST** reference previous decisions and their rationale
+- **MUST** maintain the same architectural approach unless explicitly changing direction
 
 ### 2. Preserve Context - REQUIRED
 
--   **MUST** include relevant code snippets in the handoff
--   **MUST** summarize key discussions from the previous session
--   **MUST** reference specific files and line numbers when applicable
+- **MUST** include relevant code snippets in the handoff
+- **MUST** summarize key discussions from the previous session
+- **MUST** reference specific files and line numbers when applicable
 
 ### 3. Set Clear Next Actions - REQUIRED
 
--   **MUST** begin the handoff with a clear, actionable next step
--   **MUST** prioritize remaining tasks
--   **MUST** highlight any decisions that need to be made
+- **MUST** begin the handoff with a clear, actionable next step
+- **MUST** prioritize remaining tasks
+- **MUST** highlight any decisions that need to be made
 
 ### 4. Document Assumptions - REQUIRED
 
--   **MUST** clearly state any assumptions made during implementation
--   **MUST** note areas where user input might be needed
--   **MUST** identify potential alternative approaches
+- **MUST** clearly state any assumptions made during implementation
+- **MUST** note areas where user input might be needed
+- **MUST** identify potential alternative approaches
 
 ### 5. Optimize for Resumability - REQUIRED
 
--   **MUST** structure the handoff so the next session can begin working immediately
--   **MUST** include setup instructions if environment configuration is needed
--   **MUST** provide a quick summary at the top for rapid context restoration
+- **MUST** structure the handoff so the next session can begin working immediately
+- **MUST** include setup instructions if environment configuration is needed
+- **MUST** provide a quick summary at the top for rapid context restoration
 
 ## Example Task Handoff
 
@@ -312,18 +317,18 @@ When creating a new task, you **MUST** always include:
 
 ## Completed Work
 
--   Created basic Express.js server structure
--   Implemented MongoDB connection and user schema
--   Completed user registration endpoint with password hashing
--   Added input validation using Joi
--   Created initial test suite for registration endpoint
+- Created basic Express.js server structure
+- Implemented MongoDB connection and user schema
+- Completed user registration endpoint with password hashing
+- Added input validation using Joi
+- Created initial test suite for registration endpoint
 
 ## Current State
 
--   Server runs successfully on port 3000
--   MongoDB connection is established
--   Registration endpoint (/api/users/register) is fully functional
--   Test suite passes for all registration scenarios
+- Server runs successfully on port 3000
+- MongoDB connection is established
+- Registration endpoint (/api/users/register) is fully functional
+- Test suite passes for all registration scenarios
 
 ## Next Steps
 
@@ -340,10 +345,10 @@ When creating a new task, you **MUST** always include:
 
 ## Reference Information
 
--   JWT secret should be stored in .env file
--   Follow the existing error handling pattern in routes/users.js
--   User schema is defined in models/User.js
--   Test patterns are established in tests/auth.test.js
+- JWT secret should be stored in .env file
+- Follow the existing error handling pattern in routes/users.js
+- User schema is defined in models/User.js
+- Test patterns are established in tests/auth.test.js
 
 Please continue by implementing the login endpoint following the same patterns established in the registration endpoint.
 </context>
@@ -374,8 +379,8 @@ By strictly following these guidelines, you'll ensure smooth transitions between
 ```markdown
 ## User Interaction & Workflow Considerations
 
--   **Linear Flow:** Currently, using `new_task` creates a linear sequence. The old task ends, and the new one begins. The old task history remains accessible for backtracking.
--   **User Approval:** You always have control, approving the handoff and having the chance to modify the context Cline proposes to carry forward.
--   **Flexibility:** The core `new_task` tool is a flexible building block. Experiment with `.clinerules` to create workflows that best suit your needs, whether for strict context management, task decomposition, or other creative uses.
+- **Linear Flow:** Currently, using `new_task` creates a linear sequence. The old task ends, and the new one begins. The old task history remains accessible for backtracking.
+- **User Approval:** You always have control, approving the handoff and having the chance to modify the context Cline proposes to carry forward.
+- **Flexibility:** The core `new_task` tool is a flexible building block. Experiment with `.clinerules` to create workflows that best suit your needs, whether for strict context management, task decomposition, or other creative uses.
 ```
 ````

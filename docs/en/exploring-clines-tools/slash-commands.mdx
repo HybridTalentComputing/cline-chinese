@@ -37,21 +37,21 @@ The `/smol` slash command (with `/compact` as an alias) allows you to condense t
 
 Choosing between `/newtask` and `/smol` depends on your goal:
 
--   Use `/smol` (or `/compact`) when:
-    -   You want to continue the **same task**, but the chat history has become very long or costly.
-    -   You need to reduce token usage for upcoming interactions within the current workflow.
-    -   Example: Deep debugging session where you want to summarize previous steps before continuing.
--   Use `/newtask` when:
-    -   You have finished one phase of work and want to start a **fresh, related task**.
-    -   You want to branch your exploration while preserving key context from the previous session.
-    -   Example: Moving from developing Feature A to starting work on Feature B, carrying over relevant architectural decisions.
+- Use `/smol` (or `/compact`) when:
+    - You want to continue the **same task**, but the chat history has become very long or costly.
+    - You need to reduce token usage for upcoming interactions within the current workflow.
+    - Example: Deep debugging session where you want to summarize previous steps before continuing.
+- Use `/newtask` when:
+    - You have finished one phase of work and want to start a **fresh, related task**.
+    - You want to branch your exploration while preserving key context from the previous session.
+    - Example: Moving from developing Feature A to starting work on Feature B, carrying over relevant architectural decisions.
 
 #### Why Manage Context?
 
 While Cline supports large context windows, actively managing context using tools and commands like `/newtask` and `/smol` is often beneficial:
 
--   **Performance:** Large language models can sometimes experience performance degradation or lose focus when context windows become extremely full (e.g., over 50-75% capacity, depending on the model). Condensing or resetting context can help maintain optimal performance.
--   **Relevance:** Summarizing or starting fresh ensures the most relevant information is prioritized in the context window.
--   **Cost:** Reducing the number of tokens sent to the model in each turn can help manage costs, especially with more expensive models.
+- **Performance:** Large language models can sometimes experience performance degradation or lose focus when context windows become extremely full (e.g., over 50-75% capacity, depending on the model). Condensing or resetting context can help maintain optimal performance.
+- **Relevance:** Summarizing or starting fresh ensures the most relevant information is prioritized in the context window.
+- **Cost:** Reducing the number of tokens sent to the model in each turn can help manage costs, especially with more expensive models.
 
 Using `/newtask` and `/smol` provides you with direct control over the conversation context, allowing for more efficient and effective interaction with Cline.

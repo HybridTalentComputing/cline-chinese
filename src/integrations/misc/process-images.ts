@@ -29,14 +29,12 @@ export async function selectImages(): Promise<string[]> {
 			const dimensions = sizeOf(uint8Array) // Get dimensions from Uint8Array
 			if (dimensions.width! > 7500 || dimensions.height! > 7500) {
 				console.warn(`Image dimensions exceed 7500px, skipping: ${imagePath}`)
-				vscode.window.showErrorMessage(
-					`Image too large: ${path.basename(imagePath)} was skipped (dimensions exceed 7500px).`,
-				)
+				vscode.window.showErrorMessage(`文件太大: ${path.basename(imagePath)} 被忽略 (超过 7500px).`)
 				return null
 			}
 		} catch (error) {
 			console.error(`Error reading file or getting dimensions for ${imagePath}:`, error)
-			vscode.window.showErrorMessage(`Could not read dimensions for ${path.basename(imagePath)}, skipping.`)
+			vscode.window.showErrorMessage(`读取失败 ${path.basename(imagePath)}, 被忽略.`)
 			return null
 		}
 

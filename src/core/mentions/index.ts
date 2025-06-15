@@ -85,14 +85,14 @@ export async function parseMentions(
 		if (mention.startsWith("http")) {
 			let result: string
 			if (launchBrowserError) {
-				result = `Error fetching content: ${launchBrowserError.message}`
+				result = `获取内容失败: ${launchBrowserError.message}`
 			} else {
 				try {
 					const markdown = await urlContentFetcher.urlToMarkdown(mention)
 					result = markdown
 				} catch (error) {
-					vscode.window.showErrorMessage(`Error fetching content for ${mention}: ${error.message}`)
-					result = `Error fetching content: ${error.message}`
+					vscode.window.showErrorMessage(`获取内容失败 ${mention}: ${error.message}`)
+					result = `获取内容失败: ${error.message}`
 				}
 			}
 			parsedText += `\n\n<url_content url="${mention}">\n${result}\n</url_content>`

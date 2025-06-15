@@ -1,7 +1,11 @@
-import { McpServer } from "@shared/mcp"
-import { DEFAULT_MCP_TIMEOUT_SECONDS } from "@shared/mcp"
-import { useState, useCallback, useEffect } from "react"
-import { vscode } from "@/utils/vscode"
+import DangerButton from "@/components/common/DangerButton"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { McpServiceClient } from "@/services/grpc-client"
+import { getMcpServerDisplayName } from "@/utils/mcp"
+import { DEFAULT_MCP_TIMEOUT_SECONDS, McpServer } from "@shared/mcp"
+import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
+import { StringRequest } from "@shared/proto/common"
+import { McpServers, ToggleMcpServerRequest, ToggleToolAutoApproveRequest, UpdateMcpTimeoutRequest } from "@shared/proto/mcp"
 import {
 	VSCodeButton,
 	VSCodeCheckbox,
@@ -11,14 +15,9 @@ import {
 	VSCodePanelTab,
 	VSCodePanelView,
 } from "@vscode/webview-ui-toolkit/react"
-import { getMcpServerDisplayName } from "@/utils/mcp"
-import DangerButton from "@/components/common/DangerButton"
-import McpToolRow from "./McpToolRow"
+import { useCallback, useState } from "react"
 import McpResourceRow from "./McpResourceRow"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { McpServiceClient } from "@/services/grpc-client"
-import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
-import { McpServers, UpdateMcpTimeoutRequest } from "@shared/proto/mcp"
+import McpToolRow from "./McpToolRow"
 // constant JSX.Elements
 const TimeoutOptions = [
 	{ value: "30", label: "30 seconds" },
@@ -46,6 +45,7 @@ const ServerRow = ({
 
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [isDeleting, setIsDeleting] = useState(false)
+	const [isRestarting, setIsRestarting] = useState(false)
 
 	const getStatusColor = useCallback((status: McpServer["status"]) => {
 		switch (status) {
@@ -93,36 +93,68 @@ const ServerRow = ({
 	}
 
 	const handleRestart = () => {
-		vscode.postMessage({
-			type: "restartMcpServer",
-			text: server.name,
-		})
+		// Set local state to show "connecting" status
+		setIsRestarting(true)
+
+		// Make the gRPC call
+		McpServiceClient.restartMcpServer({
+			value: server.name,
+		} as StringRequest)
+			.then((response: McpServers) => {
+				// Update with the final state from the server
+				const mcpServers = convertProtoMcpServersToMcpServers(response.mcpServers)
+				setMcpServers(mcpServers)
+				setIsRestarting(false)
+			})
+			.catch((error) => {
+				// Reset the restarting state
+				setIsRestarting(false)
+				console.error("Error restarting MCP server", error)
+			})
 	}
 
 	const handleDelete = () => {
 		setIsDeleting(true)
-		vscode.postMessage({
-			type: "deleteMcpServer",
-			serverName: server.name,
-		})
+		McpServiceClient.deleteMcpServer({
+			value: server.name,
+		} as StringRequest)
+			.then((response: McpServers) => {
+				const mcpServers = convertProtoMcpServersToMcpServers(response.mcpServers)
+				setMcpServers(mcpServers)
+				setIsDeleting(false)
+			})
+			.catch((error) => {
+				console.error("Error deleting MCP server", error)
+				setIsDeleting(false)
+			})
 	}
 
 	const handleAutoApproveChange = () => {
 		if (!server.name) return
 
-		vscode.postMessage({
-			type: "toggleToolAutoApprove",
-			serverName: server.name,
-			toolNames: server.tools?.map((tool) => tool.name) || [],
-			autoApprove: !server.tools?.every((tool) => tool.autoApprove),
-		})
+		McpServiceClient.toggleToolAutoApprove(
+			ToggleToolAutoApproveRequest.create({
+				serverName: server.name,
+				toolNames: server.tools?.map((tool) => tool.name) || [],
+				autoApprove: !server.tools?.every((tool) => tool.autoApprove),
+			}),
+		)
+			.then((response) => {
+				const mcpServers = convertProtoMcpServersToMcpServers(response.mcpServers)
+				setMcpServers(mcpServers)
+			})
+			.catch((error) => {
+				console.error("Error toggling all tools auto-approve", error)
+			})
 	}
 
 	const handleToggleMcpServer = () => {
-		McpServiceClient.toggleMcpServer({
-			serverName: server.name,
-			disabled: !server.disabled,
-		})
+		McpServiceClient.toggleMcpServer(
+			ToggleMcpServerRequest.create({
+				serverName: server.name,
+				disabled: !server.disabled,
+			}),
+		)
 			.then((response) => {
 				const mcpServers = convertProtoMcpServersToMcpServers(response.mcpServers)
 				setMcpServers(mcpServers)
@@ -166,18 +198,18 @@ const ServerRow = ({
 					<div style={{ display: "flex", alignItems: "center", gap: "4px", marginLeft: "8px" }}>
 						<VSCodeButton
 							appearance="icon"
-							title="Restart Server"
+							title="重启服务"
 							onClick={(e) => {
 								e.stopPropagation()
 								handleRestart()
 							}}
-							disabled={server.status === "connecting"}>
+							disabled={server.status === "connecting" || isRestarting}>
 							<span className="codicon codicon-sync"></span>
 						</VSCodeButton>
 						{hasTrashIcon && (
 							<VSCodeButton
 								appearance="icon"
-								title="Delete Server"
+								title="删除服务"
 								onClick={(e) => {
 									e.stopPropagation()
 									handleDelete()
@@ -267,14 +299,14 @@ const ServerRow = ({
 							width: "calc(100% - 20px)",
 							margin: "0 10px 10px 10px",
 						}}>
-						{server.status === "connecting" ? "Retrying..." : "Retry Connection"}
+						{server.status === "connecting" || isRestarting ? "重试..." : "重试连接"}
 					</VSCodeButton>
 
 					<DangerButton
 						style={{ width: "calc(100% - 20px)", margin: "0 10px 10px 10px" }}
 						disabled={isDeleting}
 						onClick={handleDelete}>
-						{isDeleting ? "Deleting..." : "Delete Server"}
+						{isDeleting ? "正在删除..." : "删除服务"}
 					</DangerButton>
 				</div>
 			) : (
@@ -310,7 +342,7 @@ const ServerRow = ({
 												checked={server.tools.every((tool) => tool.autoApprove)}
 												onChange={handleAutoApproveChange}
 												data-tool="all-tools">
-												Auto-approve all tools
+												自动批准所有工具
 											</VSCodeCheckbox>
 										)}
 									</div>
@@ -320,7 +352,7 @@ const ServerRow = ({
 											padding: "10px 0",
 											color: "var(--vscode-descriptionForeground)",
 										}}>
-										No tools found
+										未发现工具
 									</div>
 								)}
 							</VSCodePanelView>
@@ -348,7 +380,7 @@ const ServerRow = ({
 											padding: "10px 0",
 											color: "var(--vscode-descriptionForeground)",
 										}}>
-										No resources found
+										未找到可用资源
 									</div>
 								)}
 							</VSCodePanelView>
@@ -363,19 +395,19 @@ const ServerRow = ({
 						<VSCodeButton
 							appearance="secondary"
 							onClick={handleRestart}
-							disabled={server.status === "connecting"}
+							disabled={server.status === "connecting" || isRestarting}
 							style={{
 								width: "calc(100% - 14px)",
 								margin: "0 7px 3px 7px",
 							}}>
-							{server.status === "connecting" ? "Restarting..." : "Restart Server"}
+							{server.status === "connecting" || isRestarting ? "正在重启..." : "重启服务"}
 						</VSCodeButton>
 
 						<DangerButton
 							style={{ width: "calc(100% - 14px)", margin: "5px 7px 3px 7px" }}
 							disabled={isDeleting}
 							onClick={handleDelete}>
-							{isDeleting ? "Deleting..." : "Delete Server"}
+							{isDeleting ? "正在删除..." : "删除服务"}
 						</DangerButton>
 					</div>
 				)

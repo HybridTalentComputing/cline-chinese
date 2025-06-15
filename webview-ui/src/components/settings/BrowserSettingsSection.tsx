@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react"
+import { UpdateBrowserSettingsRequest } from "@shared/proto/browser"
+import { EmptyRequest, StringRequest } from "@shared/proto/common"
 import { VSCodeButton, VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import debounce from "debounce"
+import React, { useCallback, useEffect, useState } from "react"
+import styled from "styled-components"
 import { BROWSER_VIEWPORT_PRESETS } from "../../../../src/shared/BrowserSettings"
 import { useExtensionState } from "../../context/ExtensionStateContext"
-import { vscode } from "../../utils/vscode"
-import styled from "styled-components"
 import { BrowserServiceClient } from "../../services/grpc-client"
 
 const ConnectionStatusIndicator = ({
@@ -23,7 +24,7 @@ const ConnectionStatusIndicator = ({
 			{isChecking ? (
 				<>
 					<Spinner />
-					<StatusText>检查连接中...</StatusText>
+					<StatusText>检查连接...</StatusText>
 				</>
 			) : isConnected === true ? (
 				<>
@@ -44,7 +45,7 @@ const CollapsibleContent = styled.div<{ isOpen: boolean }>`
 		opacity 0.3s ease-in-out,
 		margin-top 0.3s ease-in-out,
 		visibility 0.3s ease-in-out;
-	max-height: ${({ isOpen }) => (isOpen ? "1000px" : "0")}; // 足够大的高度
+	max-height: ${({ isOpen }) => (isOpen ? "1000px" : "0")}; // Sufficiently large height
 	opacity: ${({ isOpen }) => (isOpen ? 1 : 0)};
 	margin-top: ${({ isOpen }) => (isOpen ? "15px" : "0")};
 	visibility: ${({ isOpen }) => (isOpen ? "visible" : "hidden")};
@@ -60,85 +61,65 @@ export const BrowserSettingsSection: React.FC = () => {
 	const [isBundled, setIsBundled] = useState(false)
 	const [detectedChromePath, setDetectedChromePath] = useState<string | null>(null)
 
-	// 监听浏览器连接测试结果和重启结果
-	useEffect(() => {
-		const handleMessage = (event: MessageEvent) => {
-			const message = event.data
-			if (message.type === "browserConnectionResult") {
-				setConnectionStatus(message.success)
-				setIsCheckingConnection(false)
-			} else if (message.type === "browserRelaunchResult") {
-				setRelaunchResult({
-					success: message.success,
-					message: message.text,
-				})
-				setDebugMode(false)
-			}
-		}
-
-		window.addEventListener("message", handleMessage)
-		return () => window.removeEventListener("message", handleMessage)
-	}, [])
-
-	// 15 秒后自动清除重启结果消息
+	// Auto-clear relaunch result message after 15 seconds
 	useEffect(() => {
 		if (relaunchResult) {
 			const timer = setTimeout(() => {
 				setRelaunchResult(null)
 			}, 15000)
 
-			// 如果组件卸载或 relaunchResult 更改，则清除超时
+			// Clear timeout if component unmounts or relaunchResult changes
 			return () => clearTimeout(timer)
 		}
 	}, [relaunchResult])
 
-	// 组件挂载时请求检测到的 Chrome 路径
+	// Request detected Chrome path on mount
 	useEffect(() => {
-		// 使用 gRPC 获取 getDetectedChromePath
-		BrowserServiceClient.getDetectedChromePath({})
+		// Use gRPC for getDetectedChromePath
+		BrowserServiceClient.getDetectedChromePath(EmptyRequest.create({}))
 			.then((result) => {
 				setDetectedChromePath(result.path)
 				setIsBundled(result.isBundled)
 			})
 			.catch((error) => {
-				console.error("获取检测到的 Chrome 路径时出错:", error)
+				console.error("Error getting detected Chrome path:", error)
 			})
 	}, [])
 
-	// 将 localChromePath 与全局状态同步
+	// Sync localChromePath with global state
 	useEffect(() => {
 		if (browserSettings.chromeExecutablePath !== localChromePath) {
 			setLocalChromePath(browserSettings.chromeExecutablePath || "")
 		}
-		// 移除了本地 disableToolUse 状态的同步
+		// Removed sync for local disableToolUse state
 	}, [browserSettings.chromeExecutablePath, browserSettings.disableToolUse])
 
-	// 防抖连接检查函数
+	// Debounced connection check function
 	const debouncedCheckConnection = useCallback(
 		debounce(() => {
 			if (browserSettings.remoteBrowserEnabled) {
 				setIsCheckingConnection(true)
 				setConnectionStatus(null)
 				if (browserSettings.remoteBrowserHost) {
-					// 使用 gRPC 测试浏览器连接
-					BrowserServiceClient.testBrowserConnection({ value: browserSettings.remoteBrowserHost })
+					// Use gRPC for testBrowserConnection
+					BrowserServiceClient.testBrowserConnection(StringRequest.create({ value: browserSettings.remoteBrowserHost }))
 						.then((result) => {
 							setConnectionStatus(result.success)
 							setIsCheckingConnection(false)
 						})
 						.catch((error) => {
-							console.error("测试浏览器连接时出错:", error)
+							console.error("Error testing browser connection:", error)
 							setConnectionStatus(false)
 							setIsCheckingConnection(false)
 						})
 				} else {
-					BrowserServiceClient.discoverBrowser({})
+					BrowserServiceClient.discoverBrowser(EmptyRequest.create({}))
 						.then((result) => {
 							setConnectionStatus(result.success)
 							setIsCheckingConnection(false)
 						})
 						.catch((error) => {
-							console.error("发现浏览器时出错:", error)
+							console.error("Error discovering browser:", error)
 							setConnectionStatus(false)
 							setIsCheckingConnection(false)
 						})
@@ -148,7 +129,7 @@ export const BrowserSettingsSection: React.FC = () => {
 		[browserSettings.remoteBrowserEnabled, browserSettings.remoteBrowserHost],
 	)
 
-	// 组件挂载或远程设置更改时检查连接
+	// Check connection when component mounts or when remote settings change
 	useEffect(() => {
 		if (browserSettings.remoteBrowserEnabled) {
 			debouncedCheckConnection()
@@ -161,76 +142,109 @@ export const BrowserSettingsSection: React.FC = () => {
 		const target = event.target as HTMLSelectElement
 		const selectedSize = BROWSER_VIEWPORT_PRESETS[target.value as keyof typeof BROWSER_VIEWPORT_PRESETS]
 		if (selectedSize) {
-			BrowserServiceClient.updateBrowserSettings({
-				metadata: {},
-				viewport: {
-					width: selectedSize.width,
-					height: selectedSize.height,
-				},
-				remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
-				remoteBrowserHost: browserSettings.remoteBrowserHost,
-				chromeExecutablePath: browserSettings.chromeExecutablePath,
-				disableToolUse: browserSettings.disableToolUse,
-			})
+			BrowserServiceClient.updateBrowserSettings(
+				UpdateBrowserSettingsRequest.create({
+					metadata: {},
+					viewport: {
+						width: selectedSize.width,
+						height: selectedSize.height,
+					},
+					remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
+					remoteBrowserHost: browserSettings.remoteBrowserHost,
+					chromeExecutablePath: browserSettings.chromeExecutablePath,
+					disableToolUse: browserSettings.disableToolUse,
+				}),
+			)
 				.then((response) => {
 					if (!response.value) {
-						console.error("更新浏览器设置失败")
+						console.error("Failed to update browser settings")
 					}
 				})
 				.catch((error) => {
-					console.error("更新浏览器设置时出错:", error)
+					console.error("Error updating browser settings:", error)
 				})
 		}
 	}
 
 	const updateRemoteBrowserEnabled = (enabled: boolean) => {
-		BrowserServiceClient.updateBrowserSettings({
-			metadata: {},
-			viewport: {
-				width: browserSettings.viewport.width,
-				height: browserSettings.viewport.height,
-			},
-			remoteBrowserEnabled: enabled,
-			// 如果禁用，也清除主机
-			remoteBrowserHost: enabled ? browserSettings.remoteBrowserHost : undefined,
-			chromeExecutablePath: browserSettings.chromeExecutablePath,
-			disableToolUse: browserSettings.disableToolUse,
-		})
+		BrowserServiceClient.updateBrowserSettings(
+			UpdateBrowserSettingsRequest.create({
+				metadata: {},
+				viewport: {
+					width: browserSettings.viewport.width,
+					height: browserSettings.viewport.height,
+				},
+				remoteBrowserEnabled: enabled,
+				// If disabling, also clear the host
+				remoteBrowserHost: enabled ? browserSettings.remoteBrowserHost : undefined,
+				chromeExecutablePath: browserSettings.chromeExecutablePath,
+				disableToolUse: browserSettings.disableToolUse,
+			}),
+		)
 			.then((response) => {
 				if (!response.value) {
-					console.error("更新浏览器设置失败")
+					console.error("Failed to update browser settings")
 				}
 			})
 			.catch((error) => {
-				console.error("更新浏览器设置时出错:", error)
+				console.error("Error updating browser settings:", error)
 			})
 	}
 
 	const updateRemoteBrowserHost = (host: string | undefined) => {
-		BrowserServiceClient.updateBrowserSettings({
-			metadata: {},
-			viewport: {
-				width: browserSettings.viewport.width,
-				height: browserSettings.viewport.height,
-			},
-			remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
-			remoteBrowserHost: host,
-			chromeExecutablePath: browserSettings.chromeExecutablePath,
-			disableToolUse: browserSettings.disableToolUse,
-		})
+		BrowserServiceClient.updateBrowserSettings(
+			UpdateBrowserSettingsRequest.create({
+				metadata: {},
+				viewport: {
+					width: browserSettings.viewport.width,
+					height: browserSettings.viewport.height,
+				},
+				remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
+				remoteBrowserHost: host,
+				chromeExecutablePath: browserSettings.chromeExecutablePath,
+				disableToolUse: browserSettings.disableToolUse,
+			}),
+		)
 			.then((response) => {
 				if (!response.value) {
-					console.error("更新浏览器设置失败")
+					console.error("Failed to update browser settings")
 				}
 			})
 			.catch((error) => {
-				console.error("更新浏览器设置时出错:", error)
+				console.error("Error updating browser settings:", error)
 			})
 	}
 
 	const debouncedUpdateChromePath = useCallback(
 		debounce((newPath: string | undefined) => {
-			BrowserServiceClient.updateBrowserSettings({
+			BrowserServiceClient.updateBrowserSettings(
+				UpdateBrowserSettingsRequest.create({
+					metadata: {},
+					viewport: {
+						width: browserSettings.viewport.width,
+						height: browserSettings.viewport.height,
+					},
+					remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
+					remoteBrowserHost: browserSettings.remoteBrowserHost,
+					chromeExecutablePath: newPath,
+					disableToolUse: browserSettings.disableToolUse,
+				}),
+			)
+				.then((response) => {
+					if (!response.value) {
+						console.error("Failed to update browser settings for chromeExecutablePath")
+					}
+				})
+				.catch((error) => {
+					console.error("Error updating browser settings for chromeExecutablePath:", error)
+				})
+		}, 500),
+		[browserSettings],
+	)
+
+	const updateChromeExecutablePath = (path: string | undefined) => {
+		BrowserServiceClient.updateBrowserSettings(
+			UpdateBrowserSettingsRequest.create({
 				metadata: {},
 				viewport: {
 					width: browserSettings.viewport.width,
@@ -238,134 +252,122 @@ export const BrowserSettingsSection: React.FC = () => {
 				},
 				remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
 				remoteBrowserHost: browserSettings.remoteBrowserHost,
-				chromeExecutablePath: newPath,
+				chromeExecutablePath: path,
 				disableToolUse: browserSettings.disableToolUse,
-			})
-				.then((response) => {
-					if (!response.value) {
-						console.error("更新 chromeExecutablePath 的浏览器设置失败")
-					}
-				})
-				.catch((error) => {
-					console.error("更新 chromeExecutablePath 的浏览器设置时出错:", error)
-				})
-		}, 500),
-		[browserSettings],
-	)
-
-	const updateChromeExecutablePath = (path: string | undefined) => {
-		BrowserServiceClient.updateBrowserSettings({
-			metadata: {},
-			viewport: {
-				width: browserSettings.viewport.width,
-				height: browserSettings.viewport.height,
-			},
-			remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
-			remoteBrowserHost: browserSettings.remoteBrowserHost,
-			chromeExecutablePath: path,
-			disableToolUse: browserSettings.disableToolUse,
-		})
+			}),
+		)
 			.then((response) => {
 				if (!response.value) {
-					console.error("更新浏览器设置失败")
+					console.error("Failed to update browser settings")
 				}
 			})
 			.catch((error) => {
-				console.error("更新浏览器设置时出错:", error)
+				console.error("Error updating browser settings:", error)
 			})
 	}
 
-	// 函数：一次性检查连接，不立即更改 UI 状态
+	// Function to check connection once without changing UI state immediately
 	const checkConnectionOnce = useCallback(() => {
-		// 不要为每次检查都显示加载动画，以避免 UI 闪烁
-		// 我们将依赖响应来更新 connectionStatus
+		// Don't show the spinner for every check to avoid UI flicker
+		// We'll rely on the response to update the connectionStatus
 		if (browserSettings.remoteBrowserHost) {
-			// 使用 gRPC 测试浏览器连接
-			BrowserServiceClient.testBrowserConnection({ value: browserSettings.remoteBrowserHost })
+			// Use gRPC for testBrowserConnection
+			BrowserServiceClient.testBrowserConnection(StringRequest.create({ value: browserSettings.remoteBrowserHost }))
 				.then((result) => {
 					setConnectionStatus(result.success)
 				})
 				.catch((error) => {
-					console.error("测试浏览器连接时出错:", error)
+					console.error("Error testing browser connection:", error)
 					setConnectionStatus(false)
 				})
 		} else {
-			BrowserServiceClient.discoverBrowser({})
+			BrowserServiceClient.discoverBrowser(EmptyRequest.create({}))
 				.then((result) => {
 					setConnectionStatus(result.success)
 				})
 				.catch((error) => {
-					console.error("发现浏览器时出错:", error)
+					console.error("Error discovering browser:", error)
 					setConnectionStatus(false)
 				})
 		}
 	}, [browserSettings.remoteBrowserHost])
 
-	// 当启用远程浏览器时，设置连接状态的持续轮询
+	// Setup continuous polling for connection status when remote browser is enabled
 	useEffect(() => {
-		// 仅当启用远程浏览器模式时才轮询
+		// Only poll if remote browser mode is enabled
 		if (!browserSettings.remoteBrowserEnabled) {
-			// 确保禁用时我们不显示检查状态
+			// Make sure we're not showing checking state when disabled
 			setIsCheckingConnection(false)
 			return
 		}
 
-		// 启用时立即检查
+		// Check immediately when enabled
 		checkConnectionOnce()
 
-		// 然后每秒检查一次
+		// Then check every second
 		const pollInterval = setInterval(() => {
 			checkConnectionOnce()
 		}, 1000)
 
-		// 如果组件卸载或禁用远程浏览器，则清除间隔
+		// Cleanup the interval if the component unmounts or remote browser is disabled
 		return () => clearInterval(pollInterval)
 	}, [browserSettings.remoteBrowserEnabled, checkConnectionOnce])
 
 	const updateDisableToolUse = (disabled: boolean) => {
-		BrowserServiceClient.updateBrowserSettings({
-			metadata: {},
-			viewport: {
-				width: browserSettings.viewport.width,
-				height: browserSettings.viewport.height,
-			},
-			remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
-			remoteBrowserHost: browserSettings.remoteBrowserHost,
-			chromeExecutablePath: browserSettings.chromeExecutablePath,
-			disableToolUse: disabled,
-		})
+		BrowserServiceClient.updateBrowserSettings(
+			UpdateBrowserSettingsRequest.create({
+				metadata: {},
+				viewport: {
+					width: browserSettings.viewport.width,
+					height: browserSettings.viewport.height,
+				},
+				remoteBrowserEnabled: browserSettings.remoteBrowserEnabled,
+				remoteBrowserHost: browserSettings.remoteBrowserHost,
+				chromeExecutablePath: browserSettings.chromeExecutablePath,
+				disableToolUse: disabled,
+			}),
+		)
 			.then((response) => {
 				if (!response.value) {
-					console.error("更新 disableToolUse 设置失败")
+					console.error("Failed to update disableToolUse setting")
 				}
 			})
 			.catch((error) => {
-				console.error("更新 disableToolUse 设置时出错:", error)
+				console.error("Error updating disableToolUse setting:", error)
 			})
 	}
 
 	const relaunchChromeDebugMode = () => {
 		setDebugMode(true)
 		setRelaunchResult(null)
-		// 连接状态将通过我们的轮询自动更新
+		// The connection status will be automatically updated by our polling
 
-		vscode.postMessage({
-			type: "relaunchChromeDebugMode",
-		})
+		BrowserServiceClient.relaunchChromeDebugMode(EmptyRequest.create({}))
+			.then((result) => {
+				setRelaunchResult({
+					success: result.success,
+					message: result.message,
+				})
+				setDebugMode(false)
+			})
+			.catch((error) => {
+				console.error("Error relaunching Chrome:", error)
+				setRelaunchResult({
+					success: false,
+					message: `Error relaunching Chrome: ${error.message}`,
+				})
+				setDebugMode(false)
+			})
 	}
 
-	// 确定是否应显示重启按钮
+	// Determine if we should show the relaunch button
 	const isRemoteEnabled = Boolean(browserSettings.remoteBrowserEnabled)
 	const shouldShowRelaunchButton = isRemoteEnabled && connectionStatus === false
 	const isSubSettingsOpen = !(browserSettings.disableToolUse || false)
 
 	return (
-		<div
-			id="browser-settings-section"
-			style={{ marginBottom: 20, borderTop: "1px solid var(--vscode-panel-border)", paddingTop: 15 }}>
-			<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 10px 0", fontSize: "14px" }}>浏览器设置</h3>
-
-			{/* 主开关 */}
+		<div id="browser-settings-section" style={{ marginBottom: 20 }}>
+			{/* Master Toggle */}
 			<div style={{ marginBottom: isSubSettingsOpen ? 0 : 10 }}>
 				<VSCodeCheckbox
 					checked={browserSettings.disableToolUse || false}
@@ -378,14 +380,14 @@ export const BrowserSettingsSection: React.FC = () => {
 						color: "var(--vscode-descriptionForeground)",
 						margin: "4px 0 0 0px",
 					}}>
-					阻止 Cline 使用浏览器操作（例如启动、点击、输入）。
+					禁止使用浏览器操作 (e.g. launch, click, type).
 				</p>
 			</div>
 
 			<CollapsibleContent isOpen={isSubSettingsOpen}>
 				<div style={{ marginBottom: 15 }}>
 					<div style={{ marginBottom: 8 }}>
-						<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>视口大小</label>
+						<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>窗口大小</label>
 						<VSCodeDropdown
 							style={{ width: "100%" }}
 							value={
@@ -411,18 +413,18 @@ export const BrowserSettingsSection: React.FC = () => {
 							color: "var(--vscode-descriptionForeground)",
 							margin: 0,
 						}}>
-						设置浏览器视口的大小，用于截图和交互。
+						设置浏览器视口的大小以进行截图和交互。
 					</p>
 				</div>
 
 				<div style={{ marginBottom: 0 }}>
 					{" "}
-					{/* 此 div 现在包含远程连接和 Chrome 路径 */}
+					{/* This div now contains Remote Connection & Chrome Path */}
 					<div style={{ marginBottom: 4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
 						<VSCodeCheckbox
 							checked={browserSettings.remoteBrowserEnabled}
 							onChange={(e) => updateRemoteBrowserEnabled((e.target as HTMLInputElement).checked)}>
-							使用远程浏览器连接
+							使用远程浏览器操作
 						</VSCodeCheckbox>
 						<ConnectionStatusIndicator
 							isChecking={isCheckingConnection}
@@ -436,19 +438,20 @@ export const BrowserSettingsSection: React.FC = () => {
 							color: "var(--vscode-descriptionForeground)",
 							margin: "0 0 6px 0px",
 						}}>
-						允许 Cline 使用您的 Chrome
-						{isBundled ? "（在您的机器上未检测到）" : detectedChromePath ? ` (${detectedChromePath})` : ""}。您
-						可以在下方指定自定义路径。使用远程浏览器连接需要在调试模式下启动 Chrome
+						启用 Cline 使用 Chrome
+						{isBundled ? "(未安装)" : detectedChromePath ? ` (${detectedChromePath})` : ""}.
+						您可以在下面指定自定义路径。使用远程浏览器连接需要以调试模式启动 Chrome。
 						{browserSettings.remoteBrowserEnabled ? (
 							<>
 								{" "}
-								手动（<code>--remote-debugging-port=9222</code>）或使用下方的按钮。输入主机地址或留空以自动发现。
+								手动 (<code>--remote-debugging-port=9222</code>)
+								或者使用下面的按钮。输入主机地址，或者留空以进行自动发现。
 							</>
 						) : (
-							"。"
+							"."
 						)}
 					</p>
-					{/* 移动的远程特定设置，在启用远程连接后直接显示 */}
+					{/* Moved remote-specific settings to appear directly after enabling remote connection */}
 					{browserSettings.remoteBrowserEnabled && (
 						<div style={{ marginLeft: 0, marginTop: 8 }}>
 							<VSCodeTextField
@@ -461,7 +464,7 @@ export const BrowserSettingsSection: React.FC = () => {
 							{shouldShowRelaunchButton && (
 								<div style={{ display: "flex", gap: "10px", marginBottom: 8, justifyContent: "center" }}>
 									<VSCodeButton style={{ flex: 1 }} disabled={debugMode} onClick={relaunchChromeDebugMode}>
-										{debugMode ? "正在启动浏览器..." : "以调试模式启动浏览器"}
+										{debugMode ? "重启浏览器..." : "Debug 模式重启浏览器"}
 									</VSCodeButton>
 								</div>
 							)}
@@ -492,20 +495,20 @@ export const BrowserSettingsSection: React.FC = () => {
 								}}></p>
 						</div>
 					)}
-					{/* Chrome 可执行文件路径部分现在跟随远程特定设置 */}
+					{/* Chrome Executable Path section now follows remote-specific settings */}
 					<div style={{ marginBottom: 8, marginTop: 8 }}>
 						<label htmlFor="chrome-executable-path" style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>
-							Chrome 可执行文件路径（可选）
+							Chrome 安装路径 (可选)
 						</label>
 						<VSCodeTextField
 							id="chrome-executable-path"
 							value={localChromePath}
-							placeholder="例如：/usr/bin/google-chrome 或 C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+							placeholder="e.g., /usr/bin/google-chrome or C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 							style={{ width: "100%" }}
 							onChange={(e: any) => {
 								const newValue = e.target.value || ""
 								setLocalChromePath(newValue)
-								debouncedUpdateChromePath(newValue) // 如果为空则发送 ""，而不是 undefined
+								debouncedUpdateChromePath(newValue) // Send "" if empty, not undefined
 							}}
 						/>
 						<p

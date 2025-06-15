@@ -91,7 +91,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 						scrollbarWidth: "none",
 						WebkitOverflowScrolling: "touch",
 					}}>
-					<span>自动批准：</span>
+					<span>自动批准:</span>
 					{getQuickAccessItems()}
 				</div>
 				{isModalVisible ? (

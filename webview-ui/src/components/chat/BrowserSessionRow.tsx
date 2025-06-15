@@ -1,16 +1,17 @@
+import { BrowserSettingsMenu } from "@/components/browser/BrowserSettingsMenu"
+import { ChatRowContent, ProgressIndicator } from "@/components/chat/ChatRow"
+import { CheckpointControls } from "@/components/common/CheckpointControls"
+import CodeBlock, { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { FileServiceClient } from "@/services/grpc-client"
+import { BROWSER_VIEWPORT_PRESETS } from "@shared/BrowserSettings"
+import { BrowserAction, BrowserActionResult, ClineMessage, ClineSayBrowserAction } from "@shared/ExtensionMessage"
+import { StringRequest } from "@shared/proto/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import deepEqual from "fast-deep-equal"
 import React, { CSSProperties, memo, useEffect, useMemo, useRef, useState } from "react"
 import { useSize } from "react-use"
 import styled from "styled-components"
-import { BROWSER_VIEWPORT_PRESETS } from "@shared/BrowserSettings"
-import { BrowserAction, BrowserActionResult, ClineMessage, ClineSayBrowserAction } from "@shared/ExtensionMessage"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { FileServiceClient } from "@/services/grpc-client"
-import { BrowserSettingsMenu } from "@/components/browser/BrowserSettingsMenu"
-import { CheckpointControls } from "@/components/common/CheckpointControls"
-import CodeBlock, { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import { ChatRowContent, ProgressIndicator } from "@/components/chat/ChatRow"
 
 interface BrowserSessionRowProps {
 	messages: ClineMessage[]
@@ -117,7 +118,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	const [consoleLogsExpanded, setConsoleLogsExpanded] = useState(false)
 
 	const isLastApiReqInterrupted = useMemo(() => {
-		// 检查最后一个 api_req_started 是否已取消
+		// Check if last api_req_started is cancelled
 		const lastApiReqStarted = [...messages].reverse().find((m) => m.say === "api_req_started")
 		if (lastApiReqStarted?.text != null) {
 			const info = JSON.parse(lastApiReqStarted.text)
@@ -132,17 +133,17 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 		return false
 	}, [messages, lastModifiedMessage, isLast])
 
-	// 如果最后一条消息是 resume，则表示任务已取消且浏览器已关闭
+	// If last message is a resume, it means the task was cancelled and the browser was closed
 	const isLastMessageResume = useMemo(() => {
-		// 检查最后一条消息是否为 resume 完成
+		// Check if last message is resume completion
 		return lastModifiedMessage?.ask === "resume_task" || lastModifiedMessage?.ask === "resume_completed_task"
 	}, [lastModifiedMessage?.ask])
 
 	const isBrowsing = useMemo(() => {
-		return isLast && messages.some((m) => m.say === "browser_action_result") && !isLastApiReqInterrupted // 用户批准后，会发送带有 "" 的 browser_action_result 以指示会话已开始
+		return isLast && messages.some((m) => m.say === "browser_action_result") && !isLastApiReqInterrupted // after user approves, browser_action_result with "" is sent to indicate that the session has started
 	}, [isLast, messages, isLastApiReqInterrupted])
 
-	// 将消息组织成包含当前状态和下一个操作的页面
+	// Organize messages into pages with current state and next action
 	const pages = useMemo(() => {
 		const result: {
 			currentState: {
@@ -150,10 +151,10 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 				screenshot?: string
 				mousePosition?: string
 				consoleLogs?: string
-				messages: ClineMessage[] // 截至并包括结果的消息
+				messages: ClineMessage[] // messages up to and including the result
 			}
 			nextAction?: {
-				messages: ClineMessage[] // 导致下一个结果的消息
+				messages: ClineMessage[] // messages leading to next result
 			}
 		}[] = []
 
@@ -162,18 +163,18 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 
 		messages.forEach((message) => {
 			if (message.ask === "browser_action_launch" || message.say === "browser_action_launch") {
-				// 开始第一页
+				// Start first page
 				currentStateMessages = [message]
 			} else if (message.say === "browser_action_result") {
 				if (message.text === "") {
-					// 第一个 browser_action_result 是一个空字符串，表示会话已开始
+					// first browser_action_result is an empty string that signals that session has started
 					return
 				}
-				// 完成当前状态
+				// Complete current state
 				currentStateMessages.push(message)
 				const resultData = JSON.parse(message.text || "{}") as BrowserActionResult
 
-				// 添加包含当前状态和先前下一个操作的页面
+				// Add page with current state and previous next actions
 				result.push({
 					currentState: {
 						url: resultData.currentUrl,
@@ -190,7 +191,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 							: undefined,
 				})
 
-				// 为下一页重置
+				// Reset for next page
 				currentStateMessages = []
 				nextActionMessages = []
 			} else if (
@@ -199,15 +200,15 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 				message.say === "reasoning" ||
 				message.say === "browser_action"
 			) {
-				// 这些消息导致下一个结果，因此它们应始终位于 nextActionMessages 中
+				// These messages lead to the next result, so they should always go in nextActionMessages
 				nextActionMessages.push(message)
 			} else {
-				// 任何其他消息类型
+				// Any other message types
 				currentStateMessages.push(message)
 			}
 		})
 
-		// 如果存在，则添加不完整的页面
+		// Add incomplete page if exists
 		if (currentStateMessages.length > 0 || nextActionMessages.length > 0) {
 			result.push({
 				currentState: {
@@ -225,13 +226,13 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 		return result
 	}, [messages])
 
-	// 自动前进到最新页面
+	// Auto-advance to latest page
 	const [currentPageIndex, setCurrentPageIndex] = useState(0)
 	useEffect(() => {
 		setCurrentPageIndex(pages.length - 1)
 	}, [pages.length])
 
-	// 从启动消息中获取初始 URL
+	// Get initial URL from launch message
 	const initialUrl = useMemo(() => {
 		const launchMessage = messages.find((m) => m.ask === "browser_action_launch" || m.say === "browser_action_launch")
 		return launchMessage?.text || ""
@@ -247,7 +248,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	// 	return lastCheckpointMessage?.ts
 	// }, [messages])
 
-	// 查找最新的可用 URL 和屏幕截图
+	// Find the latest available URL and screenshot
 	const latestState = useMemo(() => {
 		for (let i = pages.length - 1; i >= 0; i--) {
 			const page = pages[i]
@@ -273,7 +274,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 
 	const defaultMousePosition = `${browserSettings.viewport.width * 0.7},${browserSettings.viewport.height * 0.5}`
 
-	// 如果我们在最后一页并且还没有状态，则使用最新状态
+	// Use latest state if we're on the last page and don't have a state yet
 	const displayState = isLastPage
 		? {
 				url: currentPage?.currentState.url || latestState.url || initialUrl,
@@ -314,11 +315,11 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 		}
 	}, [actionHeight, maxActionHeight])
 
-	// 跟踪最新的点击坐标
+	// Track latest click coordinate
 	const latestClickPosition = useMemo(() => {
 		if (!isBrowsing) return undefined
 
-		// 在当前页面的下一个操作中查找最新的 browser_action
+		// Look through current page's next actions for the latest browser_action
 		const actions = currentPage?.nextAction?.messages || []
 		for (let i = actions.length - 1; i >= 0; i--) {
 			const message = actions[i]
@@ -332,7 +333,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 		return undefined
 	}, [isBrowsing, currentPage?.nextAction?.messages])
 
-	// 浏览时使用最新的点击位置，否则使用显示状态
+	// Use latest click position while browsing, otherwise use display state
 	const mousePosition = isBrowsing ? latestClickPosition || displayState.mousePosition : displayState.mousePosition
 
 	// let shouldShowCheckpoints = true
@@ -349,8 +350,8 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	const maxWidth = browserSettings.viewport.width < BROWSER_VIEWPORT_PRESETS["Small Desktop (900x600)"].width ? 200 : undefined
 
 	const [browserSessionRow, { height }] = useSize(
-		// 我们不在此处为内联样式声明常量，因为 `useSize` 会尝试修改样式对象
-		// 这将导致 `Uncaught TypeError: Cannot assign to read only property 'position' of object '#<Object>'`
+		// We don't declare a constant for the inline style here because `useSize` will try to modify the style object
+		// Which will cause `Uncaught TypeError: Cannot assign to read only property 'position' of object '#<Object>'`
 		<BrowserSessionRowContainer style={{ marginBottom: -10 }}>
 			<div style={browserSessionRowContainerInnerStyle}>
 				{isBrowsing && !isLastMessageResume ? (
@@ -359,7 +360,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 					<span className="codicon codicon-inspect" style={browserIconStyle}></span>
 				)}
 				<span style={approveTextStyle}>
-					<>{isAutoApproved ? "Cline 正在使用浏览器：" : "Cline 想要使用浏览器："}</>
+					<>{isAutoApproved ? "Cline 正在使用浏览器:" : "Cline 想要使用浏览器:"}</>
 				</span>
 			</div>
 			<div
@@ -370,9 +371,9 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 					backgroundColor: CODE_BLOCK_BG_COLOR,
 					// marginBottom: 10,
 					maxWidth,
-					margin: "0 auto 10px auto", // 居中容器
+					margin: "0 auto 10px auto", // Center the container
 				}}>
-				{/* URL 栏 */}
+				{/* URL Bar */}
 				<div style={urlBarContainerStyle}>
 					<div
 						style={{
@@ -390,7 +391,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 					<BrowserSettingsMenu />
 				</div>
 
-				{/* 屏幕截图区域 */}
+				{/* Screenshot Area */}
 				<div
 					style={{
 						width: "100%",
@@ -401,11 +402,11 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 					{displayState.screenshot ? (
 						<img
 							src={displayState.screenshot}
-							alt="浏览器屏幕截图"
+							alt="Browser screenshot"
 							style={imgScreenshotStyle}
 							onClick={() =>
-								FileServiceClient.openImage({ value: displayState.screenshot }).catch((err) =>
-									console.error("打开图片失败：", err),
+								FileServiceClient.openImage(StringRequest.create({ value: displayState.screenshot })).catch(
+									(err) => console.error("Failed to open image:", err),
 								)
 							}
 						/>
@@ -444,19 +445,19 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 						<span style={consoleLogsTextStyle}>控制台日志</span>
 					</div>
 					{consoleLogsExpanded && (
-						<CodeBlock source={`${"```"}shell\n${displayState.consoleLogs || "(无新日志)"}\n${"```"}`} />
+						<CodeBlock source={`${"```"}shell\n${displayState.consoleLogs || "(No new logs)"}\n${"```"}`} />
 					)}
 				</div>
 			</div>
 
-			{/* 具有最小高度的操作内容 */}
+			{/* Action content with min height */}
 			<div style={{ minHeight: maxActionHeight }}>{actionContent}</div>
 
-			{/* 分页移至底部 */}
+			{/* Pagination moved to bottom */}
 			{pages.length > 1 && (
 				<div style={paginationContainerStyle}>
 					<div>
-						第 {currentPageIndex + 1} 步，共 {pages.length} 步
+						进度 {currentPageIndex + 1} / {pages.length}
 					</div>
 					<div style={paginationButtonGroupStyle}>
 						<VSCodeButton
@@ -477,7 +478,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 		</BrowserSessionRowContainer>,
 	)
 
-	// 高度变化效果
+	// Height change effect
 	useEffect(() => {
 		const isInitialRender = prevHeightRef.current === 0
 		if (isLast && height !== 0 && height !== Infinity && height !== prevHeightRef.current) {
@@ -569,7 +570,7 @@ const BrowserActionBox = ({ action, coordinate, text }: { action: BrowserAction;
 	const getBrowserActionText = (action: BrowserAction, coordinate?: string, text?: string) => {
 		switch (action) {
 			case "launch":
-				return `启动浏览器于 ${text}`
+				return `启动浏览器： ${text}`
 			case "click":
 				return `点击 (${coordinate?.replace(",", ", ")})`
 			case "type":
@@ -589,7 +590,7 @@ const BrowserActionBox = ({ action, coordinate, text }: { action: BrowserAction;
 			<div style={browserActionBoxContainerInnerStyle}>
 				<div style={browseActionRowContainerStyle}>
 					<span style={browseActionRowStyle}>
-						<span style={browseActionTextStyle}>浏览操作： </span>
+						<span style={browseActionTextStyle}>浏览器操作: </span>
 						{getBrowserActionText(action, coordinate, text)}
 					</span>
 				</div>
@@ -599,7 +600,7 @@ const BrowserActionBox = ({ action, coordinate, text }: { action: BrowserAction;
 }
 
 const BrowserCursor: React.FC<{ style?: CSSProperties }> = ({ style }) => {
-	// (vsc 扩展中不能使用 svg)
+	// (can't use svgs in vsc extensions)
 	const cursorBase64 =
 		"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAYCAYAAAAVibZIAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAFaADAAQAAAABAAAAGAAAAADwi9a/AAADGElEQVQ4EZ2VbUiTURTH772be/PxZdsz3cZwC4RVaB8SAjMpxQwSWZbQG/TFkN7oW1Df+h6IRV9C+hCpKUSIZUXOfGM5tAKViijFFEyfZ7Ol29S1Pbdzl8Uw9+aBu91zzv3/nt17zt2DEZjBYOAkKrtFMXIghAWM8U2vMN/FctsxGRMpM7NbEEYNMM2CYUSInlJx3OpawO9i+XSNQYkmk2uFb9njzkcfVSr1p/GJiQKMULVaw2WuBv296UKRxWJR6wxGCmM1EAhSNppv33GBH9qI32cPTAtss9lUm6EM3N7R+RbigT+5/CeosFCZKpjEW+iorS1pb30wDUXzQfHqtD/9L3ieZ2ee1OJCmbL8QHnRs+4uj0wmW4QzrpCwvJ8zGg3JqAmhTLynuLiwv8/5KyND8Q3cEkUEDWu15oJE4KRQJt5hs1rcriGNRqP+DK4dyyWXXm/aFQ+cEpSJ8/LyDGPuEZNOmzsOroUSOqzXG/dtBU4ZysTZYKNut91sNo2Cq6cE9enz86s2g9OCMrFSqVC5hgb32u072W3jKMU90Hb1seC0oUwsB+t92bO/rKx0EFGkgFCnjjc1/gVvC8rE0L+4o63t4InjxwbAJQjTe3qD8QrLkXA4DC24fWtuajp06cLFYSBIFKGmXKPRRmAnME9sPt+yLwIWb9WN69fKoTneQz4Dh2mpPNkvfeV0jjecb9wNAkwIEVQq5VJOds4Kb+DXoAsiVquVwI1Dougpij6UyGYx+5cKroeDEFibm5lWRRMbH1+npmYrq6qhwlQHIbajZEf1fElcqGGFpGg9HMuKzpfBjhytCTMgkJ56RX09zy/ysENTBElmjIgJnmNChJqohDVQqpEfwkILE8v/o0GAnV9F1eEvofVQCbiTBEXOIPQh5PGgefDZeAcjrpGZjULBr/m3tZOnz7oEQWRAQZLjWlEU/XEJWySiILgRc5Cz1DkcAyuBFcnpfF0JiXWKpcolQXizhS5hKAqFpr0MVbgbuxJ6+5xX+P4wNpbqPPrugZfbmIbLmgQR3Aw8QSi66hUXulOFbF73GxqjE5BNXWNeAAAAAElFTkSuQmCC"
 
@@ -611,7 +612,7 @@ const BrowserCursor: React.FC<{ style?: CSSProperties }> = ({ style }) => {
 				height: "22px",
 				...style,
 			}}
-			alt="光标"
+			alt="cursor"
 		/>
 	)
 }

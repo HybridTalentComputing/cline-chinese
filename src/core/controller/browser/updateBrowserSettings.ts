@@ -5,26 +5,26 @@ import { updateGlobalState, getGlobalState } from "../../storage/state"
 import { BrowserSettings as SharedBrowserSettings, DEFAULT_BROWSER_SETTINGS } from "../../../shared/BrowserSettings"
 
 /**
- * 更新浏览器设置
- * @param controller 控制器实例
- * @param request 浏览器设置请求消息
- * @returns 成功响应
+ * Update browser settings
+ * @param controller The controller instance
+ * @param request The browser settings request message
+ * @returns Success response
  */
 export async function updateBrowserSettings(controller: Controller, request: UpdateBrowserSettingsRequest): Promise<Boolean> {
 	try {
-		// 获取当前浏览器设置以保留请求中未包含的字段
+		// Get current browser settings to preserve fields not in the request
 		const currentSettings = (await getGlobalState(controller.context, "browserSettings")) as SharedBrowserSettings | undefined
 		const mergedWithDefaults = { ...DEFAULT_BROWSER_SETTINGS, ...currentSettings }
 
-		// 从 protobuf 格式转换为共享格式，并与现有设置合并
+		// Convert from protobuf format to shared format, merging with existing settings
 		const newBrowserSettings: SharedBrowserSettings = {
-			...mergedWithDefaults, // 从现有设置（和默认设置）开始
+			...mergedWithDefaults, // Start with existing settings (and defaults)
 			viewport: {
-				// 应用请求中的更新
+				// Apply updates from request
 				width: request.viewport?.width || mergedWithDefaults.viewport.width,
 				height: request.viewport?.height || mergedWithDefaults.viewport.height,
 			},
-			// 显式处理请求中的可选布尔值和字符串字段
+			// Explicitly handle optional boolean and string fields from the request
 			remoteBrowserEnabled:
 				request.remoteBrowserEnabled === undefined
 					? mergedWithDefaults.remoteBrowserEnabled
@@ -32,31 +32,31 @@ export async function updateBrowserSettings(controller: Controller, request: Upd
 			remoteBrowserHost:
 				request.remoteBrowserHost === undefined ? mergedWithDefaults.remoteBrowserHost : request.remoteBrowserHost,
 			chromeExecutablePath:
-				// 如果 chromeExecutablePath 显式存在于请求中（即使为空字符串""），则使用它。
-				// 否则，回退到 mergedWithDefaults。
+				// If chromeExecutablePath is explicitly in the request (even as ""), use it.
+				// Otherwise, fall back to mergedWithDefaults.
 				"chromeExecutablePath" in request ? request.chromeExecutablePath : mergedWithDefaults.chromeExecutablePath,
 			disableToolUse: request.disableToolUse === undefined ? mergedWithDefaults.disableToolUse : request.disableToolUse,
 		}
 
-		// 使用新设置更新全局状态
+		// Update global state with new settings
 		await updateGlobalState(controller.context, "browserSettings", newBrowserSettings)
 
-		// 如果任务存在，则更新任务浏览器设置
+		// Update task browser settings if task exists
 		if (controller.task) {
 			controller.task.browserSettings = newBrowserSettings
 			controller.task.browserSession.browserSettings = newBrowserSettings
 		}
 
-		// 将更新后的状态发送到 webview
+		// Post updated state to webview
 		await controller.postStateToWebview()
 
-		return {
+		return Boolean.create({
 			value: true,
-		}
+		})
 	} catch (error) {
 		console.error("Error updating browser settings:", error)
-		return {
+		return Boolean.create({
 			value: false,
-		}
+		})
 	}
 }

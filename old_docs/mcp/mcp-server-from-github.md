@@ -38,7 +38,7 @@ There are multiple places online to find MCP servers:
 
     User: "It's in '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'."
 
-    Cline: "OK. I've updated the server config with that path and added it to 'cline_mcp_settings.json'. Anything else?"
+    Cline: "OK. I've updated the server config with that path and added it to 'cline_chinese_mcp_settings.json'. Anything else?"
 
     User: "No, that's all. Let's test it."
 
@@ -49,9 +49,9 @@ There are multiple places online to find MCP servers:
     -   **Repository Cloning:** Cline will clone the repository to your local machine, usually in the directory specified in your configuration.
     -   **Tweaking:** You can guide Cline to modify the server’s configuration. For instance:
         -   **User:** "This server requires an API key. Can you find where it should be added?"
-        -   Cline may automatically update the `cline_mcp_settings.json` file or other relevant files based on your instructions.
+        -   Cline may automatically update the `cline_chinese_mcp_settings.json` file or other relevant files based on your instructions.
     -   **Building the Server:** Cline will run the appropriate build command for the server, which is commonly `npm run build`.
-    -   **Adding Server to Settings:** Cline will add the server’s configuration to the `cline_mcp_settings.json` file.
+    -   **Adding Server to Settings:** Cline will add the server’s configuration to the `cline_chinese_mcp_settings.json` file.
 
 ## **Testing and Troubleshooting**
 

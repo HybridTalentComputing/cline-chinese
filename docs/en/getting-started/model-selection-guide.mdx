@@ -7,25 +7,25 @@ description: "Last updated: Feb 5, 2025."
 
 Think of a context window as your AI assistant's working memory - similar to RAM in a computer. It determines how much information the model can "remember" and process at once during your conversation. This includes:
 
--   Your code files and conversations
--   The assistant's responses
--   Any documentation or additional context provided
+- Your code files and conversations
+- The assistant's responses
+- Any documentation or additional context provided
 
 Context windows are measured in tokens (roughly 3/4 of a word in English). Different models have different context window sizes:
 
--   Claude 3.5 Sonnet: 200K tokens
--   DeepSeek Models: 128K tokens
--   Gemini Flash 2.0: 1M tokens
--   Gemini 1.5 Pro: 2M tokens
+- Claude 3.5 Sonnet: 200K tokens
+- DeepSeek Models: 128K tokens
+- Gemini Flash 2.0: 1M tokens
+- Gemini 1.5 Pro: 2M tokens
 
 When you reach the limit of your context window, older information needs to be removed to make room for new information - just like clearing RAM to run new programs. This is why sometimes AI assistants might seem to "forget" earlier parts of your conversation.
 
 Cline helps you manage this limitation with its Context Window Progress Bar, which shows:
 
--   Input tokens (what you've sent to the model)
--   Output tokens (what the model has generated)
--   A visual representation of how much of your context window you've used
--   The total capacity for your chosen model
+- Input tokens (what you've sent to the model)
+- Output tokens (what the model has generated)
+- A visual representation of how much of your context window you've used
+- The total capacity for your chosen model
 
 <Frame caption="Visual representation of the context window usage in Cline">
 	<img

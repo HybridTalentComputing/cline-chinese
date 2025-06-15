@@ -1,44 +1,47 @@
+import { MAX_IMAGES_AND_FILES_PER_MESSAGE } from "@/components/chat/ChatView"
+import ContextMenu from "@/components/chat/ContextMenu"
+import SlashCommandMenu from "@/components/chat/SlashCommandMenu"
+import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
+import Thumbnails from "@/components/common/Thumbnails"
+import Tooltip from "@/components/common/Tooltip"
+import ApiOptions, { normalizeApiConfiguration } from "@/components/settings/ApiOptions"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { FileServiceClient, StateServiceClient } from "@/services/grpc-client"
+import {
+	ContextMenuOptionType,
+	getContextMenuOptions,
+	getContextMenuOptionIndex,
+	insertMention,
+	insertMentionDirectly,
+	removeMention,
+	SearchResult,
+	shouldShowContextMenu,
+} from "@/utils/context-mentions"
+import { useMetaKeyDetection, useShortcut } from "@/utils/hooks"
+import {
+	getMatchingSlashCommands,
+	insertSlashCommand,
+	removeSlashCommand,
+	shouldShowSlashCommandsMenu,
+	SlashCommand,
+	slashCommandDeleteRegex,
+	validateSlashCommand,
+} from "@/utils/slash-commands"
+import { validateApiConfiguration, validateModelId } from "@/utils/validate"
+import { vscode } from "@/utils/vscode"
+import { ChatSettings } from "@shared/ChatSettings"
+import { mentionRegex, mentionRegexGlobal } from "@shared/context-mentions"
+import { ExtensionMessage } from "@shared/ExtensionMessage"
+import { EmptyRequest, StringRequest } from "@shared/proto/common"
+import { FileSearchRequest, RelativePathsRequest } from "@shared/proto/file"
+import { PlanActMode, TogglePlanActModeRequest } from "@shared/proto/state"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import DynamicTextArea from "react-textarea-autosize"
 import { useClickAway, useEvent, useWindowSize } from "react-use"
 import styled from "styled-components"
-import { mentionRegex, mentionRegexGlobal } from "@shared/context-mentions"
-import { ExtensionMessage } from "@shared/ExtensionMessage"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import {
-	ContextMenuOptionType,
-	getContextMenuOptions,
-	insertMention,
-	insertMentionDirectly,
-	removeMention,
-	shouldShowContextMenu,
-	SearchResult,
-} from "@/utils/context-mentions"
-import {
-	SlashCommand,
-	slashCommandDeleteRegex,
-	shouldShowSlashCommandsMenu,
-	getMatchingSlashCommands,
-	insertSlashCommand,
-	removeSlashCommand,
-	validateSlashCommand,
-} from "@/utils/slash-commands"
-import { useMetaKeyDetection, useShortcut } from "@/utils/hooks"
-import { validateApiConfiguration, validateModelId } from "@/utils/validate"
-import { vscode } from "@/utils/vscode"
-import { EmptyRequest } from "@shared/proto/common"
-import { FileServiceClient, StateServiceClient } from "@/services/grpc-client"
-import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import Thumbnails from "@/components/common/Thumbnails"
-import Tooltip from "@/components/common/Tooltip"
-import ApiOptions, { normalizeApiConfiguration } from "@/components/settings/ApiOptions"
-import { MAX_IMAGES_PER_MESSAGE } from "@/components/chat/ChatView"
-import ContextMenu from "@/components/chat/ContextMenu"
-import SlashCommandMenu from "@/components/chat/SlashCommandMenu"
-import { ChatSettings } from "@shared/ChatSettings"
-import ServersToggleModal from "./ServersToggleModal"
 import ClineRulesToggleModal from "../cline-rules/ClineRulesToggleModal"
+import ServersToggleModal from "./ServersToggleModal"
 
 const getImageDimensions = (dataUrl: string): Promise<{ width: number; height: number }> => {
 	return new Promise((resolve, reject) => {
@@ -58,17 +61,22 @@ const getImageDimensions = (dataUrl: string): Promise<{ width: number; height: n
 	})
 }
 
+// Set to "File" option by default
+const DEFAULT_CONTEXT_MENU_OPTION = getContextMenuOptionIndex(ContextMenuOptionType.File)
+
 interface ChatTextAreaProps {
 	inputValue: string
 	activeQuote: string | null
 	setInputValue: (value: string) => void
 	sendingDisabled: boolean
 	placeholderText: string
+	selectedFiles: string[]
 	selectedImages: string[]
 	setSelectedImages: React.Dispatch<React.SetStateAction<string[]>>
+	setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>
 	onSend: () => void
-	onSelectImages: () => void
-	shouldDisableImages: boolean
+	onSelectFilesAndImages: () => void
+	shouldDisableFilesAndImages: boolean
 	onHeightChange?: (height: number) => void
 	onFocusChange?: (isFocused: boolean) => void
 }
@@ -249,17 +257,27 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			setInputValue,
 			sendingDisabled,
 			placeholderText,
+			selectedFiles,
 			selectedImages,
 			setSelectedImages,
+			setSelectedFiles,
 			onSend,
-			onSelectImages,
-			shouldDisableImages,
+			onSelectFilesAndImages,
+			shouldDisableFilesAndImages,
 			onHeightChange,
 			onFocusChange,
 		},
 		ref,
 	) => {
-		const { filePaths, chatSettings, apiConfiguration, openRouterModels, platform, workflowToggles } = useExtensionState()
+		const {
+			filePaths,
+			chatSettings,
+			apiConfiguration,
+			openRouterModels,
+			platform,
+			localWorkflowToggles,
+			globalWorkflowToggles,
+		} = useExtensionState()
 		const [isTextAreaFocused, setIsTextAreaFocused] = useState(false)
 		const [isDraggingOver, setIsDraggingOver] = useState(false)
 		const [gitCommits, setGitCommits] = useState<GitCommit[]>([])
@@ -307,7 +325,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		// Fetch git commits when Git is selected or when typing a hash
 		useEffect(() => {
 			if (selectedType === ContextMenuOptionType.Git || /^[a-f0-9]+$/i.test(searchQuery)) {
-				FileServiceClient.searchCommits({ value: searchQuery || "" })
+				FileServiceClient.searchCommits(StringRequest.create({ value: searchQuery || "" }))
 					.then((response) => {
 						if (response.commits) {
 							const commits: GitCommit[] = response.commits.map(
@@ -326,22 +344,6 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					})
 			}
 		}, [selectedType, searchQuery])
-
-		const handleMessage = useCallback((event: MessageEvent) => {
-			const message: ExtensionMessage = event.data
-			switch (message.type) {
-				case "fileSearchResults": {
-					// Only update results if they match the current query or if there's no mentionsRequestId - better UX
-					if (!message.mentionsRequestId || message.mentionsRequestId === currentSearchQueryRef.current) {
-						setFileSearchResults(message.results || [])
-						setSearchLoading(false)
-					}
-					break
-				}
-			}
-		}, [])
-
-		useEvent("message", handleMessage)
 
 		const queryItems = useMemo(() => {
 			return [
@@ -483,7 +485,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						setSelectedSlashCommandsIndex((prevIndex) => {
 							const direction = event.key === "ArrowUp" ? -1 : 1
 							// Get commands with workflow toggles
-							const allCommands = getMatchingSlashCommands(slashCommandsQuery, workflowToggles)
+							const allCommands = getMatchingSlashCommands(
+								slashCommandsQuery,
+								localWorkflowToggles,
+								globalWorkflowToggles,
+							)
 
 							if (allCommands.length === 0) {
 								return prevIndex
@@ -501,7 +507,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 					if ((event.key === "Enter" || event.key === "Tab") && selectedSlashCommandsIndex !== -1) {
 						event.preventDefault()
-						const commands = getMatchingSlashCommands(slashCommandsQuery, workflowToggles)
+						const commands = getMatchingSlashCommands(slashCommandsQuery, localWorkflowToggles, globalWorkflowToggles)
 						if (commands.length > 0) {
 							handleSlashCommandsSelect(commands[selectedSlashCommandsIndex])
 						}
@@ -512,7 +518,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					if (event.key === "Escape") {
 						// event.preventDefault()
 						setSelectedType(null)
-						setSelectedMenuIndex(3) // File by default
+						setSelectedMenuIndex(DEFAULT_CONTEXT_MENU_OPTION)
 						return
 					}
 
@@ -735,10 +741,12 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 						// Set a timeout to debounce the search requests
 						searchTimeoutRef.current = setTimeout(() => {
-							FileServiceClient.searchFiles({
-								query: query,
-								mentionsRequestId: query,
-							})
+							FileServiceClient.searchFiles(
+								FileSearchRequest.create({
+									query: query,
+									mentionsRequestId: query,
+								}),
+							)
 								.then((results) => {
 									setFileSearchResults(results.results || [])
 									setSearchLoading(false)
@@ -750,7 +758,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								})
 						}, 200) // 200ms debounce
 					} else {
-						setSelectedMenuIndex(3) // Set to "File" option by default
+						setSelectedMenuIndex(DEFAULT_CONTEXT_MENU_OPTION)
 					}
 				} else {
 					setSearchQuery("")
@@ -793,7 +801,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				const items = e.clipboardData.items
 
 				const pastedText = e.clipboardData.getData("text")
-				// 检查粘贴的内容是否是 URL，如果是，则在 URL 后添加一个空格，方便用户在不需要时轻松删除
+				// Check if the pasted content is a URL, add space after so user can easily delete if they don't want it
 				const urlRegex = /^\S+:\/\/\S+$/
 				if (urlRegex.test(pastedText.trim())) {
 					e.preventDefault()
@@ -805,7 +813,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					setIntendedCursorPosition(newCursorPosition)
 					setShowContextMenu(false)
 
-					// 滚动到新的光标位置
+					// Scroll to new cursor position
 					// https://stackoverflow.com/questions/29899364/how-do-you-scroll-to-the-position-of-the-cursor-in-a-textarea/40951875#40951875
 					setTimeout(() => {
 						if (textAreaRef.current) {
@@ -813,17 +821,17 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							textAreaRef.current.focus()
 						}
 					}, 0)
-					// 注意：回调函数不使用返回函数进行清理，但这没关系，因为此超时会立即执行并由浏览器清理（组件在此之前卸载的几率为零）
+					// NOTE: callbacks dont utilize return function to cleanup, but it's fine since this timeout immediately executes and will be cleaned up by the browser (no chance component unmounts before it executes)
 
 					return
 				}
 
-				const acceptedTypes = ["png", "jpeg", "webp"] // anthropic 和 openrouter 支持的格式（jpg 只是文件扩展名，但图像将被识别为 jpeg）
+				const acceptedTypes = ["png", "jpeg", "webp"] // supported by anthropic and openrouter (jpg is just a file extension but the image will be recognized as jpeg)
 				const imageItems = Array.from(items).filter((item) => {
 					const [type, subtype] = item.type.split("/")
 					return type === "image" && acceptedTypes.includes(subtype)
 				})
-				if (!shouldDisableImages && imageItems.length > 0) {
+				if (!shouldDisableFilesAndImages && imageItems.length > 0) {
 					e.preventDefault()
 					const imagePromises = imageItems.map((item) => {
 						return new Promise<string | null>((resolve) => {
@@ -858,15 +866,30 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					})
 					const imageDataArray = await Promise.all(imagePromises)
 					const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
-					//.map((dataUrl) => dataUrl.split(",")[1]) // 去掉 mime 类型前缀，sharp 不需要它
+					//.map((dataUrl) => dataUrl.split(",")[1]) // strip the mime type prefix, sharp doesn't need it
 					if (dataUrls.length > 0) {
-						setSelectedImages((prevImages) => [...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE))
+						const filesAndImagesLength = selectedImages.length + selectedFiles.length
+						const availableSlots = MAX_IMAGES_AND_FILES_PER_MESSAGE - filesAndImagesLength
+
+						if (availableSlots > 0) {
+							const imagesToAdd = Math.min(dataUrls.length, availableSlots)
+							setSelectedImages((prevImages) => [...prevImages, ...dataUrls.slice(0, imagesToAdd)])
+						}
 					} else {
 						console.warn("No valid images were processed")
 					}
 				}
 			},
-			[shouldDisableImages, setSelectedImages, cursorPosition, setInputValue, inputValue, showDimensionErrorMessage],
+			[
+				shouldDisableFilesAndImages,
+				setSelectedImages,
+				selectedImages,
+				selectedFiles,
+				cursorPosition,
+				setInputValue,
+				inputValue,
+				showDimensionErrorMessage,
+			],
 		)
 
 		const handleThumbnailsHeightChange = useCallback((height: number) => {
@@ -874,10 +897,10 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		}, [])
 
 		useEffect(() => {
-			if (selectedImages.length === 0) {
+			if (selectedImages.length === 0 && selectedFiles.length === 0) {
 				setThumbnailsHeight(0)
 			}
-		}, [selectedImages])
+		}, [selectedImages, selectedFiles])
 
 		const handleMenuMouseDown = useCallback(() => {
 			setIsMouseDownOnMenu(true)
@@ -891,23 +914,23 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			processedText = processedText
 				.replace(/\n$/, "\n\n")
 				.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c] || c)
-				// 高亮 @提及
+				// highlight @mentions
 				.replace(mentionRegexGlobal, '<mark class="mention-context-textarea-highlight">$&</mark>')
 
-			// 检查是否高亮 /斜杠命令
+			// check for highlighting /slash-commands
 			if (/^\s*\//.test(processedText)) {
 				const slashIndex = processedText.indexOf("/")
 
-				// 命令的结束是文本的末尾或第一个空白字符
+				// end of command is end of text or first whitespace
 				const spaceIndex = processedText.indexOf(" ", slashIndex)
 				const endIndex = spaceIndex > -1 ? spaceIndex : processedText.length
 
-				// 提取并验证确切的命令文本
+				// extract and validate the exact command text
 				const commandText = processedText.substring(slashIndex + 1, endIndex)
-				const isValidCommand = validateSlashCommand(commandText, workflowToggles)
+				const isValidCommand = validateSlashCommand(commandText, localWorkflowToggles, globalWorkflowToggles)
 
 				if (isValidCommand) {
-					const fullCommand = processedText.substring(slashIndex, endIndex) // 包含斜杠
+					const fullCommand = processedText.substring(slashIndex, endIndex) // includes slash
 
 					const highlighted = `<mark class="mention-context-textarea-highlight">${fullCommand}</mark>`
 					processedText = processedText.substring(0, slashIndex) + highlighted + processedText.substring(endIndex)
@@ -917,7 +940,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			highlightLayerRef.current.innerHTML = processedText
 			highlightLayerRef.current.scrollTop = textAreaRef.current.scrollTop
 			highlightLayerRef.current.scrollLeft = textAreaRef.current.scrollLeft
-		}, [workflowToggles])
+		}, [localWorkflowToggles, globalWorkflowToggles])
 
 		useLayoutEffect(() => {
 			updateHighlights()
@@ -938,7 +961,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			[updateCursorPosition],
 		)
 
-		// 分离 API 配置提交逻辑
+		// Separate the API config submission logic
 		const submitApiConfig = useCallback(() => {
 			const apiValidationResult = validateApiConfiguration(apiConfiguration)
 			const modelIdValidationResult = validateModelId(apiConfiguration, openRouterModels)
@@ -960,36 +983,40 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			// if (textAreaDisabled) return
 			let changeModeDelay = 0
 			if (showModelSelector) {
-				// 用户打开了模型选择器，因此我们应该在切换模式之前保存它
+				// user has model selector open, so we should save it before switching modes
 				submitApiConfig()
-				changeModeDelay = 250 // 需要让 API 配置更新（我们发送消息并等待它被保存） FIXME: 这是一个临时的解决方案，理想情况下，我们应该检查 API 配置的更改，然后等待它被保存，再切换模式
+				changeModeDelay = 250 // necessary to let the api config update (we send message and wait for it to be saved) FIXME: this is a hack and we ideally should check for api config changes, then wait for it to be saved, before switching modes
 			}
 			setTimeout(() => {
-				const newMode = chatSettings.mode === "plan" ? "act" : "plan"
-				vscode.postMessage({
-					type: "togglePlanActMode",
-					chatSettings: {
-						mode: newMode,
-					},
-					chatContent: {
-						message: inputValue.trim() ? inputValue : undefined,
-						images: selectedImages.length > 0 ? selectedImages : undefined,
-					},
-				})
-				// 模式切换后，稍作延迟，聚焦文本区域
+				const newMode = chatSettings.mode === "plan" ? PlanActMode.ACT : PlanActMode.PLAN
+				StateServiceClient.togglePlanActMode(
+					TogglePlanActModeRequest.create({
+						chatSettings: {
+							mode: newMode,
+							preferredLanguage: chatSettings.preferredLanguage,
+							openAiReasoningEffort: chatSettings.openAIReasoningEffort,
+						},
+						chatContent: {
+							message: inputValue.trim() ? inputValue : undefined,
+							images: selectedImages.length > 0 ? selectedImages : undefined,
+							files: selectedFiles.length > 0 ? selectedFiles : undefined,
+						},
+					}),
+				)
+				// Focus the textarea after mode toggle with slight delay
 				setTimeout(() => {
 					textAreaRef.current?.focus()
 				}, 100)
 			}, changeModeDelay)
-		}, [chatSettings.mode, showModelSelector, submitApiConfig, inputValue, selectedImages])
+		}, [chatSettings.mode, showModelSelector, submitApiConfig, inputValue, selectedImages, selectedFiles])
 
-		useShortcut("Meta+Shift+a", onModeToggle, { disableTextInputs: false }) // 重要提示：此处不要禁用文本输入
+		useShortcut("Meta+Shift+a", onModeToggle, { disableTextInputs: false }) // important that we don't disable the text input here
 
 		const handleContextButtonClick = useCallback(() => {
-			// 首先聚焦文本区域
+			// Focus the textarea first
 			textAreaRef.current?.focus()
 
-			// 如果输入为空，则直接插入 @
+			// If input is empty, just insert @
 			if (!inputValue.trim()) {
 				const event = {
 					target: {
@@ -1002,7 +1029,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				return
 			}
 
-			// 如果输入以空格结尾或为空，则直接追加 @
+			// If input ends with space or is empty, just append @
 			if (inputValue.endsWith(" ")) {
 				const event = {
 					target: {
@@ -1015,7 +1042,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				return
 			}
 
-			// 否则先添加空格再添加 @
+			// Otherwise add space then @
 			const event = {
 				target: {
 					value: inputValue + " @",
@@ -1026,27 +1053,27 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			updateHighlights()
 		}, [inputValue, handleInputChange, updateHighlights])
 
-		// 使用 effect 检测菜单关闭
+		// Use an effect to detect menu close
 		useEffect(() => {
 			if (prevShowModelSelector.current && !showModelSelector) {
-				// 菜单刚刚关闭
+				// Menu was just closed
 				submitApiConfig()
 			}
 			prevShowModelSelector.current = showModelSelector
 		}, [showModelSelector, submitApiConfig])
 
-		// 移除 handleApiConfigSubmit 回调
-		// 更新点击处理程序以仅切换菜单
+		// Remove the handleApiConfigSubmit callback
+		// Update click handler to just toggle the menu
 		const handleModelButtonClick = () => {
 			setShowModelSelector(!showModelSelector)
 		}
 
-		// 更新点击外部区域的处理程序以仅关闭菜单
+		// Update click away handler to just close menu
 		useClickAway(modelSelectorRef, () => {
 			setShowModelSelector(false)
 		})
 
-		// 获取模型显示名称
+		// Get model display name
 		const modelDisplayName = useMemo(() => {
 			const { selectedProvider, selectedModelId } = normalizeApiConfiguration(apiConfiguration)
 			const unknownModel = "unknown"
@@ -1069,6 +1096,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				case "litellm":
 					return `${selectedProvider}:${apiConfiguration.liteLlmModelId}`
 				case "requesty":
+					return `${selectedProvider}:${apiConfiguration.requestyModelId}`
 				case "anthropic":
 				case "openrouter":
 				default:
@@ -1076,27 +1104,27 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			}
 		}, [apiConfiguration])
 
-		// 根据按钮位置计算箭头位置和菜单位置
+		// Calculate arrow position and menu position based on button location
 		useEffect(() => {
 			if (showModelSelector && buttonRef.current) {
 				const buttonRect = buttonRef.current.getBoundingClientRect()
 				const buttonCenter = buttonRect.left + buttonRect.width / 2
 
-				// 使用视口坐标计算与视口右边缘的距离
+				// Calculate distance from right edge of viewport using viewport coordinates
 				const rightPosition = document.documentElement.clientWidth - buttonCenter - 5
 
 				setArrowPosition(rightPosition)
-				setMenuPosition(buttonRect.top + 1) // 添加 +1 以将菜单下移 1px
+				setMenuPosition(buttonRect.top + 1) // Added +1 to move menu down by 1px
 			}
 		}, [showModelSelector, viewportWidth, viewportHeight])
 
 		useEffect(() => {
 			if (!showModelSelector) {
-				// 如果可能，尝试保存
-				// 注意：我们不能在这里调用它，因为 getLatestState 会更新状态，从而导致此 effect 和回调之间产生无限循环。我们应该在菜单明确关闭时提交 API 配置，而不是作为 showModelSelector 变化的副作用。
+				// Attempt to save if possible
+				// NOTE: we cannot call this here since it will create an infinite loop between this effect and the callback since getLatestState will update state. Instead we should submitapiconfig when the menu is explicitly closed, rather than as an effect of showModelSelector changing.
 				// handleApiConfigSubmit()
 
-				// 通过模糊按钮重置任何活动样式
+				// Reset any active styling by blurring the button
 				const button = buttonRef.current?.querySelector("a")
 				if (button) {
 					button.blur()
@@ -1104,17 +1132,17 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			}
 		}, [showModelSelector])
 
-		// 用于显示拖放不支持文件的错误消息的函数
+		// Function to show error message for unsupported files for drag and drop
 		const showUnsupportedFileErrorMessage = () => {
-			// 显示不支持文件的错误消息
+			// Show error message for unsupported files
 			setShowUnsupportedFileError(true)
 
-			// 清除任何现有的计时器
+			// Clear any existing timer
 			if (unsupportedFileTimerRef.current) {
 				clearTimeout(unsupportedFileTimerRef.current)
 			}
 
-			// 设置计时器，3 秒后隐藏错误
+			// Set timer to hide error after 3 seconds
 			unsupportedFileTimerRef.current = setTimeout(() => {
 				setShowUnsupportedFileError(false)
 				unsupportedFileTimerRef.current = null
@@ -1125,9 +1153,9 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			e.preventDefault()
 			setIsDraggingOver(true)
 
-			// 检查是否正在拖动文件
+			// Check if files are being dragged
 			if (e.dataTransfer.types.includes("Files")) {
-				// 检查是否有任何文件不是图像
+				// Check if any of the files are not images
 				const items = Array.from(e.dataTransfer.items)
 				const hasNonImageFile = items.some((item) => {
 					if (item.kind === "file") {
@@ -1150,7 +1178,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		 */
 		const onDragOver = (e: React.DragEvent) => {
 			e.preventDefault()
-			// 确保如果拖动继续在元素上，状态保持为 true
+			// Ensure state remains true if dragging continues over the element
 			if (!isDraggingOver) {
 				setIsDraggingOver(true)
 			}
@@ -1158,20 +1186,20 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 		const handleDragLeave = (e: React.DragEvent) => {
 			e.preventDefault()
-			// 检查相关目标是否仍在拖放区域内；防止闪烁
+			// Check if the related target is still within the drop zone; prevents flickering
 			const dropZone = e.currentTarget as HTMLElement
 			if (!dropZone.contains(e.relatedTarget as Node)) {
 				setIsDraggingOver(false)
-				// 不要在这里清除错误消息，让它自然超时
+				// Don't clear the error message here, let it time out naturally
 			}
 		}
 
-		// 用于检测拖动操作在组件外部结束的 Effect
+		// Effect to detect when drag operation ends outside the component
 		useEffect(() => {
 			const handleGlobalDragEnd = () => {
-				// 当拖动操作在任何地方结束时，将触发此操作
+				// This will be triggered when the drag operation ends anywhere
 				setIsDraggingOver(false)
-				// 不要清除错误消息，让它自然超时
+				// Don't clear error message, let it time out naturally
 			}
 
 			document.addEventListener("dragend", handleGlobalDragEnd)
@@ -1189,37 +1217,37 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		 */
 		const onDrop = async (e: React.DragEvent) => {
 			e.preventDefault()
-			setIsDraggingOver(false) // 拖放时重置状态
+			setIsDraggingOver(false) // Reset state on drop
 
-			// 当实际放置某些内容时清除所有错误消息
+			// Clear any error message when something is actually dropped
 			setShowUnsupportedFileError(false)
 			if (unsupportedFileTimerRef.current) {
 				clearTimeout(unsupportedFileTimerRef.current)
 				unsupportedFileTimerRef.current = null
 			}
 
-			// --- 1. VSCode 资源管理器拖放处理 ---
+			// --- 1. VSCode Explorer Drop Handling ---
 			let uris: string[] = []
 			const resourceUrlsData = e.dataTransfer.getData("resourceurls")
 			const vscodeUriListData = e.dataTransfer.getData("application/vnd.code.uri-list")
 
-			// 1a. 首先尝试 'resourceurls'（用于多选）
+			// 1a. Try 'resourceurls' first (used for multi-select)
 			if (resourceUrlsData) {
 				try {
 					uris = JSON.parse(resourceUrlsData)
 					uris = uris.map((uri) => decodeURIComponent(uri))
 				} catch (error) {
 					console.error("Failed to parse resourceurls JSON:", error)
-					uris = [] // 如果解析失败则重置
+					uris = [] // Reset if parsing failed
 				}
 			}
 
-			// 1b. 回退到 'application/vnd.code.uri-list'（换行符分隔）
+			// 1b. Fallback to 'application/vnd.code.uri-list' (newline separated)
 			if (uris.length === 0 && vscodeUriListData) {
 				uris = vscodeUriListData.split("\n").map((uri) => uri.trim())
 			}
 
-			// 1c. 筛选有效的 scheme（file 或 vscode-file）和非空字符串
+			// 1c. Filter for valid schemes (file or vscode-file) and non-empty strings
 			const validUris = uris.filter((uri) => uri && (uri.startsWith("vscode-file:") || uri.startsWith("file:")))
 
 			if (validUris.length > 0) {
@@ -1230,7 +1258,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				}
 				setIntendedCursorPosition(initialCursorPos)
 
-				FileServiceClient.getRelativePaths({ uris: validUris })
+				FileServiceClient.getRelativePaths(RelativePathsRequest.create({ uris: validUris }))
 					.then((response) => {
 						if (response.paths.length > 0) {
 							setPendingInsertions((prev) => [...prev, ...response.paths])
@@ -1248,8 +1276,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				return
 			}
 
-			// --- 3. 图像拖放处理 ---
-			// 仅当不是 VSCode 资源或纯文本拖放时才继续
+			// --- 3. Image Drop Handling ---
+			// Only proceed if it wasn't a VSCode resource or plain text drop
 			const files = Array.from(e.dataTransfer.files)
 			const acceptedTypes = ["png", "jpeg", "webp"]
 			const imageFiles = files.filter((file) => {
@@ -1257,7 +1285,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				return type === "image" && acceptedTypes.includes(subtype)
 			})
 
-			if (shouldDisableImages || imageFiles.length === 0) {
+			if (shouldDisableFilesAndImages || imageFiles.length === 0) {
 				return
 			}
 
@@ -1265,7 +1293,13 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
 
 			if (dataUrls.length > 0) {
-				setSelectedImages((prevImages) => [...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE))
+				const filesAndImagesLength = selectedImages.length + selectedFiles.length
+				const availableSlots = MAX_IMAGES_AND_FILES_PER_MESSAGE - filesAndImagesLength
+
+				if (availableSlots > 0) {
+					const imagesToAdd = Math.min(dataUrls.length, availableSlots)
+					setSelectedImages((prevImages) => [...prevImages, ...dataUrls.slice(0, imagesToAdd)])
+				}
 			} else {
 				console.warn("No valid images were processed")
 			}
@@ -1299,7 +1333,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						new Promise<string | null>((resolve) => {
 							const reader = new FileReader()
 							reader.onloadend = async () => {
-								// 使其异步
+								// Make async
 								if (reader.error) {
 									console.error("Error reading file:", reader.error)
 									resolve(null)
@@ -1307,12 +1341,12 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									const result = reader.result
 									if (typeof result === "string") {
 										try {
-											await getImageDimensions(result) // 检查尺寸
+											await getImageDimensions(result) // Check dimensions
 											resolve(result)
 										} catch (error) {
 											console.warn((error as Error).message)
-											showDimensionErrorMessage() // 向用户显示错误
-											resolve(null) // 不要添加此图像
+											showDimensionErrorMessage() // Show error to user
+											resolve(null) // Don't add this image
 										}
 									} else {
 										resolve(null)
@@ -1333,7 +1367,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						opacity: 1,
 						position: "relative",
 						display: "flex",
-						// 拖拽悬浮样式已移至 DynamicTextArea
+						// Drag-over styles moved to DynamicTextArea
 						transition: "background-color 0.1s ease-in-out, border 0.1s ease-in-out",
 					}}
 					onDrop={onDrop}
@@ -1351,7 +1385,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								display: "flex",
 								alignItems: "center",
 								justifyContent: "center",
-								zIndex: 10, // 确保它在其他元素之上
+								zIndex: 10, // Ensure it's above other elements
 								pointerEvents: "none",
 							}}>
 							<span
@@ -1361,7 +1395,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									fontSize: "12px",
 									textAlign: "center",
 								}}>
-								Image dimensions exceed 7500px
+								图片大小超过了 7500px
 							</span>
 						</div>
 					)}
@@ -1385,7 +1419,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									fontWeight: "bold",
 									fontSize: "12px",
 								}}>
-								Only image files are supported
+								只支持图片文件
 							</span>
 						</div>
 					)}
@@ -1397,7 +1431,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								setSelectedIndex={setSelectedSlashCommandsIndex}
 								onMouseDown={handleMenuMouseDown}
 								query={slashCommandsQuery}
-								workflowToggles={workflowToggles}
+								localWorkflowToggles={localWorkflowToggles}
+								globalWorkflowToggles={globalWorkflowToggles}
 							/>
 						</div>
 					)}
@@ -1451,12 +1486,13 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							borderRight: 0,
 							borderTop: 0,
 							borderColor: "transparent",
-							borderBottom: `${thumbnailsHeight + 6}px solid transparent`,
-							padding: "9px 28px 3px 9px",
+							borderBottom: `${thumbnailsHeight}px solid transparent`,
+							padding: "9px 28px 9px 9px",
 						}}
 					/>
 					<DynamicTextArea
 						data-testid="chat-input"
+						minRows={3}
 						ref={(el) => {
 							if (typeof ref === "function") {
 								ref(el)
@@ -1474,7 +1510,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						onKeyUp={handleKeyUp}
 						onFocus={() => {
 							setIsTextAreaFocused(true)
-							onFocusChange?.(true) // 在聚焦时调用 prop
+							onFocusChange?.(true) // Call prop on focus
 						}}
 						onBlur={handleBlur}
 						onPaste={handlePaste}
@@ -1503,42 +1539,49 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							overflowX: "hidden",
 							overflowY: "scroll",
 							scrollbarWidth: "none",
-							// 由于我们设置了 maxRows，当文本足够长时，它会开始溢出底部填充，显示在缩略图后面。为了解决这个问题，我们使用透明边框将文本向上推。(https://stackoverflow.com/questions/42631947/maintaining-a-padding-inside-of-text-area/52538410#52538410)
+							// Since we have maxRows, when text is long enough it starts to overflow the bottom padding, appearing behind the thumbnails. To fix this, we use a transparent border to push the text up instead. (https://stackoverflow.com/questions/42631947/maintaining-a-padding-inside-of-text-area/52538410#52538410)
 							// borderTop: "9px solid transparent",
 							borderLeft: 0,
 							borderRight: 0,
 							borderTop: 0,
-							borderBottom: `${thumbnailsHeight + 6}px solid transparent`,
+							borderBottom: `${thumbnailsHeight}px solid transparent`,
 							borderColor: "transparent",
 							// borderRight: "54px solid transparent",
-							// borderLeft: "9px solid transparent", // 注意：react-textarea-autosize 在使用 borderLeft/borderRight 时无法计算正确的高度，因此我们需要改用水平填充
-							// 我们使用带边框的 div 来代替 boxShadow，以便更好地模拟文本区域聚焦时的行为
+							// borderLeft: "9px solid transparent", // NOTE: react-textarea-autosize doesn't calculate correct height when using borderLeft/borderRight so we need to use horizontal padding instead
+							// Instead of using boxShadow, we use a div with a border to better replicate the behavior when the textarea is focused
 							// boxShadow: "0px 0px 0px 1px var(--vscode-input-border)",
-							padding: "9px 28px 3px 9px",
+							padding: "9px 28px 9px 9px",
 							cursor: "text",
 							flex: 1,
 							zIndex: 1,
 							outline:
-								isDraggingOver && !showUnsupportedFileError // 仅在未显示错误时显示拖动轮廓
+								isDraggingOver && !showUnsupportedFileError // Only show drag outline if not showing error
 									? "2px dashed var(--vscode-focusBorder)"
 									: isTextAreaFocused
 										? `1px solid ${chatSettings.mode === "plan" ? PLAN_MODE_COLOR : "var(--vscode-focusBorder)"}`
 										: "none",
-							outlineOffset: isDraggingOver && !showUnsupportedFileError ? "1px" : "0px", // 为拖拽悬浮轮廓添加偏移量
+							outlineOffset: isDraggingOver && !showUnsupportedFileError ? "1px" : "0px", // Add offset for drag-over outline
 						}}
 						onScroll={() => updateHighlights()}
 					/>
-					{selectedImages.length > 0 && (
+					{!inputValue && selectedImages.length === 0 && selectedFiles.length === 0 && (
+						<div className="absolute bottom-4 left-[25px] right-[60px] text-[10px] text-[var(--vscode-input-placeholderForeground)] opacity-70 whitespace-nowrap overflow-hidden text-ellipsis pointer-events-none z-[1]">
+							输入 @ 添加上下文, / 输入命令 & 调用工作流
+						</div>
+					)}
+					{(selectedImages.length > 0 || selectedFiles.length > 0) && (
 						<Thumbnails
 							images={selectedImages}
+							files={selectedFiles}
 							setImages={setSelectedImages}
+							setFiles={setSelectedFiles}
 							onHeightChange={handleThumbnailsHeightChange}
 							style={{
 								position: "absolute",
 								paddingTop: 4,
 								bottom: 14,
 								left: 22,
-								right: 47, // (54 + 9) + 4 额外填充
+								right: 47, // (54 + 9) + 4 extra padding
 								zIndex: 2,
 							}}
 						/>
@@ -1548,9 +1591,10 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							position: "absolute",
 							right: 23,
 							display: "flex",
-							alignItems: "flex-center",
+							alignItems: "flex-end",
 							height: textAreaBaseHeight || 31,
-							bottom: 9.5, // 应该是 10 但在 mac 上看起来不好
+							bottom: 9.5, // should be 10 but doesn't look good on mac
+							paddingBottom: "8px",
 							zIndex: 2,
 						}}>
 						<div
@@ -1586,15 +1630,15 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				</div>
 
 				<ControlsContainer>
-					{/* 始终渲染两个组件，但使用 CSS 控制可见性 */}
+					{/* Always render both components, but control visibility with CSS */}
 					<div
 						style={{
 							position: "relative",
 							flex: 1,
 							minWidth: 0,
-							height: "28px", // 固定高度以防止容器收缩
+							height: "28px", // Fixed height to prevent container shrinking
 						}}>
-						{/* ButtonGroup - 始终在 DOM 中，但可见性受控 */}
+						{/* ButtonGroup - always in DOM but visibility controlled */}
 						<ButtonGroup
 							style={{
 								position: "absolute",
@@ -1621,21 +1665,21 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</VSCodeButton>
 							</Tooltip>
 
-							<Tooltip tipText="添加图片">
+							<Tooltip tipText="添加文件和图片">
 								<VSCodeButton
-									data-testid="images-button"
+									data-testid="files-button"
 									appearance="icon"
-									aria-label="添加图片"
-									disabled={shouldDisableImages}
+									aria-label="添加文件和图片"
+									disabled={shouldDisableFilesAndImages}
 									onClick={() => {
-										if (!shouldDisableImages) {
-											onSelectImages()
+										if (!shouldDisableFilesAndImages) {
+											onSelectFilesAndImages()
 										}
 									}}
 									style={{ padding: "0px 0px", height: "20px" }}>
 									<ButtonContainer>
 										<span
-											className="codicon codicon-device-camera flex items-center"
+											className="codicon codicon-add flex items-center"
 											style={{ fontSize: "14px", marginBottom: -3 }}
 										/>
 									</ButtonContainer>
@@ -1649,7 +1693,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										role="button"
 										isActive={showModelSelector}
 										disabled={false}
-										title="选择模型 / API 提供者"
+										title="选择模型 / API 供应商"
 										onClick={handleModelButtonClick}
 										tabIndex={0}>
 										<ModelButtonContent>{modelDisplayName}</ModelButtonContent>
@@ -1667,32 +1711,32 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 											apiErrorMessage={undefined}
 											modelIdErrorMessage={undefined}
 											isPopup={true}
-											saveImmediately={true} // 确保弹窗立即保存
+											saveImmediately={true} // Ensure popup saves immediately
 										/>
 									</ModelSelectorTooltip>
 								)}
 							</ModelContainer>
 						</ButtonGroup>
 					</div>
-					{/* Plan/Act 切换的 Tooltip 保留在条件渲染之外 */}
+					{/* Tooltip for Plan/Act toggle remains outside the conditional rendering */}
 					<Tooltip
 						style={{ zIndex: 1000 }}
 						visible={shownTooltipMode !== null}
-						tipText={`在 ${shownTooltipMode === "act" ? "Act" : "Plan"} 模式下，Cline 将${shownTooltipMode === "act" ? "立即完成任务" : "收集信息以构建计划"}`}
-						hintText={`使用 ${metaKeyChar}+Shift+A 切换`}>
+						tipText={`在 ${shownTooltipMode === "act" ? "执行" : "计划"}  模式, Cline 会 ${shownTooltipMode === "act" ? "立即完成任务" : "收集信息以构建计划"}`}
+						hintText={`切换 w/ ${metaKeyChar}+Shift+A`}>
 						<SwitchContainer data-testid="mode-switch" disabled={false} onClick={onModeToggle}>
 							<Slider isAct={chatSettings.mode === "act"} isPlan={chatSettings.mode === "plan"} />
 							<SwitchOption
 								isActive={chatSettings.mode === "plan"}
 								onMouseOver={() => setShownTooltipMode("plan")}
 								onMouseLeave={() => setShownTooltipMode(null)}>
-								Plan
+								计划模式
 							</SwitchOption>
 							<SwitchOption
 								isActive={chatSettings.mode === "act"}
 								onMouseOver={() => setShownTooltipMode("act")}
 								onMouseLeave={() => setShownTooltipMode(null)}>
-								Act
+								执行模式
 							</SwitchOption>
 						</SwitchContainer>
 					</Tooltip>

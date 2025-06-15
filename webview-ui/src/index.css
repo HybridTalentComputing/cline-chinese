@@ -181,3 +181,19 @@ vscode-dropdown::part(listbox) {
 	box-shadow: 0 0 0 0.5px color-mix(in srgb, var(--vscode-focusBorder) 30%, transparent);
 	color: transparent;
 }
+
+vscode-link.btn-link {
+	display: inline-block;
+	padding: 0.3em 0.8em;
+	background-color: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	border: 1px solid var(--vscode-button-border);
+	border-radius: var(--vscode-button-radius);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+vscode-link.btn-link:hover {
+	background-color: var(--vscode-button-hoverBackground);
+	text-decoration: none;
+}

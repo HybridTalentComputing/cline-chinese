@@ -11,10 +11,12 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { EmptyRequest } from "@shared/proto/common"
 
+// 定义账户视图组件的属性类型
 type AccountViewProps = {
 	onDone: () => void
 }
 
+// 账户视图组件
 const AccountView = ({ onDone }: AccountViewProps) => {
 	return (
 		<div className="fixed inset-0 flex flex-col overflow-hidden pt-[10px] pl-[20px]">
@@ -31,12 +33,15 @@ const AccountView = ({ onDone }: AccountViewProps) => {
 	)
 }
 
+// Cline账户视图组件
 export const ClineAccountView = () => {
 	const { user: firebaseUser, handleSignOut } = useFirebaseAuth()
 	const { userInfo, apiConfiguration } = useExtensionState()
 
+	// 根据API配置确定当前用户
 	let user = apiConfiguration?.clineApiKey ? firebaseUser || userInfo : undefined
 
+	// 状态管理
 	const [balance, setBalance] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
 	const [usageData, setUsageData] = useState<UsageTransaction[]>([])
@@ -69,16 +74,18 @@ export const ClineAccountView = () => {
 		}
 	}, [user])
 
+	// 处理登录
 	const handleLogin = () => {
 		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
-			console.error("Failed to get login URL:", err), // 日志信息保持英文
+			console.error("Failed to get login URL:", err),
 		)
 	}
 
+	// 处理登出
 	const handleLogout = () => {
-		// 首先通知扩展清除 API 密钥和状态
-		vscode.postMessage({ type: "accountLogoutClicked" })
-		// 然后从 Firebase 登出
+		// 使用gRPC客户端通知扩展清除API密钥和状态
+		AccountServiceClient.accountLogoutClicked(EmptyRequest.create()).catch((err) => console.error("Failed to logout:", err))
+		// 然后从Firebase登出
 		handleSignOut()
 	}
 	return (
@@ -88,7 +95,7 @@ export const ClineAccountView = () => {
 					<div className="flex flex-col w-full">
 						<div className="flex items-center mb-6 flex-wrap gap-y-4">
 							{user.photoURL ? (
-								<img src={user.photoURL} alt="个人资料" className="size-16 rounded-full mr-4" />
+								<img src={user.photoURL} alt="Profile" className="size-16 rounded-full mr-4" />
 							) : (
 								<div className="size-16 rounded-full bg-[var(--vscode-button-background)] flex items-center justify-center text-2xl text-[var(--vscode-button-foreground)] mr-4">
 									{user.displayName?.[0] || user.email?.[0] || "?"}
@@ -112,11 +119,11 @@ export const ClineAccountView = () => {
 					<div className="w-full flex gap-2 flex-col min-[225px]:flex-row">
 						<div className="w-full min-[225px]:w-1/2">
 							<VSCodeButtonLink href="https://app.cline.bot/credits" appearance="primary" className="w-full">
-								仪表盘
+								控制面板
 							</VSCodeButtonLink>
 						</div>
 						<VSCodeButton appearance="secondary" onClick={handleLogout} className="w-full min-[225px]:w-1/2">
-							登出
+							退出登录
 						</VSCodeButton>
 					</div>
 
@@ -144,7 +151,7 @@ export const ClineAccountView = () => {
 
 						<div className="w-full">
 							<VSCodeButtonLink href="https://app.cline.bot/credits/#buy" className="w-full">
-								充值点数
+								添加积分
 							</VSCodeButtonLink>
 						</div>
 					</div>
@@ -159,17 +166,15 @@ export const ClineAccountView = () => {
 				<div className="flex flex-col items-center pr-3">
 					<ClineLogoWhite className="size-16 mb-4" />
 
-					<p style={{}}>
-						注册账户以获取最新的模型、查看用量和点数的计费仪表盘以及更多即将推出的功能。
-					</p>
+					<p style={{}}>注册账户以获取最新模型、查看使用情况和积分的计费控制面板，以及更多即将推出的功能。</p>
 
 					<VSCodeButton onClick={handleLogin} className="w-full mb-4">
-						使用 Cline 注册
+						使用Cline注册
 					</VSCodeButton>
 
 					<p className="text-[var(--vscode-descriptionForeground)] text-xs text-center m-0">
-						继续即表示您同意 <VSCodeLink href="https://cline.bot/tos">服务条款</VSCodeLink> 和{" "}
-						<VSCodeLink href="https://cline.bot/privacy">隐私政策。</VSCodeLink>
+						继续即表示您同意<VSCodeLink href="https://cline.bot/tos">服务条款</VSCodeLink>和{" "}
+						<VSCodeLink href="https://cline.bot/privacy">隐私政策</VSCodeLink>。
 					</p>
 				</div>
 			)}

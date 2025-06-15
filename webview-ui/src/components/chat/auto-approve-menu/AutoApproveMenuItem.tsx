@@ -8,8 +8,8 @@ interface AutoApproveMenuItemProps {
 	action: ActionMetadata
 	isChecked: (action: ActionMetadata) => boolean
 	isFavorited?: (action: ActionMetadata) => boolean
-	onToggle: (action: ActionMetadata, checked: boolean) => void
-	onToggleFavorite?: (actionId: string) => void
+	onToggle: (action: ActionMetadata, checked: boolean) => Promise<void>
+	onToggleFavorite?: (actionId: string) => Promise<void>
 	condensed?: boolean
 	showIcon?: boolean
 }
@@ -83,9 +83,9 @@ const AutoApproveMenuItem = ({
 	const checked = isChecked(action)
 	const favorited = isFavorited?.(action)
 
-	const onChange = (e: Event) => {
+	const onChange = async (e: Event) => {
 		e.stopPropagation()
-		onToggle(action, !checked)
+		await onToggle(action, !checked)
 	}
 
 	const content = (
@@ -99,17 +99,16 @@ const AutoApproveMenuItem = ({
 							<span className="label">{condensed ? action.shortName : action.label}</span>
 						</div>
 						{onToggleFavorite && !condensed && (
-							<HeroTooltip
-								delay={500}
-								content={favorited ? "从快速访问菜单中删除" : "添加到快速访问菜单"}>
+							<HeroTooltip delay={500} content={favorited ? "从快速访问菜单删除" : "添加到快速访问菜单"}>
 								<span
 									className={`p-0.5 codicon codicon-${favorited ? "star-full" : "star-empty"} star`}
 									style={{
 										cursor: "pointer",
 									}}
-									onClick={(e) => {
+									onClick={async (e) => {
 										e.stopPropagation()
-										onToggleFavorite?.(action.id)
+										if (action.id === "enableAll") return
+										await onToggleFavorite?.(action.id)
 									}}
 								/>
 							</HeroTooltip>

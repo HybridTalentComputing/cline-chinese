@@ -6,7 +6,7 @@ import { arePathsEqual } from "@utils/path"
 export async function openImage(dataUri: string) {
 	const matches = dataUri.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/)
 	if (!matches) {
-		vscode.window.showErrorMessage("Invalid data URI format")
+		vscode.window.showErrorMessage("无效的 URI 格式")
 		return
 	}
 	const [, format, base64Data] = matches
@@ -16,7 +16,7 @@ export async function openImage(dataUri: string) {
 		await vscode.workspace.fs.writeFile(vscode.Uri.file(tempFilePath), new Uint8Array(imageBuffer))
 		await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(tempFilePath))
 	} catch (error) {
-		vscode.window.showErrorMessage(`Error opening image: ${error}`)
+		vscode.window.showErrorMessage(`打开图片错误: ${error}`)
 	}
 }
 
@@ -44,6 +44,6 @@ export async function openFile(absolutePath: string) {
 		const document = await vscode.workspace.openTextDocument(uri)
 		await vscode.window.showTextDocument(document, { preview: false })
 	} catch (error) {
-		vscode.window.showErrorMessage(`Could not open file!`)
+		vscode.window.showErrorMessage(`打开文件错误!`)
 	}
 }

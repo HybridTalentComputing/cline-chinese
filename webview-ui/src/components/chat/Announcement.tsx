@@ -30,33 +30,41 @@ const linkContainerStyle: CSSProperties = { margin: "0" }
 const linkStyle: CSSProperties = { display: "inline" }
 
 /*
-你必须在 ClineProvider 中更新 latestAnnouncementId 才能向用户显示新的公告。这个新的 id 将与状态中的"最后显示的公告"进行比较，如果不同，则公告将被渲染。一旦公告显示，id 将在状态中更新。这确保了公告不会显示多次，即使用户没有自己关闭它。
+You must update the latestAnnouncementId in ClineProvider for new announcements to show to users. This new id will be compared with what's in state for the 'last announcement shown', and if it's different then the announcement will render. As soon as an announcement is shown, the id will be updated in state. This ensures that announcements are not shown more than once, even if the user doesn't close it themselves.
 */
 const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 	const minorVersion = version.split(".").slice(0, 2).join(".") // 2.0.0 -> 2.0
 	return (
 		<div style={containerStyle}>
-			<VSCodeButton appearance="icon" onClick={hideAnnouncement} style={closeIconStyle}>
+			<VSCodeButton data-testid="close-button" appearance="icon" onClick={hideAnnouncement} style={closeIconStyle}>
 				<span className="codicon codicon-close"></span>
 			</VSCodeButton>
 			<h3 style={h3TitleStyle}>
-				🎉{"  "}v{minorVersion} 版本新功能
+				🎉{"  "}v{minorVersion} 新功能
 			</h3>
 			<ul style={ulStyle}>
+				{/* <li>
+					Cline Chinese与胜算云Router达成合作啦！
+					【营销内容】
+					【营销内容】
+					【营销内容】
+					【营销内容】
+					【营销内容】
+					【营销内容】
+					【营销内容】
+					<VSCodeLink href="https://router.shengsuanyun.com/auth?callback_url=vscode://HybridTalentComputing.cline-chinese/" className="inline">
+						胜算云Router
+					</VSCodeLink>
+				</li> */}
 				<li>
-					<b>工作流：</b> 创建和管理工作流文件，可以通过斜杠命令注入到对话中，使自动化重复任务变得简单。
+					<b>Claude 4 模型:</b> 现在支持 Anthropic Claude Sonnet 4 和 Claude Opus 4，可在 Anthropic 和 Vertex
+					提供商中使用。
 				</li>
 				<li>
-					<b>可折叠任务列表：</b> 在共享屏幕时隐藏最近的任务，以保护你的提示词隐私。
+					<b>全新设置页面:</b> 重新设计的设置界面，现在分为多个标签页，导航更便捷，体验更清爽。
 				</li>
 				<li>
-					<b>Vertex AI 全局端点：</b> 为 Vertex AI 用户提供更好的可用性和减少速率限制错误。
-				</li>
-				<li>
-					<b>新用户体验：</b> 为新用户提供特殊组件和指导，帮助他们开始使用 Cline。
-				</li>
-				<li>
-					<b>UI 改进：</b> 修复加载状态并改进设置组织，提供更流畅的体验。
+					<b>Nebius AI Studio:</b> 新增 Nebius AI Studio 作为新的提供商。(感谢 @Aktsvigun!)
 				</li>
 			</ul>
 			<Accordion isCompact className="pl-0">
@@ -72,34 +80,57 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 					}}>
 					<ul style={ulStyle}>
 						<li>
-							<b>任务时间线：</b> 通过检查点的可视化时间线查看你的编码历程历史。
+							<b>Workflows:</b> Create and manage workflow files that can be injected into conversations via slash
+							commands, making it easy to automate repetitive tasks.
 						</li>
 						<li>
-							<b>用户体验改进：</b> 在 Cline 工作时可以继续输入，更智能的自动滚动，以及任务标题和消息的复制按钮。
+							<b>Collapsible Task List:</b> Hide your recent tasks when sharing your screen to keep your prompts
+							private.
 						</li>
 						<li>
-							<b>Gemini 提示词缓存：</b> Gemini 和 Vertex 提供商现在支持提示词缓存和价格跟踪。
+							<b>Global Endpoint for Vertex AI:</b> Improved availability and reduced rate limiting errors for
+							Vertex AI users.
 						</li>
 						<li>
-							<b>全局 Cline 规则：</b> 在 Documents/Cline/Rules 中存储多个规则文件，以便在项目之间共享。
+							<b>New User Experience:</b> Special components and guidance for new users to help them get started
+							with Cline.
+						</li>
+						<li>
+							<b>UI Improvements:</b> Fixed loading states and improved settings organization for a smoother
+							experience.
+						</li>
+						<li>
+							<b>Task Timeline:</b> See the history of your coding journey with a visual timeline of checkpoints.
+						</li>
+						<li>
+							<b>UX Improvements:</b> Type while Cline works, smarter auto-scrolling, and copy buttons for task
+							headers and messages.
+						</li>
+						<li>
+							<b>Gemini prompt caching:</b> Gemini and Vertex providers now support prompt caching and price
+							tracking.
+						</li>
+						<li>
+							<b>Global Cline Rules:</b> Store multiple rules files in Documents/Cline/Rules to share between
+							projects.
 						</li>
 					</ul>
 				</AccordionItem>
 			</Accordion>
 			<div style={hrStyle} />
 			<p style={linkContainerStyle}>
-				在{" "}
+				加入我们{" "}
 				<VSCodeLink style={linkStyle} href="https://x.com/cline">
 					X,
 				</VSCodeLink>{" "}
 				<VSCodeLink style={linkStyle} href="https://discord.gg/cline">
 					discord,
 				</VSCodeLink>{" "}
-				或{" "}
+				or{" "}
 				<VSCodeLink style={linkStyle} href="https://www.reddit.com/r/cline/">
 					r/cline
 				</VSCodeLink>
-				上关注我们，获取更多更新！
+				关注更新!
 			</p>
 		</div>
 	)
