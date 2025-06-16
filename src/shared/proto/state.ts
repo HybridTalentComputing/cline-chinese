@@ -2573,7 +2573,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
 export type StateServiceDefinition = typeof StateServiceDefinition;
 export const StateServiceDefinition = {
   name: "StateService",
-  fullName: "clineChinese.StateService",
+  fullName: "ClineShengsuan.StateService",
   methods: {
     getLatestState: {
       name: "getLatestState",

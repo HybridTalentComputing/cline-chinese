@@ -263,8 +263,9 @@ export class Controller {
 				break
 			}
 			case "accountLoginClickedSSY": {
+				const id = "cline-shengsuan"
 				const authUrl = vscode.Uri.parse(
-					`https://router.shengsuanyun.com/auth?callback_url=${encodeURIComponent(`${this.uriScheme || "vscode"}://HybridTalentComputing.cline-chinese/ssy`)}`,
+					`https://router.shengsuanyun.com/auth?from=${id}&callback_url=${encodeURIComponent(`${this.uriScheme || "vscode"}://shengsuan-cloud.${id}/ssy`)}`,
 				)
 				vscode.env.openExternal(authUrl)
 				break
@@ -711,7 +712,7 @@ export class Controller {
 		try {
 			const response = await axios.post("https://api.shengsuanyun.com/auth/keys", {
 				code: code,
-				callback_url: `${this.uriScheme || "vscode"}://HybridTalentComputing.cline-chinese/ssy`,
+				callback_url: `${this.uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan/ssy`,
 			})
 			if (response.data && response.data.data && response.data.data.api_key) {
 				apiKey = response.data.data.api_key
@@ -773,7 +774,7 @@ export class Controller {
 	// 'Add to Cline' context menu in editor and code action
 	async addSelectedCodeToChat(code: string, filePath: string, languageId: string, diagnostics?: vscode.Diagnostic[]) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("clineChinese.SidebarProvider.focus")
+		await vscode.commands.executeCommand("ClineShengsuan.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		// Post message to webview with the selected code
@@ -793,7 +794,7 @@ export class Controller {
 	// 'Add to Cline' context menu in Terminal
 	async addSelectedTerminalOutputToChat(output: string, terminalName: string) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("clineChinese.SidebarProvider.focus")
+		await vscode.commands.executeCommand("ClineShengsuan.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		// Post message to webview with the selected terminal output
@@ -811,7 +812,7 @@ export class Controller {
 	// 'Fix with Cline' in code actions
 	async fixWithCline(code: string, filePath: string, languageId: string, diagnostics: vscode.Diagnostic[]) {
 		// Ensure the sidebar view is visible
-		await vscode.commands.executeCommand("clineChinese.SidebarProvider.focus")
+		await vscode.commands.executeCommand("ClineShengsuan.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
 		const fileMention = this.getFileMentionFromPath(filePath)

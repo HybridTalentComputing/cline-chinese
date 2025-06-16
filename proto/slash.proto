@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package clineChinese;
-option java_package = "bot.clineChinese.proto";
+package ClineShengsuan;
+option java_package = "bot.ClineShengsuan.proto";
 option java_multiple_files = true;
 
 import "common.proto";

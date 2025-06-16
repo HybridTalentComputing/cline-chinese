@@ -16,8 +16,8 @@ https://github.com/KumarVariable/vscode-extension-sidebar-html/blob/master/src/c
 */
 
 export class WebviewProvider implements vscode.WebviewViewProvider {
-	public static readonly sideBarId = "clineChinese.SidebarProvider" // used in package.json as the view's id. This value cannot be changed due to how vscode caches views based on their id, and updating the id would break existing instances of the extension.
-	public static readonly tabPanelId = "clineChinese.TabPanelProvider"
+	public static readonly sideBarId = "ClineShengsuan.SidebarProvider" // used in package.json as the view's id. This value cannot be changed due to how vscode caches views based on their id, and updating the id would break existing instances of the extension.
+	public static readonly tabPanelId = "ClineShengsuan.TabPanelProvider"
 	private static activeInstances: Set<WebviewProvider> = new Set()
 	public view?: vscode.WebviewView | vscode.WebviewPanel
 	private disposables: vscode.Disposable[] = []
@@ -146,7 +146,7 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 							await sendThemeEvent(JSON.stringify(theme))
 						}
 					}
-					if (e && e.affectsConfiguration("clineChinese.mcpMarketplace.enabled")) {
+					if (e && e.affectsConfiguration("ClineShengsuan.mcpMarketplace.enabled")) {
 						// Update state when marketplace tab setting changes
 						await this.controller.postStateToWebview()
 					}

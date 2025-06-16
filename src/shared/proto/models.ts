@@ -1320,7 +1320,7 @@ export const ShengSuanYunModelInfo: MessageFns<ShengSuanYunModelInfo> = {
 export type ModelsServiceDefinition = typeof ModelsServiceDefinition;
 export const ModelsServiceDefinition = {
   name: "ModelsService",
-  fullName: "clineChinese.ModelsService",
+  fullName: "ClineShengsuan.ModelsService",
   methods: {
     /** Fetches available models from Ollama */
     getOllamaModels: {

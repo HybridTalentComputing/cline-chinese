@@ -2342,7 +2342,7 @@ const ApiOptions = ({
 }
 
 export function getOpenRouterAuthUrl(uriScheme?: string) {
-	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://HybridTalentComputing.cline-chinese/openrouter`
+	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan/openrouter`
 }
 
 export const formatPrice = (price: number) => {

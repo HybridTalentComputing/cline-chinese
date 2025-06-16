@@ -1,113 +1,183 @@
-# Cline-Chinese (Cline中文汉化版) 🌏
-
-> 🎉 截止到2025.05.19，Cline Chinese在VS Code插件市场的下载量突破58k啦！感谢大家的支持！
+## Cline-中文版
 
 <p align="center">
 
-[![MCP市场](https://img.shields.io/badge/MCP%E5%B8%82%E5%9C%BA-访问-blue)](https://www.mcp-home.com/) [![Cline Chinese文档](https://img.shields.io/badge/Cline%20Chinese-文档-blue)](https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/) [![Discord](https://img.shields.io/badge/Discord-加入讨论-7289DA)](https://discord.gg/fhj9hqy89t) [![Version](https://img.shields.io/visual-studio-marketplace/v/HybridTalentComputing.cline-chinese)](https://marketplace.visualstudio.com/items?itemName=HybridTalentComputing.cline-chinese) [![Downloads](https://img.shields.io/visual-studio-marketplace/d/HybridTalentComputing.cline-chinese)](https://marketplace.visualstudio.com/items?itemName=HybridTalentComputing.cline-chinese) [![Rating](https://img.shields.io/visual-studio-marketplace/r/HybridTalentComputing.cline-chinese)](https://marketplace.visualstudio.com/items?itemName=HybridTalentComputing.cline-chinese)
+[![Cline-中文版](https://img.shields.io/badge/Cline%20中文版-blue)](https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs) [![Discord](https://img.shields.io/badge/Discord-加入讨论-7289DA)](https://discord.gg/frBHkRKB4x) 
 
 </p>
+ 
+## 🔥独家专属折扣模型价格【2折】⬇️ 活动限时【6.1-6.15】开发者日活动来了<br>
 
-## 项目地址
-https://github.com/HybridTalentComputing/cline-chinese
-欢迎大家star，fork，提出issue，贡献代码，一起完善这个项目。
+【API超市】于 2025 年 6 月 1 日启动模型折扣活动！以下是本次参与折扣的 AI 模型详情：享受优惠请点击[胜算云Router](https://router.shengsuanyun.com/)<br>
 
-## MCP市场（MCP信息以中文形式呈现）
-https://www.mcp-home.com/
-欢迎大家注册，收藏、上传自己喜欢的MCP Server/Client.
+| 模型名称                       | 模型值                                    | 上下文窗口  | 输入价格 (美元/百万Tokens) | 输入价格 (人民币/百万Tokens) | 输出价格 (美元/百万Tokens) | 输出价格 (人民币/百万Tokens) |
+| :----------------------------- | :---------------------------------------- | :---------- | :----------------------- | :------------------------- | :----------------------- | :------------------------- |
+| **Anthropic / Claude-Opus-4 (折扣)** | `anthropic/claude-opus-4-discount`        | 200K        | 3.00 (原价 15.00)     | 21.56 (原价 107.81)    | 15.00 (原价 75.00)    | 107.81 (原价 539.05)   |
+| **Anthropic / Claude-3.7-sonnet (折扣)** | `anthropic/claude-3.7-sonnet-discount`    | 200K        | 0.40 (原价 3.00)      | 2.87 (原价 21.56)      | 5.00 (原价 15.00)     | 35.94 (原价 107.81)    |
+| **Google / Gemini-2.5-pro-preview (折扣)** | `google/gemini-2.5-pro-preview-discount`  | 1049K       | 0.42 (原价 1.25-2.50) | 3.02 (原价 8.98-17.96) | 3.34 (原价 10-15)    | 24.01 (原价 71.87-107.81) |
+| **Anthropic / Claude-Sonnet-4 (折扣)** | `anthropic/claude-sonnet-4-discount`      | 200K        | 0.40 (原价 3.00)      | 2.87 (原价 21.56)      | 5.00 (原价 15.00)     | 35.94 (原价 107.81)    |
+| **XAI / Grok-3-beta (折扣)** | `x-ai/grok-3-beta-discount`               | 131K        | 0.50 (原价 3.00)      | 3.59 (原价 21.56)      | 5.00 (原价 15.00)     | 35.94 (原价 107.81)    |
 
-## 文档地址(包括使用方法，MCP知识，常见问题解答等)
-https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/
 
-## 功能展示
 
-<video width="100%" controls src="https://github.com/user-attachments/assets/a6db47a9-08d7-4d20-afa0-110d23b71a81"></video>
-> 演示视频使用 DeepSeek-R1-Distill-Qwen-14B 模型，展示了 Cline 中文汉化版的主要功能和使用效果，视频没有加速，推理速度快到飞起。
+---
 
-> 日常开发时，我使用的是某基某动的白嫖额度的模型API，如果您尚未注册，欢迎通过我的邀请链接：https://cloud.siliconflow.cn/i/BKtAlqbk ，或者注册的时候填写邀请码：BKtAlqbk，注册后双方均可获得2000万tokens的免费额度。我是Leo, 某基某动注册一下，帮助我白嫖token,我向你salute啊.
+**汇率说明：**
+以上人民币价格是基于活动发布时的美元汇率（约 1 美元 ≈ 7.187 人民币）估算，实际结算时请以平台最新汇率为准。
 
-## 安装使用
-Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下载体验。
+**注意：**
+- 对于 Anthropic / Claude-Opus-4 (折扣) 模型，由于目前官方及各个平台均存在不稳定情况，如遇报错，强烈建议优先切换至 `anthropic/claude-sonnet-4-discount` 模型，该模型稳定性更佳。
+- 上下文窗口大小是指模型在处理单个请求时能够接收和生成的最大 token 数量。
+- 更多详情和使用方式，请参考胜算云Router官方文档。
+以上模型需要手动修改模型值，对您造成的麻烦请多见谅。 <br>
 
+---
+
+##  Cline-中文版核心优势
+✅ **中文代码生成精准度提升200%**
+
+✅ **零门槛接入，国内直连无需魔法**
+
+✅ **企业用户可开具正规发票**
+
+✅ **独家专属模型折扣**
+
+
+
+
+## ✨进群交流
+### 进群福利
+- **注册新用户并且进群赠送10元(添加群主好友)**
+- **我们的专业客服及时为您答疑解惑**
+- **开发票**
+<div align="center" style="display: flex; justify-content: center; gap: 20px;">
+
+APIRouter进群交流<br>（如果无法加群，请加企业微信客服）<br>
+  <img src="https://github.com/user-attachments/assets/41e6dc76-07c9-4dbf-ac35-d2494ebc9a41" alt="APIRouter企业微信群" width="250" /> 
+</div>
+
+<div align="center" style="display: flex; justify-content: center; gap: 20px;">
+
+企业客服咨询<br>
+  <img src="https://github.com/user-attachments/assets/c180b033-d62c-4dc0-9c2a-a3ad8c70e5a4" alt="企业微信客服" width="250" />
+</div>
+Cline-中文版<br>
+https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan<br>
+Kilo SSY Code Agent<br>
+https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.kilo-ssy<br>
+Roo Code Chinese SSY<br>
+https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.roo-vibecoding<br>
+以上三种插件，可以直接在供应商中选择折扣模型<br>
+详情点击[胜算云Router](https://router.shengsuanyun.com/)<br>
+
+## 项目地址<br>
+国际<br>
+Github: https://github.com/SSYCloud/cline-chinese-ssy <br>
+中国大陆<br>
+Gitcode:https://gitcode.com/shengsuan-cloud/cline-chinese-ssy<br>
+Gitee:  https://gitee.com/shengsuan-cloud/cline-chinese-ssy<br>
+
+欢迎大家star，fork，提出issue，贡献代码，一起完善这个项目。（联系作者）<br>
+
+## 文档地址(包括使用方法，MCP知识，常见问题解答等)<br>
+https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs/<br>
+## 功能展示<br>
+
+<video width="100%" controls src="https://github.com/user-attachments/assets/f3b49926-ce1f-45a1-9ef6-a735b2f1e268"></video><br>
+
+
+> 演示视频使用 免费 LLM Coding 大模型API DeepSeek V3 0324 模型，展示了 Cline 中文版的主要功能和使用效果，视频没有加速，推理速度快到飞起。<br>
+> 本项目推荐使用[胜算云Router](https://router.shengsuanyun.com/)的LLM API进行智能编码推理，中国大陆地区可以免魔法访问世界范围内的最全的人工智能API，超低价格外，同时可以开发票，以及免费的云部署项目，让您的
+AI项目全面得到落地使用。<br>
+中国大陆地区针对DeepSeek官方不提供以下服务，我们则完全支持：<br>
+- 对外进行项目合作，提供私有化部署及相关支持服务；<br>
+- 开放文件上传及联网搜索 API 接口；<br>
+
+## 安装使用<br>
+Cline-中文版已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下载体验。<br>
+<a href="https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan" target="_blank"><strong>在 VS Marketplace 下载</strong></a>
 ## 简介
 
-这个项目是基于 [Cline](https://github.com/cline/cline) 的汉化版本。旨在优化由于英文 prompt 导致 Cline 在中文输入下+国产大模型（如：deepseek）表现不佳的问题, 并提供更符合中文用户习惯的UI界面和功能。目前已测试[DeepSeek-R1/DeepSeek-V3](https://github.com/deepseek-ai/DeepSeek-R1)工作良好。
+这个项目是基于 [Cline](https://github.com/cline/cline) 的汉化版本。旨在优化由于英文 prompt 导致 Cline 在中文输入下+大模型表现不佳的问题, 并提供更符合中文用户习惯的UI界面和功能。目前已测试[DeepSeek-R1/DeepSeek-V3](https://api-docs.deepseek.com/zh-cn/news/news250325)工作良好，同时，[胜算云Router](https://router.shengsuanyun.com/)提供多种免费/收费模型API<br>
 
-日常使用cline等编程助手时发现使用某些模型推理速度较慢（如deepseek-R1, Claude-3.5-Sonnet），这个项目优先尝试在中文输入下，对轻量化LLM进行实验（如Deepseek-R1-Distill-Qwen-7B/14B），优化中文prompt, 以提升推理速度，大大减少等待的时间。
+日常使用Cline-中文版等编程助手时发现使用某些模型推理速度较慢（如deepseek-R1, Claude-3.5-Sonnet），这个项目优先尝试在中文输入下，对轻量化LLM进行实验，优化上下文prompt, 以提升推理长度，以增加推理输入项目代码或者数据长度。<br>
 
-> **🚀 重要提示：经过测试，3.4.10版本下，DeepSeek-R1-Distill-Qwen-14B 模型工作良好，推理速度极快，强烈推荐尝试！**
 
 ## 背景
 
-本人是一名AI从业者+爱好者，在使用Cline时，发现Cline的UI界面和提示词均为英文，使用中文输入时，有时会出现奇奇怪怪的输出，影响体验。因此，决定自己动手，汉化Cline。
-另外，秉着学习的态度，未来将着手修改Cline的核心代码，增加新的功能，以提升体验。
+Cline 中文版 开发初衷<br>
+我们推出 Cline 中文版，旨在为国内开发者提供更便捷、高效的 AI 接入体验。在并行 Cline 主线功能开发的同时，「胜算云 Router」特别开放独家专属模型折扣，全面支持国内用户免魔法接入，实现真正的即用即连。<br>
 
-## 特色功能
-1. 支持Dify Provider。
-
-## 版本更新说明
-### 2025.05.19（ver.3.16.1）
-   1. 同步近期cline更新。
-
-
-### 2025.04.01（ver.3.8.4）
-
-    1. Cline Chinese特色功能：新增Dify Provider，感谢@lofyer，代码来自：https://github.com/lofyer/cline-dify/tree/main
-    2. 合入cline 3.8新增特性和问题修复：
-        关键特性：
-        1. 添加到 Cline：在任何文件或终端中右键单击选定的文本，以快速将上下文添加到您当前的任务中！此外，当您看到灯泡图标时，选择“使用Cline 修复”让 Cline 修复您代码中的错误。
-        2. 更快的推理：Cline/OpenRouter用户可以按吞吐量、价格和延迟对使用的底层提供商进行排序。按吞吐量排序将输出更快的生成结果（成本更高）。
-        3. 增强的 MCP 支持：支持 GIF 的动态图像加载，以及一个新的删除按钮来清理失败的服务器。
-        4. 近期新增模型支持，如gemini 2.5 pro, Deepseek-V3-0324，claude 3.7 sonnet-thinking.
+「胜算云 Router」致力于成为国内 AI 开发者首选工具，让每一个创意都能高效落地，真正实现 开发有胜算，落地有保障。<br>
 
 ## 欢迎关注我的自媒体账号
 
 欢迎关注我的自媒体账号，获取更多AI开发和技术分享：
 
-- 知乎：[Leo聊AI](https://www.zhihu.com/people/HTCMAX)
-- B站：[Leo的AI世界](https://space.bilibili.com/23409884?spm_id_from=333.1007.0.0)
-- 头条号：Leo的AI世界
-- 小红书：Leo的AI世界
-- 公众号：Leo的AI世界
+- 知乎：[胜算云](https://zhihu.com/people/shengsuanyunrouter)
+- B站： [胜算云](https://space.bilibili.com/3546885937695051)
+
+## 版本说明
+
+### 2025.04.28（ver.3.13.3）
+
+🔸同步cline官方最新版本<br>
+🔸重构胜算云供应商模型列表获取方式<br>
+🔸优化Deepseek系列模型Cache<br>
+🔸优化任务显示，增加Cache Token<br>
+🔸增加谷歌 与胜算云供应商 与OpenRouter供应商的 Gemini 模型的 Caching Tokens<br>
+
+
+
 
 ## 加入社群
 
 感兴趣的可以扫码加入微信社群，一起交流学习AI（如果二维码失效，请查看github项目中的首页中，相同位置的群二维码, 或者加入Discord频道）：
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/c8fe9850-f210-46da-8fac-d087422f74f3" alt="微信群二维码" width="250" />
+<table>
+<tbody>
+<td align="center">
+<a href="https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan" target="_blank"><strong>在 VS Marketplace 下载</strong></a>
+</td>
+<td align="center">
+<a href="https://discord.gg/frBHkRKB4x" target="_blank"><strong>Discord</strong></a>
+</td>
+<td align="center">
+<a href="https://www.reddit.com/r/cline/" target="_blank"><strong>r/cline</strong></a>
+</td>
+<td align="center">
+<a href="https://github.com/SSYCloud/cline-chinese-ssy/issues?utm_source=vsmp&utm_medium=ms%20web&utm_campaign=mpdetails" target="_blank"><strong>功能请求</strong></a>
+</td>
+<td align="center">
+<a href="https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs" target="_blank"><strong>新手上路</strong></a>
+</td>
+</tbody>
+</table>
 </div>
 
-GitHub 项目地址：https://github.com/HybridTalentComputing/cline-chinese
-
-Discord 频道：https://discord.gg/fhj9hqy89t
-
-
+Discord 频道：[SSYRouter API](https://discord.gg/frBHkRKB4x) <br>
 ## 赞赏支持
 
-如果您觉得这个项目对您有帮助，欢迎赞赏支持，您的支持是我持续开发的动力 ☕
+如果您觉得这个项目对您有帮助，欢迎赞赏支持，您的支持是我持续开发的动力 ☕<br>
 
-<div align="center" style="display: flex; justify-content: center; gap: 20px;">
 
-  <img src="https://github.com/user-attachments/assets/f01e4514-e8ec-48de-883a-9f6fbd05c2a0" alt="支付宝赞赏" width="250" />
-  <img src="https://github.com/user-attachments/assets/f4ee93ba-2960-46be-96a7-faaff3a0c38c" alt="微信赞赏" width="250" />
 
-</div>
 
 ## 免责声明
 
-1. **使用风险**：本项目是一个开源的VSCode插件，用户在使用过程中可能会遇到的任何问题或风险，开发者不承担任何责任。
+1. **使用风险**：本项目是一个开源的VSCode插件，用户在使用过程中可能会遇到的任何问题或风险，开发团队不承担任何责任。
 
-2. **数据安全**：本插件不会收集或存储任何用户数据。但在使用过程中，用户应注意保护自己的敏感信息和代码安全。
+2. **数据安全**：本插件不会收集或存储任何用户数据。但在使用过程中，用户应注意保护自己的敏感信息和代码安全，但是免费API供应模型可能会采集用户数据，请注意对免费模型的使用场景避免您重要关注或者有可能泄密的地方，比如工作代码等。
 
 3. **知识产权**：
-   - 本项目是基于Cline的汉化版本，原版权归属于Cline团队。
-   - 汉化部分的内容采用与原版Cline相同的Apache-2.0许可证。
+   - 本项目是基于Cline的中文版本，原版权归属于Cline团队。
+   - 中文部分的内容采用与原版Cline相同的Apache-2.0许可证。
    - 用户在使用过程中应遵守相关的开源协议。
 
 4. **免责声明**：
    - 本项目不提供任何明示或暗示的保证，包括但不限于适销性和特定用途适用性的保证。
-   - 开发者不对任何直接或间接损失负责，包括但不限于利润损失、数据丢失等。
+   - 开发团队不对任何直接或间接损失负责，包括但不限于利润损失、数据丢失等。
    - 用户使用本插件即表示同意承担使用过程中的所有风险。
 
 5. **更新和维护**：
@@ -115,6 +185,4 @@ Discord 频道：https://discord.gg/fhj9hqy89t
    - 本项目可能随时变更或终止，会及时同步到本项目中。
 ---
 
-> 注：本项目是个人维护的汉化版本，与原版 Cline 团队无关。如果您喜欢这个项目，也请给原版 [Cline](https://github.com/cline/cline) 一个 star ⭐️
-
-
+> 注：本项目是小型团队维护的汉化版本，与原版 Cline 团队无关。如果您喜欢这个项目，也请给原版 [Cline](https://github.com/cline/cline) 一个 star ⭐️

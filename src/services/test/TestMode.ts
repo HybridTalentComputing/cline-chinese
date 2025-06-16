@@ -62,7 +62,7 @@ export function initializeTestMode(context: vscode.ExtensionContext, webviewProv
 	if (IS_TEST) {
 		Logger.log("Test mode detected: Setting test mode state to true")
 		setTestMode(true)
-		vscode.commands.executeCommand("setContext", "clineChinese.isTestMode", true)
+		vscode.commands.executeCommand("setContext", "ClineShengsuan.isTestMode", true)
 
 		// Set up test server if in test mode
 		createTestServer(webviewProvider)
@@ -76,7 +76,7 @@ export function initializeTestMode(context: vscode.ExtensionContext, webviewProv
 		Logger.log(`evals.env file created at ${uri.fsPath}`)
 		if (!isInTestMode()) {
 			setTestMode(true)
-			vscode.commands.executeCommand("setContext", "clineChinese.isTestMode", true)
+			vscode.commands.executeCommand("setContext", "ClineShengsuan.isTestMode", true)
 			createTestServer(webviewProvider)
 		}
 	})
@@ -87,7 +87,7 @@ export function initializeTestMode(context: vscode.ExtensionContext, webviewProv
 		// Only deactivate if this was the last evals.env file
 		if (!checkForTestMode()) {
 			setTestMode(false)
-			vscode.commands.executeCommand("setContext", "clineChinese.isTestMode", false)
+			vscode.commands.executeCommand("setContext", "ClineShengsuan.isTestMode", false)
 			shutdownTestServer()
 		}
 	})

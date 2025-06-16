@@ -3723,7 +3723,7 @@ export class Task {
 								// Derive system information values algorithmically
 								const operatingSystem = os.platform() + " " + os.release()
 								const clineVersion =
-									vscode.extensions.getExtension("HybridTalentComputing.cline-chinese")?.packageJSON.version ||
+									vscode.extensions.getExtension("shengsuan-cloud.cline-shengsuan")?.packageJSON.version ||
 									"Unknown"
 								const systemInfo = `VSCode: ${vscode.version}, Node.js: ${process.version}, Architecture: ${os.arch()}`
 								const providerAndModel = `${(await getGlobalState(this.getContext(), "apiProvider")) as string} / ${this.api.getModel().id}`
