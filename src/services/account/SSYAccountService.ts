@@ -17,7 +17,7 @@ export class SSYAccountService {
 	private async authenticatedRequest<T>(endpoint: string, config: AxiosRequestConfig = {}): Promise<T> {
 		const ssyApiKey = await this.getSSYApiKey()
 		if (!ssyApiKey) {
-			throw new Error("未找到胜算云 API key ")
+			throw new Error("未找到胜算云Router API key ")
 		}
 		const reqConfig: AxiosRequestConfig = {
 			...config,
@@ -59,7 +59,7 @@ export class SSYAccountService {
 			}
 			const utl = res.logs.map((it: any) => ({
 				spentAt: it.request_time,
-				modelProvider: "胜算云",
+				modelProvider: "胜算云Router",
 				model: `${it.model?.company}/${it.model?.name}`,
 				credits: it.total_amount / 10000000,
 				totalTokens: it.total_amount,

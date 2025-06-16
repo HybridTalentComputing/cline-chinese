@@ -36,37 +36,31 @@ const WelcomeView = memo(() => {
 				<div className="flex justify-center my-5">
 					<ClineLogoWhite className="size-16" />
 				</div>
-				{/* <p>
-					🎉 Cline Chinese与胜算云Router达成合作啦！
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					点击此处进行注册：
-					<VSCodeLink href="https://router.shengsuanyun.com/auth?callback_url=vscode://HybridTalentComputing.cline-chinese/" className="inline">
+				<p>
+					🎉 Cline Chinese与胜算云Router达成合作啦！ 🚀 Cline
+					Chinese与胜算云Router强强联手，官方（Anthropic、GCP、AWS）Claude sonnet 4、Claude Opus
+					4、谷歌GCP/GoogleAIStudio模型，全球模型都可调用，非逆向，支付宝/微信、充值折扣，可发票，可试用，点击此处进行注册：
+					<VSCodeLink
+						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/"
+						className="inline">
 						胜算云Router
 					</VSCodeLink>
-				</p> */}
+				</p>
 				<p>
 					多亏了{" "}
 					<VSCodeLink href="https://www.anthropic.com/news/claude-3-7-sonnet" className="inline">
-						Claude 3.7 Sonnet
+						Claude 4 Sonnet
 					</VSCodeLink>
 					的智能编码能力和各种工具的支持，我可以完成各种任务。我可以创建和编辑文件、探索复杂项目、使用浏览器，以及执行终端命令
 					<i>（当然需要你的许可）</i>。我甚至可以使用 MCP 来创建新工具并扩展自己的能力。
 				</p>
 
 				<p className="text-[var(--vscode-descriptionForeground)]">
-					注册一个账户即可免费开始使用，或者使用提供 Claude 3.7 Sonnet 等模型访问权限的 API 密钥。
+					注册一个账户即可免费开始使用，或者使用提供 Claude 4 Sonnet 等模型访问权限的 API 密钥。
 				</p>
 
 				<VSCodeButton appearance="primary" onClick={handleLogin} className="w-full mt-1">
-					免费开始使用
+					注册Cline
 				</VSCodeButton>
 
 				{!showApiOptions && (

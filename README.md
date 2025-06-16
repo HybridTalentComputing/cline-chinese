@@ -1,17 +1,13 @@
 # Cline-Chinese (Cline中文汉化版) 🌏
 
 > 🎉 截止到2025.06.15，Cline Chinese在VS Code插件市场的下载量突破67k啦！感谢大家的支持！
-<!-- >
-> 🎉 Cline Chinese与胜算云Router达成合作啦！【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					【营销内容】
-					点击此处进行注册：[胜算云Router](https://router.shengsuanyun.com/auth?callback_url=vscode://HybridTalentComputing.cline-chinese/) -->
+
+> 🎉 Cline Chinese与胜算云Router达成合作啦！
+
+> 🚀 Cline Chinese与胜算云Router强强联手，极速开启AI编程新时代！全球模型都可调用，Claude sonnet 4、Claude opus 4、o3（最新低价）、Gemini 2.5 pro 0605、DeepSeek v3/r1(最新版)快速调用，与亚马逊云、微软azure、Google云（GCP）三大巨头官方合作，充值折扣（充500送50人民币，价格官方价格，模型直连），非逆向，支付宝/微信、可发票，可试用，实名/邀请好友享更多代金券，点击此处进行注册：
+[胜算云Router](https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/)
+
+>注：胜算云Router相关问题，请扫描其官网客服二维码进行咨询。
 
 
 <p align="center">
@@ -36,7 +32,7 @@ https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/
 <video width="100%" controls src="https://github.com/user-attachments/assets/a6db47a9-08d7-4d20-afa0-110d23b71a81"></video>
 > 演示视频使用 DeepSeek-R1-Distill-Qwen-14B 模型，展示了 Cline 中文汉化版的主要功能和使用效果，视频没有加速，推理速度快到飞起。
 
-> 日常开发时，我使用的是某基某动的白嫖额度的模型API，如果您尚未注册，欢迎通过我的邀请链接：https://cloud.siliconflow.cn/i/BKtAlqbk ，或者注册的时候填写邀请码：BKtAlqbk，注册后双方均可获得2000万tokens的免费额度。我是Leo, 某基某动注册一下，帮助我白嫖token,我向你salute啊.
+>
 
 ## 安装使用
 Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下载体验。

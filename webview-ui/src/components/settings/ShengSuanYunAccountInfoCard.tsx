@@ -24,7 +24,7 @@ export const ShengSuanYunAccountInfoCard = () => {
 					onClick={() => {
 						vscode.postMessage({ type: "accountLoginClickedSSY" })
 					}}>
-					登录胜算云
+					登录胜算云Router
 				</VSCodeButton>
 			)}
 		</div>
