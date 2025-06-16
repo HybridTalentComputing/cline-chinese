@@ -442,7 +442,7 @@ export async function activate(context: vscode.ExtensionContext) {
 					const explainAction = new vscode.CodeAction("用 Cline 解释", vscode.CodeActionKind.RefactorExtract) // Using a refactor kind
 					explainAction.command = {
 						command: "clineChinese.explainCode",
-						title: "用Cline-中文版解释",
+						title: "用Cline Chinese解释",
 						arguments: [expandedRange],
 					}
 					actions.push(explainAction)
@@ -451,7 +451,7 @@ export async function activate(context: vscode.ExtensionContext) {
 					const improveAction = new vscode.CodeAction("用 Cline 优化", vscode.CodeActionKind.RefactorRewrite) // Using a refactor kind
 					improveAction.command = {
 						command: "clineChinese.improveCode",
-						title: "用Cline-中文版优化",
+						title: "用Cline Chinese优化",
 						arguments: [expandedRange],
 					}
 					actions.push(improveAction)

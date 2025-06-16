@@ -1,6 +1,14 @@
 # Cline-Chinese (Cline中文汉化版) 🌏
 
-> 🎉 截止到2025.05.19，Cline Chinese在VS Code插件市场的下载量突破58k啦！感谢大家的支持！
+> 🎉 截止到2025.06.15，Cline Chinese在VS Code插件市场的下载量突破67k啦！感谢大家的支持！
+
+> 🎉 Cline Chinese与胜算云Router达成合作啦！Cline Chinese是著名开源AI编程助手Cline的汉化版，胜算云为促进中国AI行业开源生态繁荣，赞助Cline Chinese以助力中国开发者喜爱的开源AI编程工具生态快速发展。Cline Chinese与胜算云Router强强联手，极速开启AI编程新时代！全球模型都可调用，Claude sonnet 4、Claude opus 4、o3（最新低价）、Gemini 2.5 pro 0605、DeepSeek v3/r1(最新版)快速调用，与亚马逊云、微软azure、Google云（GCP）三大巨头官方合作，充值折扣（充500送50人民币，价格官方价格，模型直连），非逆向，支付宝/微信、可发票，可试用，实名/邀请好友享更多代金券，点击此处进行注册：[胜算云Router](https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/) -->
+
+<div align="center">
+   <p>胜算云Router服务渠道人员/二维码</p>
+  <img src="https://router.shengsuanyun.com/webp/relation-BDyr0A7L.webp" alt="微信群二维码" width="150" />
+</div>
+
 
 <p align="center">
 
@@ -75,7 +83,7 @@ Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下�
 感兴趣的可以扫码加入微信社群，一起交流学习AI（如果二维码失效，请查看github项目中的首页中，相同位置的群二维码, 或者加入Discord频道）：
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/c8fe9850-f210-46da-8fac-d087422f74f3" alt="微信群二维码" width="250" />
+  <img src="https://github.com/user-attachments/assets/5e5b337f-52d2-450b-a1e1-7b9a65949e03" alt="微信群二维码" width="250" />
 </div>
 
 GitHub 项目地址：https://github.com/HybridTalentComputing/cline-chinese

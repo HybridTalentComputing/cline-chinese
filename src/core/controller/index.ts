@@ -41,7 +41,6 @@ import { ClineRulesToggles } from "@shared/cline-rules"
 import { sendStateUpdate } from "./state/subscribeToState"
 import { sendAddToInputEvent } from "./ui/subscribeToAddToInput"
 import { sendAuthCallbackEvent } from "./account/subscribeToAuthCallback"
-import { SSYAccountService } from "../../services/account/SSYAccountService"
 import { sendMcpMarketplaceCatalogEvent } from "./mcp/subscribeToMcpMarketplaceCatalog"
 import { sendRelinquishControlEvent } from "./ui/subscribeToRelinquishControl"
 
@@ -59,7 +58,7 @@ export class Controller {
 	task?: Task
 	workspaceTracker: WorkspaceTracker
 	mcpHub: McpHub
-	accountService: SSYAccountService
+	accountService: ClineAccountService
 	latestAnnouncementId = "may-22-2025_16:11:00" // update to some unique identifier when we add a new announcement
 
 	constructor(
@@ -77,7 +76,7 @@ export class Controller {
 			(msg) => this.postMessageToWebview(msg),
 			this.context.extension?.packageJSON?.version ?? "1.0.0",
 		)
-		this.accountService = new SSYAccountService(
+		this.accountService = new ClineAccountService(
 			(msg) => this.postMessageToWebview(msg),
 			async () => {
 				const { apiConfiguration } = await this.getStateToPostToWebview()
@@ -117,7 +116,6 @@ export class Controller {
 			await updateGlobalState(this.context, "userInfo", undefined)
 			await updateGlobalState(this.context, "apiProvider", "shengsuanyun")
 			await this.postStateToWebview()
-			// vscode.window.showInformationMessage("成功登出 Cline 胜算云")
 		} catch (error) {
 			vscode.window.showErrorMessage("登出失败")
 		}
@@ -202,7 +200,7 @@ export class Controller {
 	async handleWebviewMessage(message: WebviewMessage) {
 		switch (message.type) {
 			case "authStateChanged":
-				await this.setUserInfo(message.user || message.userSSY || undefined)
+				await this.setUserInfo(message.user || undefined)
 				await this.postStateToWebview()
 				break
 			case "apiConfiguration":
@@ -505,7 +503,7 @@ export class Controller {
 	async fetchUserCreditsData() {
 		try {
 			await Promise.all([
-				this.accountService?.fetchRate(),
+				this.accountService?.fetchBalance(),
 				this.accountService?.fetchUsageTransactions(),
 				this.accountService?.fetchPaymentTransactions(),
 			])
@@ -534,7 +532,7 @@ export class Controller {
 			await sendAuthCallbackEvent(customToken)
 
 			const clineProvider: ApiProvider = "cline"
-			await updateGlobalState(this.context, "apiProvider", clineProvider)
+			await updateWorkspaceState(this.context, "apiProvider", clineProvider)
 
 			// Update API configuration with the new provider and API key
 			const { apiConfiguration } = await getAllExtensionState(this.context)
@@ -552,12 +550,11 @@ export class Controller {
 			// vscode.window.showInformationMessage("Successfully logged in to Cline")
 		} catch (error) {
 			console.error("Failed to handle auth callback:", error)
-			vscode.window.showErrorMessage("登录失败")
+			vscode.window.showErrorMessage("登录 Cline 失败")
 			// Even on login failure, we preserve any existing tokens
 			// Only clear tokens on explicit logout
 		}
 	}
-
 	// MCP Marketplace
 
 	private async fetchMcpMarketplaceFromApi(silent: boolean = false): Promise<McpMarketplaceCatalog | undefined> {

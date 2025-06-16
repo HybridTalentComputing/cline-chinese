@@ -40,19 +40,29 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 				<span className="codicon codicon-close"></span>
 			</VSCodeButton>
 			<h3 style={h3TitleStyle}>
-				🎉{"  "}New in v{minorVersion}
+				🎉{"  "}v{minorVersion} 新功能
 			</h3>
 			<ul style={ulStyle}>
 				<li>
-					<b>Claude 4 Models:</b> Now with support for Anthropic Claude Sonnet 4 and Claude Opus 4 in both Anthropic and
-					Vertex providers.
+					Cline Chinese与胜算云Router达成合作啦！ 🚀 Cline
+					Chinese与胜算云Router强强联手，极速开启AI编程新时代！全球模型快速调用， 1-2秒首字符狂写3000+行代码，
+					o3（最新低价）、Gemini 2.5 pro 0605、Claude sonnet4 与
+					opus4注册可用，非逆向，支付宝/微信、充值折扣，可发票，可试用，实名/邀请好友享更多代金券，点击此处进行注册：
+					<VSCodeLink
+						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/"
+						className="inline">
+						胜算云Router
+					</VSCodeLink>
 				</li>
 				<li>
-					<b>New Settings Page:</b> Redesigned settings, now split into tabs for easier navigation and a cleaner
-					experience.
+					<b>Claude 4 模型:</b> 现在支持 Anthropic Claude Sonnet 4 和 Claude Opus 4，可在 Anthropic 和 Vertex
+					提供商中使用。
 				</li>
 				<li>
-					<b>Nebius AI Studio:</b> Added Nebius AI Studio as a new provider. (Thanks @Aktsvigun!)
+					<b>全新设置页面:</b> 重新设计的设置界面，现在分为多个标签页，导航更便捷，体验更清爽。
+				</li>
+				<li>
+					<b>Nebius AI Studio:</b> 新增 Nebius AI Studio 作为新的提供商。(感谢 @Aktsvigun!)
 				</li>
 			</ul>
 			<Accordion isCompact className="pl-0">

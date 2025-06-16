@@ -104,7 +104,7 @@
 			"activitybar": [
 				{
 					"id": "cline-chinese-ActivityBar",
-					"title": "Cline-中文版",
+					"title": "Cline Chinese",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
@@ -162,12 +162,12 @@
 			},
 			{
 				"command": "clineChinese.addToChat",
-				"title": "添加到 Cline-中文版",
+				"title": "添加到 Cline Chinese",
 				"category": "clineChinese"
 			},
 			{
 				"command": "clineChinese.addTerminalOutputToChat",
-				"title": "添加到 Cline-中文版",
+				"title": "添加到 Cline Chinese",
 				"category": "clineChinese"
 			},
 			{

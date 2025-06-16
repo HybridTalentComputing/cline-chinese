@@ -1,0 +1,9 @@
+{
+	"title": "Cline Chinese Doc",
+	"language": "zh",
+	"root": "./",
+	"structure": {
+		"readme": "README.md",
+		"summary": "SUMMARY.md"
+	}
+}
