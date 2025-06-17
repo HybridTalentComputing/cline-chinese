@@ -169,6 +169,12 @@ export const ClineAccountView = () => {
 						继续，表示你同意 Cline <VSCodeLink href="https://cline.bot/tos">用户协议</VSCodeLink> 和{" "}
 						<VSCodeLink href="https://cline.bot/privacy">隐私政策.</VSCodeLink>
 					</p>
+
+					{/* <div className="w-full flex justify-start mt-16">
+						<VSCodeLink  className="text-[18px]"
+							href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/ssy" 
+						>&gt;&gt;接人更多全球模型</VSCodeLink>
+					</div> */}
 				</div>
 			)}
 		</div>

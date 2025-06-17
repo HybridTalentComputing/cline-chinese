@@ -49,7 +49,7 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 					o3（最新低价）、Gemini 2.5 pro 0605、Claude sonnet4 与
 					opus4注册可用，非逆向，支付宝/微信、充值折扣，可发票，可试用，实名/邀请好友享更多代金券，点击此处进行注册：
 					<VSCodeLink
-						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/"
+						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/ssy"
 						className="inline">
 						胜算云Router
 					</VSCodeLink>
