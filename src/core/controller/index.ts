@@ -80,7 +80,7 @@ export class Controller {
 			(msg) => this.postMessageToWebview(msg),
 			async () => {
 				const { apiConfiguration } = await this.getStateToPostToWebview()
-				return apiConfiguration?.shengSuanYunToken
+				return apiConfiguration?.clineApiKey
 			},
 		)
 
