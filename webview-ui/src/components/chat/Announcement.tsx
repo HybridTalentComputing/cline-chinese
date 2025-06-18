@@ -78,39 +78,31 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 					}}>
 					<ul style={ulStyle}>
 						<li>
-							<b>Workflows:</b> Create and manage workflow files that can be injected into conversations via slash
-							commands, making it easy to automate repetitive tasks.
+							<b>工作流:</b> 创建和管理工作流文件，可通过斜杠命令注入到对话中，轻松实现重复任务自动化。
 						</li>
 						<li>
-							<b>Collapsible Task List:</b> Hide your recent tasks when sharing your screen to keep your prompts
-							private.
+							<b>可折叠任务列表:</b> 在分享屏幕时隐藏最近的任务，保护您的提示词隐私。
 						</li>
 						<li>
-							<b>Global Endpoint for Vertex AI:</b> Improved availability and reduced rate limiting errors for
-							Vertex AI users.
+							<b>Vertex AI 全局端点:</b> 提高了 Vertex AI 用户的可用性并减少了速率限制错误。
 						</li>
 						<li>
-							<b>New User Experience:</b> Special components and guidance for new users to help them get started
-							with Cline.
+							<b>新用户体验:</b> 为新用户提供特殊组件和指导，帮助他们开始使用 Cline。
 						</li>
 						<li>
-							<b>UI Improvements:</b> Fixed loading states and improved settings organization for a smoother
-							experience.
+							<b>UI 改进:</b> 修复了加载状态并改进了设置组织，提供更流畅的体验。
 						</li>
 						<li>
-							<b>Task Timeline:</b> See the history of your coding journey with a visual timeline of checkpoints.
+							<b>任务时间线:</b> 通过检查点的可视化时间线查看您的编码历程。
 						</li>
 						<li>
-							<b>UX Improvements:</b> Type while Cline works, smarter auto-scrolling, and copy buttons for task
-							headers and messages.
+							<b>用户体验改进:</b> Cline 工作时可以继续输入，更智能的自动滚动，以及任务标题和消息的复制按钮。
 						</li>
 						<li>
-							<b>Gemini prompt caching:</b> Gemini and Vertex providers now support prompt caching and price
-							tracking.
+							<b>Gemini 提示词缓存:</b> Gemini 和 Vertex 提供商现在支持提示词缓存和价格追踪。
 						</li>
 						<li>
-							<b>Global Cline Rules:</b> Store multiple rules files in Documents/Cline/Rules to share between
-							projects.
+							<b>全局 Cline 规则:</b> 在 Documents/Cline/Rules 中存储多个规则文件以在项目间共享。
 						</li>
 					</ul>
 				</AccordionItem>

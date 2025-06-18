@@ -17,9 +17,9 @@ export interface ToolDefinition {
 
 /**
  * 将单个工具定义（JSON schema）转换为<function>标签格式。
- * 这是用于*定义*工具，而不是调用它。
+ * 这是用于*定义*工具，而不是调用工具。
  * @param toolDef 工具定义对象
- * @returns 包装在<function>标签中的工具定义JSON字符串
+ * @returns 包装在<function>标签中的JSON字符串形式的工具定义
  */
 export function toolDefinitionToAntmlDefinition(toolDef: ToolDefinition): string {
 	// 重构参数对象以匹配预期的顺序
@@ -37,7 +37,7 @@ export function toolDefinitionToAntmlDefinition(toolDef: ToolDefinition): string
 		parameters,
 	}
 
-	// 1. 创建一个具有我们想要的确切格式的自定义JSON字符串
+	// 1. 创建具有我们想要的确切格式的自定义JSON字符串
 	let rawJson = `{"description": "${functionDef.description}", "name": "${functionDef.name}", "parameters": {`
 
 	// 添加属性
@@ -54,7 +54,7 @@ export function toolDefinitionToAntmlDefinition(toolDef: ToolDefinition): string
 	})
 	rawJson += `}, `
 
-	// 添加必需项
+	// 添加必需字段
 	rawJson += `"required": ${JSON.stringify(parameters.required || [])}, `
 
 	// 添加类型
@@ -63,7 +63,7 @@ export function toolDefinitionToAntmlDefinition(toolDef: ToolDefinition): string
 	// 关闭参数和整个对象
 	rawJson += `}}`
 
-	// 2. 转义<, >和&，使JSON可以安全地放在XML标签内。
+	// 2. 转义<、>和&，以便JSON可以安全地位于XML标签内。
 	//    （引号不需要转义 - 它们不是标记。）
 	const safeJson = escapeXml(rawJson)
 
@@ -99,7 +99,7 @@ export function toolDefinitionToAntmlCallExample(toolDef: ToolDefinition, exampl
 		? Object.entries(props)
 				.map(([name]) => {
 					const value = exampleValues[name] ?? `$${name.toUpperCase()}` // 占位符
-					// 这里不要转义XML - 示例应该显示原始格式
+					// 这里不转义XML - 示例应该显示原始格式
 					return `<parameter name="${name}">${value}</parameter>`
 				})
 				.join("\n")
@@ -112,10 +112,10 @@ export function toolDefinitionToAntmlCallExample(toolDef: ToolDefinition, exampl
 }
 
 /**
- * 创建ANTML格式的工具的完整系统提示部分，
- * 包括说明和工具定义。
+ * 为ANTML格式的工具创建完整的系统提示部分，
+ * 包括指令和工具定义。
  * @param toolDefs 工具定义对象数组
- * @param includeInstructions 是否包含标准工具调用说明
+ * @param includeInstructions 是否包含标准工具调用指令
  * @returns ANTML工具的完整系统提示部分
  */
 export function createAntmlToolPrompt(toolDefs: ToolDefinition[], includeInstructions = true, systemPrompt = ""): string {
@@ -125,8 +125,8 @@ export function createAntmlToolPrompt(toolDefs: ToolDefinition[], includeInstruc
 		}
 
 		const noToolsMessage = [
-			"在此环境中，你可以使用一系列工具来回答用户的问题。",
-			'你可以通过在回复中编写"<function_calls>"块来调用函数，格式如下：',
+			"在此环境中，你可以访问一套工具来回答用户的问题。",
+			'你可以通过编写一个 "<function_calls>" 块来调用函数，作为你回复用户的一部分：',
 			"<function_calls>",
 			'<invoke name="$FUNCTION_NAME">',
 			'<parameter name="$PARAMETER_NAME">$PARAMETER_VALUE</parameter>',
@@ -134,9 +134,9 @@ export function createAntmlToolPrompt(toolDefs: ToolDefinition[], includeInstruc
 			"</invoke>",
 			"</function_calls>",
 			"",
-			"字符串和标量参数应按原样指定，而列表和对象应使用JSON格式。",
+			"字符串和标量参数应该按原样指定，而列表和对象应该使用JSON格式。",
 			"",
-			"但是，目前没有可用的工具。",
+			"但是，当前没有可用的工具。",
 		].join("\n")
 
 		return noToolsMessage
@@ -146,8 +146,8 @@ export function createAntmlToolPrompt(toolDefs: ToolDefinition[], includeInstruc
 
 	if (includeInstructions) {
 		const instructionLines = [
-			"在此环境中，你可以使用一系列工具来回答用户的问题。",
-			'你可以通过在回复中编写"<function_calls>"块来调用函数，格式如下：',
+			"在此环境中，你可以访问一套工具来回答用户的问题。",
+			'你可以通过编写一个 "<function_calls>" 块来调用函数，作为你回复用户的一部分：',
 			"<function_calls>",
 			'<invoke name="$FUNCTION_NAME">',
 			'<parameter name="$PARAMETER_NAME">$PARAMETER_VALUE</parameter>',
@@ -155,7 +155,7 @@ export function createAntmlToolPrompt(toolDefs: ToolDefinition[], includeInstruc
 			"</invoke>",
 			"</function_calls>",
 			"",
-			"字符串和标量参数应按原样指定，而列表和对象应使用JSON格式。",
+			"字符串和标量参数应该按原样指定，而列表和对象应该使用JSON格式。",
 			"",
 		]
 		prompt += instructionLines.join("\n")
@@ -170,21 +170,21 @@ export function createAntmlToolPrompt(toolDefs: ToolDefinition[], includeInstruc
 			systemPrompt,
 			"",
 			"",
-			"使用相关工具回答用户的请求（如果有可用工具）。检查每个工具调用的所有必需参数是否已提供或可以从上下文中合理推断。如果没有相关工具或缺少必需参数的值，请要求用户提供这些值；否则，请继续进行工具调用。如果用户为参数提供了特定值（例如用引号提供），请确保完全使用该值。不要为可选参数编造值或询问可选参数。仔细分析请求中的描述性术语，因为它们可能表示即使未明确引用也应包含的必需参数值。",
+			"使用相关工具（如果可用）回答用户的请求。检查每个工具调用的所有必需参数是否已提供或可以从上下文中合理推断。如果没有相关工具或必需参数缺少值，请要求用户提供这些值；否则继续进行工具调用。如果用户为参数提供了特定值（例如在引号中提供），请确保完全使用该值。不要为可选参数编造值或询问可选参数。仔细分析请求中的描述性术语，因为它们可能指示应包含的必需参数值，即使没有明确引用。",
 		]
 		prompt += closingInstructions.join("\n")
 	}
 
-	return prompt // 不要修剪 - 保留确切的格式
+	return prompt // 不修剪 - 保留精确格式
 }
 
 // --- SimpleXML函数（Cline的内部格式）---
 
 /**
- * 将单个工具定义转换为SimpleXML格式，
- * 用于Cline当前系统提示中的非ANTML模型。
+ * 将单个工具定义转换为SimpleXML格式
+ * 作为Cline当前系统提示用于非ANTML模型。
  * @param toolDef 工具定义对象
- * @returns 为SimpleXML使用格式化的工具定义
+ * @returns 格式化为SimpleXML用法的工具定义
  */
 export function toolDefinitionToSimpleXml(toolDef: ToolDefinition): string {
 	const description = toolDef.descriptionForAgent || toolDef.description || ""
@@ -203,7 +203,7 @@ export function toolDefinitionToSimpleXml(toolDef: ToolDefinition): string {
 	}
 
 	const exampleParams = Object.keys(properties)
-		.map((paramName) => `<${paramName}>${paramName} 值在此</${paramName}>`)
+		.map((paramName) => `<${paramName}>${paramName} value here</${paramName}>`)
 		.join("\n")
 
 	const usageExample = `用法：
@@ -229,9 +229,9 @@ ${toolDocs.join("\n\n")}`
 }
 
 /**
- * 创建SimpleXML格式的工具的完整系统提示部分。
+ * 为SimpleXML格式的工具创建完整的系统提示部分。
  * @param toolDefs 工具定义对象数组
- * @param includeInstructions 是否包含标准工具调用说明
+ * @param includeInstructions 是否包含标准工具调用指令
  * @returns SimpleXML工具的完整系统提示部分
  */
 export function createSimpleXmlToolPrompt(toolDefs: ToolDefinition[], includeInstructions: boolean = true): string {
@@ -244,11 +244,11 @@ export function createSimpleXmlToolPrompt(toolDefs: ToolDefinition[], includeIns
 	if (includeInstructions) {
 		prompt += `工具使用
 
-你可以使用一系列工具，这些工具在用户批准后执行。每条消息你可以使用一个工具，并在用户的回复中收到该工具使用的结果。你通过逐步使用工具来完成给定的任务，每次工具使用都基于前一次工具使用的结果。
+您可以访问一组在用户批准后执行的工具。您每条消息可以使用一个工具，并且会在用户的响应中收到该工具使用的结果。您使用工具逐步完成给定任务，每次工具使用都基于上一次工具使用的结果。
 
 # 工具使用格式
 
-工具使用采用XML风格的标签格式。工具名称包含在开始和结束标签中，每个参数同样包含在自己的标签集中。结构如下：
+工具使用采用XML样式标签格式。工具名称被包含在开始和结束标签中，每个参数也类似地包含在自己的标签集中。结构如下：
 
 <tool_name>
 <parameter1_name>value1</parameter1_name>
@@ -275,9 +275,9 @@ export function createSimpleXmlToolPrompt(toolDefs: ToolDefinition[], includeIns
 
 1. 根据任务和提供的工具描述选择最合适的工具。
 2. 如果需要多个操作，每条消息使用一个工具来迭代完成任务。
-3. 使用为每个工具指定的XML格式制定你的工具使用。
-4. 每次工具使用后，用户将回复该工具使用的结果。
-5. 在每次工具使用后始终等待用户确认再继续。`
+3. 使用为每个工具指定的XML格式来制定您的工具使用。
+4. 在每次工具使用后，用户将响应该工具使用的结果。
+5. 在进行下一步之前，始终等待用户在每次工具使用后的确认。`
 	}
 	return prompt.trimEnd()
 }

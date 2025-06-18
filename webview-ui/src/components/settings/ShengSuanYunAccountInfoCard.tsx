@@ -1,6 +1,8 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { vscode } from "@/utils/vscode"
+import { WebServiceClient } from "@/services/grpc-client"
+import { StringRequest } from "@shared/proto/common"
 
 export const ShengSuanYunAccountInfoCard = () => {
 	const { apiConfiguration } = useExtensionState()
