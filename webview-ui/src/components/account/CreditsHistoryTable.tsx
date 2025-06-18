@@ -15,7 +15,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 
 	return (
 		<div className="flex flex-col flex-grow h-full">
-			{/* Tabs container */}
+			{/* 标签容器 */}
 			<div className="flex border-b border-[var(--vscode-panel-border)]">
 				<TabButton isActive={activeTab === "usage"} onClick={() => setActiveTab("usage")}>
 					使用历史
@@ -25,11 +25,11 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 				</TabButton>
 			</div>
 
-			{/* Content container */}
+			{/* 内容容器 */}
 			<div className="mt-[15px] mb-[0px] rounded-md overflow-auto flex-grow">
 				{isLoading ? (
 					<div className="flex justify-center items-center p-4">
-						<div className="text-[var(--vscode-descriptionForeground)]">Loading...</div>
+						<div className="text-[var(--vscode-descriptionForeground)]">加载中...</div>
 					</div>
 				) : (
 					<>

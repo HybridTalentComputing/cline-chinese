@@ -11,10 +11,12 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { EmptyRequest } from "@shared/proto/common"
 
+// 定义账户视图组件的属性类型
 type AccountViewProps = {
 	onDone: () => void
 }
 
+// 账户视图组件
 const AccountView = ({ onDone }: AccountViewProps) => {
 	return (
 		<div className="fixed inset-0 flex flex-col overflow-hidden pt-[10px] pl-[20px]">
@@ -31,18 +33,21 @@ const AccountView = ({ onDone }: AccountViewProps) => {
 	)
 }
 
+// Cline账户视图组件
 export const ClineAccountView = () => {
 	const { user: firebaseUser, handleSignOut } = useFirebaseAuth()
 	const { userInfo, apiConfiguration } = useExtensionState()
 
+	// 根据API配置确定当前用户
 	let user = apiConfiguration?.clineApiKey ? firebaseUser || userInfo : undefined
 
+	// 状态管理
 	const [balance, setBalance] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
 	const [usageData, setUsageData] = useState<UsageTransaction[]>([])
 	const [paymentsData, setPaymentsData] = useState<PaymentTransaction[]>([])
 
-	// Listen for balance and transaction data updates from the extension
+	// 监听来自扩展的余额和交易数据更新
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
 			const message = event.data
@@ -58,7 +63,7 @@ export const ClineAccountView = () => {
 
 		window.addEventListener("message", handleMessage)
 
-		// Fetch all account data when component mounts
+		// 组件挂载时获取所有账户数据
 		if (user) {
 			setIsLoading(true)
 			vscode.postMessage({ type: "fetchUserCreditsData" })
@@ -69,16 +74,18 @@ export const ClineAccountView = () => {
 		}
 	}, [user])
 
+	// 处理登录
 	const handleLogin = () => {
 		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
 			console.error("Failed to get login URL:", err),
 		)
 	}
 
+	// 处理登出
 	const handleLogout = () => {
-		// Use gRPC client to notify extension to clear API keys and state
+		// 使用gRPC客户端通知扩展清除API密钥和状态
 		AccountServiceClient.accountLogoutClicked(EmptyRequest.create()).catch((err) => console.error("Failed to logout:", err))
-		// Then sign out of Firebase
+		// 然后从Firebase登出
 		handleSignOut()
 	}
 	return (
