@@ -15,21 +15,21 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 
 	return (
 		<div className="flex flex-col flex-grow h-full">
-			{/* 标签容器 */}
+			{/* Tabs container */}
 			<div className="flex border-b border-[var(--vscode-panel-border)]">
 				<TabButton isActive={activeTab === "usage"} onClick={() => setActiveTab("usage")}>
-					使用记录
+					使用历史
 				</TabButton>
 				<TabButton isActive={activeTab === "payments"} onClick={() => setActiveTab("payments")}>
 					充值记录
 				</TabButton>
 			</div>
 
-			{/* 内容容器 */}
+			{/* Content container */}
 			<div className="mt-[15px] mb-[0px] rounded-md overflow-auto flex-grow">
 				{isLoading ? (
 					<div className="flex justify-center items-center p-4">
-						<div className="text-[var(--vscode-descriptionForeground)]">加载中...</div>
+						<div className="text-[var(--vscode-descriptionForeground)]">Loading...</div>
 					</div>
 				) : (
 					<>
@@ -48,7 +48,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 												Tokens Used
 											</VSCodeDataGridCell> */}
 											<VSCodeDataGridCell cell-type="columnheader" grid-column="3">
-												消耗积分
+												额度使用
 											</VSCodeDataGridCell>
 										</VSCodeDataGridRow>
 
@@ -65,7 +65,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 									</VSCodeDataGrid>
 								) : (
 									<div className="flex justify-center items-center p-4">
-										<div className="text-[var(--vscode-descriptionForeground)]">暂无使用记录</div>
+										<div className="text-[var(--vscode-descriptionForeground)]">没有使用记录</div>
 									</div>
 								)}
 							</>
@@ -80,10 +80,10 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 												日期
 											</VSCodeDataGridCell>
 											<VSCodeDataGridCell cell-type="columnheader" grid-column="2">
-												总金额
+												总费用
 											</VSCodeDataGridCell>
 											<VSCodeDataGridCell cell-type="columnheader" grid-column="3">
-												积分
+												额度
 											</VSCodeDataGridCell>
 										</VSCodeDataGridRow>
 
@@ -99,7 +99,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 									</VSCodeDataGrid>
 								) : (
 									<div className="flex justify-center items-center p-4">
-										<div className="text-[var(--vscode-descriptionForeground)]">暂无充值记录</div>
+										<div className="text-[var(--vscode-descriptionForeground)]">没有充值记录</div>
 									</div>
 								)}
 							</>

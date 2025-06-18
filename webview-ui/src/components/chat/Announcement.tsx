@@ -44,12 +44,12 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 			</h3>
 			<ul style={ulStyle}>
 				<li>
-					🎉 Cline Chinese与胜算云Router达成合作啦！ 🚀 Cline
+					Cline Chinese与胜算云Router达成合作啦！ 🚀 Cline
 					Chinese与胜算云Router强强联手，极速开启AI编程新时代！全球模型快速调用， 1-2秒首字符狂写3000+行代码，
 					o3（最新低价）、Gemini 2.5 pro 0605、Claude sonnet4 与
-					opus4注册可用，非逆向，支付宝/微信、充值折扣，可发票，可试用，实名/邀请好友享更多代金券，点击此处进行注册:
+					opus4注册可用，非逆向，支付宝/微信、充值折扣，可发票，可试用，实名/邀请好友享更多代金券，点击此处进行注册：
 					<VSCodeLink
-						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/"
+						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/ssy"
 						className="inline">
 						胜算云Router
 					</VSCodeLink>
