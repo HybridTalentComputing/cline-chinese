@@ -677,7 +677,7 @@ export const UpdateBrowserSettingsRequest: MessageFns<UpdateBrowserSettingsReque
 export type BrowserServiceDefinition = typeof BrowserServiceDefinition;
 export const BrowserServiceDefinition = {
   name: "BrowserService",
-  fullName: "ClineShengsuan.BrowserService",
+  fullName: "cline_shengsuan.BrowserService",
   methods: {
     getBrowserConnectionInfo: {
       name: "getBrowserConnectionInfo",

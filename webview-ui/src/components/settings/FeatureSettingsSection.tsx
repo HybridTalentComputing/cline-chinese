@@ -9,6 +9,8 @@ const FeatureSettingsSection = () => {
 		setEnableCheckpointsSetting,
 		mcpMarketplaceEnabled,
 		setMcpMarketplaceEnabled,
+		mcpRichDisplayEnabled,
+		setMcpRichDisplayEnabled,
 		mcpResponsesCollapsed,
 		setMcpResponsesCollapsed,
 		chatSettings,
@@ -40,6 +42,19 @@ const FeatureSettingsSection = () => {
 					启用 MCP 市场
 				</VSCodeCheckbox>
 				<p className="text-xs text-[var(--vscode-descriptionForeground)]">启用 MCP 市场选项卡以发现和安装 MCP 服务器。</p>
+			</div>
+			<div style={{ marginTop: 10 }}>
+				<VSCodeCheckbox
+					checked={mcpRichDisplayEnabled}
+					onChange={(e: any) => {
+						const checked = e.target.checked === true
+						setMcpRichDisplayEnabled(checked)
+					}}>
+					Enable Rich MCP Display
+				</VSCodeCheckbox>
+				<p className="text-xs text-[var(--vscode-descriptionForeground)]">
+					Enables rich formatting for MCP responses. When disabled, responses will be shown in plain text.
+				</p>
 			</div>
 			<div style={{ marginTop: 10 }}>
 				<VSCodeCheckbox

@@ -16,6 +16,8 @@ import {
 	bedrockModels,
 	cerebrasDefaultModelId,
 	cerebrasModels,
+	claudeCodeDefaultModelId,
+	claudeCodeModels,
 	deepSeekDefaultModelId,
 	deepSeekModels,
 	doubaoDefaultModelId,
@@ -48,9 +50,12 @@ import {
 	xaiModels,
 	shengSuanYunDefaultModelId,
 	shengSuanYunDefaultModelInfo,
+	sapAiCoreDefaultModelId,
+	sapAiCoreModels,
 } from "@shared/api"
 import { EmptyRequest, StringRequest } from "@shared/proto/common"
-import { OpenAiModelsRequest } from "@shared/proto/models"
+import { OpenAiModelsRequest, UpdateApiConfigurationRequest } from "@shared/proto/models"
+import { convertApiConfigurationToProto } from "@shared/proto-conversions/models/api-configuration-conversion"
 import {
 	VSCodeButton,
 	VSCodeCheckbox,
@@ -73,6 +78,7 @@ import OpenRouterModelPicker, { ModelDescriptionMarkdown, OPENROUTER_MODEL_PICKE
 import RequestyModelPicker from "./RequestyModelPicker"
 import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
 import ShengSuanYunModelPicker from "./ShengSuanYunModelPicker"
+import { ExtensionMessage } from "@shared/ExtensionMessage"
 
 interface ApiOptionsProps {
 	showModelOptions: boolean
@@ -122,7 +128,14 @@ const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
 
 const SUPPORTED_THINKING_MODELS: Record<string, string[]> = {
 	anthropic: ["claude-3-7-sonnet-20250219", "claude-sonnet-4-20250514", "claude-opus-4-20250514"],
-	vertex: ["claude-3-7-sonnet@20250219", "claude-sonnet-4@20250514", "claude-opus-4@20250514"],
+	vertex: [
+		"claude-3-7-sonnet@20250219",
+		"claude-sonnet-4@20250514",
+		"claude-opus-4@20250514",
+		"gemini-2.5-flash-preview-05-20",
+		"gemini-2.5-flash-preview-04-17",
+		"gemini-2.5-pro-preview-06-05",
+	],
 	qwen: [
 		"qwen3-235b-a22b",
 		"qwen3-32b",
@@ -135,6 +148,7 @@ const SUPPORTED_THINKING_MODELS: Record<string, string[]> = {
 		"qwen-plus-latest",
 		"qwen-turbo-latest",
 	],
+	gemini: ["gemini-2.5-flash-preview-05-20", "gemini-2.5-flash-preview-04-17", "gemini-2.5-pro-preview-06-05"],
 }
 
 // This is necessary to ensure dropdown opens downward, important for when this is used in popup
@@ -196,12 +210,19 @@ const ApiOptions = ({
 		if (saveImmediately && field === "apiProvider") {
 			// Use apiConfiguration from the full extensionState context to send the most complete data
 			const currentFullApiConfig = extensionState.apiConfiguration
-			vscode.postMessage({
-				type: "apiConfiguration",
-				apiConfiguration: {
-					...currentFullApiConfig, // Send the most complete config available
-					apiProvider: newValue, // Override with the new provider
-				},
+
+			// Convert to proto format and send via gRPC
+			const updatedConfig = {
+				...currentFullApiConfig,
+				apiProvider: newValue,
+			}
+			const protoConfig = convertApiConfigurationToProto(updatedConfig)
+			ModelsServiceClient.updateApiConfigurationProto(
+				UpdateApiConfigurationRequest.create({
+					apiConfiguration: protoConfig,
+				}),
+			).catch((error) => {
+				console.error("Failed to update API configuration:", error)
 			})
 		}
 	}
@@ -342,6 +363,7 @@ const ApiOptions = ({
 					<VSCodeOption value="cline">Cline</VSCodeOption>
 					<VSCodeOption value="openrouter">OpenRouter</VSCodeOption>
 					<VSCodeOption value="anthropic">Anthropic</VSCodeOption>
+					<VSCodeOption value="claude-code">Claude Code</VSCodeOption>
 					<VSCodeOption value="bedrock">Amazon Bedrock</VSCodeOption>
 					<VSCodeOption value="openai">OpenAI 兼容接口</VSCodeOption>
 					<VSCodeOption value="vertex">GCP Vertex AI</VSCodeOption>
@@ -360,10 +382,10 @@ const ApiOptions = ({
 					<VSCodeOption value="litellm">LiteLLM</VSCodeOption>
 					<VSCodeOption value="nebius">Nebius AI Studio</VSCodeOption>
 					<VSCodeOption value="asksage">AskSage</VSCodeOption>
-					<VSCodeOption value="dify">Dify</VSCodeOption>
 					<VSCodeOption value="xai">xAI</VSCodeOption>
 					<VSCodeOption value="sambanova">SambaNova</VSCodeOption>
 					<VSCodeOption value="cerebras">Cerebras</VSCodeOption>
+					<VSCodeOption value="sapaicore">SAP AI Core</VSCodeOption>
 				</VSCodeDropdown>
 			</DropdownContainer>
 
@@ -459,6 +481,27 @@ const ApiOptions = ({
 								注册获取 Anthropic API key.
 							</VSCodeLink>
 						)}
+					</p>
+				</div>
+			)}
+
+			{selectedProvider === "claude-code" && (
+				<div>
+					<VSCodeTextField
+						value={apiConfiguration?.claudeCodePath || ""}
+						style={{ width: "100%", marginTop: 3 }}
+						type="text"
+						onInput={handleInputChange("claudeCodePath")}
+						placeholder="Default: claude"
+					/>
+
+					<p
+						style={{
+							fontSize: "12px",
+							marginTop: 3,
+							color: "var(--vscode-descriptionForeground)",
+						}}>
+						Path to the Claude Code CLI.
 					</p>
 				</div>
 			)}
@@ -1056,15 +1099,6 @@ const ApiOptions = ({
 							</VSCodeLink>
 						)}
 					</p>
-
-					{/* Add Thinking Budget Slider specifically for gemini-2.5-flash-preview-04-17 */}
-					{selectedProvider === "gemini" && selectedModelId === "gemini-2.5-flash-preview-04-17" && (
-						<ThinkingBudgetSlider
-							apiConfiguration={apiConfiguration}
-							setApiConfiguration={setApiConfiguration}
-							maxBudget={selectedModelInfo.thinkingConfig?.maxBudget}
-						/>
-					)}
 				</div>
 			)}
 
@@ -1925,36 +1959,7 @@ const ApiOptions = ({
 					</p>
 				</div>
 			)}
-			{selectedProvider === "dify" && (
-				<div>
-					<VSCodeTextField
-						value={apiConfiguration?.difyApiKey || ""}
-						style={{ width: "100%" }}
-						type="password"
-						onInput={handleInputChange("difyApiKey")}
-						placeholder="输入 API 密钥...">
-						<span style={{ fontWeight: 500 }}>Dify API 密钥</span>
-					</VSCodeTextField>
 
-					<VSCodeTextField
-						value={apiConfiguration?.difyBaseUrl || ""}
-						style={{ width: "100%", marginTop: 3 }}
-						type="url"
-						onInput={handleInputChange("difyBaseUrl")}
-						placeholder="输入 Dify 基础 URL...">
-						<span style={{ fontWeight: 500 }}>Dify 基础 URL</span>
-					</VSCodeTextField>
-
-					<p
-						style={{
-							fontSize: "12px",
-							marginTop: 3,
-							color: "var(--vscode-descriptionForeground)",
-						}}>
-						API 密钥和基础 URL 存储在本地，仅用于从此扩展发出 API 请求。
-					</p>
-				</div>
-			)}
 			{selectedProvider === "nebius" && (
 				<div>
 					<VSCodeTextField
@@ -2122,6 +2127,71 @@ const ApiOptions = ({
 				</div>
 			)}
 
+			{selectedProvider === "sapaicore" && (
+				<div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+					<VSCodeTextField
+						value={apiConfiguration?.sapAiCoreClientId || ""}
+						style={{ width: "100%" }}
+						type="password"
+						onInput={handleInputChange("sapAiCoreClientId")}
+						placeholder="Enter AI Core Client Id...">
+						<span style={{ fontWeight: 500 }}>AI Core Client Id</span>
+					</VSCodeTextField>
+					{apiConfiguration?.sapAiCoreClientId && (
+						<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)" }}>
+							Client Id is set. To change it, please re-enter the value.
+						</p>
+					)}
+					<VSCodeTextField
+						value={apiConfiguration?.sapAiCoreClientSecret ? "********" : ""}
+						style={{ width: "100%" }}
+						type="password"
+						onInput={handleInputChange("sapAiCoreClientSecret")}
+						placeholder="Enter AI Core Client Secret...">
+						<span style={{ fontWeight: 500 }}>AI Core Client Secret</span>
+					</VSCodeTextField>
+					{apiConfiguration?.sapAiCoreClientSecret && (
+						<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)" }}>
+							Client Secret is set. To change it, please re-enter the value.
+						</p>
+					)}
+					<VSCodeTextField
+						value={apiConfiguration?.sapAiCoreBaseUrl || ""}
+						style={{ width: "100%" }}
+						onInput={handleInputChange("sapAiCoreBaseUrl")}
+						placeholder="Enter AI Core Base URL...">
+						<span style={{ fontWeight: 500 }}>AI Core Base URL</span>
+					</VSCodeTextField>
+					<VSCodeTextField
+						value={apiConfiguration?.sapAiCoreTokenUrl || ""}
+						style={{ width: "100%" }}
+						onInput={handleInputChange("sapAiCoreTokenUrl")}
+						placeholder="Enter AI Core Auth URL...">
+						<span style={{ fontWeight: 500 }}>AI Core Auth URL</span>
+					</VSCodeTextField>
+					<VSCodeTextField
+						value={apiConfiguration?.sapAiResourceGroup || ""}
+						style={{ width: "100%" }}
+						onInput={handleInputChange("sapAiResourceGroup")}
+						placeholder="Enter AI Core Resource Group...">
+						<span style={{ fontWeight: 500 }}>AI Core Resource Group</span>
+					</VSCodeTextField>
+					<p
+						style={{
+							fontSize: "12px",
+							marginTop: "5px",
+							color: "var(--vscode-descriptionForeground)",
+						}}>
+						These credentials are stored locally and only used to make API requests from this extension.
+						<VSCodeLink
+							href="https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/access-sap-ai-core-via-api"
+							style={{ display: "inline" }}>
+							You can find more information about SAP AI Core API access here.
+						</VSCodeLink>
+					</p>
+				</div>
+			)}
+
 			{apiErrorMessage && (
 				<p
 					style={{
@@ -2226,6 +2296,7 @@ const ApiOptions = ({
 								<span style={{ fontWeight: 500 }}>模型</span>
 							</label>
 							{selectedProvider === "anthropic" && createDropdown(anthropicModels)}
+							{selectedProvider === "claude-code" && createDropdown(claudeCodeModels)}
 							{selectedProvider === "vertex" &&
 								createDropdown(apiConfiguration?.vertexRegion === "global" ? vertexGlobalModels : vertexModels)}
 							{selectedProvider === "gemini" && createDropdown(geminiModels)}
@@ -2242,6 +2313,7 @@ const ApiOptions = ({
 							{selectedProvider === "sambanova" && createDropdown(sambanovaModels)}
 							{selectedProvider === "cerebras" && createDropdown(cerebrasModels)}
 							{selectedProvider === "nebius" && createDropdown(nebiusModels)}
+							{selectedProvider === "sapaicore" && createDropdown(sapAiCoreModels)}
 						</DropdownContainer>
 
 						{SUPPORTED_THINKING_MODELS[selectedProvider]?.includes(selectedModelId) && (
@@ -2582,6 +2654,8 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 	switch (provider) {
 		case "anthropic":
 			return getProviderData(anthropicModels, anthropicDefaultModelId)
+		case "claude-code":
+			return getProviderData(claudeCodeModels, claudeCodeDefaultModelId)
 		case "bedrock":
 			if (apiConfiguration?.awsBedrockCustomSelected) {
 				const baseModelId = apiConfiguration.awsBedrockCustomModelBaseId
@@ -2624,10 +2698,17 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 				selectedModelInfo: apiConfiguration?.requestyModelInfo || requestyDefaultModelInfo,
 			}
 		case "cline":
+			const openRouterModelId = apiConfiguration?.openRouterModelId || openRouterDefaultModelId
+			const openRouterModelInfo = apiConfiguration?.openRouterModelInfo || openRouterDefaultModelInfo
 			return {
 				selectedProvider: provider,
-				selectedModelId: apiConfiguration?.openRouterModelId || openRouterDefaultModelId,
-				selectedModelInfo: apiConfiguration?.openRouterModelInfo || openRouterDefaultModelInfo,
+				selectedModelId: openRouterModelId,
+				// TODO: remove this once we have a better way to handle free models on Cline
+				// Free grok 3 promotion
+				selectedModelInfo:
+					openRouterModelId === "x-ai/grok-3"
+						? { ...openRouterModelInfo, inputPrice: 0, outputPrice: 0 }
+						: openRouterModelInfo,
 			}
 		case "openai":
 			return {
@@ -2664,12 +2745,6 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 				selectedModelId: apiConfiguration?.liteLlmModelId || "",
 				selectedModelInfo: apiConfiguration?.liteLlmModelInfo || liteLlmModelInfoSaneDefaults,
 			}
-		case "dify":
-			return {
-				selectedProvider: provider,
-				selectedModelId: "",
-				selectedModelInfo: openAiModelInfoSaneDefaults,
-			}
 		case "xai":
 			return getProviderData(xaiModels, xaiDefaultModelId)
 		case "nebius":
@@ -2684,6 +2759,8 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 			}
 		case "cerebras":
 			return getProviderData(cerebrasModels, cerebrasDefaultModelId)
+		case "sapaicore":
+			return getProviderData(sapAiCoreModels, sapAiCoreDefaultModelId)
 		default:
 			return getProviderData(anthropicModels, anthropicDefaultModelId)
 	}

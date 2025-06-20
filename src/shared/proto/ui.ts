@@ -215,13 +215,14 @@ export enum ClineSay {
   BROWSER_ACTION_RESULT = 16,
   MCP_SERVER_REQUEST_STARTED = 17,
   MCP_SERVER_RESPONSE = 18,
-  USE_MCP_SERVER_SAY = 19,
-  DIFF_ERROR = 20,
-  DELETED_API_REQS = 21,
-  CLINEIGNORE_ERROR = 22,
-  CHECKPOINT_CREATED = 23,
-  LOAD_MCP_DOCUMENTATION = 24,
-  INFO = 25,
+  MCP_NOTIFICATION = 19,
+  USE_MCP_SERVER_SAY = 20,
+  DIFF_ERROR = 21,
+  DELETED_API_REQS = 22,
+  CLINEIGNORE_ERROR = 23,
+  CHECKPOINT_CREATED = 24,
+  LOAD_MCP_DOCUMENTATION = 25,
+  INFO = 26,
   UNRECOGNIZED = -1,
 }
 
@@ -285,24 +286,27 @@ export function clineSayFromJSON(object: any): ClineSay {
     case "MCP_SERVER_RESPONSE":
       return ClineSay.MCP_SERVER_RESPONSE;
     case 19:
+    case "MCP_NOTIFICATION":
+      return ClineSay.MCP_NOTIFICATION;
+    case 20:
     case "USE_MCP_SERVER_SAY":
       return ClineSay.USE_MCP_SERVER_SAY;
-    case 20:
+    case 21:
     case "DIFF_ERROR":
       return ClineSay.DIFF_ERROR;
-    case 21:
+    case 22:
     case "DELETED_API_REQS":
       return ClineSay.DELETED_API_REQS;
-    case 22:
+    case 23:
     case "CLINEIGNORE_ERROR":
       return ClineSay.CLINEIGNORE_ERROR;
-    case 23:
+    case 24:
     case "CHECKPOINT_CREATED":
       return ClineSay.CHECKPOINT_CREATED;
-    case 24:
+    case 25:
     case "LOAD_MCP_DOCUMENTATION":
       return ClineSay.LOAD_MCP_DOCUMENTATION;
-    case 25:
+    case 26:
     case "INFO":
       return ClineSay.INFO;
     case -1:
@@ -352,6 +356,8 @@ export function clineSayToJSON(object: ClineSay): string {
       return "MCP_SERVER_REQUEST_STARTED";
     case ClineSay.MCP_SERVER_RESPONSE:
       return "MCP_SERVER_RESPONSE";
+    case ClineSay.MCP_NOTIFICATION:
+      return "MCP_NOTIFICATION";
     case ClineSay.USE_MCP_SERVER_SAY:
       return "USE_MCP_SERVER_SAY";
     case ClineSay.DIFF_ERROR:
@@ -2340,7 +2346,7 @@ export const ClineMessage: MessageFns<ClineMessage> = {
 export type UiServiceDefinition = typeof UiServiceDefinition;
 export const UiServiceDefinition = {
   name: "UiService",
-  fullName: "ClineShengsuan.UiService",
+  fullName: "cline_shengsuan.UiService",
   methods: {
     /** Scrolls to a specific settings section in the settings view */
     scrollToSettings: {
@@ -2444,6 +2450,24 @@ export const UiServiceDefinition = {
     /** Subscribe to relinquish control events */
     subscribeToRelinquishControl: {
       name: "subscribeToRelinquishControl",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: true,
+      options: {},
+    },
+    /** Subscribe to focus chat input events with client ID */
+    subscribeToFocusChatInput: {
+      name: "subscribeToFocusChatInput",
+      requestType: StringRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: true,
+      options: {},
+    },
+    /** Subscribe to webview visibility change events */
+    subscribeToDidBecomeVisible: {
+      name: "subscribeToDidBecomeVisible",
       requestType: EmptyRequest,
       requestStream: false,
       responseType: Empty,

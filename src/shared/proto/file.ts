@@ -1811,7 +1811,7 @@ export const ToggleWorkflowRequest: MessageFns<ToggleWorkflowRequest> = {
 export type FileServiceDefinition = typeof FileServiceDefinition;
 export const FileServiceDefinition = {
   name: "FileService",
-  fullName: "ClineShengsuan.FileService",
+  fullName: "cline_shengsuan.FileService",
   methods: {
     /** Copies text to clipboard */
     copyToClipboard: {

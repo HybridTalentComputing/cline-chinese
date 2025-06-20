@@ -118,9 +118,18 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
-			case "dify":
-				if (!apiConfiguration.difyApiKey || !apiConfiguration.difyBaseUrl) {
-					return "您必须同时提供有效的 API 密钥和基本 URL。"
+			case "sapaicore":
+				if (!apiConfiguration.sapAiCoreBaseUrl) {
+					return "You must provide a valid Base URL key or choose a different provider."
+				}
+				if (!apiConfiguration.sapAiCoreClientId) {
+					return "You must provide a valid Client Id or choose a different provider."
+				}
+				if (!apiConfiguration.sapAiCoreClientSecret) {
+					return "You must provide a valid Client Secret or choose a different provider."
+				}
+				if (!apiConfiguration.sapAiCoreTokenUrl) {
+					return "You must provide a valid Auth URL or choose a different provider."
 				}
 				break
 		}

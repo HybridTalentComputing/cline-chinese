@@ -11,7 +11,7 @@ import { Empty, EmptyRequest, String } from "./common";
 export type AccountServiceDefinition = typeof AccountServiceDefinition;
 export const AccountServiceDefinition = {
   name: "AccountService",
-  fullName: "ClineShengsuan.AccountService",
+  fullName: "cline_shengsuan.AccountService",
   methods: {
     /**
      * Handles the user clicking the login link in the UI.

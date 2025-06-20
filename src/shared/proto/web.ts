@@ -241,7 +241,7 @@ export const OpenGraphData: MessageFns<OpenGraphData> = {
 export type WebServiceDefinition = typeof WebServiceDefinition;
 export const WebServiceDefinition = {
   name: "WebService",
-  fullName: "ClineShengsuan.WebService",
+  fullName: "cline_shengsuan.WebService",
   methods: {
     checkIsImageUrl: {
       name: "checkIsImageUrl",

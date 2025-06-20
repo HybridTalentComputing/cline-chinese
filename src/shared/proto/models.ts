@@ -6,19 +6,197 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import { EmptyRequest, Metadata, StringArray, StringRequest } from "./common";
+import { Empty, EmptyRequest, Metadata, StringArray, StringRequest } from "./common";
+
+/** API Provider enumeration */
+export enum ApiProvider {
+  ANTHROPIC = 0,
+  OPENROUTER = 1,
+  BEDROCK = 2,
+  VERTEX = 3,
+  OPENAI = 4,
+  OLLAMA = 5,
+  LMSTUDIO = 6,
+  GEMINI = 7,
+  OPENAI_NATIVE = 8,
+  REQUESTY = 9,
+  TOGETHER = 10,
+  DEEPSEEK = 11,
+  QWEN = 12,
+  DOUBAO = 13,
+  MISTRAL = 14,
+  VSCODE_LM = 15,
+  CLINE = 16,
+  LITELLM = 17,
+  NEBIUS = 18,
+  FIREWORKS = 19,
+  ASKSAGE = 20,
+  XAI = 21,
+  SAMBANOVA = 22,
+  CEREBRAS = 23,
+  SAPAICORE = 24,
+  CLAUDE_CODE = 25,
+  UNRECOGNIZED = -1,
+}
+
+export function apiProviderFromJSON(object: any): ApiProvider {
+  switch (object) {
+    case 0:
+    case "ANTHROPIC":
+      return ApiProvider.ANTHROPIC;
+    case 1:
+    case "OPENROUTER":
+      return ApiProvider.OPENROUTER;
+    case 2:
+    case "BEDROCK":
+      return ApiProvider.BEDROCK;
+    case 3:
+    case "VERTEX":
+      return ApiProvider.VERTEX;
+    case 4:
+    case "OPENAI":
+      return ApiProvider.OPENAI;
+    case 5:
+    case "OLLAMA":
+      return ApiProvider.OLLAMA;
+    case 6:
+    case "LMSTUDIO":
+      return ApiProvider.LMSTUDIO;
+    case 7:
+    case "GEMINI":
+      return ApiProvider.GEMINI;
+    case 8:
+    case "OPENAI_NATIVE":
+      return ApiProvider.OPENAI_NATIVE;
+    case 9:
+    case "REQUESTY":
+      return ApiProvider.REQUESTY;
+    case 10:
+    case "TOGETHER":
+      return ApiProvider.TOGETHER;
+    case 11:
+    case "DEEPSEEK":
+      return ApiProvider.DEEPSEEK;
+    case 12:
+    case "QWEN":
+      return ApiProvider.QWEN;
+    case 13:
+    case "DOUBAO":
+      return ApiProvider.DOUBAO;
+    case 14:
+    case "MISTRAL":
+      return ApiProvider.MISTRAL;
+    case 15:
+    case "VSCODE_LM":
+      return ApiProvider.VSCODE_LM;
+    case 16:
+    case "CLINE":
+      return ApiProvider.CLINE;
+    case 17:
+    case "LITELLM":
+      return ApiProvider.LITELLM;
+    case 18:
+    case "NEBIUS":
+      return ApiProvider.NEBIUS;
+    case 19:
+    case "FIREWORKS":
+      return ApiProvider.FIREWORKS;
+    case 20:
+    case "ASKSAGE":
+      return ApiProvider.ASKSAGE;
+    case 21:
+    case "XAI":
+      return ApiProvider.XAI;
+    case 22:
+    case "SAMBANOVA":
+      return ApiProvider.SAMBANOVA;
+    case 23:
+    case "CEREBRAS":
+      return ApiProvider.CEREBRAS;
+    case 24:
+    case "SAPAICORE":
+      return ApiProvider.SAPAICORE;
+    case 25:
+    case "CLAUDE_CODE":
+      return ApiProvider.CLAUDE_CODE;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return ApiProvider.UNRECOGNIZED;
+  }
+}
+
+export function apiProviderToJSON(object: ApiProvider): string {
+  switch (object) {
+    case ApiProvider.ANTHROPIC:
+      return "ANTHROPIC";
+    case ApiProvider.OPENROUTER:
+      return "OPENROUTER";
+    case ApiProvider.BEDROCK:
+      return "BEDROCK";
+    case ApiProvider.VERTEX:
+      return "VERTEX";
+    case ApiProvider.OPENAI:
+      return "OPENAI";
+    case ApiProvider.OLLAMA:
+      return "OLLAMA";
+    case ApiProvider.LMSTUDIO:
+      return "LMSTUDIO";
+    case ApiProvider.GEMINI:
+      return "GEMINI";
+    case ApiProvider.OPENAI_NATIVE:
+      return "OPENAI_NATIVE";
+    case ApiProvider.REQUESTY:
+      return "REQUESTY";
+    case ApiProvider.TOGETHER:
+      return "TOGETHER";
+    case ApiProvider.DEEPSEEK:
+      return "DEEPSEEK";
+    case ApiProvider.QWEN:
+      return "QWEN";
+    case ApiProvider.DOUBAO:
+      return "DOUBAO";
+    case ApiProvider.MISTRAL:
+      return "MISTRAL";
+    case ApiProvider.VSCODE_LM:
+      return "VSCODE_LM";
+    case ApiProvider.CLINE:
+      return "CLINE";
+    case ApiProvider.LITELLM:
+      return "LITELLM";
+    case ApiProvider.NEBIUS:
+      return "NEBIUS";
+    case ApiProvider.FIREWORKS:
+      return "FIREWORKS";
+    case ApiProvider.ASKSAGE:
+      return "ASKSAGE";
+    case ApiProvider.XAI:
+      return "XAI";
+    case ApiProvider.SAMBANOVA:
+      return "SAMBANOVA";
+    case ApiProvider.CEREBRAS:
+      return "CEREBRAS";
+    case ApiProvider.SAPAICORE:
+      return "SAPAICORE";
+    case ApiProvider.CLAUDE_CODE:
+      return "CLAUDE_CODE";
+    case ApiProvider.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
 
 /** List of VS Code LM models */
 export interface VsCodeLmModelsArray {
-  models: VsCodeLmModel[];
+  models: LanguageModelChatSelector[];
 }
 
-/** Structure representing a VS Code LM model */
-export interface VsCodeLmModel {
-  vendor: string;
-  family: string;
-  version: string;
-  id: string;
+/** Structure representing a language model chat selector */
+export interface LanguageModelChatSelector {
+  vendor?: string | undefined;
+  family?: string | undefined;
+  version?: string | undefined;
+  id?: string | undefined;
 }
 
 /** Price tier for tiered pricing models */
@@ -85,6 +263,130 @@ export interface OpenAiModelsRequest {
   apiKey: string;
 }
 
+/** Request for updating API configuration */
+export interface UpdateApiConfigurationRequest {
+  metadata?: Metadata | undefined;
+  apiConfiguration?: ModelsApiConfiguration | undefined;
+}
+
+/** Model info for OpenAI-compatible models */
+export interface OpenAiCompatibleModelInfo {
+  maxTokens?: number | undefined;
+  contextWindow?: number | undefined;
+  supportsImages?: boolean | undefined;
+  supportsPromptCache: boolean;
+  inputPrice?: number | undefined;
+  outputPrice?: number | undefined;
+  thinkingConfig?: ThinkingConfig | undefined;
+  supportsGlobalEndpoint?: boolean | undefined;
+  cacheWritesPrice?: number | undefined;
+  cacheReadsPrice?: number | undefined;
+  description?: string | undefined;
+  tiers: ModelTier[];
+  temperature?: number | undefined;
+  isR1FormatRequired?: boolean | undefined;
+}
+
+/** Model info for LiteLLM models */
+export interface LiteLLMModelInfo {
+  maxTokens?: number | undefined;
+  contextWindow?: number | undefined;
+  supportsImages?: boolean | undefined;
+  supportsPromptCache: boolean;
+  inputPrice?: number | undefined;
+  outputPrice?: number | undefined;
+  thinkingConfig?: ThinkingConfig | undefined;
+  supportsGlobalEndpoint?: boolean | undefined;
+  cacheWritesPrice?: number | undefined;
+  cacheReadsPrice?: number | undefined;
+  description?: string | undefined;
+  tiers: ModelTier[];
+  temperature?: number | undefined;
+}
+
+/** Main ApiConfiguration message */
+export interface ModelsApiConfiguration {
+  /** From ApiHandlerOptions (excluding onRetryAttempt function) */
+  apiModelId?: string | undefined;
+  apiKey?: string | undefined;
+  clineApiKey?: string | undefined;
+  taskId?: string | undefined;
+  liteLlmBaseUrl?: string | undefined;
+  liteLlmModelId?: string | undefined;
+  liteLlmApiKey?: string | undefined;
+  liteLlmUsePromptCache?: boolean | undefined;
+  openAiHeaders: { [key: string]: string };
+  liteLlmModelInfo?: LiteLLMModelInfo | undefined;
+  anthropicBaseUrl?: string | undefined;
+  openRouterApiKey?: string | undefined;
+  openRouterModelId?: string | undefined;
+  openRouterModelInfo?: OpenRouterModelInfo | undefined;
+  openRouterProviderSorting?: string | undefined;
+  awsAccessKey?: string | undefined;
+  awsSecretKey?: string | undefined;
+  awsSessionToken?: string | undefined;
+  awsRegion?: string | undefined;
+  awsUseCrossRegionInference?: boolean | undefined;
+  awsBedrockUsePromptCache?: boolean | undefined;
+  awsUseProfile?: boolean | undefined;
+  awsProfile?: string | undefined;
+  awsBedrockEndpoint?: string | undefined;
+  awsBedrockCustomSelected?: boolean | undefined;
+  awsBedrockCustomModelBaseId?: string | undefined;
+  vertexProjectId?: string | undefined;
+  vertexRegion?: string | undefined;
+  openAiBaseUrl?: string | undefined;
+  openAiApiKey?: string | undefined;
+  openAiModelId?: string | undefined;
+  openAiModelInfo?: OpenAiCompatibleModelInfo | undefined;
+  ollamaModelId?: string | undefined;
+  ollamaBaseUrl?: string | undefined;
+  ollamaApiOptionsCtxNum?: string | undefined;
+  lmStudioModelId?: string | undefined;
+  lmStudioBaseUrl?: string | undefined;
+  geminiApiKey?: string | undefined;
+  geminiBaseUrl?: string | undefined;
+  openAiNativeApiKey?: string | undefined;
+  deepSeekApiKey?: string | undefined;
+  requestyApiKey?: string | undefined;
+  requestyModelId?: string | undefined;
+  requestyModelInfo?: OpenRouterModelInfo | undefined;
+  togetherApiKey?: string | undefined;
+  togetherModelId?: string | undefined;
+  fireworksApiKey?: string | undefined;
+  fireworksModelId?: string | undefined;
+  fireworksModelMaxCompletionTokens?: number | undefined;
+  fireworksModelMaxTokens?: number | undefined;
+  qwenApiKey?: string | undefined;
+  doubaoApiKey?: string | undefined;
+  mistralApiKey?: string | undefined;
+  azureApiVersion?: string | undefined;
+  vsCodeLmModelSelector?: LanguageModelChatSelector | undefined;
+  qwenApiLine?: string | undefined;
+  nebiusApiKey?: string | undefined;
+  asksageApiUrl?: string | undefined;
+  asksageApiKey?: string | undefined;
+  xaiApiKey?: string | undefined;
+  thinkingBudgetTokens?: number | undefined;
+  reasoningEffort?: string | undefined;
+  sambanovaApiKey?: string | undefined;
+  cerebrasApiKey?: string | undefined;
+  requestTimeoutMs?: number | undefined;
+  apiProvider?: ApiProvider | undefined;
+  favoritedModelIds: string[];
+  sapAiCoreClientId?: string | undefined;
+  sapAiCoreClientSecret?: string | undefined;
+  sapAiResourceGroup?: string | undefined;
+  sapAiCoreTokenUrl?: string | undefined;
+  sapAiCoreBaseUrl?: string | undefined;
+  claudeCodePath?: string | undefined;
+}
+
+export interface ModelsApiConfiguration_OpenAiHeadersEntry {
+  key: string;
+  value: string;
+}
+
 export interface ShengSuanYunModelInfo {
   maxTokens?: number | undefined;
   contextWindow?: number | undefined;
@@ -106,7 +408,7 @@ function createBaseVsCodeLmModelsArray(): VsCodeLmModelsArray {
 export const VsCodeLmModelsArray: MessageFns<VsCodeLmModelsArray> = {
   encode(message: VsCodeLmModelsArray, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     for (const v of message.models) {
-      VsCodeLmModel.encode(v!, writer.uint32(10).fork()).join();
+      LanguageModelChatSelector.encode(v!, writer.uint32(10).fork()).join();
     }
     return writer;
   },
@@ -123,7 +425,7 @@ export const VsCodeLmModelsArray: MessageFns<VsCodeLmModelsArray> = {
             break;
           }
 
-          message.models.push(VsCodeLmModel.decode(reader, reader.uint32()));
+          message.models.push(LanguageModelChatSelector.decode(reader, reader.uint32()));
           continue;
         }
       }
@@ -137,14 +439,16 @@ export const VsCodeLmModelsArray: MessageFns<VsCodeLmModelsArray> = {
 
   fromJSON(object: any): VsCodeLmModelsArray {
     return {
-      models: globalThis.Array.isArray(object?.models) ? object.models.map((e: any) => VsCodeLmModel.fromJSON(e)) : [],
+      models: globalThis.Array.isArray(object?.models)
+        ? object.models.map((e: any) => LanguageModelChatSelector.fromJSON(e))
+        : [],
     };
   },
 
   toJSON(message: VsCodeLmModelsArray): unknown {
     const obj: any = {};
     if (message.models?.length) {
-      obj.models = message.models.map((e) => VsCodeLmModel.toJSON(e));
+      obj.models = message.models.map((e) => LanguageModelChatSelector.toJSON(e));
     }
     return obj;
   },
@@ -154,36 +458,36 @@ export const VsCodeLmModelsArray: MessageFns<VsCodeLmModelsArray> = {
   },
   fromPartial<I extends Exact<DeepPartial<VsCodeLmModelsArray>, I>>(object: I): VsCodeLmModelsArray {
     const message = createBaseVsCodeLmModelsArray();
-    message.models = object.models?.map((e) => VsCodeLmModel.fromPartial(e)) || [];
+    message.models = object.models?.map((e) => LanguageModelChatSelector.fromPartial(e)) || [];
     return message;
   },
 };
 
-function createBaseVsCodeLmModel(): VsCodeLmModel {
-  return { vendor: "", family: "", version: "", id: "" };
+function createBaseLanguageModelChatSelector(): LanguageModelChatSelector {
+  return { vendor: undefined, family: undefined, version: undefined, id: undefined };
 }
 
-export const VsCodeLmModel: MessageFns<VsCodeLmModel> = {
-  encode(message: VsCodeLmModel, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.vendor !== "") {
+export const LanguageModelChatSelector: MessageFns<LanguageModelChatSelector> = {
+  encode(message: LanguageModelChatSelector, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.vendor !== undefined) {
       writer.uint32(10).string(message.vendor);
     }
-    if (message.family !== "") {
+    if (message.family !== undefined) {
       writer.uint32(18).string(message.family);
     }
-    if (message.version !== "") {
+    if (message.version !== undefined) {
       writer.uint32(26).string(message.version);
     }
-    if (message.id !== "") {
+    if (message.id !== undefined) {
       writer.uint32(34).string(message.id);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): VsCodeLmModel {
+  decode(input: BinaryReader | Uint8Array, length?: number): LanguageModelChatSelector {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseVsCodeLmModel();
+    const message = createBaseLanguageModelChatSelector();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -228,41 +532,41 @@ export const VsCodeLmModel: MessageFns<VsCodeLmModel> = {
     return message;
   },
 
-  fromJSON(object: any): VsCodeLmModel {
+  fromJSON(object: any): LanguageModelChatSelector {
     return {
-      vendor: isSet(object.vendor) ? globalThis.String(object.vendor) : "",
-      family: isSet(object.family) ? globalThis.String(object.family) : "",
-      version: isSet(object.version) ? globalThis.String(object.version) : "",
-      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      vendor: isSet(object.vendor) ? globalThis.String(object.vendor) : undefined,
+      family: isSet(object.family) ? globalThis.String(object.family) : undefined,
+      version: isSet(object.version) ? globalThis.String(object.version) : undefined,
+      id: isSet(object.id) ? globalThis.String(object.id) : undefined,
     };
   },
 
-  toJSON(message: VsCodeLmModel): unknown {
+  toJSON(message: LanguageModelChatSelector): unknown {
     const obj: any = {};
-    if (message.vendor !== "") {
+    if (message.vendor !== undefined) {
       obj.vendor = message.vendor;
     }
-    if (message.family !== "") {
+    if (message.family !== undefined) {
       obj.family = message.family;
     }
-    if (message.version !== "") {
+    if (message.version !== undefined) {
       obj.version = message.version;
     }
-    if (message.id !== "") {
+    if (message.id !== undefined) {
       obj.id = message.id;
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<VsCodeLmModel>, I>>(base?: I): VsCodeLmModel {
-    return VsCodeLmModel.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<LanguageModelChatSelector>, I>>(base?: I): LanguageModelChatSelector {
+    return LanguageModelChatSelector.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<VsCodeLmModel>, I>>(object: I): VsCodeLmModel {
-    const message = createBaseVsCodeLmModel();
-    message.vendor = object.vendor ?? "";
-    message.family = object.family ?? "";
-    message.version = object.version ?? "";
-    message.id = object.id ?? "";
+  fromPartial<I extends Exact<DeepPartial<LanguageModelChatSelector>, I>>(object: I): LanguageModelChatSelector {
+    const message = createBaseLanguageModelChatSelector();
+    message.vendor = object.vendor ?? undefined;
+    message.family = object.family ?? undefined;
+    message.version = object.version ?? undefined;
+    message.id = object.id ?? undefined;
     return message;
   },
 };
@@ -1080,6 +1384,2078 @@ export const OpenAiModelsRequest: MessageFns<OpenAiModelsRequest> = {
   },
 };
 
+function createBaseUpdateApiConfigurationRequest(): UpdateApiConfigurationRequest {
+  return { metadata: undefined, apiConfiguration: undefined };
+}
+
+export const UpdateApiConfigurationRequest: MessageFns<UpdateApiConfigurationRequest> = {
+  encode(message: UpdateApiConfigurationRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.metadata !== undefined) {
+      Metadata.encode(message.metadata, writer.uint32(10).fork()).join();
+    }
+    if (message.apiConfiguration !== undefined) {
+      ModelsApiConfiguration.encode(message.apiConfiguration, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateApiConfigurationRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateApiConfigurationRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.metadata = Metadata.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.apiConfiguration = ModelsApiConfiguration.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): UpdateApiConfigurationRequest {
+    return {
+      metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+      apiConfiguration: isSet(object.apiConfiguration)
+        ? ModelsApiConfiguration.fromJSON(object.apiConfiguration)
+        : undefined,
+    };
+  },
+
+  toJSON(message: UpdateApiConfigurationRequest): unknown {
+    const obj: any = {};
+    if (message.metadata !== undefined) {
+      obj.metadata = Metadata.toJSON(message.metadata);
+    }
+    if (message.apiConfiguration !== undefined) {
+      obj.apiConfiguration = ModelsApiConfiguration.toJSON(message.apiConfiguration);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<UpdateApiConfigurationRequest>, I>>(base?: I): UpdateApiConfigurationRequest {
+    return UpdateApiConfigurationRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UpdateApiConfigurationRequest>, I>>(
+    object: I,
+  ): UpdateApiConfigurationRequest {
+    const message = createBaseUpdateApiConfigurationRequest();
+    message.metadata = (object.metadata !== undefined && object.metadata !== null)
+      ? Metadata.fromPartial(object.metadata)
+      : undefined;
+    message.apiConfiguration = (object.apiConfiguration !== undefined && object.apiConfiguration !== null)
+      ? ModelsApiConfiguration.fromPartial(object.apiConfiguration)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseOpenAiCompatibleModelInfo(): OpenAiCompatibleModelInfo {
+  return {
+    maxTokens: undefined,
+    contextWindow: undefined,
+    supportsImages: undefined,
+    supportsPromptCache: false,
+    inputPrice: undefined,
+    outputPrice: undefined,
+    thinkingConfig: undefined,
+    supportsGlobalEndpoint: undefined,
+    cacheWritesPrice: undefined,
+    cacheReadsPrice: undefined,
+    description: undefined,
+    tiers: [],
+    temperature: undefined,
+    isR1FormatRequired: undefined,
+  };
+}
+
+export const OpenAiCompatibleModelInfo: MessageFns<OpenAiCompatibleModelInfo> = {
+  encode(message: OpenAiCompatibleModelInfo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.maxTokens !== undefined) {
+      writer.uint32(8).int32(message.maxTokens);
+    }
+    if (message.contextWindow !== undefined) {
+      writer.uint32(16).int32(message.contextWindow);
+    }
+    if (message.supportsImages !== undefined) {
+      writer.uint32(24).bool(message.supportsImages);
+    }
+    if (message.supportsPromptCache !== false) {
+      writer.uint32(32).bool(message.supportsPromptCache);
+    }
+    if (message.inputPrice !== undefined) {
+      writer.uint32(41).double(message.inputPrice);
+    }
+    if (message.outputPrice !== undefined) {
+      writer.uint32(49).double(message.outputPrice);
+    }
+    if (message.thinkingConfig !== undefined) {
+      ThinkingConfig.encode(message.thinkingConfig, writer.uint32(58).fork()).join();
+    }
+    if (message.supportsGlobalEndpoint !== undefined) {
+      writer.uint32(64).bool(message.supportsGlobalEndpoint);
+    }
+    if (message.cacheWritesPrice !== undefined) {
+      writer.uint32(73).double(message.cacheWritesPrice);
+    }
+    if (message.cacheReadsPrice !== undefined) {
+      writer.uint32(81).double(message.cacheReadsPrice);
+    }
+    if (message.description !== undefined) {
+      writer.uint32(90).string(message.description);
+    }
+    for (const v of message.tiers) {
+      ModelTier.encode(v!, writer.uint32(98).fork()).join();
+    }
+    if (message.temperature !== undefined) {
+      writer.uint32(105).double(message.temperature);
+    }
+    if (message.isR1FormatRequired !== undefined) {
+      writer.uint32(112).bool(message.isR1FormatRequired);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OpenAiCompatibleModelInfo {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOpenAiCompatibleModelInfo();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.maxTokens = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.contextWindow = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.supportsImages = reader.bool();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.supportsPromptCache = reader.bool();
+          continue;
+        }
+        case 5: {
+          if (tag !== 41) {
+            break;
+          }
+
+          message.inputPrice = reader.double();
+          continue;
+        }
+        case 6: {
+          if (tag !== 49) {
+            break;
+          }
+
+          message.outputPrice = reader.double();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.thinkingConfig = ThinkingConfig.decode(reader, reader.uint32());
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.supportsGlobalEndpoint = reader.bool();
+          continue;
+        }
+        case 9: {
+          if (tag !== 73) {
+            break;
+          }
+
+          message.cacheWritesPrice = reader.double();
+          continue;
+        }
+        case 10: {
+          if (tag !== 81) {
+            break;
+          }
+
+          message.cacheReadsPrice = reader.double();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.tiers.push(ModelTier.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 13: {
+          if (tag !== 105) {
+            break;
+          }
+
+          message.temperature = reader.double();
+          continue;
+        }
+        case 14: {
+          if (tag !== 112) {
+            break;
+          }
+
+          message.isR1FormatRequired = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OpenAiCompatibleModelInfo {
+    return {
+      maxTokens: isSet(object.maxTokens) ? globalThis.Number(object.maxTokens) : undefined,
+      contextWindow: isSet(object.contextWindow) ? globalThis.Number(object.contextWindow) : undefined,
+      supportsImages: isSet(object.supportsImages) ? globalThis.Boolean(object.supportsImages) : undefined,
+      supportsPromptCache: isSet(object.supportsPromptCache) ? globalThis.Boolean(object.supportsPromptCache) : false,
+      inputPrice: isSet(object.inputPrice) ? globalThis.Number(object.inputPrice) : undefined,
+      outputPrice: isSet(object.outputPrice) ? globalThis.Number(object.outputPrice) : undefined,
+      thinkingConfig: isSet(object.thinkingConfig) ? ThinkingConfig.fromJSON(object.thinkingConfig) : undefined,
+      supportsGlobalEndpoint: isSet(object.supportsGlobalEndpoint)
+        ? globalThis.Boolean(object.supportsGlobalEndpoint)
+        : undefined,
+      cacheWritesPrice: isSet(object.cacheWritesPrice) ? globalThis.Number(object.cacheWritesPrice) : undefined,
+      cacheReadsPrice: isSet(object.cacheReadsPrice) ? globalThis.Number(object.cacheReadsPrice) : undefined,
+      description: isSet(object.description) ? globalThis.String(object.description) : undefined,
+      tiers: globalThis.Array.isArray(object?.tiers) ? object.tiers.map((e: any) => ModelTier.fromJSON(e)) : [],
+      temperature: isSet(object.temperature) ? globalThis.Number(object.temperature) : undefined,
+      isR1FormatRequired: isSet(object.isR1FormatRequired) ? globalThis.Boolean(object.isR1FormatRequired) : undefined,
+    };
+  },
+
+  toJSON(message: OpenAiCompatibleModelInfo): unknown {
+    const obj: any = {};
+    if (message.maxTokens !== undefined) {
+      obj.maxTokens = Math.round(message.maxTokens);
+    }
+    if (message.contextWindow !== undefined) {
+      obj.contextWindow = Math.round(message.contextWindow);
+    }
+    if (message.supportsImages !== undefined) {
+      obj.supportsImages = message.supportsImages;
+    }
+    if (message.supportsPromptCache !== false) {
+      obj.supportsPromptCache = message.supportsPromptCache;
+    }
+    if (message.inputPrice !== undefined) {
+      obj.inputPrice = message.inputPrice;
+    }
+    if (message.outputPrice !== undefined) {
+      obj.outputPrice = message.outputPrice;
+    }
+    if (message.thinkingConfig !== undefined) {
+      obj.thinkingConfig = ThinkingConfig.toJSON(message.thinkingConfig);
+    }
+    if (message.supportsGlobalEndpoint !== undefined) {
+      obj.supportsGlobalEndpoint = message.supportsGlobalEndpoint;
+    }
+    if (message.cacheWritesPrice !== undefined) {
+      obj.cacheWritesPrice = message.cacheWritesPrice;
+    }
+    if (message.cacheReadsPrice !== undefined) {
+      obj.cacheReadsPrice = message.cacheReadsPrice;
+    }
+    if (message.description !== undefined) {
+      obj.description = message.description;
+    }
+    if (message.tiers?.length) {
+      obj.tiers = message.tiers.map((e) => ModelTier.toJSON(e));
+    }
+    if (message.temperature !== undefined) {
+      obj.temperature = message.temperature;
+    }
+    if (message.isR1FormatRequired !== undefined) {
+      obj.isR1FormatRequired = message.isR1FormatRequired;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<OpenAiCompatibleModelInfo>, I>>(base?: I): OpenAiCompatibleModelInfo {
+    return OpenAiCompatibleModelInfo.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<OpenAiCompatibleModelInfo>, I>>(object: I): OpenAiCompatibleModelInfo {
+    const message = createBaseOpenAiCompatibleModelInfo();
+    message.maxTokens = object.maxTokens ?? undefined;
+    message.contextWindow = object.contextWindow ?? undefined;
+    message.supportsImages = object.supportsImages ?? undefined;
+    message.supportsPromptCache = object.supportsPromptCache ?? false;
+    message.inputPrice = object.inputPrice ?? undefined;
+    message.outputPrice = object.outputPrice ?? undefined;
+    message.thinkingConfig = (object.thinkingConfig !== undefined && object.thinkingConfig !== null)
+      ? ThinkingConfig.fromPartial(object.thinkingConfig)
+      : undefined;
+    message.supportsGlobalEndpoint = object.supportsGlobalEndpoint ?? undefined;
+    message.cacheWritesPrice = object.cacheWritesPrice ?? undefined;
+    message.cacheReadsPrice = object.cacheReadsPrice ?? undefined;
+    message.description = object.description ?? undefined;
+    message.tiers = object.tiers?.map((e) => ModelTier.fromPartial(e)) || [];
+    message.temperature = object.temperature ?? undefined;
+    message.isR1FormatRequired = object.isR1FormatRequired ?? undefined;
+    return message;
+  },
+};
+
+function createBaseLiteLLMModelInfo(): LiteLLMModelInfo {
+  return {
+    maxTokens: undefined,
+    contextWindow: undefined,
+    supportsImages: undefined,
+    supportsPromptCache: false,
+    inputPrice: undefined,
+    outputPrice: undefined,
+    thinkingConfig: undefined,
+    supportsGlobalEndpoint: undefined,
+    cacheWritesPrice: undefined,
+    cacheReadsPrice: undefined,
+    description: undefined,
+    tiers: [],
+    temperature: undefined,
+  };
+}
+
+export const LiteLLMModelInfo: MessageFns<LiteLLMModelInfo> = {
+  encode(message: LiteLLMModelInfo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.maxTokens !== undefined) {
+      writer.uint32(8).int32(message.maxTokens);
+    }
+    if (message.contextWindow !== undefined) {
+      writer.uint32(16).int32(message.contextWindow);
+    }
+    if (message.supportsImages !== undefined) {
+      writer.uint32(24).bool(message.supportsImages);
+    }
+    if (message.supportsPromptCache !== false) {
+      writer.uint32(32).bool(message.supportsPromptCache);
+    }
+    if (message.inputPrice !== undefined) {
+      writer.uint32(41).double(message.inputPrice);
+    }
+    if (message.outputPrice !== undefined) {
+      writer.uint32(49).double(message.outputPrice);
+    }
+    if (message.thinkingConfig !== undefined) {
+      ThinkingConfig.encode(message.thinkingConfig, writer.uint32(58).fork()).join();
+    }
+    if (message.supportsGlobalEndpoint !== undefined) {
+      writer.uint32(64).bool(message.supportsGlobalEndpoint);
+    }
+    if (message.cacheWritesPrice !== undefined) {
+      writer.uint32(73).double(message.cacheWritesPrice);
+    }
+    if (message.cacheReadsPrice !== undefined) {
+      writer.uint32(81).double(message.cacheReadsPrice);
+    }
+    if (message.description !== undefined) {
+      writer.uint32(90).string(message.description);
+    }
+    for (const v of message.tiers) {
+      ModelTier.encode(v!, writer.uint32(98).fork()).join();
+    }
+    if (message.temperature !== undefined) {
+      writer.uint32(105).double(message.temperature);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LiteLLMModelInfo {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLiteLLMModelInfo();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.maxTokens = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.contextWindow = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.supportsImages = reader.bool();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.supportsPromptCache = reader.bool();
+          continue;
+        }
+        case 5: {
+          if (tag !== 41) {
+            break;
+          }
+
+          message.inputPrice = reader.double();
+          continue;
+        }
+        case 6: {
+          if (tag !== 49) {
+            break;
+          }
+
+          message.outputPrice = reader.double();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.thinkingConfig = ThinkingConfig.decode(reader, reader.uint32());
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.supportsGlobalEndpoint = reader.bool();
+          continue;
+        }
+        case 9: {
+          if (tag !== 73) {
+            break;
+          }
+
+          message.cacheWritesPrice = reader.double();
+          continue;
+        }
+        case 10: {
+          if (tag !== 81) {
+            break;
+          }
+
+          message.cacheReadsPrice = reader.double();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.tiers.push(ModelTier.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 13: {
+          if (tag !== 105) {
+            break;
+          }
+
+          message.temperature = reader.double();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): LiteLLMModelInfo {
+    return {
+      maxTokens: isSet(object.maxTokens) ? globalThis.Number(object.maxTokens) : undefined,
+      contextWindow: isSet(object.contextWindow) ? globalThis.Number(object.contextWindow) : undefined,
+      supportsImages: isSet(object.supportsImages) ? globalThis.Boolean(object.supportsImages) : undefined,
+      supportsPromptCache: isSet(object.supportsPromptCache) ? globalThis.Boolean(object.supportsPromptCache) : false,
+      inputPrice: isSet(object.inputPrice) ? globalThis.Number(object.inputPrice) : undefined,
+      outputPrice: isSet(object.outputPrice) ? globalThis.Number(object.outputPrice) : undefined,
+      thinkingConfig: isSet(object.thinkingConfig) ? ThinkingConfig.fromJSON(object.thinkingConfig) : undefined,
+      supportsGlobalEndpoint: isSet(object.supportsGlobalEndpoint)
+        ? globalThis.Boolean(object.supportsGlobalEndpoint)
+        : undefined,
+      cacheWritesPrice: isSet(object.cacheWritesPrice) ? globalThis.Number(object.cacheWritesPrice) : undefined,
+      cacheReadsPrice: isSet(object.cacheReadsPrice) ? globalThis.Number(object.cacheReadsPrice) : undefined,
+      description: isSet(object.description) ? globalThis.String(object.description) : undefined,
+      tiers: globalThis.Array.isArray(object?.tiers) ? object.tiers.map((e: any) => ModelTier.fromJSON(e)) : [],
+      temperature: isSet(object.temperature) ? globalThis.Number(object.temperature) : undefined,
+    };
+  },
+
+  toJSON(message: LiteLLMModelInfo): unknown {
+    const obj: any = {};
+    if (message.maxTokens !== undefined) {
+      obj.maxTokens = Math.round(message.maxTokens);
+    }
+    if (message.contextWindow !== undefined) {
+      obj.contextWindow = Math.round(message.contextWindow);
+    }
+    if (message.supportsImages !== undefined) {
+      obj.supportsImages = message.supportsImages;
+    }
+    if (message.supportsPromptCache !== false) {
+      obj.supportsPromptCache = message.supportsPromptCache;
+    }
+    if (message.inputPrice !== undefined) {
+      obj.inputPrice = message.inputPrice;
+    }
+    if (message.outputPrice !== undefined) {
+      obj.outputPrice = message.outputPrice;
+    }
+    if (message.thinkingConfig !== undefined) {
+      obj.thinkingConfig = ThinkingConfig.toJSON(message.thinkingConfig);
+    }
+    if (message.supportsGlobalEndpoint !== undefined) {
+      obj.supportsGlobalEndpoint = message.supportsGlobalEndpoint;
+    }
+    if (message.cacheWritesPrice !== undefined) {
+      obj.cacheWritesPrice = message.cacheWritesPrice;
+    }
+    if (message.cacheReadsPrice !== undefined) {
+      obj.cacheReadsPrice = message.cacheReadsPrice;
+    }
+    if (message.description !== undefined) {
+      obj.description = message.description;
+    }
+    if (message.tiers?.length) {
+      obj.tiers = message.tiers.map((e) => ModelTier.toJSON(e));
+    }
+    if (message.temperature !== undefined) {
+      obj.temperature = message.temperature;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<LiteLLMModelInfo>, I>>(base?: I): LiteLLMModelInfo {
+    return LiteLLMModelInfo.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<LiteLLMModelInfo>, I>>(object: I): LiteLLMModelInfo {
+    const message = createBaseLiteLLMModelInfo();
+    message.maxTokens = object.maxTokens ?? undefined;
+    message.contextWindow = object.contextWindow ?? undefined;
+    message.supportsImages = object.supportsImages ?? undefined;
+    message.supportsPromptCache = object.supportsPromptCache ?? false;
+    message.inputPrice = object.inputPrice ?? undefined;
+    message.outputPrice = object.outputPrice ?? undefined;
+    message.thinkingConfig = (object.thinkingConfig !== undefined && object.thinkingConfig !== null)
+      ? ThinkingConfig.fromPartial(object.thinkingConfig)
+      : undefined;
+    message.supportsGlobalEndpoint = object.supportsGlobalEndpoint ?? undefined;
+    message.cacheWritesPrice = object.cacheWritesPrice ?? undefined;
+    message.cacheReadsPrice = object.cacheReadsPrice ?? undefined;
+    message.description = object.description ?? undefined;
+    message.tiers = object.tiers?.map((e) => ModelTier.fromPartial(e)) || [];
+    message.temperature = object.temperature ?? undefined;
+    return message;
+  },
+};
+
+function createBaseModelsApiConfiguration(): ModelsApiConfiguration {
+  return {
+    apiModelId: undefined,
+    apiKey: undefined,
+    clineApiKey: undefined,
+    taskId: undefined,
+    liteLlmBaseUrl: undefined,
+    liteLlmModelId: undefined,
+    liteLlmApiKey: undefined,
+    liteLlmUsePromptCache: undefined,
+    openAiHeaders: {},
+    liteLlmModelInfo: undefined,
+    anthropicBaseUrl: undefined,
+    openRouterApiKey: undefined,
+    openRouterModelId: undefined,
+    openRouterModelInfo: undefined,
+    openRouterProviderSorting: undefined,
+    awsAccessKey: undefined,
+    awsSecretKey: undefined,
+    awsSessionToken: undefined,
+    awsRegion: undefined,
+    awsUseCrossRegionInference: undefined,
+    awsBedrockUsePromptCache: undefined,
+    awsUseProfile: undefined,
+    awsProfile: undefined,
+    awsBedrockEndpoint: undefined,
+    awsBedrockCustomSelected: undefined,
+    awsBedrockCustomModelBaseId: undefined,
+    vertexProjectId: undefined,
+    vertexRegion: undefined,
+    openAiBaseUrl: undefined,
+    openAiApiKey: undefined,
+    openAiModelId: undefined,
+    openAiModelInfo: undefined,
+    ollamaModelId: undefined,
+    ollamaBaseUrl: undefined,
+    ollamaApiOptionsCtxNum: undefined,
+    lmStudioModelId: undefined,
+    lmStudioBaseUrl: undefined,
+    geminiApiKey: undefined,
+    geminiBaseUrl: undefined,
+    openAiNativeApiKey: undefined,
+    deepSeekApiKey: undefined,
+    requestyApiKey: undefined,
+    requestyModelId: undefined,
+    requestyModelInfo: undefined,
+    togetherApiKey: undefined,
+    togetherModelId: undefined,
+    fireworksApiKey: undefined,
+    fireworksModelId: undefined,
+    fireworksModelMaxCompletionTokens: undefined,
+    fireworksModelMaxTokens: undefined,
+    qwenApiKey: undefined,
+    doubaoApiKey: undefined,
+    mistralApiKey: undefined,
+    azureApiVersion: undefined,
+    vsCodeLmModelSelector: undefined,
+    qwenApiLine: undefined,
+    nebiusApiKey: undefined,
+    asksageApiUrl: undefined,
+    asksageApiKey: undefined,
+    xaiApiKey: undefined,
+    thinkingBudgetTokens: undefined,
+    reasoningEffort: undefined,
+    sambanovaApiKey: undefined,
+    cerebrasApiKey: undefined,
+    requestTimeoutMs: undefined,
+    apiProvider: undefined,
+    favoritedModelIds: [],
+    sapAiCoreClientId: undefined,
+    sapAiCoreClientSecret: undefined,
+    sapAiResourceGroup: undefined,
+    sapAiCoreTokenUrl: undefined,
+    sapAiCoreBaseUrl: undefined,
+    claudeCodePath: undefined,
+  };
+}
+
+export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
+  encode(message: ModelsApiConfiguration, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.apiModelId !== undefined) {
+      writer.uint32(10).string(message.apiModelId);
+    }
+    if (message.apiKey !== undefined) {
+      writer.uint32(18).string(message.apiKey);
+    }
+    if (message.clineApiKey !== undefined) {
+      writer.uint32(26).string(message.clineApiKey);
+    }
+    if (message.taskId !== undefined) {
+      writer.uint32(34).string(message.taskId);
+    }
+    if (message.liteLlmBaseUrl !== undefined) {
+      writer.uint32(42).string(message.liteLlmBaseUrl);
+    }
+    if (message.liteLlmModelId !== undefined) {
+      writer.uint32(50).string(message.liteLlmModelId);
+    }
+    if (message.liteLlmApiKey !== undefined) {
+      writer.uint32(58).string(message.liteLlmApiKey);
+    }
+    if (message.liteLlmUsePromptCache !== undefined) {
+      writer.uint32(64).bool(message.liteLlmUsePromptCache);
+    }
+    Object.entries(message.openAiHeaders).forEach(([key, value]) => {
+      ModelsApiConfiguration_OpenAiHeadersEntry.encode({ key: key as any, value }, writer.uint32(74).fork()).join();
+    });
+    if (message.liteLlmModelInfo !== undefined) {
+      LiteLLMModelInfo.encode(message.liteLlmModelInfo, writer.uint32(82).fork()).join();
+    }
+    if (message.anthropicBaseUrl !== undefined) {
+      writer.uint32(90).string(message.anthropicBaseUrl);
+    }
+    if (message.openRouterApiKey !== undefined) {
+      writer.uint32(98).string(message.openRouterApiKey);
+    }
+    if (message.openRouterModelId !== undefined) {
+      writer.uint32(106).string(message.openRouterModelId);
+    }
+    if (message.openRouterModelInfo !== undefined) {
+      OpenRouterModelInfo.encode(message.openRouterModelInfo, writer.uint32(114).fork()).join();
+    }
+    if (message.openRouterProviderSorting !== undefined) {
+      writer.uint32(122).string(message.openRouterProviderSorting);
+    }
+    if (message.awsAccessKey !== undefined) {
+      writer.uint32(130).string(message.awsAccessKey);
+    }
+    if (message.awsSecretKey !== undefined) {
+      writer.uint32(138).string(message.awsSecretKey);
+    }
+    if (message.awsSessionToken !== undefined) {
+      writer.uint32(146).string(message.awsSessionToken);
+    }
+    if (message.awsRegion !== undefined) {
+      writer.uint32(154).string(message.awsRegion);
+    }
+    if (message.awsUseCrossRegionInference !== undefined) {
+      writer.uint32(160).bool(message.awsUseCrossRegionInference);
+    }
+    if (message.awsBedrockUsePromptCache !== undefined) {
+      writer.uint32(168).bool(message.awsBedrockUsePromptCache);
+    }
+    if (message.awsUseProfile !== undefined) {
+      writer.uint32(176).bool(message.awsUseProfile);
+    }
+    if (message.awsProfile !== undefined) {
+      writer.uint32(186).string(message.awsProfile);
+    }
+    if (message.awsBedrockEndpoint !== undefined) {
+      writer.uint32(194).string(message.awsBedrockEndpoint);
+    }
+    if (message.awsBedrockCustomSelected !== undefined) {
+      writer.uint32(200).bool(message.awsBedrockCustomSelected);
+    }
+    if (message.awsBedrockCustomModelBaseId !== undefined) {
+      writer.uint32(210).string(message.awsBedrockCustomModelBaseId);
+    }
+    if (message.vertexProjectId !== undefined) {
+      writer.uint32(218).string(message.vertexProjectId);
+    }
+    if (message.vertexRegion !== undefined) {
+      writer.uint32(226).string(message.vertexRegion);
+    }
+    if (message.openAiBaseUrl !== undefined) {
+      writer.uint32(234).string(message.openAiBaseUrl);
+    }
+    if (message.openAiApiKey !== undefined) {
+      writer.uint32(242).string(message.openAiApiKey);
+    }
+    if (message.openAiModelId !== undefined) {
+      writer.uint32(250).string(message.openAiModelId);
+    }
+    if (message.openAiModelInfo !== undefined) {
+      OpenAiCompatibleModelInfo.encode(message.openAiModelInfo, writer.uint32(258).fork()).join();
+    }
+    if (message.ollamaModelId !== undefined) {
+      writer.uint32(266).string(message.ollamaModelId);
+    }
+    if (message.ollamaBaseUrl !== undefined) {
+      writer.uint32(274).string(message.ollamaBaseUrl);
+    }
+    if (message.ollamaApiOptionsCtxNum !== undefined) {
+      writer.uint32(282).string(message.ollamaApiOptionsCtxNum);
+    }
+    if (message.lmStudioModelId !== undefined) {
+      writer.uint32(290).string(message.lmStudioModelId);
+    }
+    if (message.lmStudioBaseUrl !== undefined) {
+      writer.uint32(298).string(message.lmStudioBaseUrl);
+    }
+    if (message.geminiApiKey !== undefined) {
+      writer.uint32(306).string(message.geminiApiKey);
+    }
+    if (message.geminiBaseUrl !== undefined) {
+      writer.uint32(314).string(message.geminiBaseUrl);
+    }
+    if (message.openAiNativeApiKey !== undefined) {
+      writer.uint32(322).string(message.openAiNativeApiKey);
+    }
+    if (message.deepSeekApiKey !== undefined) {
+      writer.uint32(330).string(message.deepSeekApiKey);
+    }
+    if (message.requestyApiKey !== undefined) {
+      writer.uint32(338).string(message.requestyApiKey);
+    }
+    if (message.requestyModelId !== undefined) {
+      writer.uint32(346).string(message.requestyModelId);
+    }
+    if (message.requestyModelInfo !== undefined) {
+      OpenRouterModelInfo.encode(message.requestyModelInfo, writer.uint32(354).fork()).join();
+    }
+    if (message.togetherApiKey !== undefined) {
+      writer.uint32(362).string(message.togetherApiKey);
+    }
+    if (message.togetherModelId !== undefined) {
+      writer.uint32(370).string(message.togetherModelId);
+    }
+    if (message.fireworksApiKey !== undefined) {
+      writer.uint32(378).string(message.fireworksApiKey);
+    }
+    if (message.fireworksModelId !== undefined) {
+      writer.uint32(386).string(message.fireworksModelId);
+    }
+    if (message.fireworksModelMaxCompletionTokens !== undefined) {
+      writer.uint32(392).int32(message.fireworksModelMaxCompletionTokens);
+    }
+    if (message.fireworksModelMaxTokens !== undefined) {
+      writer.uint32(400).int32(message.fireworksModelMaxTokens);
+    }
+    if (message.qwenApiKey !== undefined) {
+      writer.uint32(410).string(message.qwenApiKey);
+    }
+    if (message.doubaoApiKey !== undefined) {
+      writer.uint32(418).string(message.doubaoApiKey);
+    }
+    if (message.mistralApiKey !== undefined) {
+      writer.uint32(426).string(message.mistralApiKey);
+    }
+    if (message.azureApiVersion !== undefined) {
+      writer.uint32(434).string(message.azureApiVersion);
+    }
+    if (message.vsCodeLmModelSelector !== undefined) {
+      LanguageModelChatSelector.encode(message.vsCodeLmModelSelector, writer.uint32(442).fork()).join();
+    }
+    if (message.qwenApiLine !== undefined) {
+      writer.uint32(450).string(message.qwenApiLine);
+    }
+    if (message.nebiusApiKey !== undefined) {
+      writer.uint32(458).string(message.nebiusApiKey);
+    }
+    if (message.asksageApiUrl !== undefined) {
+      writer.uint32(466).string(message.asksageApiUrl);
+    }
+    if (message.asksageApiKey !== undefined) {
+      writer.uint32(474).string(message.asksageApiKey);
+    }
+    if (message.xaiApiKey !== undefined) {
+      writer.uint32(482).string(message.xaiApiKey);
+    }
+    if (message.thinkingBudgetTokens !== undefined) {
+      writer.uint32(488).int32(message.thinkingBudgetTokens);
+    }
+    if (message.reasoningEffort !== undefined) {
+      writer.uint32(498).string(message.reasoningEffort);
+    }
+    if (message.sambanovaApiKey !== undefined) {
+      writer.uint32(506).string(message.sambanovaApiKey);
+    }
+    if (message.cerebrasApiKey !== undefined) {
+      writer.uint32(514).string(message.cerebrasApiKey);
+    }
+    if (message.requestTimeoutMs !== undefined) {
+      writer.uint32(520).int32(message.requestTimeoutMs);
+    }
+    if (message.apiProvider !== undefined) {
+      writer.uint32(528).int32(message.apiProvider);
+    }
+    for (const v of message.favoritedModelIds) {
+      writer.uint32(538).string(v!);
+    }
+    if (message.sapAiCoreClientId !== undefined) {
+      writer.uint32(546).string(message.sapAiCoreClientId);
+    }
+    if (message.sapAiCoreClientSecret !== undefined) {
+      writer.uint32(554).string(message.sapAiCoreClientSecret);
+    }
+    if (message.sapAiResourceGroup !== undefined) {
+      writer.uint32(562).string(message.sapAiResourceGroup);
+    }
+    if (message.sapAiCoreTokenUrl !== undefined) {
+      writer.uint32(570).string(message.sapAiCoreTokenUrl);
+    }
+    if (message.sapAiCoreBaseUrl !== undefined) {
+      writer.uint32(578).string(message.sapAiCoreBaseUrl);
+    }
+    if (message.claudeCodePath !== undefined) {
+      writer.uint32(586).string(message.claudeCodePath);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ModelsApiConfiguration {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseModelsApiConfiguration();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.apiModelId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.apiKey = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.clineApiKey = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.taskId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.liteLlmBaseUrl = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.liteLlmModelId = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.liteLlmApiKey = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.liteLlmUsePromptCache = reader.bool();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          const entry9 = ModelsApiConfiguration_OpenAiHeadersEntry.decode(reader, reader.uint32());
+          if (entry9.value !== undefined) {
+            message.openAiHeaders[entry9.key] = entry9.value;
+          }
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.liteLlmModelInfo = LiteLLMModelInfo.decode(reader, reader.uint32());
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.anthropicBaseUrl = reader.string();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.openRouterApiKey = reader.string();
+          continue;
+        }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.openRouterModelId = reader.string();
+          continue;
+        }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.openRouterModelInfo = OpenRouterModelInfo.decode(reader, reader.uint32());
+          continue;
+        }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.openRouterProviderSorting = reader.string();
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.awsAccessKey = reader.string();
+          continue;
+        }
+        case 17: {
+          if (tag !== 138) {
+            break;
+          }
+
+          message.awsSecretKey = reader.string();
+          continue;
+        }
+        case 18: {
+          if (tag !== 146) {
+            break;
+          }
+
+          message.awsSessionToken = reader.string();
+          continue;
+        }
+        case 19: {
+          if (tag !== 154) {
+            break;
+          }
+
+          message.awsRegion = reader.string();
+          continue;
+        }
+        case 20: {
+          if (tag !== 160) {
+            break;
+          }
+
+          message.awsUseCrossRegionInference = reader.bool();
+          continue;
+        }
+        case 21: {
+          if (tag !== 168) {
+            break;
+          }
+
+          message.awsBedrockUsePromptCache = reader.bool();
+          continue;
+        }
+        case 22: {
+          if (tag !== 176) {
+            break;
+          }
+
+          message.awsUseProfile = reader.bool();
+          continue;
+        }
+        case 23: {
+          if (tag !== 186) {
+            break;
+          }
+
+          message.awsProfile = reader.string();
+          continue;
+        }
+        case 24: {
+          if (tag !== 194) {
+            break;
+          }
+
+          message.awsBedrockEndpoint = reader.string();
+          continue;
+        }
+        case 25: {
+          if (tag !== 200) {
+            break;
+          }
+
+          message.awsBedrockCustomSelected = reader.bool();
+          continue;
+        }
+        case 26: {
+          if (tag !== 210) {
+            break;
+          }
+
+          message.awsBedrockCustomModelBaseId = reader.string();
+          continue;
+        }
+        case 27: {
+          if (tag !== 218) {
+            break;
+          }
+
+          message.vertexProjectId = reader.string();
+          continue;
+        }
+        case 28: {
+          if (tag !== 226) {
+            break;
+          }
+
+          message.vertexRegion = reader.string();
+          continue;
+        }
+        case 29: {
+          if (tag !== 234) {
+            break;
+          }
+
+          message.openAiBaseUrl = reader.string();
+          continue;
+        }
+        case 30: {
+          if (tag !== 242) {
+            break;
+          }
+
+          message.openAiApiKey = reader.string();
+          continue;
+        }
+        case 31: {
+          if (tag !== 250) {
+            break;
+          }
+
+          message.openAiModelId = reader.string();
+          continue;
+        }
+        case 32: {
+          if (tag !== 258) {
+            break;
+          }
+
+          message.openAiModelInfo = OpenAiCompatibleModelInfo.decode(reader, reader.uint32());
+          continue;
+        }
+        case 33: {
+          if (tag !== 266) {
+            break;
+          }
+
+          message.ollamaModelId = reader.string();
+          continue;
+        }
+        case 34: {
+          if (tag !== 274) {
+            break;
+          }
+
+          message.ollamaBaseUrl = reader.string();
+          continue;
+        }
+        case 35: {
+          if (tag !== 282) {
+            break;
+          }
+
+          message.ollamaApiOptionsCtxNum = reader.string();
+          continue;
+        }
+        case 36: {
+          if (tag !== 290) {
+            break;
+          }
+
+          message.lmStudioModelId = reader.string();
+          continue;
+        }
+        case 37: {
+          if (tag !== 298) {
+            break;
+          }
+
+          message.lmStudioBaseUrl = reader.string();
+          continue;
+        }
+        case 38: {
+          if (tag !== 306) {
+            break;
+          }
+
+          message.geminiApiKey = reader.string();
+          continue;
+        }
+        case 39: {
+          if (tag !== 314) {
+            break;
+          }
+
+          message.geminiBaseUrl = reader.string();
+          continue;
+        }
+        case 40: {
+          if (tag !== 322) {
+            break;
+          }
+
+          message.openAiNativeApiKey = reader.string();
+          continue;
+        }
+        case 41: {
+          if (tag !== 330) {
+            break;
+          }
+
+          message.deepSeekApiKey = reader.string();
+          continue;
+        }
+        case 42: {
+          if (tag !== 338) {
+            break;
+          }
+
+          message.requestyApiKey = reader.string();
+          continue;
+        }
+        case 43: {
+          if (tag !== 346) {
+            break;
+          }
+
+          message.requestyModelId = reader.string();
+          continue;
+        }
+        case 44: {
+          if (tag !== 354) {
+            break;
+          }
+
+          message.requestyModelInfo = OpenRouterModelInfo.decode(reader, reader.uint32());
+          continue;
+        }
+        case 45: {
+          if (tag !== 362) {
+            break;
+          }
+
+          message.togetherApiKey = reader.string();
+          continue;
+        }
+        case 46: {
+          if (tag !== 370) {
+            break;
+          }
+
+          message.togetherModelId = reader.string();
+          continue;
+        }
+        case 47: {
+          if (tag !== 378) {
+            break;
+          }
+
+          message.fireworksApiKey = reader.string();
+          continue;
+        }
+        case 48: {
+          if (tag !== 386) {
+            break;
+          }
+
+          message.fireworksModelId = reader.string();
+          continue;
+        }
+        case 49: {
+          if (tag !== 392) {
+            break;
+          }
+
+          message.fireworksModelMaxCompletionTokens = reader.int32();
+          continue;
+        }
+        case 50: {
+          if (tag !== 400) {
+            break;
+          }
+
+          message.fireworksModelMaxTokens = reader.int32();
+          continue;
+        }
+        case 51: {
+          if (tag !== 410) {
+            break;
+          }
+
+          message.qwenApiKey = reader.string();
+          continue;
+        }
+        case 52: {
+          if (tag !== 418) {
+            break;
+          }
+
+          message.doubaoApiKey = reader.string();
+          continue;
+        }
+        case 53: {
+          if (tag !== 426) {
+            break;
+          }
+
+          message.mistralApiKey = reader.string();
+          continue;
+        }
+        case 54: {
+          if (tag !== 434) {
+            break;
+          }
+
+          message.azureApiVersion = reader.string();
+          continue;
+        }
+        case 55: {
+          if (tag !== 442) {
+            break;
+          }
+
+          message.vsCodeLmModelSelector = LanguageModelChatSelector.decode(reader, reader.uint32());
+          continue;
+        }
+        case 56: {
+          if (tag !== 450) {
+            break;
+          }
+
+          message.qwenApiLine = reader.string();
+          continue;
+        }
+        case 57: {
+          if (tag !== 458) {
+            break;
+          }
+
+          message.nebiusApiKey = reader.string();
+          continue;
+        }
+        case 58: {
+          if (tag !== 466) {
+            break;
+          }
+
+          message.asksageApiUrl = reader.string();
+          continue;
+        }
+        case 59: {
+          if (tag !== 474) {
+            break;
+          }
+
+          message.asksageApiKey = reader.string();
+          continue;
+        }
+        case 60: {
+          if (tag !== 482) {
+            break;
+          }
+
+          message.xaiApiKey = reader.string();
+          continue;
+        }
+        case 61: {
+          if (tag !== 488) {
+            break;
+          }
+
+          message.thinkingBudgetTokens = reader.int32();
+          continue;
+        }
+        case 62: {
+          if (tag !== 498) {
+            break;
+          }
+
+          message.reasoningEffort = reader.string();
+          continue;
+        }
+        case 63: {
+          if (tag !== 506) {
+            break;
+          }
+
+          message.sambanovaApiKey = reader.string();
+          continue;
+        }
+        case 64: {
+          if (tag !== 514) {
+            break;
+          }
+
+          message.cerebrasApiKey = reader.string();
+          continue;
+        }
+        case 65: {
+          if (tag !== 520) {
+            break;
+          }
+
+          message.requestTimeoutMs = reader.int32();
+          continue;
+        }
+        case 66: {
+          if (tag !== 528) {
+            break;
+          }
+
+          message.apiProvider = reader.int32() as any;
+          continue;
+        }
+        case 67: {
+          if (tag !== 538) {
+            break;
+          }
+
+          message.favoritedModelIds.push(reader.string());
+          continue;
+        }
+        case 68: {
+          if (tag !== 546) {
+            break;
+          }
+
+          message.sapAiCoreClientId = reader.string();
+          continue;
+        }
+        case 69: {
+          if (tag !== 554) {
+            break;
+          }
+
+          message.sapAiCoreClientSecret = reader.string();
+          continue;
+        }
+        case 70: {
+          if (tag !== 562) {
+            break;
+          }
+
+          message.sapAiResourceGroup = reader.string();
+          continue;
+        }
+        case 71: {
+          if (tag !== 570) {
+            break;
+          }
+
+          message.sapAiCoreTokenUrl = reader.string();
+          continue;
+        }
+        case 72: {
+          if (tag !== 578) {
+            break;
+          }
+
+          message.sapAiCoreBaseUrl = reader.string();
+          continue;
+        }
+        case 73: {
+          if (tag !== 586) {
+            break;
+          }
+
+          message.claudeCodePath = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ModelsApiConfiguration {
+    return {
+      apiModelId: isSet(object.apiModelId) ? globalThis.String(object.apiModelId) : undefined,
+      apiKey: isSet(object.apiKey) ? globalThis.String(object.apiKey) : undefined,
+      clineApiKey: isSet(object.clineApiKey) ? globalThis.String(object.clineApiKey) : undefined,
+      taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : undefined,
+      liteLlmBaseUrl: isSet(object.liteLlmBaseUrl) ? globalThis.String(object.liteLlmBaseUrl) : undefined,
+      liteLlmModelId: isSet(object.liteLlmModelId) ? globalThis.String(object.liteLlmModelId) : undefined,
+      liteLlmApiKey: isSet(object.liteLlmApiKey) ? globalThis.String(object.liteLlmApiKey) : undefined,
+      liteLlmUsePromptCache: isSet(object.liteLlmUsePromptCache)
+        ? globalThis.Boolean(object.liteLlmUsePromptCache)
+        : undefined,
+      openAiHeaders: isObject(object.openAiHeaders)
+        ? Object.entries(object.openAiHeaders).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+          acc[key] = String(value);
+          return acc;
+        }, {})
+        : {},
+      liteLlmModelInfo: isSet(object.liteLlmModelInfo) ? LiteLLMModelInfo.fromJSON(object.liteLlmModelInfo) : undefined,
+      anthropicBaseUrl: isSet(object.anthropicBaseUrl) ? globalThis.String(object.anthropicBaseUrl) : undefined,
+      openRouterApiKey: isSet(object.openRouterApiKey) ? globalThis.String(object.openRouterApiKey) : undefined,
+      openRouterModelId: isSet(object.openRouterModelId) ? globalThis.String(object.openRouterModelId) : undefined,
+      openRouterModelInfo: isSet(object.openRouterModelInfo)
+        ? OpenRouterModelInfo.fromJSON(object.openRouterModelInfo)
+        : undefined,
+      openRouterProviderSorting: isSet(object.openRouterProviderSorting)
+        ? globalThis.String(object.openRouterProviderSorting)
+        : undefined,
+      awsAccessKey: isSet(object.awsAccessKey) ? globalThis.String(object.awsAccessKey) : undefined,
+      awsSecretKey: isSet(object.awsSecretKey) ? globalThis.String(object.awsSecretKey) : undefined,
+      awsSessionToken: isSet(object.awsSessionToken) ? globalThis.String(object.awsSessionToken) : undefined,
+      awsRegion: isSet(object.awsRegion) ? globalThis.String(object.awsRegion) : undefined,
+      awsUseCrossRegionInference: isSet(object.awsUseCrossRegionInference)
+        ? globalThis.Boolean(object.awsUseCrossRegionInference)
+        : undefined,
+      awsBedrockUsePromptCache: isSet(object.awsBedrockUsePromptCache)
+        ? globalThis.Boolean(object.awsBedrockUsePromptCache)
+        : undefined,
+      awsUseProfile: isSet(object.awsUseProfile) ? globalThis.Boolean(object.awsUseProfile) : undefined,
+      awsProfile: isSet(object.awsProfile) ? globalThis.String(object.awsProfile) : undefined,
+      awsBedrockEndpoint: isSet(object.awsBedrockEndpoint) ? globalThis.String(object.awsBedrockEndpoint) : undefined,
+      awsBedrockCustomSelected: isSet(object.awsBedrockCustomSelected)
+        ? globalThis.Boolean(object.awsBedrockCustomSelected)
+        : undefined,
+      awsBedrockCustomModelBaseId: isSet(object.awsBedrockCustomModelBaseId)
+        ? globalThis.String(object.awsBedrockCustomModelBaseId)
+        : undefined,
+      vertexProjectId: isSet(object.vertexProjectId) ? globalThis.String(object.vertexProjectId) : undefined,
+      vertexRegion: isSet(object.vertexRegion) ? globalThis.String(object.vertexRegion) : undefined,
+      openAiBaseUrl: isSet(object.openAiBaseUrl) ? globalThis.String(object.openAiBaseUrl) : undefined,
+      openAiApiKey: isSet(object.openAiApiKey) ? globalThis.String(object.openAiApiKey) : undefined,
+      openAiModelId: isSet(object.openAiModelId) ? globalThis.String(object.openAiModelId) : undefined,
+      openAiModelInfo: isSet(object.openAiModelInfo)
+        ? OpenAiCompatibleModelInfo.fromJSON(object.openAiModelInfo)
+        : undefined,
+      ollamaModelId: isSet(object.ollamaModelId) ? globalThis.String(object.ollamaModelId) : undefined,
+      ollamaBaseUrl: isSet(object.ollamaBaseUrl) ? globalThis.String(object.ollamaBaseUrl) : undefined,
+      ollamaApiOptionsCtxNum: isSet(object.ollamaApiOptionsCtxNum)
+        ? globalThis.String(object.ollamaApiOptionsCtxNum)
+        : undefined,
+      lmStudioModelId: isSet(object.lmStudioModelId) ? globalThis.String(object.lmStudioModelId) : undefined,
+      lmStudioBaseUrl: isSet(object.lmStudioBaseUrl) ? globalThis.String(object.lmStudioBaseUrl) : undefined,
+      geminiApiKey: isSet(object.geminiApiKey) ? globalThis.String(object.geminiApiKey) : undefined,
+      geminiBaseUrl: isSet(object.geminiBaseUrl) ? globalThis.String(object.geminiBaseUrl) : undefined,
+      openAiNativeApiKey: isSet(object.openAiNativeApiKey) ? globalThis.String(object.openAiNativeApiKey) : undefined,
+      deepSeekApiKey: isSet(object.deepSeekApiKey) ? globalThis.String(object.deepSeekApiKey) : undefined,
+      requestyApiKey: isSet(object.requestyApiKey) ? globalThis.String(object.requestyApiKey) : undefined,
+      requestyModelId: isSet(object.requestyModelId) ? globalThis.String(object.requestyModelId) : undefined,
+      requestyModelInfo: isSet(object.requestyModelInfo)
+        ? OpenRouterModelInfo.fromJSON(object.requestyModelInfo)
+        : undefined,
+      togetherApiKey: isSet(object.togetherApiKey) ? globalThis.String(object.togetherApiKey) : undefined,
+      togetherModelId: isSet(object.togetherModelId) ? globalThis.String(object.togetherModelId) : undefined,
+      fireworksApiKey: isSet(object.fireworksApiKey) ? globalThis.String(object.fireworksApiKey) : undefined,
+      fireworksModelId: isSet(object.fireworksModelId) ? globalThis.String(object.fireworksModelId) : undefined,
+      fireworksModelMaxCompletionTokens: isSet(object.fireworksModelMaxCompletionTokens)
+        ? globalThis.Number(object.fireworksModelMaxCompletionTokens)
+        : undefined,
+      fireworksModelMaxTokens: isSet(object.fireworksModelMaxTokens)
+        ? globalThis.Number(object.fireworksModelMaxTokens)
+        : undefined,
+      qwenApiKey: isSet(object.qwenApiKey) ? globalThis.String(object.qwenApiKey) : undefined,
+      doubaoApiKey: isSet(object.doubaoApiKey) ? globalThis.String(object.doubaoApiKey) : undefined,
+      mistralApiKey: isSet(object.mistralApiKey) ? globalThis.String(object.mistralApiKey) : undefined,
+      azureApiVersion: isSet(object.azureApiVersion) ? globalThis.String(object.azureApiVersion) : undefined,
+      vsCodeLmModelSelector: isSet(object.vsCodeLmModelSelector)
+        ? LanguageModelChatSelector.fromJSON(object.vsCodeLmModelSelector)
+        : undefined,
+      qwenApiLine: isSet(object.qwenApiLine) ? globalThis.String(object.qwenApiLine) : undefined,
+      nebiusApiKey: isSet(object.nebiusApiKey) ? globalThis.String(object.nebiusApiKey) : undefined,
+      asksageApiUrl: isSet(object.asksageApiUrl) ? globalThis.String(object.asksageApiUrl) : undefined,
+      asksageApiKey: isSet(object.asksageApiKey) ? globalThis.String(object.asksageApiKey) : undefined,
+      xaiApiKey: isSet(object.xaiApiKey) ? globalThis.String(object.xaiApiKey) : undefined,
+      thinkingBudgetTokens: isSet(object.thinkingBudgetTokens)
+        ? globalThis.Number(object.thinkingBudgetTokens)
+        : undefined,
+      reasoningEffort: isSet(object.reasoningEffort) ? globalThis.String(object.reasoningEffort) : undefined,
+      sambanovaApiKey: isSet(object.sambanovaApiKey) ? globalThis.String(object.sambanovaApiKey) : undefined,
+      cerebrasApiKey: isSet(object.cerebrasApiKey) ? globalThis.String(object.cerebrasApiKey) : undefined,
+      requestTimeoutMs: isSet(object.requestTimeoutMs) ? globalThis.Number(object.requestTimeoutMs) : undefined,
+      apiProvider: isSet(object.apiProvider) ? apiProviderFromJSON(object.apiProvider) : undefined,
+      favoritedModelIds: globalThis.Array.isArray(object?.favoritedModelIds)
+        ? object.favoritedModelIds.map((e: any) => globalThis.String(e))
+        : [],
+      sapAiCoreClientId: isSet(object.sapAiCoreClientId) ? globalThis.String(object.sapAiCoreClientId) : undefined,
+      sapAiCoreClientSecret: isSet(object.sapAiCoreClientSecret)
+        ? globalThis.String(object.sapAiCoreClientSecret)
+        : undefined,
+      sapAiResourceGroup: isSet(object.sapAiResourceGroup) ? globalThis.String(object.sapAiResourceGroup) : undefined,
+      sapAiCoreTokenUrl: isSet(object.sapAiCoreTokenUrl) ? globalThis.String(object.sapAiCoreTokenUrl) : undefined,
+      sapAiCoreBaseUrl: isSet(object.sapAiCoreBaseUrl) ? globalThis.String(object.sapAiCoreBaseUrl) : undefined,
+      claudeCodePath: isSet(object.claudeCodePath) ? globalThis.String(object.claudeCodePath) : undefined,
+    };
+  },
+
+  toJSON(message: ModelsApiConfiguration): unknown {
+    const obj: any = {};
+    if (message.apiModelId !== undefined) {
+      obj.apiModelId = message.apiModelId;
+    }
+    if (message.apiKey !== undefined) {
+      obj.apiKey = message.apiKey;
+    }
+    if (message.clineApiKey !== undefined) {
+      obj.clineApiKey = message.clineApiKey;
+    }
+    if (message.taskId !== undefined) {
+      obj.taskId = message.taskId;
+    }
+    if (message.liteLlmBaseUrl !== undefined) {
+      obj.liteLlmBaseUrl = message.liteLlmBaseUrl;
+    }
+    if (message.liteLlmModelId !== undefined) {
+      obj.liteLlmModelId = message.liteLlmModelId;
+    }
+    if (message.liteLlmApiKey !== undefined) {
+      obj.liteLlmApiKey = message.liteLlmApiKey;
+    }
+    if (message.liteLlmUsePromptCache !== undefined) {
+      obj.liteLlmUsePromptCache = message.liteLlmUsePromptCache;
+    }
+    if (message.openAiHeaders) {
+      const entries = Object.entries(message.openAiHeaders);
+      if (entries.length > 0) {
+        obj.openAiHeaders = {};
+        entries.forEach(([k, v]) => {
+          obj.openAiHeaders[k] = v;
+        });
+      }
+    }
+    if (message.liteLlmModelInfo !== undefined) {
+      obj.liteLlmModelInfo = LiteLLMModelInfo.toJSON(message.liteLlmModelInfo);
+    }
+    if (message.anthropicBaseUrl !== undefined) {
+      obj.anthropicBaseUrl = message.anthropicBaseUrl;
+    }
+    if (message.openRouterApiKey !== undefined) {
+      obj.openRouterApiKey = message.openRouterApiKey;
+    }
+    if (message.openRouterModelId !== undefined) {
+      obj.openRouterModelId = message.openRouterModelId;
+    }
+    if (message.openRouterModelInfo !== undefined) {
+      obj.openRouterModelInfo = OpenRouterModelInfo.toJSON(message.openRouterModelInfo);
+    }
+    if (message.openRouterProviderSorting !== undefined) {
+      obj.openRouterProviderSorting = message.openRouterProviderSorting;
+    }
+    if (message.awsAccessKey !== undefined) {
+      obj.awsAccessKey = message.awsAccessKey;
+    }
+    if (message.awsSecretKey !== undefined) {
+      obj.awsSecretKey = message.awsSecretKey;
+    }
+    if (message.awsSessionToken !== undefined) {
+      obj.awsSessionToken = message.awsSessionToken;
+    }
+    if (message.awsRegion !== undefined) {
+      obj.awsRegion = message.awsRegion;
+    }
+    if (message.awsUseCrossRegionInference !== undefined) {
+      obj.awsUseCrossRegionInference = message.awsUseCrossRegionInference;
+    }
+    if (message.awsBedrockUsePromptCache !== undefined) {
+      obj.awsBedrockUsePromptCache = message.awsBedrockUsePromptCache;
+    }
+    if (message.awsUseProfile !== undefined) {
+      obj.awsUseProfile = message.awsUseProfile;
+    }
+    if (message.awsProfile !== undefined) {
+      obj.awsProfile = message.awsProfile;
+    }
+    if (message.awsBedrockEndpoint !== undefined) {
+      obj.awsBedrockEndpoint = message.awsBedrockEndpoint;
+    }
+    if (message.awsBedrockCustomSelected !== undefined) {
+      obj.awsBedrockCustomSelected = message.awsBedrockCustomSelected;
+    }
+    if (message.awsBedrockCustomModelBaseId !== undefined) {
+      obj.awsBedrockCustomModelBaseId = message.awsBedrockCustomModelBaseId;
+    }
+    if (message.vertexProjectId !== undefined) {
+      obj.vertexProjectId = message.vertexProjectId;
+    }
+    if (message.vertexRegion !== undefined) {
+      obj.vertexRegion = message.vertexRegion;
+    }
+    if (message.openAiBaseUrl !== undefined) {
+      obj.openAiBaseUrl = message.openAiBaseUrl;
+    }
+    if (message.openAiApiKey !== undefined) {
+      obj.openAiApiKey = message.openAiApiKey;
+    }
+    if (message.openAiModelId !== undefined) {
+      obj.openAiModelId = message.openAiModelId;
+    }
+    if (message.openAiModelInfo !== undefined) {
+      obj.openAiModelInfo = OpenAiCompatibleModelInfo.toJSON(message.openAiModelInfo);
+    }
+    if (message.ollamaModelId !== undefined) {
+      obj.ollamaModelId = message.ollamaModelId;
+    }
+    if (message.ollamaBaseUrl !== undefined) {
+      obj.ollamaBaseUrl = message.ollamaBaseUrl;
+    }
+    if (message.ollamaApiOptionsCtxNum !== undefined) {
+      obj.ollamaApiOptionsCtxNum = message.ollamaApiOptionsCtxNum;
+    }
+    if (message.lmStudioModelId !== undefined) {
+      obj.lmStudioModelId = message.lmStudioModelId;
+    }
+    if (message.lmStudioBaseUrl !== undefined) {
+      obj.lmStudioBaseUrl = message.lmStudioBaseUrl;
+    }
+    if (message.geminiApiKey !== undefined) {
+      obj.geminiApiKey = message.geminiApiKey;
+    }
+    if (message.geminiBaseUrl !== undefined) {
+      obj.geminiBaseUrl = message.geminiBaseUrl;
+    }
+    if (message.openAiNativeApiKey !== undefined) {
+      obj.openAiNativeApiKey = message.openAiNativeApiKey;
+    }
+    if (message.deepSeekApiKey !== undefined) {
+      obj.deepSeekApiKey = message.deepSeekApiKey;
+    }
+    if (message.requestyApiKey !== undefined) {
+      obj.requestyApiKey = message.requestyApiKey;
+    }
+    if (message.requestyModelId !== undefined) {
+      obj.requestyModelId = message.requestyModelId;
+    }
+    if (message.requestyModelInfo !== undefined) {
+      obj.requestyModelInfo = OpenRouterModelInfo.toJSON(message.requestyModelInfo);
+    }
+    if (message.togetherApiKey !== undefined) {
+      obj.togetherApiKey = message.togetherApiKey;
+    }
+    if (message.togetherModelId !== undefined) {
+      obj.togetherModelId = message.togetherModelId;
+    }
+    if (message.fireworksApiKey !== undefined) {
+      obj.fireworksApiKey = message.fireworksApiKey;
+    }
+    if (message.fireworksModelId !== undefined) {
+      obj.fireworksModelId = message.fireworksModelId;
+    }
+    if (message.fireworksModelMaxCompletionTokens !== undefined) {
+      obj.fireworksModelMaxCompletionTokens = Math.round(message.fireworksModelMaxCompletionTokens);
+    }
+    if (message.fireworksModelMaxTokens !== undefined) {
+      obj.fireworksModelMaxTokens = Math.round(message.fireworksModelMaxTokens);
+    }
+    if (message.qwenApiKey !== undefined) {
+      obj.qwenApiKey = message.qwenApiKey;
+    }
+    if (message.doubaoApiKey !== undefined) {
+      obj.doubaoApiKey = message.doubaoApiKey;
+    }
+    if (message.mistralApiKey !== undefined) {
+      obj.mistralApiKey = message.mistralApiKey;
+    }
+    if (message.azureApiVersion !== undefined) {
+      obj.azureApiVersion = message.azureApiVersion;
+    }
+    if (message.vsCodeLmModelSelector !== undefined) {
+      obj.vsCodeLmModelSelector = LanguageModelChatSelector.toJSON(message.vsCodeLmModelSelector);
+    }
+    if (message.qwenApiLine !== undefined) {
+      obj.qwenApiLine = message.qwenApiLine;
+    }
+    if (message.nebiusApiKey !== undefined) {
+      obj.nebiusApiKey = message.nebiusApiKey;
+    }
+    if (message.asksageApiUrl !== undefined) {
+      obj.asksageApiUrl = message.asksageApiUrl;
+    }
+    if (message.asksageApiKey !== undefined) {
+      obj.asksageApiKey = message.asksageApiKey;
+    }
+    if (message.xaiApiKey !== undefined) {
+      obj.xaiApiKey = message.xaiApiKey;
+    }
+    if (message.thinkingBudgetTokens !== undefined) {
+      obj.thinkingBudgetTokens = Math.round(message.thinkingBudgetTokens);
+    }
+    if (message.reasoningEffort !== undefined) {
+      obj.reasoningEffort = message.reasoningEffort;
+    }
+    if (message.sambanovaApiKey !== undefined) {
+      obj.sambanovaApiKey = message.sambanovaApiKey;
+    }
+    if (message.cerebrasApiKey !== undefined) {
+      obj.cerebrasApiKey = message.cerebrasApiKey;
+    }
+    if (message.requestTimeoutMs !== undefined) {
+      obj.requestTimeoutMs = Math.round(message.requestTimeoutMs);
+    }
+    if (message.apiProvider !== undefined) {
+      obj.apiProvider = apiProviderToJSON(message.apiProvider);
+    }
+    if (message.favoritedModelIds?.length) {
+      obj.favoritedModelIds = message.favoritedModelIds;
+    }
+    if (message.sapAiCoreClientId !== undefined) {
+      obj.sapAiCoreClientId = message.sapAiCoreClientId;
+    }
+    if (message.sapAiCoreClientSecret !== undefined) {
+      obj.sapAiCoreClientSecret = message.sapAiCoreClientSecret;
+    }
+    if (message.sapAiResourceGroup !== undefined) {
+      obj.sapAiResourceGroup = message.sapAiResourceGroup;
+    }
+    if (message.sapAiCoreTokenUrl !== undefined) {
+      obj.sapAiCoreTokenUrl = message.sapAiCoreTokenUrl;
+    }
+    if (message.sapAiCoreBaseUrl !== undefined) {
+      obj.sapAiCoreBaseUrl = message.sapAiCoreBaseUrl;
+    }
+    if (message.claudeCodePath !== undefined) {
+      obj.claudeCodePath = message.claudeCodePath;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ModelsApiConfiguration>, I>>(base?: I): ModelsApiConfiguration {
+    return ModelsApiConfiguration.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ModelsApiConfiguration>, I>>(object: I): ModelsApiConfiguration {
+    const message = createBaseModelsApiConfiguration();
+    message.apiModelId = object.apiModelId ?? undefined;
+    message.apiKey = object.apiKey ?? undefined;
+    message.clineApiKey = object.clineApiKey ?? undefined;
+    message.taskId = object.taskId ?? undefined;
+    message.liteLlmBaseUrl = object.liteLlmBaseUrl ?? undefined;
+    message.liteLlmModelId = object.liteLlmModelId ?? undefined;
+    message.liteLlmApiKey = object.liteLlmApiKey ?? undefined;
+    message.liteLlmUsePromptCache = object.liteLlmUsePromptCache ?? undefined;
+    message.openAiHeaders = Object.entries(object.openAiHeaders ?? {}).reduce<{ [key: string]: string }>(
+      (acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = globalThis.String(value);
+        }
+        return acc;
+      },
+      {},
+    );
+    message.liteLlmModelInfo = (object.liteLlmModelInfo !== undefined && object.liteLlmModelInfo !== null)
+      ? LiteLLMModelInfo.fromPartial(object.liteLlmModelInfo)
+      : undefined;
+    message.anthropicBaseUrl = object.anthropicBaseUrl ?? undefined;
+    message.openRouterApiKey = object.openRouterApiKey ?? undefined;
+    message.openRouterModelId = object.openRouterModelId ?? undefined;
+    message.openRouterModelInfo = (object.openRouterModelInfo !== undefined && object.openRouterModelInfo !== null)
+      ? OpenRouterModelInfo.fromPartial(object.openRouterModelInfo)
+      : undefined;
+    message.openRouterProviderSorting = object.openRouterProviderSorting ?? undefined;
+    message.awsAccessKey = object.awsAccessKey ?? undefined;
+    message.awsSecretKey = object.awsSecretKey ?? undefined;
+    message.awsSessionToken = object.awsSessionToken ?? undefined;
+    message.awsRegion = object.awsRegion ?? undefined;
+    message.awsUseCrossRegionInference = object.awsUseCrossRegionInference ?? undefined;
+    message.awsBedrockUsePromptCache = object.awsBedrockUsePromptCache ?? undefined;
+    message.awsUseProfile = object.awsUseProfile ?? undefined;
+    message.awsProfile = object.awsProfile ?? undefined;
+    message.awsBedrockEndpoint = object.awsBedrockEndpoint ?? undefined;
+    message.awsBedrockCustomSelected = object.awsBedrockCustomSelected ?? undefined;
+    message.awsBedrockCustomModelBaseId = object.awsBedrockCustomModelBaseId ?? undefined;
+    message.vertexProjectId = object.vertexProjectId ?? undefined;
+    message.vertexRegion = object.vertexRegion ?? undefined;
+    message.openAiBaseUrl = object.openAiBaseUrl ?? undefined;
+    message.openAiApiKey = object.openAiApiKey ?? undefined;
+    message.openAiModelId = object.openAiModelId ?? undefined;
+    message.openAiModelInfo = (object.openAiModelInfo !== undefined && object.openAiModelInfo !== null)
+      ? OpenAiCompatibleModelInfo.fromPartial(object.openAiModelInfo)
+      : undefined;
+    message.ollamaModelId = object.ollamaModelId ?? undefined;
+    message.ollamaBaseUrl = object.ollamaBaseUrl ?? undefined;
+    message.ollamaApiOptionsCtxNum = object.ollamaApiOptionsCtxNum ?? undefined;
+    message.lmStudioModelId = object.lmStudioModelId ?? undefined;
+    message.lmStudioBaseUrl = object.lmStudioBaseUrl ?? undefined;
+    message.geminiApiKey = object.geminiApiKey ?? undefined;
+    message.geminiBaseUrl = object.geminiBaseUrl ?? undefined;
+    message.openAiNativeApiKey = object.openAiNativeApiKey ?? undefined;
+    message.deepSeekApiKey = object.deepSeekApiKey ?? undefined;
+    message.requestyApiKey = object.requestyApiKey ?? undefined;
+    message.requestyModelId = object.requestyModelId ?? undefined;
+    message.requestyModelInfo = (object.requestyModelInfo !== undefined && object.requestyModelInfo !== null)
+      ? OpenRouterModelInfo.fromPartial(object.requestyModelInfo)
+      : undefined;
+    message.togetherApiKey = object.togetherApiKey ?? undefined;
+    message.togetherModelId = object.togetherModelId ?? undefined;
+    message.fireworksApiKey = object.fireworksApiKey ?? undefined;
+    message.fireworksModelId = object.fireworksModelId ?? undefined;
+    message.fireworksModelMaxCompletionTokens = object.fireworksModelMaxCompletionTokens ?? undefined;
+    message.fireworksModelMaxTokens = object.fireworksModelMaxTokens ?? undefined;
+    message.qwenApiKey = object.qwenApiKey ?? undefined;
+    message.doubaoApiKey = object.doubaoApiKey ?? undefined;
+    message.mistralApiKey = object.mistralApiKey ?? undefined;
+    message.azureApiVersion = object.azureApiVersion ?? undefined;
+    message.vsCodeLmModelSelector =
+      (object.vsCodeLmModelSelector !== undefined && object.vsCodeLmModelSelector !== null)
+        ? LanguageModelChatSelector.fromPartial(object.vsCodeLmModelSelector)
+        : undefined;
+    message.qwenApiLine = object.qwenApiLine ?? undefined;
+    message.nebiusApiKey = object.nebiusApiKey ?? undefined;
+    message.asksageApiUrl = object.asksageApiUrl ?? undefined;
+    message.asksageApiKey = object.asksageApiKey ?? undefined;
+    message.xaiApiKey = object.xaiApiKey ?? undefined;
+    message.thinkingBudgetTokens = object.thinkingBudgetTokens ?? undefined;
+    message.reasoningEffort = object.reasoningEffort ?? undefined;
+    message.sambanovaApiKey = object.sambanovaApiKey ?? undefined;
+    message.cerebrasApiKey = object.cerebrasApiKey ?? undefined;
+    message.requestTimeoutMs = object.requestTimeoutMs ?? undefined;
+    message.apiProvider = object.apiProvider ?? undefined;
+    message.favoritedModelIds = object.favoritedModelIds?.map((e) => e) || [];
+    message.sapAiCoreClientId = object.sapAiCoreClientId ?? undefined;
+    message.sapAiCoreClientSecret = object.sapAiCoreClientSecret ?? undefined;
+    message.sapAiResourceGroup = object.sapAiResourceGroup ?? undefined;
+    message.sapAiCoreTokenUrl = object.sapAiCoreTokenUrl ?? undefined;
+    message.sapAiCoreBaseUrl = object.sapAiCoreBaseUrl ?? undefined;
+    message.claudeCodePath = object.claudeCodePath ?? undefined;
+    return message;
+  },
+};
+
+function createBaseModelsApiConfiguration_OpenAiHeadersEntry(): ModelsApiConfiguration_OpenAiHeadersEntry {
+  return { key: "", value: "" };
+}
+
+export const ModelsApiConfiguration_OpenAiHeadersEntry: MessageFns<ModelsApiConfiguration_OpenAiHeadersEntry> = {
+  encode(message: ModelsApiConfiguration_OpenAiHeadersEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== "") {
+      writer.uint32(18).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ModelsApiConfiguration_OpenAiHeadersEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseModelsApiConfiguration_OpenAiHeadersEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ModelsApiConfiguration_OpenAiHeadersEntry {
+    return {
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      value: isSet(object.value) ? globalThis.String(object.value) : "",
+    };
+  },
+
+  toJSON(message: ModelsApiConfiguration_OpenAiHeadersEntry): unknown {
+    const obj: any = {};
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== "") {
+      obj.value = message.value;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ModelsApiConfiguration_OpenAiHeadersEntry>, I>>(
+    base?: I,
+  ): ModelsApiConfiguration_OpenAiHeadersEntry {
+    return ModelsApiConfiguration_OpenAiHeadersEntry.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ModelsApiConfiguration_OpenAiHeadersEntry>, I>>(
+    object: I,
+  ): ModelsApiConfiguration_OpenAiHeadersEntry {
+    const message = createBaseModelsApiConfiguration_OpenAiHeadersEntry();
+    message.key = object.key ?? "";
+    message.value = object.value ?? "";
+    return message;
+  },
+};
+
 function createBaseShengSuanYunModelInfo(): ShengSuanYunModelInfo {
   return {
     maxTokens: undefined,
@@ -1320,7 +3696,7 @@ export const ShengSuanYunModelInfo: MessageFns<ShengSuanYunModelInfo> = {
 export type ModelsServiceDefinition = typeof ModelsServiceDefinition;
 export const ModelsServiceDefinition = {
   name: "ModelsService",
-  fullName: "ClineShengsuan.ModelsService",
+  fullName: "cline_shengsuan.ModelsService",
   methods: {
     /** Fetches available models from Ollama */
     getOllamaModels: {
@@ -1392,6 +3768,15 @@ export const ModelsServiceDefinition = {
       requestStream: false,
       responseType: OpenRouterCompatibleModelInfo,
       responseStream: true,
+      options: {},
+    },
+    /** Updates API configuration */
+    updateApiConfigurationProto: {
+      name: "updateApiConfigurationProto",
+      requestType: UpdateApiConfigurationRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: false,
       options: {},
     },
   },

@@ -14,7 +14,7 @@ service WatchService {
 
 // Request to subscribe to file changes
 message SubscribeToFileRequest {
-  ClineShengsuan.Metadata metadata = 1;
+  cline_shengsuan.Metadata metadata = 1;
   string path = 2;
 }
 
