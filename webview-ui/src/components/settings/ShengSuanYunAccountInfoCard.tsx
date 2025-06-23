@@ -4,13 +4,11 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { vscode } from "@/utils/vscode"
 
 export const ShengSuanYunAccountInfoCard = () => {
-	const { userSSY: ssyUser } = useShengSuanYunAuth()
-	const { userInfo, apiConfiguration, navigateToAccount } = useExtensionState()
-	let user = apiConfiguration?.shengSuanYunToken ? ssyUser || userInfo : undefined
-
+	const { apiConfiguration, navigateToAccount } = useExtensionState()
+	let key = apiConfiguration?.shengSuanYunApiKey || false
 	return (
 		<div className="max-w-[600px]">
-			{user?.Wallet ? (
+			{key ? (
 				<VSCodeButton
 					appearance="secondary"
 					onClick={() => {

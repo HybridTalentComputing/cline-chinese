@@ -27,47 +27,47 @@ export interface ServiceHandlerConfig {
  * Map of service names to their handler configurations
  */
 export const serviceHandlers: Record<string, ServiceHandlerConfig> = {
-  "ClineShengsuan.AccountService": {
+  "cline_shengsuan.AccountService": {
     requestHandler: handleAccountServiceRequest,
     streamingHandler: handleAccountServiceStreamingRequest
   },
-  "ClineShengsuan.BrowserService": {
+  "cline_shengsuan.BrowserService": {
     requestHandler: handleBrowserServiceRequest,
     streamingHandler: handleBrowserServiceStreamingRequest
   },
-  "ClineShengsuan.CheckpointsService": {
+  "cline_shengsuan.CheckpointsService": {
     requestHandler: handleCheckpointsServiceRequest,
     streamingHandler: handleCheckpointsServiceStreamingRequest
   },
-  "ClineShengsuan.FileService": {
+  "cline_shengsuan.FileService": {
     requestHandler: handleFileServiceRequest,
     streamingHandler: handleFileServiceStreamingRequest
   },
-  "ClineShengsuan.McpService": {
+  "cline_shengsuan.McpService": {
     requestHandler: handleMcpServiceRequest,
     streamingHandler: handleMcpServiceStreamingRequest
   },
-  "ClineShengsuan.StateService": {
+  "cline_shengsuan.StateService": {
     requestHandler: handleStateServiceRequest,
     streamingHandler: handleStateServiceStreamingRequest
   },
-  "ClineShengsuan.TaskService": {
+  "cline_shengsuan.TaskService": {
     requestHandler: handleTaskServiceRequest,
     streamingHandler: handleTaskServiceStreamingRequest
   },
-  "ClineShengsuan.WebService": {
+  "cline_shengsuan.WebService": {
     requestHandler: handleWebServiceRequest,
     streamingHandler: handleWebServiceStreamingRequest
   },
-  "ClineShengsuan.ModelsService": {
+  "cline_shengsuan.ModelsService": {
     requestHandler: handleModelsServiceRequest,
     streamingHandler: handleModelsServiceStreamingRequest
   },
-  "ClineShengsuan.SlashService": {
+  "cline_shengsuan.SlashService": {
     requestHandler: handleSlashServiceRequest,
     streamingHandler: handleSlashServiceStreamingRequest
   },
-  "ClineShengsuan.UiService": {
+  "cline_shengsuan.UiService": {
     requestHandler: handleUiServiceRequest,
     streamingHandler: handleUiServiceStreamingRequest
   }

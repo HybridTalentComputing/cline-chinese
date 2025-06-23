@@ -18,21 +18,36 @@ import { subscribeToRelinquishControl } from "./subscribeToRelinquishControl"
 import { subscribeToSettingsButtonClicked } from "./subscribeToSettingsButtonClicked"
 import { subscribeToTheme } from "./subscribeToTheme"
 
+// Streaming methods for this service
+export const streamingMethods = [
+  "subscribeToAddToInput",
+  "subscribeToMcpButtonClicked",
+  "subscribeToHistoryButtonClicked",
+  "subscribeToChatButtonClicked",
+  "subscribeToAccountButtonClicked",
+  "subscribeToSettingsButtonClicked",
+  "subscribeToPartialMessage",
+  "subscribeToTheme",
+  "subscribeToRelinquishControl",
+  "subscribeToFocusChatInput",
+  "subscribeToDidBecomeVisible"
+]
+
 // Register all ui service methods
 export function registerAllMethods(): void {
 	// Register each method with the registry
 	registerMethod("initializeWebview", initializeWebview)
 	registerMethod("onDidShowAnnouncement", onDidShowAnnouncement)
 	registerMethod("scrollToSettings", scrollToSettings)
-	registerMethod("subscribeToAccountButtonClicked", subscribeToAccountButtonClicked)
-	registerMethod("subscribeToAddToInput", subscribeToAddToInput)
-	registerMethod("subscribeToChatButtonClicked", subscribeToChatButtonClicked)
-	registerMethod("subscribeToDidBecomeVisible", subscribeToDidBecomeVisible)
-	registerMethod("subscribeToFocusChatInput", subscribeToFocusChatInput)
-	registerMethod("subscribeToHistoryButtonClicked", subscribeToHistoryButtonClicked)
-	registerMethod("subscribeToMcpButtonClicked", subscribeToMcpButtonClicked)
-	registerMethod("subscribeToPartialMessage", subscribeToPartialMessage)
-	registerMethod("subscribeToRelinquishControl", subscribeToRelinquishControl)
-	registerMethod("subscribeToSettingsButtonClicked", subscribeToSettingsButtonClicked)
-	registerMethod("subscribeToTheme", subscribeToTheme)
+	registerMethod("subscribeToAccountButtonClicked", subscribeToAccountButtonClicked, { isStreaming: true })
+	registerMethod("subscribeToAddToInput", subscribeToAddToInput, { isStreaming: true })
+	registerMethod("subscribeToChatButtonClicked", subscribeToChatButtonClicked, { isStreaming: true })
+	registerMethod("subscribeToDidBecomeVisible", subscribeToDidBecomeVisible, { isStreaming: true })
+	registerMethod("subscribeToFocusChatInput", subscribeToFocusChatInput, { isStreaming: true })
+	registerMethod("subscribeToHistoryButtonClicked", subscribeToHistoryButtonClicked, { isStreaming: true })
+	registerMethod("subscribeToMcpButtonClicked", subscribeToMcpButtonClicked, { isStreaming: true })
+	registerMethod("subscribeToPartialMessage", subscribeToPartialMessage, { isStreaming: true })
+	registerMethod("subscribeToRelinquishControl", subscribeToRelinquishControl, { isStreaming: true })
+	registerMethod("subscribeToSettingsButtonClicked", subscribeToSettingsButtonClicked, { isStreaming: true })
+	registerMethod("subscribeToTheme", subscribeToTheme, { isStreaming: true })
 }

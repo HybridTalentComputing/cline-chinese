@@ -2,7 +2,7 @@
 	"name": "cline-shengsuan",
 	"displayName": "Cline-中文版",
 	"description": "Cline-中文版是一款在您的IDE中运行的强大自主编程助手，经您许可后可创建/编辑文件、运行命令、使用浏览器等。",
-	"version": "3.17.14",
+	"version": "3.17.15",
 	"icon": "assets/icons/icon.png",
 	"engines": {
 		"vscode": "^1.84.0"
@@ -51,8 +51,8 @@
 		"walkthroughs": [
 			{
 				"id": "ClineWalkthrough",
-				"title": "Meet Cline, your new coding partner",
-				"description": "Cline codes like a developer because it thinks like one. Here are 5 ways to put it to work:",
+				"title": "欢迎使用 Cline, 你的新编程伙伴",
+				"description": "Cline 像开发者一样编码，因为它的思维方式也像开发者一样。以下 5 种方法助您一臂之力:",
 				"steps": [
 					{
 						"id": "welcome",
@@ -113,81 +113,81 @@
 			"cline-shengsuan-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "clineShengsuan.SidebarProvider",
+					"id": "ClineShengsuan.SidebarProvider",
 					"name": ""
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "clineShengsuan.plusButtonClicked",
+				"command": "ClineShengsuan.plusButtonClicked",
 				"title": "新任务",
 				"icon": "$(add)"
 			},
 			{
-				"command": "clineShengsuan.mcpButtonClicked",
+				"command": "ClineShengsuan.mcpButtonClicked",
 				"title": "MCP 服务",
 				"icon": "$(server)"
 			},
 			{
-				"command": "clineShengsuan.historyButtonClicked",
+				"command": "ClineShengsuan.historyButtonClicked",
 				"title": "历史记录",
 				"icon": "$(history)"
 			},
 			{
-				"command": "clineShengsuan.popoutButtonClicked",
+				"command": "ClineShengsuan.popoutButtonClicked",
 				"title": "编辑器打开",
 				"icon": "$(link-external)"
 			},
 			{
-				"command": "clineShengsuan.accountButtonClicked",
+				"command": "ClineShengsuan.accountButtonClicked",
 				"title": "账户",
 				"icon": "$(account)"
 			},
 			{
-				"command": "clineShengsuan.settingsButtonClicked",
+				"command": "ClineShengsuan.settingsButtonClicked",
 				"title": "设置",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "clineShengsuan.openInNewTab",
+				"command": "ClineShengsuan.openInNewTab",
 				"title": "在新标签打开",
 				"category": "ClineShengsuan"
 			},
 			{
-				"command": "clineShengsuan.dev.createTestTasks",
+				"command": "ClineShengsuan.dev.createTestTasks",
 				"title": "创建测试任务",
 				"category": "ClineShengsuan",
-				"when": "clineShengsuan.isDevMode"
+				"when": "ClineShengsuan.isDevMode"
 			},
 			{
-				"command": "clineShengsuan.addToChat",
+				"command": "ClineShengsuan.addToChat",
 				"title": "添加到 Cline-中文版",
 				"category": "ClineShengsuan"
 			},
 			{
-				"command": "clineShengsuan.addTerminalOutputToChat",
+				"command": "ClineShengsuan.addTerminalOutputToChat",
 				"title": "添加到 Cline-中文版",
 				"category": "ClineShengsuan"
 			},
 			{
-				"command": "clineShengsuan.focusChatInput",
+				"command": "ClineShengsuan.focusChatInput",
 				"title": "跳转到对话窗口",
 				"category": "ClineShengsuan"
 			},
 			{
-				"command": "clineShengsuan.generateGitCommitMessage",
+				"command": "ClineShengsuan.generateGitCommitMessage",
 				"title": "生成带有Cline的提交消息",
 				"category": "ClineShengsuan",
 				"icon": "$(robot)"
 			},
 			{
-				"command": "clineShengsuan.explainCode",
+				"command": "ClineShengsuan.explainCode",
 				"title": "Cline 解释代码",
 				"category": "ClineShengsuan"
 			},
 			{
-				"command": "clineShengsuan.improveCode",
+				"command": "ClineShengsuan.improveCode",
 				"title": "Cline 优化代码",
 				"category": "ClineShengsuan"
 			},
@@ -199,7 +199,7 @@
 		],
 		"keybindings": [
 			{
-				"command": "clineShengsuan.addToChat",
+				"command": "ClineShengsuan.addToChat",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -207,11 +207,11 @@
 				"when": "editorHasSelection"
 			},
 			{
-				"command": "clineShengsuan.generateGitCommitMessage",
+				"command": "ClineShengsuan.generateGitCommitMessage",
 				"when": "scmProvider == git"
 			},
 			{
-				"command": "clineShengsuan.focusChatInput",
+				"command": "ClineShengsuan.focusChatInput",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -222,91 +222,91 @@
 		"menus": {
 			"view/title": [
 				{
-					"command": "clineShengsuan.plusButtonClicked",
+					"command": "ClineShengsuan.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == ClineShengsuan.SidebarProvider"
 				},
 				{
-					"command": "clineShengsuan.mcpButtonClicked",
+					"command": "ClineShengsuan.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == ClineShengsuan.SidebarProvider"
 				},
 				{
-					"command": "clineShengsuan.historyButtonClicked",
+					"command": "ClineShengsuan.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == ClineShengsuan.SidebarProvider"
 				},
 				{
-					"command": "clineShengsuan.popoutButtonClicked",
+					"command": "ClineShengsuan.popoutButtonClicked",
 					"group": "navigation@4",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == ClineShengsuan.SidebarProvider"
 				},
 				{
-					"command": "clineShengsuan.accountButtonClicked",
+					"command": "ClineShengsuan.accountButtonClicked",
 					"group": "navigation@5",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == ClineShengsuan.SidebarProvider"
 				},
 				{
-					"command": "clineShengsuan.settingsButtonClicked",
+					"command": "ClineShengsuan.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "view == clineShengsuan.SidebarProvider"
+					"when": "view == ClineShengsuan.SidebarProvider"
 				}
 			],
 			"editor/title": [
 				{
-					"command": "clineShengsuan.plusButtonClicked",
+					"command": "ClineShengsuan.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == ClineShengsuan.TabPanelProvider"
 				},
 				{
-					"command": "clineShengsuan.mcpButtonClicked",
+					"command": "ClineShengsuan.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == ClineShengsuan.TabPanelProvider"
 				},
 				{
-					"command": "clineShengsuan.historyButtonClicked",
+					"command": "ClineShengsuan.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == ClineShengsuan.TabPanelProvider"
 				},
 				{
-					"command": "clineShengsuan.popoutButtonClicked",
+					"command": "ClineShengsuan.popoutButtonClicked",
 					"group": "navigation@4",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == ClineShengsuan.TabPanelProvider"
 				},
 				{
-					"command": "clineShengsuan.accountButtonClicked",
+					"command": "ClineShengsuan.accountButtonClicked",
 					"group": "navigation@5",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == ClineShengsuan.TabPanelProvider"
 				},
 				{
-					"command": "clineShengsuan.settingsButtonClicked",
+					"command": "ClineShengsuan.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "activeWebviewPanelId == clineShengsuan.TabPanelProvider"
+					"when": "activeWebviewPanelId == ClineShengsuan.TabPanelProvider"
 				}
 			],
 			"editor/context": [
 				{
-					"command": "clineShengsuan.addToChat",
+					"command": "ClineShengsuan.addToChat",
 					"group": "navigation",
 					"when": "editorHasSelection"
 				}
 			],
 			"terminal/context": [
 				{
-					"command": "clineShengsuan.addTerminalOutputToChat",
+					"command": "ClineShengsuan.addTerminalOutputToChat",
 					"group": "navigation"
 				}
 			],
 			"scm/title": [
 				{
-					"command": "clineShengsuan.generateGitCommitMessage",
+					"command": "ClineShengsuan.generateGitCommitMessage",
 					"group": "navigation",
 					"when": "scmProvider == git"
 				}
 			],
 			"commandPalette": [
 				{
-					"command": "clineShengsuan.generateGitCommitMessage",
+					"command": "ClineShengsuan.generateGitCommitMessage",
 					"when": "scmProvider == git"
 				}
 			]
@@ -343,7 +343,7 @@
 		"dev:webview": "cd webview-ui && npm run dev",
 		"build:webview": "cd webview-ui && npm run build",
 		"test:webview": "cd webview-ui && npm run test",
-		"publish:marketplace": "vsce publish ",
+		"publish:marketplace": "vsce publish --allow-package-secrets sendgrid",
 		"publish:marketplace:prerelease": "vsce publish --pre-release && ovsx publish --pre-release",
 		"prepare": "husky",
 		"changeset": "changeset",

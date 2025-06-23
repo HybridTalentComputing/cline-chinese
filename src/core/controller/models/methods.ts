@@ -13,6 +13,11 @@ import { refreshShengSuanYunModels } from "./refreshShengSuanYunModels"
 import { subscribeToOpenRouterModels } from "./subscribeToOpenRouterModels"
 import { updateApiConfigurationProto } from "./updateApiConfigurationProto"
 
+// Streaming methods for this service
+export const streamingMethods = [
+  "subscribeToOpenRouterModels"
+]
+
 // Register all models service methods
 export function registerAllMethods(): void {
 	// Register each method with the registry
@@ -23,6 +28,6 @@ export function registerAllMethods(): void {
 	registerMethod("refreshOpenRouterModels", refreshOpenRouterModels)
 	registerMethod("refreshRequestyModels", refreshRequestyModels)
 	registerMethod("refreshShengSuanYunModels", refreshShengSuanYunModels)
-	registerMethod("subscribeToOpenRouterModels", subscribeToOpenRouterModels)
+	registerMethod("subscribeToOpenRouterModels", subscribeToOpenRouterModels, { isStreaming: true })
 	registerMethod("updateApiConfigurationProto", updateApiConfigurationProto)
 }
