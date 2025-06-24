@@ -676,9 +676,7 @@ export const ChatRowContent = ({
 							{tool.operationIsLocatedInWorkspace === false &&
 								toolIcon("sign-out", "yellow", -90, "This URL is external")}
 							<span style={{ fontWeight: "bold" }}>
-								{message.type === "ask"
-									? "Cline wants to fetch content from this URL:"
-									: "Cline fetched content from this URL:"}
+								{message.type === "ask" ? "Cline 想要从此 URL 获取内容:" : "Cline 从此 URL 获取了内容:"}
 							</span>
 						</div>
 						<div

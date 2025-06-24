@@ -50,10 +50,10 @@ const FeatureSettingsSection = () => {
 						const checked = e.target.checked === true
 						setMcpRichDisplayEnabled(checked)
 					}}>
-					Enable Rich MCP Display
+					启用 MCP 恢复附件显示样式
 				</VSCodeCheckbox>
 				<p className="text-xs text-[var(--vscode-descriptionForeground)]">
-					Enables rich formatting for MCP responses. When disabled, responses will be shown in plain text.
+					为 MCP 回复启用富文本格式。禁用后，回复将以纯文本显示。
 				</p>
 			</div>
 			<div style={{ marginTop: 10 }}>

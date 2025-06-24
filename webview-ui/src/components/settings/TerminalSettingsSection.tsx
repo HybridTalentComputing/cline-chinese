@@ -79,7 +79,7 @@ export const TerminalSettingsSection: React.FC = () => {
 		<div id="terminal-settings-section" style={{ marginBottom: 20 }}>
 			<div style={{ marginBottom: 15 }}>
 				<label htmlFor="default-terminal-profile" style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>
-					Default Terminal Profile
+					默认终端配置文件
 				</label>
 				<VSCodeDropdown
 					id="default-terminal-profile"
@@ -93,7 +93,7 @@ export const TerminalSettingsSection: React.FC = () => {
 					))}
 				</VSCodeDropdown>
 				<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: "5px 0 0 0" }}>
-					Select the default terminal Cline will use. 'Default' uses your VSCode global setting.
+					选择 Cline 将使用的默认终端。“默认”使用您的 VSCode 全局设置。
 				</p>
 			</div>
 

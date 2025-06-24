@@ -46,19 +46,15 @@ const WelcomeView = memo(() => {
 				<div className="flex justify-center my-5">
 					<ClineLogoWhite className="size-16" />
 				</div>
-				<p>
-					感谢{" "}
-					<VSCodeLink href="https://www.anthropic.com/claude/sonnet" className="inline">
-						Claude 4 Sonnet's
-					</VSCodeLink>
-					我可以执行各种任务。代理编码能力和访问工具，让我创建和编辑文件、探索复杂项目、使用浏览器和执行终端命令
-					<i>（当然，在您的许可下）。</i>我甚至可以使用 MCP 来创建新工具并扩展我自己的能力。
-				</p>
-
-				<p className="text-[var(--vscode-descriptionForeground)]">注册 & 加群，赠送 Claude 4 Sonnet. 免费使用额度。</p>
+				<div className="flex flex-col gap-3">
+					<div className="bg-white p-3 text-gray-800">
+						Cline中文版，由中国胜算云Router赞助开发，一分钟注册，国内就能调用，Claude / GPT 等全球100个大模型
+					</div>
+					<div className="bg-white p-3 text-gray-800">限时新用户，注册限时赠送 Claude 4 Sonnet 免费额度！</div>
+				</div>
 
 				<VSCodeButton appearance="primary" onClick={handleLogin} className="w-full mt-1">
-					注册胜算云
+					注册领取 免费额度
 				</VSCodeButton>
 
 				{!showApiOptions && (

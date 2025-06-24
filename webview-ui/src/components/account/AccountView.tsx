@@ -257,13 +257,12 @@ export const SSYAccountView = () => {
 						<div className="w-full min-[225px]:w-1/2">
 							<VSCodeButtonLink
 								href="https://router.shengsuanyun.com/user/bill"
-								appearance="primary"
-								className="w-full">
-								仪表盘
+								className="w-full bg-white text-gray-800">
+								个人中心
 							</VSCodeButtonLink>
 						</div>
-						<VSCodeButton appearance="secondary" onClick={handleLogout} className="w-full min-[225px]:w-1/2">
-							注销
+						<VSCodeButton onClick={handleLogout} className="w-full min-[225px]:w-1/2 bg-white text-gray-800">
+							退出登录
 						</VSCodeButton>
 					</div>
 
