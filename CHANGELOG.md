@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.17.12]
+    胜算云Router添加对claude 4系列cache功能的支持，减少输入产生的费用
+
+
 ## [3.17.11]
 
 -   Add support for Gemini 2.5 Pro Preview 06-05 model to Vertex AI and Google Gemini providers
