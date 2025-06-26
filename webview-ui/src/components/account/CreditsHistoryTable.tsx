@@ -35,7 +35,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, rateUSD = 0 }
 					<>
 						{activeTab === "usage" && (
 							<>
-								{usageData.length > 0 ? (
+								{usageData && usageData.length > 0 ? (
 									<VSCodeDataGrid>
 										<VSCodeDataGridRow row-type="header">
 											<VSCodeDataGridCell cell-type="columnheader" grid-column="1">
@@ -52,16 +52,17 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, rateUSD = 0 }
 											</VSCodeDataGridCell>
 										</VSCodeDataGridRow>
 
-										{usageData.map((row, index) => (
-											<VSCodeDataGridRow key={index}>
-												<VSCodeDataGridCell grid-column="1">
-													{formatTimestamp(row.spentAt, "zh-CN")}
-												</VSCodeDataGridCell>
-												<VSCodeDataGridCell grid-column="2">{`${row.modelProvider}/${row.model}`}</VSCodeDataGridCell>
-												{/* <VSCodeDataGridCell grid-column="3">{`${row.promptTokens} → ${row.completionTokens}`}</VSCodeDataGridCell> */}
-												<VSCodeDataGridCell grid-column="3">{`$${(rateUSD * Number(row.credits || "0")).toFixed(7)}`}</VSCodeDataGridCell>
-											</VSCodeDataGridRow>
-										))}
+										{usageData &&
+											usageData.map((row, index) => (
+												<VSCodeDataGridRow key={index}>
+													<VSCodeDataGridCell grid-column="1">
+														{formatTimestamp(row.spentAt, "zh-CN")}
+													</VSCodeDataGridCell>
+													<VSCodeDataGridCell grid-column="2">{`${row.modelProvider}/${row.model}`}</VSCodeDataGridCell>
+													{/* <VSCodeDataGridCell grid-column="3">{`${row.promptTokens} → ${row.completionTokens}`}</VSCodeDataGridCell> */}
+													<VSCodeDataGridCell grid-column="3">{`$${(rateUSD * Number(row.credits || "0")).toFixed(7)}`}</VSCodeDataGridCell>
+												</VSCodeDataGridRow>
+											))}
 									</VSCodeDataGrid>
 								) : (
 									<div className="flex justify-center items-center p-4">

@@ -80,6 +80,8 @@ export async function migratePlanActGlobalToWorkspaceStorage(context: vscode.Ext
 		"requestyModelInfo",
 		"togetherModelId",
 		"fireworksModelId",
+		"shengSuanYunModelId",
+		"shengSuanYunModelInfo",
 
 		// Previous mode settings
 		"previousModeApiProvider",
@@ -225,7 +227,6 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		asksageApiUrl,
 		xaiApiKey,
 		sambanovaApiKey,
-		shengSuanYunApiKey,
 		cerebrasApiKey,
 		nebiusApiKey,
 		planActSeparateModelsSettingRaw,
@@ -233,9 +234,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		globalClineRulesToggles,
 		requestTimeoutMs,
 		shellIntegrationTimeout,
+		shengSuanYunApiKey,
 		shengSuanYunToken,
-		shengSuanYunModelId,
-		shengSuanYunModelInfo,
 		enableCheckpointsSettingRaw,
 		mcpMarketplaceEnabledRaw,
 		mcpRichDisplayEnabled,
@@ -302,7 +302,6 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "asksageApiUrl") as Promise<string | undefined>,
 		getSecret(context, "xaiApiKey") as Promise<string | undefined>,
 		getSecret(context, "sambanovaApiKey") as Promise<string | undefined>,
-		getSecret(context, "shengSuanYunApiKey") as Promise<string | undefined>,
 		getSecret(context, "cerebrasApiKey") as Promise<string | undefined>,
 		getSecret(context, "nebiusApiKey") as Promise<string | undefined>,
 		getGlobalState(context, "planActSeparateModelsSetting") as Promise<boolean | undefined>,
@@ -310,9 +309,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "globalClineRulesToggles") as Promise<ClineRulesToggles | undefined>,
 		getGlobalState(context, "requestTimeoutMs") as Promise<number | undefined>,
 		getGlobalState(context, "shellIntegrationTimeout") as Promise<number | undefined>,
+		getSecret(context, "shengSuanYunApiKey") as Promise<string | undefined>,
 		getGlobalState(context, "shengSuanYunToken") as Promise<string | undefined>,
-		getGlobalState(context, "shengSuanYunModelId") as Promise<string | undefined>,
-		getGlobalState(context, "shengSuanYunModelInfo") as Promise<ModelInfo | undefined>,
 		getGlobalState(context, "enableCheckpointsSetting") as Promise<boolean | undefined>,
 		getGlobalState(context, "mcpMarketplaceEnabled") as Promise<boolean | undefined>,
 		getGlobalState(context, "mcpRichDisplayEnabled") as Promise<boolean | undefined>,
@@ -351,6 +349,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		liteLlmModelInfo,
 		requestyModelId,
 		requestyModelInfo,
+		shengSuanYunModelId,
+		shengSuanYunModelInfo,
 		togetherModelId,
 		fireworksModelId,
 		previousModeApiProvider,
@@ -386,6 +386,8 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getWorkspaceState(context, "liteLlmModelInfo") as Promise<ModelInfo | undefined>,
 		getWorkspaceState(context, "requestyModelId") as Promise<string | undefined>,
 		getWorkspaceState(context, "requestyModelInfo") as Promise<ModelInfo | undefined>,
+		getWorkspaceState(context, "shengSuanYunModelId") as Promise<string | undefined>,
+		getWorkspaceState(context, "shengSuanYunModelInfo") as Promise<ModelInfo | undefined>,
 		getWorkspaceState(context, "togetherModelId") as Promise<string | undefined>,
 		getWorkspaceState(context, "fireworksModelId") as Promise<string | undefined>,
 		getWorkspaceState(context, "previousModeApiProvider") as Promise<ApiProvider | undefined>,
@@ -659,6 +661,8 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 	await updateWorkspaceState(context, "requestyModelInfo", requestyModelInfo)
 	await updateWorkspaceState(context, "togetherModelId", togetherModelId)
 	await updateWorkspaceState(context, "fireworksModelId", fireworksModelId)
+	await updateWorkspaceState(context, "shengSuanYunModelId", shengSuanYunModelId)
+	await updateWorkspaceState(context, "shengSuanYunModelInfo", shengSuanYunModelInfo)
 
 	// Global state updates
 	await updateGlobalState(context, "awsRegion", awsRegion)
@@ -693,6 +697,7 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 	await updateGlobalState(context, "sapAiResourceGroup", sapAiResourceGroup)
 	await updateGlobalState(context, "sapAiCoreModelId", sapAiCoreModelId)
 	await updateGlobalState(context, "claudeCodePath", claudeCodePath)
+	await updateGlobalState(context, "shengSuanYunToken", shengSuanYunToken)
 
 	// Secret updates
 	await storeSecret(context, "apiKey", apiKey)
@@ -718,9 +723,6 @@ export async function updateApiConfiguration(context: vscode.ExtensionContext, a
 	await storeSecret(context, "cerebrasApiKey", cerebrasApiKey)
 	await storeSecret(context, "nebiusApiKey", nebiusApiKey)
 	await storeSecret(context, "shengSuanYunApiKey", shengSuanYunApiKey)
-	await updateGlobalState(context, "shengSuanYunToken", shengSuanYunToken)
-	await updateGlobalState(context, "shengSuanYunModelId", shengSuanYunModelId)
-	await updateGlobalState(context, "shengSuanYunModelInfo", shengSuanYunModelInfo)
 	await storeSecret(context, "sapAiCoreClientId", sapAiCoreClientId)
 	await storeSecret(context, "sapAiCoreClientSecret", sapAiCoreClientSecret)
 }

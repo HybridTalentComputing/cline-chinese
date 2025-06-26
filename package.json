@@ -352,7 +352,7 @@
 		"docs:check-links": "cd docs && mintlify broken-links",
 		"docs:rename-file": "cd docs && mintlify rename",
 		"report-issue": "node scripts/report-issue.js",
-		"pkg": "npx vsce package"
+		"pkg": "npx vsce package --allow-package-secrets sendgrid"
 	},
 	"lint-staged": {
 		"*": [

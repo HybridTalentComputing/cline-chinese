@@ -36,6 +36,7 @@ export enum ApiProvider {
   CEREBRAS = 23,
   SAPAICORE = 24,
   CLAUDE_CODE = 25,
+  SHENG_SUAN_YUN = 26,
   UNRECOGNIZED = -1,
 }
 
@@ -119,6 +120,9 @@ export function apiProviderFromJSON(object: any): ApiProvider {
     case 25:
     case "CLAUDE_CODE":
       return ApiProvider.CLAUDE_CODE;
+    case 26:
+    case "SHENG_SUAN_YUN":
+      return ApiProvider.SHENG_SUAN_YUN;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -180,6 +184,8 @@ export function apiProviderToJSON(object: ApiProvider): string {
       return "SAPAICORE";
     case ApiProvider.CLAUDE_CODE:
       return "CLAUDE_CODE";
+    case ApiProvider.SHENG_SUAN_YUN:
+      return "SHENG_SUAN_YUN";
     case ApiProvider.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
@@ -380,6 +386,10 @@ export interface ModelsApiConfiguration {
   sapAiCoreTokenUrl?: string | undefined;
   sapAiCoreBaseUrl?: string | undefined;
   claudeCodePath?: string | undefined;
+  shengSuanYunToken?: string | undefined;
+  shengSuanYunApiKey?: string | undefined;
+  shengSuanYunModelId?: string | undefined;
+  shengSuanYunModelInfo?: ShengSuanYunModelInfo | undefined;
 }
 
 export interface ModelsApiConfiguration_OpenAiHeadersEntry {
@@ -2100,6 +2110,10 @@ function createBaseModelsApiConfiguration(): ModelsApiConfiguration {
     sapAiCoreTokenUrl: undefined,
     sapAiCoreBaseUrl: undefined,
     claudeCodePath: undefined,
+    shengSuanYunToken: undefined,
+    shengSuanYunApiKey: undefined,
+    shengSuanYunModelId: undefined,
+    shengSuanYunModelInfo: undefined,
   };
 }
 
@@ -2323,6 +2337,18 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     }
     if (message.claudeCodePath !== undefined) {
       writer.uint32(586).string(message.claudeCodePath);
+    }
+    if (message.shengSuanYunToken !== undefined) {
+      writer.uint32(594).string(message.shengSuanYunToken);
+    }
+    if (message.shengSuanYunApiKey !== undefined) {
+      writer.uint32(602).string(message.shengSuanYunApiKey);
+    }
+    if (message.shengSuanYunModelId !== undefined) {
+      writer.uint32(610).string(message.shengSuanYunModelId);
+    }
+    if (message.shengSuanYunModelInfo !== undefined) {
+      ShengSuanYunModelInfo.encode(message.shengSuanYunModelInfo, writer.uint32(618).fork()).join();
     }
     return writer;
   },
@@ -2921,6 +2947,38 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
           message.claudeCodePath = reader.string();
           continue;
         }
+        case 74: {
+          if (tag !== 594) {
+            break;
+          }
+
+          message.shengSuanYunToken = reader.string();
+          continue;
+        }
+        case 75: {
+          if (tag !== 602) {
+            break;
+          }
+
+          message.shengSuanYunApiKey = reader.string();
+          continue;
+        }
+        case 76: {
+          if (tag !== 610) {
+            break;
+          }
+
+          message.shengSuanYunModelId = reader.string();
+          continue;
+        }
+        case 77: {
+          if (tag !== 618) {
+            break;
+          }
+
+          message.shengSuanYunModelInfo = ShengSuanYunModelInfo.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3042,6 +3100,14 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
       sapAiCoreTokenUrl: isSet(object.sapAiCoreTokenUrl) ? globalThis.String(object.sapAiCoreTokenUrl) : undefined,
       sapAiCoreBaseUrl: isSet(object.sapAiCoreBaseUrl) ? globalThis.String(object.sapAiCoreBaseUrl) : undefined,
       claudeCodePath: isSet(object.claudeCodePath) ? globalThis.String(object.claudeCodePath) : undefined,
+      shengSuanYunToken: isSet(object.shengSuanYunToken) ? globalThis.String(object.shengSuanYunToken) : undefined,
+      shengSuanYunApiKey: isSet(object.shengSuanYunApiKey) ? globalThis.String(object.shengSuanYunApiKey) : undefined,
+      shengSuanYunModelId: isSet(object.shengSuanYunModelId)
+        ? globalThis.String(object.shengSuanYunModelId)
+        : undefined,
+      shengSuanYunModelInfo: isSet(object.shengSuanYunModelInfo)
+        ? ShengSuanYunModelInfo.fromJSON(object.shengSuanYunModelInfo)
+        : undefined,
     };
   },
 
@@ -3272,6 +3338,18 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     if (message.claudeCodePath !== undefined) {
       obj.claudeCodePath = message.claudeCodePath;
     }
+    if (message.shengSuanYunToken !== undefined) {
+      obj.shengSuanYunToken = message.shengSuanYunToken;
+    }
+    if (message.shengSuanYunApiKey !== undefined) {
+      obj.shengSuanYunApiKey = message.shengSuanYunApiKey;
+    }
+    if (message.shengSuanYunModelId !== undefined) {
+      obj.shengSuanYunModelId = message.shengSuanYunModelId;
+    }
+    if (message.shengSuanYunModelInfo !== undefined) {
+      obj.shengSuanYunModelInfo = ShengSuanYunModelInfo.toJSON(message.shengSuanYunModelInfo);
+    }
     return obj;
   },
 
@@ -3372,6 +3450,13 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     message.sapAiCoreTokenUrl = object.sapAiCoreTokenUrl ?? undefined;
     message.sapAiCoreBaseUrl = object.sapAiCoreBaseUrl ?? undefined;
     message.claudeCodePath = object.claudeCodePath ?? undefined;
+    message.shengSuanYunToken = object.shengSuanYunToken ?? undefined;
+    message.shengSuanYunApiKey = object.shengSuanYunApiKey ?? undefined;
+    message.shengSuanYunModelId = object.shengSuanYunModelId ?? undefined;
+    message.shengSuanYunModelInfo =
+      (object.shengSuanYunModelInfo !== undefined && object.shengSuanYunModelInfo !== null)
+        ? ShengSuanYunModelInfo.fromPartial(object.shengSuanYunModelInfo)
+        : undefined;
     return message;
   },
 };

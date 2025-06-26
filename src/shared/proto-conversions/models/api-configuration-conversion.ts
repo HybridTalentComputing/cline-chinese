@@ -13,6 +13,7 @@ import {
 	OpenAiCompatibleModelInfo,
 	OpenRouterModelInfo,
 	ThinkingConfig,
+	ShengSuanYunModelInfo,
 } from "../../proto/models"
 
 // Convert application ThinkingConfig to proto ThinkingConfig
@@ -82,6 +83,47 @@ function convertProtoToModelInfo(info: OpenRouterModelInfo | undefined): ModelIn
 		thinkingConfig: convertProtoToThinkingConfig(info.thinkingConfig),
 		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
 		tiers: info.tiers.length > 0 ? info.tiers : undefined,
+	}
+}
+
+// Convert application ModelInfo to proto ShengSuanYunModelInfo
+function convertModelInfoToProtoShengSuanYun(info: ModelInfo | undefined): ShengSuanYunModelInfo | undefined {
+	if (!info) {
+		return undefined
+	}
+	return {
+		maxTokens: info.maxTokens,
+		contextWindow: info.contextWindow,
+		supportsImages: info.supportsImages,
+		supportsPromptCache: info.supportsPromptCache ?? false,
+		inputPrice: info.inputPrice,
+		outputPrice: info.outputPrice,
+		cacheWritesPrice: info.cacheWritesPrice,
+		cacheReadsPrice: info.cacheReadsPrice,
+		description: info.description,
+		thinkingConfig: convertThinkingConfigToProto(info.thinkingConfig),
+		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
+	}
+}
+
+// Convert proto ShengSuanYunModelInfo to application ModelInfo
+function convertProtoToShengSuanYunModelInfo(info: ShengSuanYunModelInfo | undefined): ModelInfo | undefined {
+	if (!info) {
+		return undefined
+	}
+
+	return {
+		maxTokens: info.maxTokens,
+		contextWindow: info.contextWindow,
+		supportsImages: info.supportsImages,
+		supportsPromptCache: info.supportsPromptCache,
+		inputPrice: info.inputPrice,
+		outputPrice: info.outputPrice,
+		cacheWritesPrice: info.cacheWritesPrice,
+		cacheReadsPrice: info.cacheReadsPrice,
+		description: info.description,
+		thinkingConfig: convertProtoToThinkingConfig(info.thinkingConfig),
+		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
 	}
 }
 
@@ -238,6 +280,8 @@ function convertApiProviderToProto(provider: string | undefined): ProtoApiProvid
 			return ProtoApiProvider.SAPAICORE
 		case "claude-code":
 			return ProtoApiProvider.CLAUDE_CODE
+		case "shengsuanyun":
+			return ProtoApiProvider.SHENG_SUAN_YUN
 		default:
 			return ProtoApiProvider.ANTHROPIC
 	}
@@ -298,6 +342,8 @@ function convertProtoToApiProvider(provider: ProtoApiProvider): ApiProvider {
 			return "sapaicore"
 		case ProtoApiProvider.CLAUDE_CODE:
 			return "claude-code"
+		case ProtoApiProvider.SHENG_SUAN_YUN:
+			return "shengsuanyun"
 		default:
 			return "anthropic"
 	}
@@ -379,6 +425,10 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		sapAiCoreTokenUrl: config.sapAiCoreTokenUrl,
 		sapAiCoreBaseUrl: config.sapAiCoreBaseUrl,
 		claudeCodePath: config.claudeCodePath,
+		shengSuanYunToken: config.shengSuanYunToken,
+		shengSuanYunApiKey: config.shengSuanYunApiKey,
+		shengSuanYunModelId: config.shengSuanYunModelId,
+		shengSuanYunModelInfo: convertModelInfoToProtoShengSuanYun(config.shengSuanYunModelInfo),
 	}
 }
 
@@ -458,5 +508,9 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		sapAiCoreTokenUrl: protoConfig.sapAiCoreTokenUrl,
 		sapAiCoreBaseUrl: protoConfig.sapAiCoreBaseUrl,
 		claudeCodePath: protoConfig.claudeCodePath,
+		shengSuanYunToken: protoConfig.shengSuanYunToken,
+		shengSuanYunApiKey: protoConfig.shengSuanYunApiKey,
+		shengSuanYunModelId: protoConfig.shengSuanYunModelId,
+		shengSuanYunModelInfo: convertProtoToShengSuanYunModelInfo(protoConfig.shengSuanYunModelInfo),
 	}
 }

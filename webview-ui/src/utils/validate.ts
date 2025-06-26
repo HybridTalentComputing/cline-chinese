@@ -100,7 +100,7 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 				break
 			case "nebius":
 				if (!apiConfiguration.nebiusApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的API密钥或选择其他提供者。"
 				}
 				break
 			case "asksage":
@@ -120,16 +120,16 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 				break
 			case "sapaicore":
 				if (!apiConfiguration.sapAiCoreBaseUrl) {
-					return "You must provide a valid Base URL key or choose a different provider."
+					return "您必须提供有效的 URL 密钥或选择其他提供者。"
 				}
 				if (!apiConfiguration.sapAiCoreClientId) {
-					return "You must provide a valid Client Id or choose a different provider."
+					return "您必须提供有效的客户端ID密钥或选择其他提供者。"
 				}
 				if (!apiConfiguration.sapAiCoreClientSecret) {
-					return "You must provide a valid Client Secret or choose a different provider."
+					return "您必须提供有效的客户端密钥或选择其他提供者。"
 				}
 				if (!apiConfiguration.sapAiCoreTokenUrl) {
-					return "You must provide a valid Auth URL or choose a different provider."
+					return "您必须提供有效的用户认证URL或选择其他提供者。"
 				}
 				break
 		}

@@ -50,9 +50,9 @@ export const ClineAccountView = () => {
 			if (message.type === "userCreditsBalance" && message.userCreditsBalance) {
 				setBalance(message.userCreditsBalance.currentBalance)
 			} else if (message.type === "userCreditsUsage" && message.userCreditsUsage) {
-				setUsageData(message.userCreditsUsage.usageTransactions)
+				setUsageData(message.userCreditsUsage)
 			} else if (message.type === "userCreditsPayments" && message.userCreditsPayments) {
-				setPaymentsData(message.userCreditsPayments.paymentTransactions)
+				setPaymentsData(message.userCreditsPayments)
 			}
 			setIsLoading(false)
 		}

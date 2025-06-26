@@ -68,6 +68,7 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 
 	const handleSignOutSSY = useCallback(async () => {
 		try {
+			vscode.postMessage({ type: "accountLogoutClickedSSY" })
 			console.log("Successfully signed out of ssy")
 		} catch (error) {
 			console.error("Error signing out of ssy:", error)

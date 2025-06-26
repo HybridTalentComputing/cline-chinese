@@ -419,8 +419,8 @@ export class Controller {
 						await updateWorkspaceState(this.context, "apiModelId", newModelId)
 						break
 					case "shengsuanyun":
-						await updateGlobalState(this.context, "shengSuanYunModelId", newModelId)
-						await updateGlobalState(this.context, "shengSuanYunModelInfo", newModelInfo)
+						await updateWorkspaceState(this.context, "shengSuanYunModelId", newModelId)
+						await updateWorkspaceState(this.context, "shengSuanYunModelInfo", newModelInfo)
 						break
 					case "bedrock":
 						await updateWorkspaceState(this.context, "apiModelId", newModelId)

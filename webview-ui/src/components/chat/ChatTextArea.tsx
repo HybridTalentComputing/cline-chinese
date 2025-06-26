@@ -969,8 +969,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const submitApiConfig = useCallback(async () => {
 			const apiValidationResult = validateApiConfiguration(apiConfiguration)
 			const modelIdValidationResult = validateModelId(apiConfiguration, openRouterModels)
-
+			console.log(apiConfiguration, "-------------submitApiConfig---apiConfiguration----------")
+			console.log(apiValidationResult, "-------------submitApiConfig---apiValidationResult----------")
+			console.log(modelIdValidationResult, "-------------submitApiConfig---modelIdValidationResult----------")
 			if (!apiValidationResult && !modelIdValidationResult && apiConfiguration) {
+				console.log("------------*******************---------")
 				try {
 					await ModelsServiceClient.updateApiConfigurationProto(
 						UpdateApiConfigurationRequest.create({
@@ -1112,6 +1115,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					return `${selectedProvider}:${apiConfiguration.liteLlmModelId}`
 				case "requesty":
 					return `${selectedProvider}:${apiConfiguration.requestyModelId}`
+				case "shengsuanyun":
+					return `${selectedProvider}:${apiConfiguration.shengSuanYunModelId}`
 				case "anthropic":
 				case "openrouter":
 				default:

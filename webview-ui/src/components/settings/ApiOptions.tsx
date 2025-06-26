@@ -199,7 +199,6 @@ const ApiOptions = ({
 
 	const handleInputChange = (field: keyof ApiConfiguration) => (event: any) => {
 		const newValue = event.target.value
-
 		// Update local state
 		setApiConfiguration({
 			...apiConfiguration,
@@ -210,7 +209,9 @@ const ApiOptions = ({
 		if (saveImmediately && field === "apiProvider") {
 			// Use apiConfiguration from the full extensionState context to send the most complete data
 			const currentFullApiConfig = extensionState.apiConfiguration
-
+			console.log(currentFullApiConfig, "--------currentFullApiConfig---------")
+			console.log(field, "--------field---------")
+			console.log(newValue, "--------newValue---------")
 			// Convert to proto format and send via gRPC
 			const updatedConfig = {
 				...currentFullApiConfig,
@@ -2632,8 +2633,8 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 	selectedModelId: string
 	selectedModelInfo: ModelInfo
 } {
-	const provider = apiConfiguration?.apiProvider || "anthropic"
-	const modelId = apiConfiguration?.apiModelId
+	const provider = apiConfiguration?.apiProvider || "shengsuanyun"
+	const modelId = shengSuanYunDefaultModelId
 
 	const getProviderData = (models: Record<string, ModelInfo>, defaultId: string) => {
 		let selectedModelId: string

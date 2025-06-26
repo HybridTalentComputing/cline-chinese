@@ -125,6 +125,7 @@ enum ApiProvider {
   CEREBRAS = 23;
   SAPAICORE = 24;
   CLAUDE_CODE = 25;
+  SHENG_SUAN_YUN = 26;
 }
 
 // Model info for OpenAI-compatible models
@@ -238,6 +239,10 @@ message ModelsApiConfiguration {
   optional string sap_ai_core_token_url = 71;
   optional string sap_ai_core_base_url = 72;
   optional string claude_code_path = 73;
+  optional string sheng_suan_yun_token = 74;
+  optional string sheng_suan_yun_api_key = 75;
+  optional string sheng_suan_yun_model_id = 76;
+  optional ShengSuanYunModelInfo sheng_suan_yun_model_info = 77;
 }
 
 message ShengSuanYunModelInfo {
