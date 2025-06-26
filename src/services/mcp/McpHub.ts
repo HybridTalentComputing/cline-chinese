@@ -19,7 +19,6 @@ import * as fs from "fs/promises"
 import * as path from "path"
 import * as vscode from "vscode"
 import { z } from "zod"
-import { WatchServiceClient } from "@hosts/host-bridge-client"
 import { FileChangeEvent_ChangeType, SubscribeToFileRequest } from "../../shared/proto/host/watch"
 import { Metadata } from "../../shared/proto/common"
 import {
@@ -41,6 +40,7 @@ import { ExtensionMessage } from "@shared/ExtensionMessage"
 import { DEFAULT_REQUEST_TIMEOUT_MS } from "./constants"
 import { Transport, McpConnection, McpTransportType, McpServerConfig } from "./types"
 import { BaseConfigSchema, ServerConfigSchema, McpSettingsSchema } from "./schemas"
+import { getHostBridgeProvider } from "@/hosts/host-providers"
 
 export class McpHub {
 	getMcpServersPath: () => Promise<string>
@@ -112,14 +112,16 @@ export class McpHub {
 			try {
 				config = JSON.parse(content)
 			} catch (error) {
-				vscode.window.showErrorMessage("MCP 设置格式无效。请确保您的设置遵循正确的 JSON 格式。")
+				vscode.window.showErrorMessage(
+					"Invalid MCP settings format. Please ensure your settings follow the correct JSON format.",
+				)
 				return undefined
 			}
 
 			// Validate against schema
 			const result = McpSettingsSchema.safeParse(config)
 			if (!result.success) {
-				vscode.window.showErrorMessage("MCP 设置架构无效.")
+				vscode.window.showErrorMessage("Invalid MCP settings schema.")
 				return undefined
 			}
 
@@ -135,7 +137,7 @@ export class McpHub {
 
 		// Subscribe to file changes using the gRPC WatchService
 		console.log("[DEBUG] subscribing to mcp file changes")
-		const cancelSubscription = WatchServiceClient.subscribeToFile(
+		const cancelSubscription = getHostBridgeProvider().watchServiceClient.subscribeToFile(
 			SubscribeToFileRequest.create({
 				metadata: Metadata.create({}),
 				path: settingsPath,
@@ -152,7 +154,7 @@ export class McpHub {
 						if (settings) {
 							try {
 								await this.updateServerConnections(settings.mcpServers)
-								vscode.window.showInformationMessage("MCP 服务已更新")
+								vscode.window.showInformationMessage("MCP servers updated")
 							} catch (error) {
 								console.error("Failed to process MCP settings change:", error)
 							}
@@ -195,7 +197,7 @@ export class McpHub {
 			// Each MCP server requires its own transport connection and has unique capabilities, configurations, and error handling. Having separate clients also allows proper scoping of resources/tools and independent server management like reconnection.
 			const client = new Client(
 				{
-					name: "ClineShengsuan",
+					name: "Cline",
 					version: this.clientVersion,
 				},
 				{
@@ -669,7 +671,7 @@ export class McpHub {
 				vscode.window.showInformationMessage(`${serverName} MCP server connected`)
 			} catch (error) {
 				console.error(`Failed to restart connection for ${serverName}:`, error)
-				vscode.window.showErrorMessage(`链接 ${serverName} MCP 服务失败`)
+				vscode.window.showErrorMessage(`Failed to connect to ${serverName} MCP server`)
 			}
 		}
 
@@ -755,7 +757,9 @@ export class McpHub {
 			if (error instanceof Error) {
 				console.error("Error details:", error.message, error.stack)
 			}
-			vscode.window.showErrorMessage(`更新服务状态失败: ${error instanceof Error ? error.message : String(error)}`)
+			vscode.window.showErrorMessage(
+				`Failed to update server state: ${error instanceof Error ? error.message : String(error)}`,
+			)
 			throw error
 		}
 	}
@@ -763,7 +767,7 @@ export class McpHub {
 	async readResource(serverName: string, uri: string): Promise<McpResourceResponse> {
 		const connection = this.connections.find((conn) => conn.server.name === serverName)
 		if (!connection) {
-			throw new Error(`未找到服务的连接: ${serverName}`)
+			throw new Error(`No connection found for server: ${serverName}`)
 		}
 		if (connection.server.disabled) {
 			throw new Error(`Server "${serverName}" is disabled`)
@@ -783,11 +787,13 @@ export class McpHub {
 	async callTool(serverName: string, toolName: string, toolArguments?: Record<string, unknown>): Promise<McpToolCallResponse> {
 		const connection = this.connections.find((conn) => conn.server.name === serverName)
 		if (!connection) {
-			throw new Error(`连接: ${serverName}服务失败. 请确保使用“连接的 MCP 服务器”下提供的 MCP 服务器'.`)
+			throw new Error(
+				`No connection found for server: ${serverName}. Please make sure to use MCP servers available under 'Connected MCP Servers'.`,
+			)
 		}
 
 		if (connection.server.disabled) {
-			throw new Error(`服务 "${serverName}" 未启用`)
+			throw new Error(`Server "${serverName}" is disabled and cannot be used`)
 		}
 
 		let timeout = secondsToMs(DEFAULT_MCP_TIMEOUT_SECONDS) // sdk expects ms
@@ -797,7 +803,7 @@ export class McpHub {
 			const parsedConfig = ServerConfigSchema.parse(config)
 			timeout = secondsToMs(parsedConfig.timeout)
 		} catch (error) {
-			console.error(`无法解析服务器的超时配置 ${serverName}: ${error}`)
+			console.error(`Failed to parse timeout configuration for server ${serverName}: ${error}`)
 		}
 
 		const result = await connection.client.request(
@@ -816,7 +822,7 @@ export class McpHub {
 
 		return {
 			...result,
-			content: result.content ?? [],
+			content: (result.content ?? []) as McpToolCallResponse["content"],
 		}
 	}
 
@@ -910,7 +916,7 @@ export class McpHub {
 			}
 		} catch (error) {
 			console.error("Failed to update autoApprove settings:", error)
-			vscode.window.showErrorMessage("更新自动保存设置失败")
+			vscode.window.showErrorMessage("Failed to update autoApprove settings")
 			throw error // Re-throw to ensure the error is properly handled
 		}
 	}
@@ -919,16 +925,16 @@ export class McpHub {
 		try {
 			const settings = await this.readAndValidateMcpSettingsFile()
 			if (!settings) {
-				throw new Error("无法读取 MCP 设置")
+				throw new Error("Failed to read MCP settings")
 			}
 
 			if (settings.mcpServers[serverName]) {
-				throw new Error(`名称为 "${serverName}" MCP server 已经存在。`)
+				throw new Error(`An MCP server with the name "${serverName}" already exists`)
 			}
 
 			const urlValidation = z.string().url().safeParse(serverUrl)
 			if (!urlValidation.success) {
-				throw new Error(`无效的服务 URL: ${serverUrl}. 请提供有效的 URL.`)
+				throw new Error(`Invalid server URL: ${serverUrl}. Please provide a valid URL.`)
 			}
 
 			const serverConfig = {
@@ -988,7 +994,7 @@ export class McpHub {
 				const serverOrder = Object.keys(config.mcpServers || {})
 				return this.getSortedMcpServers(serverOrder)
 			} else {
-				throw new Error(`${serverName} 未找到配置文件`)
+				throw new Error(`${serverName} not found in MCP configuration`)
 			}
 		} catch (error) {
 			console.error(`Failed to delete MCP server: ${error instanceof Error ? error.message : String(error)}`)
@@ -1001,7 +1007,7 @@ export class McpHub {
 			// Validate timeout against schema
 			const setConfigResult = BaseConfigSchema.shape.timeout.safeParse(timeout)
 			if (!setConfigResult.success) {
-				throw new Error(`无效超时值: ${timeout}. 最小 ${MIN_MCP_TIMEOUT_SECONDS} 秒.`)
+				throw new Error(`Invalid timeout value: ${timeout}. Must be at minimum ${MIN_MCP_TIMEOUT_SECONDS} seconds.`)
 			}
 
 			const settingsPath = await this.getMcpSettingsFilePath()
@@ -1009,7 +1015,7 @@ export class McpHub {
 			const config = JSON.parse(content)
 
 			if (!config.mcpServers?.[serverName]) {
-				throw new Error(`服务 "${serverName}" 在设置中未找到`)
+				throw new Error(`Server "${serverName}" not found in settings`)
 			}
 
 			config.mcpServers[serverName] = {
@@ -1028,7 +1034,9 @@ export class McpHub {
 			if (error instanceof Error) {
 				console.error("Error details:", error.message, error.stack)
 			}
-			vscode.window.showErrorMessage(`更新服务器超时失败: ${error instanceof Error ? error.message : String(error)}`)
+			vscode.window.showErrorMessage(
+				`Failed to update server timeout: ${error instanceof Error ? error.message : String(error)}`,
+			)
 			throw error
 		}
 	}
@@ -1071,7 +1079,7 @@ export class McpHub {
 			try {
 				await this.deleteConnection(connection.server.name)
 			} catch (error) {
-				console.error(`关闭连接失败 ${connection.server.name}:`, error)
+				console.error(`Failed to close connection for ${connection.server.name}:`, error)
 			}
 		}
 		this.connections = []

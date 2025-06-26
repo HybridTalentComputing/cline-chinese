@@ -44,15 +44,22 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 			</h3>
 			<ul style={ulStyle}>
 				<li>
-					<b>Claude 4 Models:</b> Now with support for Anthropic Claude Sonnet 4 and Claude Opus 4 in both Anthropic and
-					Vertex providers.
+					<b>针对 Claude 4 进行了优化:</b>Cline 现已针对 Claude 4
+					系列模型进行了优化，从而提升了性能、可靠性并增加了新功能。
 				</li>
 				<li>
-					<b>New Settings Page:</b> Redesigned settings, now split into tabs for easier navigation and a cleaner
-					experience.
+					<b>Gemini CLI 提供商:</b> 添加了新的 Gemini CLI 提供程序，允许您使用本地 Gemini CLI 身份验证免费访问 Gemini
+					模型。
 				</li>
 				<li>
-					<b>Nebius AI Studio:</b> Added Nebius AI Studio as a new provider. (Thanks @Aktsvigun!)
+					<b>网页抓取工具:</b> Gemini 2.5 Pro 和 Claude 4 型号现已支持 WebFetch 工具，允许 Cline
+					直接在对话中检索和汇总网页内容。
+				</li>
+				<li>
+					<b>自我认识:</b>在使用前沿模型时，Cline 对自己的能力和特性集有清晰的认识。
+				</li>
+				<li>
+					<b>改进的差异编辑:</b>改进了差别编辑功能，使前沿模型的差别编辑失败率创下新低。
 				</li>
 			</ul>
 			<Accordion isCompact className="pl-0">
@@ -68,39 +75,22 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 					}}>
 					<ul style={ulStyle}>
 						<li>
-							<b>Workflows:</b> Create and manage workflow files that can be injected into conversations via slash
-							commands, making it easy to automate repetitive tasks.
+							<b>Claude 4 模型：</b> 现已支持 Anthropic 和 Vertex 供应商下的 Claude Sonnet 4 和 Claude Opus 4 模型。
 						</li>
 						<li>
-							<b>Collapsible Task List:</b> Hide your recent tasks when sharing your screen to keep your prompts
-							private.
+							<b>全新设置页面：</b> 设置页面经过重新设计，现在分为多个标签页，便于导航，界面更清晰。
 						</li>
 						<li>
-							<b>Global Endpoint for Vertex AI:</b> Improved availability and reduced rate limiting errors for
-							Vertex AI users.
+							<b>Nebius AI Studio：</b> 新增 Nebius AI Studio 作为支持的供应商。（感谢 @Aktsvigun！）
 						</li>
 						<li>
-							<b>New User Experience:</b> Special components and guidance for new users to help them get started
-							with Cline.
+							<b>工作流：</b> 可创建和管理工作流文件，并通过斜杠命令将其注入对话中，轻松实现重复性任务的自动化。
 						</li>
 						<li>
-							<b>UI Improvements:</b> Fixed loading states and improved settings organization for a smoother
-							experience.
+							<b>可折叠任务列表：</b> 在共享屏幕时可以隐藏最近任务，保护您的提示内容隐私。
 						</li>
 						<li>
-							<b>Task Timeline:</b> See the history of your coding journey with a visual timeline of checkpoints.
-						</li>
-						<li>
-							<b>UX Improvements:</b> Type while Cline works, smarter auto-scrolling, and copy buttons for task
-							headers and messages.
-						</li>
-						<li>
-							<b>Gemini prompt caching:</b> Gemini and Vertex providers now support prompt caching and price
-							tracking.
-						</li>
-						<li>
-							<b>Global Cline Rules:</b> Store multiple rules files in Documents/Cline/Rules to share between
-							projects.
+							<b>Vertex AI 全球接口：</b> 提升了 Vertex AI 用户的可用性，并减少了限速错误的发生。
 						</li>
 					</ul>
 				</AccordionItem>

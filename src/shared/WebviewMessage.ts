@@ -9,17 +9,17 @@ import { McpViewTab } from "./mcp"
 export interface WebviewMessage {
 	type:
 		| "requestVsCodeLmModels"
-		| "authStateChanged"
 		| "fetchMcpMarketplace"
 		| "searchCommits"
 		| "telemetrySetting"
-		| "clearAllTaskHistory"
-		| "fetchUserCreditsData"
 		| "grpc_request"
 		| "grpc_request_cancel"
 		| "fetchUSDRate"
 		| "accountLoginClickedSSY"
 		| "accountLogoutClickedSSY"
+		| "authStateChanged"
+		| "fetchUserCreditsData"
+		| "authCallback"
 
 	text?: string
 	disabled?: boolean

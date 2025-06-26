@@ -10,6 +10,8 @@ import { McpServer, McpMarketplaceCatalog, McpDownloadResponse, McpViewTab } fro
 import { TelemetrySetting } from "./TelemetrySetting"
 import type { BalanceResponse, UsageTransaction, PaymentTransaction } from "../shared/ClineAccount"
 import { ClineRulesToggles } from "./cline-rules"
+import { UserInfo } from "./UserInfo"
+import { ShengSuanYunModelInfo } from "./proto/models"
 
 // webview will hold state
 export interface ExtensionMessage {
@@ -17,17 +19,15 @@ export interface ExtensionMessage {
 		| "action"
 		| "state"
 		| "selectedImages"
-		| "openAiModels"
-		| "requestyModels"
 		| "mcpDownloadDetails"
+		| "grpc_response"
+		| "fetchUSDRate"
 		| "userCreditsBalance"
 		| "userCreditsUsage"
 		| "userCreditsPayments"
-		| "grpc_response" // New type for gRPC responses
-		| "setActiveQuote"
-		| "fetchUSDRate"
 		| "shengSuanYunModels"
 		| "authCallback"
+		| "requestyModels"
 	text?: string
 	action?: "accountLogoutClicked"
 	state?: ExtensionState
@@ -37,7 +37,6 @@ export interface ExtensionMessage {
 	lmStudioModels?: string[]
 	vsCodeLmModels?: { vendor?: string; family?: string; version?: string; id?: string }[]
 	openAiModels?: string[]
-	requestyModels?: Record<string, ModelInfo>
 	mcpServers?: McpServer[]
 	customToken?: string
 	mcpMarketplaceCatalog?: McpMarketplaceCatalog
@@ -70,7 +69,7 @@ export interface ExtensionMessage {
 		is_streaming?: boolean // Whether this is part of a streaming response
 		sequence_number?: number // For ordering chunks in streaming responses
 	}
-	shengSuanYunModels?: Record<string, ModelInfo>
+	shengSuanYunModels?: Record<string, ShengSuanYunModelInfo>
 }
 
 export type Platform = "aix" | "darwin" | "freebsd" | "linux" | "openbsd" | "sunos" | "win32" | "unknown"

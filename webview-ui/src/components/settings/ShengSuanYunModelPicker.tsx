@@ -1,18 +1,16 @@
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
-import { useRemark } from "react-remark"
 import { useMount } from "react-use"
 import styled from "styled-components"
-import { shengSuanYunDefaultModelId } from "../../../../src/shared/api"
+import { shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "../../../../src/shared/api"
 import { useExtensionState } from "../../context/ExtensionStateContext"
 import { ModelsServiceClient, StateServiceClient } from "@/services/grpc-client"
 import { highlight } from "../history/HistoryView"
-import { ModelInfoView, normalizeApiConfiguration } from "./ApiOptions"
-import { CODE_BLOCK_BG_COLOR } from "../common/CodeBlock"
+import { ModelInfoView } from "./ApiOptions"
 import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
 import { EmptyRequest, StringRequest } from "@shared/proto/common"
-
+import { normalizeApiConfiguration } from "./utils/providerUtils"
 export interface ShengSuanYunModelPickerProps {
 	isPopup?: boolean
 }
@@ -37,7 +35,7 @@ const StarIcon = ({ isFavorite, onClick }: { isFavorite: boolean; onClick: (e: R
 	)
 }
 const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPopup }) => {
-	const { apiConfiguration, setApiConfiguration, shengSuanYunModels } = useExtensionState()
+	const { apiConfiguration, setApiConfiguration, shengSuanYunModels, setShengSuanYunModels } = useExtensionState()
 	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.shengSuanYunModelId || shengSuanYunDefaultModelId)
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -63,9 +61,15 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 	}, [apiConfiguration])
 
 	useMount(() => {
-		ModelsServiceClient.refreshShengSuanYunModels(EmptyRequest.create({})).catch((error: Error) =>
-			console.error("Failed to refresh ShengSuanYun models:", error),
-		)
+		ModelsServiceClient.refreshShengSuanYunModels(EmptyRequest.create({}))
+			.then((res) => {
+				console.log(res, "==============================")
+				setShengSuanYunModels({
+					[shengSuanYunDefaultModelId]: shengSuanYunDefaultModelInfo,
+					...res.models,
+				})
+			})
+			.catch((error: Error) => console.error("Failed to refresh ShengSuanYun models:", error))
 	})
 
 	useEffect(() => {

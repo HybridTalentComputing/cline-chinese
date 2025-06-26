@@ -3,8 +3,10 @@
 
 // Import all method implementations
 import { registerMethod } from "./index"
+import { getWebviewHtml } from "./getWebviewHtml"
 import { initializeWebview } from "./initializeWebview"
 import { onDidShowAnnouncement } from "./onDidShowAnnouncement"
+import { openUrl } from "./openUrl"
 import { scrollToSettings } from "./scrollToSettings"
 import { subscribeToAccountButtonClicked } from "./subscribeToAccountButtonClicked"
 import { subscribeToAddToInput } from "./subscribeToAddToInput"
@@ -36,8 +38,10 @@ export const streamingMethods = [
 // Register all ui service methods
 export function registerAllMethods(): void {
 	// Register each method with the registry
+	registerMethod("getWebviewHtml", getWebviewHtml)
 	registerMethod("initializeWebview", initializeWebview)
 	registerMethod("onDidShowAnnouncement", onDidShowAnnouncement)
+	registerMethod("openUrl", openUrl)
 	registerMethod("scrollToSettings", scrollToSettings)
 	registerMethod("subscribeToAccountButtonClicked", subscribeToAccountButtonClicked, { isStreaming: true })
 	registerMethod("subscribeToAddToInput", subscribeToAddToInput, { isStreaming: true })
