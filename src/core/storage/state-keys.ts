@@ -100,5 +100,6 @@ export type GlobalStateKey =
 	| "shengSuanYunModelId"
 	| "shengSuanYunModelInfo"
 	| "difyBaseUrl"
+	| "vendor"
 
 export type LocalStateKey = "localClineRulesToggles"

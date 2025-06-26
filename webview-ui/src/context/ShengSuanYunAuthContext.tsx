@@ -33,12 +33,9 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 				throw new Error(`Invalid response from ${uri} API`)
 			}
 			const usi = {
-				Email: res.data.data.Email,
-				Nickname: res.data.data.Nickname,
-				HeadImg: res.data.data.HeadImg,
-				Username: res.data.data.Username,
-				Wallet: res.data.data.Wallet,
-				Phone: res.data.data.Phone,
+				displayName: res.data.data.Nickname || res.data.data.Username,
+				email: res.data.data.Email,
+				photoURL: res.data.data.HeadImg,
 			}
 			setUser(usi)
 			setIsInitialized(true)
@@ -68,6 +65,7 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 
 	const handleSignOutSSY = useCallback(async () => {
 		try {
+			vscode.postMessage({ type: "accountLogoutClickedSSY" })
 			console.log("Successfully signed out of ssy")
 		} catch (error) {
 			console.error("Error signing out of ssy:", error)

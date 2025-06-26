@@ -1,4 +1,4 @@
-import type { PaymentTransaction, UsageTransaction } from "../../shared/ClineAccount"
+import type { BalanceResponse, PaymentTransaction, UsageTransaction } from "../../shared/ClineAccount"
 import { ExtensionMessage } from "../../shared/ExtensionMessage"
 import axios, { AxiosRequestConfig } from "axios"
 
@@ -34,17 +34,21 @@ export class SSYAccountService {
 		return response.data.data
 	}
 
-	async fetchRate(): Promise<number | undefined> {
+	async fetchBalance(): Promise<BalanceResponse | undefined> {
 		try {
-			const rate = await this.authenticatedRequest<any>("/base/rate")
-			if (!rate) {
+			const data = await Promise.all([
+				this.authenticatedRequest<any>("/base/rate"),
+				this.authenticatedRequest<any>("/user/info"),
+			])
+			if (!Array.isArray(data)) {
 				return undefined
 			}
+			const balance: BalanceResponse = { currentBalance: (data[0] * data[1].Wallet?.Assets) / 10000 }
 			await this.postMessageToWebview({
-				type: "fetchUSDRate",
-				fetchUSDRate: rate,
+				type: "userCreditsBalance",
+				userCreditsBalance: balance,
 			})
-			return rate
+			return balance
 		} catch (error) {
 			console.error("Failed to fetch USD rate:", error)
 			return undefined
@@ -53,18 +57,24 @@ export class SSYAccountService {
 	async fetchUsageTransactions(): Promise<UsageTransaction[] | undefined> {
 		try {
 			const dqs = this.dateQueryString()
-			const res: any = await this.authenticatedRequest(`/modelrouter/userlog?page=1&pageSize=1000&${dqs}`)
-			if (!res || !Array.isArray(res.logs)) {
+			const data = await Promise.all([
+				this.authenticatedRequest<any>("/base/rate"),
+				this.authenticatedRequest<any>(`/modelrouter/userlog?page=1&pageSize=1000&${dqs}`),
+			])
+			if (!Array.isArray(data) || data.length !== 2) {
 				return undefined
 			}
-			const utl = res.logs.map((it: any) => ({
+			const r = data[0]
+			const res = data[1]
+			const utl: UsageTransaction[] = res.logs.map((it: any) => ({
 				spentAt: it.request_time,
-				modelProvider: "胜算云Router",
+				creatorId: "",
+				modelProvider: "",
 				model: `${it.model?.company}/${it.model?.name}`,
-				credits: it.total_amount / 10000000,
+				credits: ((r * it.total_amount) / 10000000).toFixed(7),
 				totalTokens: it.total_amount,
-				promptTokens: it.input_tokens,
-				completionTokens: it.output_tokens,
+				promptTokens: it.input_tokens.toString(),
+				completionTokens: it.output_tokens.toString(),
 			}))
 
 			await this.postMessageToWebview({
@@ -79,13 +89,23 @@ export class SSYAccountService {
 	}
 	async fetchPaymentTransactions(): Promise<PaymentTransaction[] | undefined> {
 		try {
-			const res = await this.authenticatedRequest<any>("/modelrouter/listrecharge?page=1&pageSize=10000")
-			if (!res || !Array.isArray(res.records)) {
+			const data = await Promise.all([
+				this.authenticatedRequest<any>("/base/rate"),
+				this.authenticatedRequest<any>("/modelrouter/listrecharge?page=1&pageSize=10000"),
+			])
+			if (!Array.isArray(data) || data.length !== 2) {
 				return undefined
 			}
-			const cpl = res.records.map((it: any) => ({
+			const r = data[0]
+			const res = data[1]
+			if (!Array.isArray(res.records)) {
+				return undefined
+			}
+			const cpl: PaymentTransaction[] = res.records.map((it: any) => ({
+				creatorId: "",
+				credits: -10000,
 				paidAt: it.create_at,
-				amountCents: (it.price / 10000).toString(),
+				amountCents: ((r * it.price) / 10000).toFixed(2),
 			}))
 			await this.postMessageToWebview({
 				type: "userCreditsPayments",

@@ -43,7 +43,8 @@ import { sendAddToInputEvent } from "./ui/subscribeToAddToInput"
 import { sendAuthCallbackEvent } from "./account/subscribeToAuthCallback"
 import { sendMcpMarketplaceCatalogEvent } from "./mcp/subscribeToMcpMarketplaceCatalog"
 import { sendRelinquishControlEvent } from "./ui/subscribeToRelinquishControl"
-
+import { SSYAccountService } from "../../services/account/SSYAccountService"
+import { UserInfo } from "@/shared/UserInfo"
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
 
@@ -59,6 +60,7 @@ export class Controller {
 	workspaceTracker: WorkspaceTracker
 	mcpHub: McpHub
 	accountService: ClineAccountService
+	accountServiceSSY: SSYAccountService
 	latestAnnouncementId = "may-22-2025_16:11:00" // update to some unique identifier when we add a new announcement
 
 	constructor(
@@ -83,7 +85,13 @@ export class Controller {
 				return apiConfiguration?.clineApiKey
 			},
 		)
-
+		this.accountServiceSSY = new SSYAccountService(
+			(msg) => this.postMessageToWebview(msg),
+			async () => {
+				const { apiConfiguration } = await this.getStateToPostToWebview()
+				return apiConfiguration?.shengSuanYunToken
+			},
+		)
 		// Clean up legacy checkpoints
 		cleanupLegacyCheckpoints(this.context.globalStorageUri.fsPath, this.outputChannel).catch((error) => {
 			console.error("Failed to cleanup legacy checkpoints:", error)
@@ -110,7 +118,7 @@ export class Controller {
 	}
 
 	// Auth methods
-	async handleSignOut() {
+	async handleSignOutSSY() {
 		try {
 			await updateGlobalState(this.context, "shengSuanYunToken", undefined)
 			await updateGlobalState(this.context, "userInfo", undefined)
@@ -121,7 +129,19 @@ export class Controller {
 		}
 	}
 
-	async setUserInfo(info?: Object) {
+	async handleSignOut() {
+		try {
+			await storeSecret(this.context, "clineApiKey", undefined)
+			await updateGlobalState(this.context, "userInfo", undefined)
+			await updateWorkspaceState(this.context, "apiProvider", "openrouter")
+			await this.postStateToWebview()
+			vscode.window.showInformationMessage("Successfully logged out of Cline")
+		} catch (error) {
+			vscode.window.showErrorMessage("Logout failed")
+		}
+	}
+
+	async setUserInfo(info?: UserInfo) {
 		await updateGlobalState(this.context, "userInfo", info)
 	}
 
@@ -213,7 +233,7 @@ export class Controller {
 				await this.postStateToWebview()
 				break
 			case "fetchUserCreditsData": {
-				await this.fetchUserCreditsData()
+				await this.fetchUserCreditsData(message.text || "cline")
 				break
 			}
 			case "fetchMcpMarketplace": {
@@ -269,14 +289,9 @@ export class Controller {
 				break
 			}
 			case "accountLogoutClickedSSY": {
-				await this.handleSignOut()
+				await this.handleSignOutSSY()
 				break
 			}
-			case "fetchUserCreditsData": {
-				await this.fetchUserCreditsData()
-				break
-			}
-
 			// Add more switch case statements here as more webview message commands
 			// are created within the webview context (i.e. inside media/main.js)
 		}
@@ -500,13 +515,21 @@ export class Controller {
 
 	// Account
 
-	async fetchUserCreditsData() {
+	async fetchUserCreditsData(vdc: string) {
 		try {
-			await Promise.all([
-				this.accountService?.fetchBalance(),
-				this.accountService?.fetchUsageTransactions(),
-				this.accountService?.fetchPaymentTransactions(),
-			])
+			if (vdc === "cline") {
+				await Promise.all([
+					this.accountService?.fetchBalance(),
+					this.accountService?.fetchUsageTransactions(),
+					this.accountService?.fetchPaymentTransactions(),
+				])
+			} else {
+				await Promise.all([
+					this.accountServiceSSY?.fetchBalance(),
+					this.accountServiceSSY?.fetchUsageTransactions(),
+					this.accountServiceSSY?.fetchPaymentTransactions(),
+				])
+			}
 		} catch (error) {
 			console.error("Failed to fetch user credits data:", error)
 		}

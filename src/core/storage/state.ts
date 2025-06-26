@@ -173,6 +173,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		terminalReuseEnabled,
 		difyApiKey,
 		difyBaseUrl,
+		vendor,
 	] = await Promise.all([
 		getGlobalState(context, "isNewUser") as Promise<boolean | undefined>,
 		getGlobalState(context, "apiProvider") as Promise<ApiProvider | undefined>,
@@ -271,6 +272,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		getGlobalState(context, "terminalReuseEnabled") as Promise<boolean | undefined>,
 		getSecret(context, "difyApiKey") as Promise<string | undefined>,
 		getGlobalState(context, "difyBaseUrl") as Promise<string | undefined>,
+		getGlobalState(context, "vendor") as Promise<"cline" | "ssy">,
 	])
 
 	let apiProvider: ApiProvider
@@ -415,6 +417,7 @@ export async function getAllExtensionState(context: vscode.ExtensionContext) {
 		shellIntegrationTimeout: shellIntegrationTimeout || 4000,
 		terminalReuseEnabled: terminalReuseEnabled ?? true,
 		globalWorkflowToggles: globalWorkflowToggles || {},
+		vendor,
 	}
 }
 
