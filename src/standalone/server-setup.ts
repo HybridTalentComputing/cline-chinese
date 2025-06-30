@@ -9,6 +9,8 @@ import { GrpcHandlerWrapper, GrpcStreamingResponseHandlerWrapper } from "./grpc-
 import { accountLoginClicked } from "../core/controller/account/accountLoginClicked"
 import { accountLogoutClicked } from "../core/controller/account/accountLogoutClicked"
 import { subscribeToAuthCallback } from "../core/controller/account/subscribeToAuthCallback"
+import { authStateChanged } from "../core/controller/account/authStateChanged"
+import { fetchUserCreditsData } from "../core/controller/account/fetchUserCreditsData"
 
 // Browser Service
 import { getBrowserConnectionInfo } from "../core/controller/browser/getBrowserConnectionInfo"
@@ -127,6 +129,8 @@ export function addServices(
          accountLoginClicked: wrapper<proto.clineChinese.EmptyRequest,proto.clineChinese.String>(accountLoginClicked, controller),
          accountLogoutClicked: wrapper<proto.clineChinese.EmptyRequest,proto.clineChinese.Empty>(accountLogoutClicked, controller),
         subscribeToAuthCallback: wrapStreamingResponse<proto.clineChinese.EmptyRequest,void>(subscribeToAuthCallback, controller),
+         authStateChanged: wrapper<proto.clineChinese.AuthStateChangedRequest,proto.clineChinese.AuthStateChanged>(authStateChanged, controller),
+         fetchUserCreditsData: wrapper<proto.clineChinese.EmptyRequest,proto.clineChinese.UserCreditsData>(fetchUserCreditsData, controller),
     });
 
     // Browser Service

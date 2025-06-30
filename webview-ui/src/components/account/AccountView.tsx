@@ -8,10 +8,9 @@ import CountUp from "react-countup"
 import CreditsHistoryTable from "./CreditsHistoryTable"
 import { UsageTransaction, PaymentTransaction } from "@shared/ClineAccount"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { AccountServiceClient } from "@/services/grpc-client"
 import { EmptyRequest } from "@shared/proto/common"
 import { useShengSuanYunAuth } from "@/context/ShengSuanYunAuthContext"
-
+import { AccountServiceClient } from "@/services/grpc-client"
 // 定义账户视图组件的属性类型
 type AccountViewProps = {
 	onDone: () => void
@@ -19,30 +18,43 @@ type AccountViewProps = {
 
 // 账户视图组件
 const AccountView = ({ onDone }: AccountViewProps) => {
-	const [vendor, setVendor] = useState({ k: "ssy", v: "胜算云" })
+	const { vendor, setVendor, userInfo, apiConfiguration } = useExtensionState()
+	const { userSSY } = useShengSuanYunAuth()
+	const { user: firebaseUser } = useFirebaseAuth()
+	const ssyUser = apiConfiguration?.shengSuanYunToken ? userSSY : undefined
+	const clineUser = apiConfiguration?.clineApiKey ? firebaseUser || userInfo : undefined
+	const [user, setUser] = useState<any>(null)
+
+	useEffect(() => {
+		if (vendor == "cline") {
+			setUser(clineUser)
+		} else {
+			setUser(ssyUser)
+		}
+	}, [vendor, clineUser, ssyUser])
 
 	return (
 		<div className="fixed inset-0 flex flex-col overflow-hidden pt-[10px] pl-[20px]">
 			<div className="flex justify-between items-center mb-[17px] pr-[17px]">
 				<VSCodeDropdown
-					value={vendor.v}
-					onChange={(e: any) => {
-						if (e.target.value == "cline") setVendor({ v: "Cline", k: "cline" })
-						else setVendor({ v: "胜算云", k: "ssy" })
-					}}>
+					className={ssyUser || clineUser ? "" : "hidden"}
+					value={vendor}
+					onChange={(e: any) => setVendor(e.target.value)}>
 					<VSCodeOption
 						className="text-[var(--vscode-foreground)] m-0"
 						value="ssy"
+						// disabled={!ssyUser}
 						style={{
 							whiteSpace: "normal",
 							wordWrap: "break-word",
 							maxWidth: "100%",
 						}}>
-						胜算云
+						胜算云Router
 					</VSCodeOption>
 					<VSCodeOption
 						className="text-[var(--vscode-foreground)] m-0"
 						value="cline"
+						// disabled={!clineUser}
 						style={{
 							whiteSpace: "normal",
 							wordWrap: "break-word",
@@ -55,22 +67,22 @@ const AccountView = ({ onDone }: AccountViewProps) => {
 			</div>
 			<div className="flex-grow overflow-hidden pr-[8px] flex flex-col">
 				<div className="h-full mb-[5px]">
-					<ClineAccountView vendorCode={vendor.k} />
+					<ClineAccountView vendorCode={vendor} user={user} />
 				</div>
 			</div>
 		</div>
 	)
 }
 
+type ClineAccountViewProps = {
+	vendorCode: string
+	user: any
+}
 // Cline账户视图组件
-export const ClineAccountView = ({ vendorCode }: { vendorCode: string }) => {
-	const { userInfo, apiConfiguration } = useExtensionState()
-	const { userSSY, handleSignOutSSY } = useShengSuanYunAuth()
-	let user = apiConfiguration?.shengSuanYunToken ? userSSY : undefined
-	const { user: firebaseUser, handleSignOut } = useFirebaseAuth()
-	// 根据API配置确定当前用户
-	if (vendorCode == "cline") user = apiConfiguration?.clineApiKey ? firebaseUser || userInfo : undefined
-
+export const ClineAccountView = ({ vendorCode, user }: ClineAccountViewProps) => {
+	const { handleSignOutSSY } = useShengSuanYunAuth()
+	const { handleSignOut } = useFirebaseAuth()
+	const { setVendor } = useExtensionState()
 	// 状态管理
 	const [balance, setBalance] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
@@ -94,11 +106,25 @@ export const ClineAccountView = ({ vendorCode }: { vendorCode: string }) => {
 		window.addEventListener("message", handleMessage)
 
 		// 组件挂载时获取所有账户数据
-		if (user) {
+		if (user && vendorCode == "ssy") {
 			setIsLoading(true)
-			vscode.postMessage({ type: "fetchUserCreditsData", text: vendorCode })
+			vscode.postMessage({ type: "fetchUserCreditsData" })
 		}
 
+		if (user && vendorCode == "cline") {
+			setIsLoading(true)
+			AccountServiceClient.fetchUserCreditsData(EmptyRequest.create())
+				.then((response) => {
+					setBalance(response.balance?.currentBalance || 0)
+					setUsageData(response.usageTransactions)
+					setPaymentsData(response.paymentTransactions)
+					setIsLoading(false)
+				})
+				.catch((error) => {
+					console.error("Failed to fetch user credits data:", error)
+					setIsLoading(false)
+				})
+		}
 		return () => {
 			window.removeEventListener("message", handleMessage)
 		}
@@ -109,6 +135,7 @@ export const ClineAccountView = ({ vendorCode }: { vendorCode: string }) => {
 		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
 			console.error("Failed to get login URL:", err),
 		)
+		setVendor("cline")
 	}
 
 	// 处理登出
@@ -120,8 +147,10 @@ export const ClineAccountView = ({ vendorCode }: { vendorCode: string }) => {
 			)
 			// 然后从Firebase登出
 			handleSignOut()
+			setVendor("ssy")
 		} else {
 			handleSignOutSSY()
+			setVendor("cline")
 		}
 	}
 	return (
@@ -154,12 +183,19 @@ export const ClineAccountView = ({ vendorCode }: { vendorCode: string }) => {
 
 					<div className="w-full flex gap-2 flex-col min-[225px]:flex-row">
 						<div className="w-full min-[225px]:w-1/2">
-							<VSCodeButtonLink href="https://app.cline.bot/credits" appearance="primary" className="w-full">
-								仪表板
+							<VSCodeButtonLink
+								appearance="primary"
+								className="w-full"
+								href={
+									vendorCode == "cline"
+										? "https://app.cline.bot/credits"
+										: "https://router.shengsuanyun.com/user/bill"
+								}>
+								个人中心
 							</VSCodeButtonLink>
 						</div>
 						<VSCodeButton appearance="secondary" onClick={handleLogout} className="w-full min-[225px]:w-1/2">
-							登出
+							退出登录
 						</VSCodeButton>
 					</div>
 
@@ -178,7 +214,24 @@ export const ClineAccountView = ({ vendorCode }: { vendorCode: string }) => {
 									<VSCodeButton
 										appearance="icon"
 										className="mt-1"
-										onClick={() => vscode.postMessage({ type: "fetchUserCreditsData" })}>
+										onClick={() => {
+											setIsLoading(true)
+											if (vendorCode == "ssy") {
+												vscode.postMessage({ type: "fetchUserCreditsData" })
+												return
+											}
+											AccountServiceClient.fetchUserCreditsData(EmptyRequest.create())
+												.then((response) => {
+													setBalance(response.balance?.currentBalance || 0)
+													setUsageData(response.usageTransactions)
+													setPaymentsData(response.paymentTransactions)
+													setIsLoading(false)
+												})
+												.catch((error) => {
+													console.error("Failed to refresh user credits data:", error)
+													setIsLoading(false)
+												})
+										}}>
 										<span className="codicon codicon-refresh"></span>
 									</VSCodeButton>
 								</>
@@ -186,9 +239,15 @@ export const ClineAccountView = ({ vendorCode }: { vendorCode: string }) => {
 						</div>
 
 						<div className="w-full">
-							<VSCodeButtonLink href="https://app.cline.bot/credits/#buy" className="w-full">
-								增加额度
-							</VSCodeButtonLink>
+							{vendorCode == "cline" ? (
+								<VSCodeButtonLink href="https://app.cline.bot/credits/#buy" className="w-full">
+									增加额度
+								</VSCodeButtonLink>
+							) : (
+								<VSCodeButtonLink href="https://router.shengsuanyun.com/user/recharge" className="w-full">
+									充值
+								</VSCodeButtonLink>
+							)}
 						</div>
 					</div>
 
@@ -212,12 +271,11 @@ export const ClineAccountView = ({ vendorCode }: { vendorCode: string }) => {
 						继续，表示你同意 Cline <VSCodeLink href="https://cline.bot/tos">用户协议</VSCodeLink> 和{" "}
 						<VSCodeLink href="https://cline.bot/privacy">隐私政策.</VSCodeLink>
 					</p>
-
 					<div className="w-full flex justify-start mt-16">
 						<VSCodeLink
-							className="text-[18px]"
+							onclick={() => setVendor("ssy")}
 							href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/ssy">
-							&gt;&gt;接人更多全球模型
+							&gt;&gt;点击接入胜算云，领取100万tokens算力
 						</VSCodeLink>
 					</div>
 				</div>

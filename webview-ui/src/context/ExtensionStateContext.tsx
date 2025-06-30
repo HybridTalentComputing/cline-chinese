@@ -53,12 +53,14 @@ interface ExtensionStateContextType extends ExtensionState {
 	showHistory: boolean
 	showAccount: boolean
 	showAnnouncement: boolean
+	vendor: "cline" | "ssy"
 
 	// Setters
 	setApiConfiguration: (config: ApiConfiguration) => void
 	setCustomInstructions: (value?: string) => void
 	setTelemetrySetting: (value: TelemetrySetting) => void
 	setShowAnnouncement: (value: boolean) => void
+	setVendor: (value: "cline" | "ssy") => void
 	setShouldShowAnnouncement: (value: boolean) => void
 	setPlanActSeparateModelsSetting: (value: boolean) => void
 	setEnableCheckpointsSetting: (value: boolean) => void
@@ -117,7 +119,7 @@ export const ExtensionStateContextProvider: React.FC<{
 	const [showHistory, setShowHistory] = useState(false)
 	const [showAccount, setShowAccount] = useState(false)
 	const [showAnnouncement, setShowAnnouncement] = useState(false)
-
+	const [vendor, setVendor] = useState<"cline" | "ssy">("cline")
 	// Helper for MCP view
 	const closeMcpView = useCallback(() => {
 		setShowMcp(false)
@@ -656,6 +658,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		showHistory,
 		showAccount,
 		showAnnouncement,
+		vendor,
 		globalClineRulesToggles: state.globalClineRulesToggles || {},
 		localClineRulesToggles: state.localClineRulesToggles || {},
 		localCursorRulesToggles: state.localCursorRulesToggles || {},
@@ -713,6 +716,7 @@ export const ExtensionStateContextProvider: React.FC<{
 			}))
 		},
 		setShowAnnouncement,
+		setVendor,
 		setShouldShowAnnouncement: (value) =>
 			setState((prevState) => ({
 				...prevState,

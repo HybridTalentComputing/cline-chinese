@@ -6,7 +6,7 @@ import { EmptyRequest } from "@shared/proto/common"
 
 export const ClineAccountInfoCard = () => {
 	const { user: firebaseUser, handleSignOut } = useFirebaseAuth()
-	const { userInfo, apiConfiguration, navigateToAccount } = useExtensionState()
+	const { userInfo, apiConfiguration, navigateToAccount, setVendor } = useExtensionState()
 
 	let user = apiConfiguration?.clineApiKey ? firebaseUser || userInfo : undefined
 
@@ -19,6 +19,7 @@ export const ClineAccountInfoCard = () => {
 	const handleShowAccount = () => {
 		// navigateToAccount()
 		handleSignOut()
+		setVendor("ssy")
 	}
 
 	return (

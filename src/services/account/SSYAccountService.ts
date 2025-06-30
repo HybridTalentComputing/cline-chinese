@@ -103,7 +103,7 @@ export class SSYAccountService {
 			}
 			const cpl: PaymentTransaction[] = res.records.map((it: any) => ({
 				creatorId: "",
-				credits: -10000,
+				credits: 0,
 				paidAt: it.create_at,
 				amountCents: ((r * it.price) / 10000).toFixed(2),
 			}))

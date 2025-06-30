@@ -233,7 +233,7 @@ export class Controller {
 				await this.postStateToWebview()
 				break
 			case "fetchUserCreditsData": {
-				await this.fetchUserCreditsData(message.text || "cline")
+				await this.fetchUserCreditsData()
 				break
 			}
 			case "fetchMcpMarketplace": {
@@ -515,21 +515,13 @@ export class Controller {
 
 	// Account
 
-	async fetchUserCreditsData(vdc: string) {
+	async fetchUserCreditsData() {
 		try {
-			if (vdc === "cline") {
-				await Promise.all([
-					this.accountService?.fetchBalance(),
-					this.accountService?.fetchUsageTransactions(),
-					this.accountService?.fetchPaymentTransactions(),
-				])
-			} else {
-				await Promise.all([
-					this.accountServiceSSY?.fetchBalance(),
-					this.accountServiceSSY?.fetchUsageTransactions(),
-					this.accountServiceSSY?.fetchPaymentTransactions(),
-				])
-			}
+			await Promise.all([
+				this.accountServiceSSY?.fetchBalance(),
+				this.accountServiceSSY?.fetchUsageTransactions(),
+				this.accountServiceSSY?.fetchPaymentTransactions(),
+			])
 		} catch (error) {
 			console.error("Failed to fetch user credits data:", error)
 		}
