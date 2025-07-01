@@ -1,5 +1,4 @@
 import { AccountServiceClient } from "@/services/grpc-client"
-import { vscode } from "@/utils/vscode"
 import { EmptyRequest } from "@shared/proto/common"
 import { initializeApp } from "firebase/app"
 import { User, getAuth, signInWithCustomToken, signOut } from "firebase/auth"

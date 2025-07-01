@@ -73,12 +73,6 @@ export async function refreshShengSuanYunModels(
 			description: model.description ?? "",
 		}
 	}
-
-	controller.postMessageToWebview({
-		type: "shengSuanYunModels",
-		shengSuanYunModels: typedModels,
-	})
-
 	return OpenRouterCompatibleModelInfo.create({ models: typedModels })
 }
 

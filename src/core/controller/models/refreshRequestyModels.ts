@@ -48,9 +48,5 @@ export async function refreshRequestyModels(controller: Controller, _: EmptyRequ
 		console.error("Error fetching Requesty models:", error)
 	}
 
-	controller.postMessageToWebview({
-		type: "requestyModels",
-		shengSuanYunModels: models,
-	})
 	return OpenRouterCompatibleModelInfo.create({ models })
 }

@@ -47,6 +47,7 @@ import { sendMcpMarketplaceCatalogEvent } from "./mcp/subscribeToMcpMarketplaceC
 import { sendRelinquishControlEvent } from "./ui/subscribeToRelinquishControl"
 import { handleTaskServiceRequest } from "./task"
 import { BooleanRequest } from "@shared/proto/common"
+import { sendSSYAuthCallbackEvent } from "./account/subscribeSSYAuthCallback"
 
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -91,13 +92,10 @@ export class Controller {
 				return apiConfiguration?.clineApiKey
 			},
 		)
-		this.accountServiceSSY = new SSYAccountService(
-			(msg) => this.postMessageToWebview(msg),
-			async () => {
-				const { apiConfiguration } = await this.getStateToPostToWebview()
-				return apiConfiguration?.shengSuanYunToken
-			},
-		)
+		this.accountServiceSSY = new SSYAccountService(async () => {
+			const { apiConfiguration } = await this.getStateToPostToWebview()
+			return apiConfiguration?.shengSuanYunToken
+		})
 		// Clean up legacy checkpoints
 		cleanupLegacyCheckpoints(this.context.globalStorageUri.fsPath, this.outputChannel).catch((error) => {
 			console.error("Failed to cleanup legacy checkpoints:", error)
@@ -222,15 +220,6 @@ export class Controller {
 	 */
 	async handleWebviewMessage(message: WebviewMessage) {
 		switch (message.type) {
-			case "authStateChanged":
-				await this.setUserInfo(message.user || message.userSSY || undefined)
-				await this.postStateToWebview()
-				break
-
-			case "fetchUserCreditsData": {
-				await this.fetchUserCreditsData()
-				break
-			}
 			case "fetchMcpMarketplace": {
 				await this.fetchMcpMarketplace(message.bool)
 				break
@@ -247,23 +236,6 @@ export class Controller {
 				}
 				break
 			}
-			case "accountLoginClickedSSY": {
-				const id = "cline-shengsuan"
-				const authUrl = vscode.Uri.parse(
-					`https://router.shengsuanyun.com/auth?from=${id}&callback_url=${encodeURIComponent(`${this.uriScheme || "vscode"}://shengsuan-cloud.${id}/ssy`)}`,
-				)
-				vscode.env.openExternal(authUrl)
-				break
-			}
-			case "accountLogoutClickedSSY": {
-				await this.handleSignOut()
-				break
-			}
-			case "fetchUserCreditsData": {
-				await this.fetchUserCreditsData()
-				break
-			}
-
 			// Add more switch case statements here as more webview message commands
 			// are created within the webview context (i.e. inside media/main.js)
 		}
@@ -518,11 +490,7 @@ export class Controller {
 
 	async fetchUserCreditsData() {
 		try {
-			await Promise.all([
-				this.accountServiceSSY?.fetchRate(),
-				this.accountServiceSSY?.fetchUsageTransactions(),
-				this.accountServiceSSY?.fetchPaymentTransactions(),
-			])
+			await this.accountServiceSSY?.fetchUserDataRPC()
 		} catch (error) {
 			console.error("Failed to fetch user credits data:", error)
 		}
@@ -731,10 +699,7 @@ export class Controller {
 			if (response.data && response.data.data && response.data.data.api_key) {
 				apiKey = response.data.data.api_key
 				customToken = response.data.data.jwt_token
-				await this.postMessageToWebview({
-					type: "authCallback",
-					customToken,
-				})
+				await sendSSYAuthCallbackEvent(customToken)
 			} else {
 				throw new Error("Invalid response from Shengsuanyun API", { cause: response })
 			}

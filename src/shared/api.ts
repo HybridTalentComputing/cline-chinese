@@ -2512,9 +2512,9 @@ export const requestyDefaultModelInfo: ModelInfo = {
 
 // ShengSuanYun
 // https://router.shengsuanyun.com/model
-export const shengSuanYunDefaultModelId: string = "anthropic/claude-3.7-sonnet"
+export const shengSuanYunDefaultModelId: string = "anthropic/claude-sonnet-4"
 export const shengSuanYunDefaultModelInfo: ModelInfo = {
-	maxTokens: 128_000,
+	maxTokens: 64_000,
 	contextWindow: 200_000,
 	supportsImages: true,
 	supportsPromptCache: true,

@@ -1,7 +1,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { useExtensionState } from "./ExtensionStateContext"
 import axios, { AxiosRequestConfig } from "axios"
-import { vscode } from "@/utils/vscode"
+import { AccountServiceClient } from "@/services/grpc-client"
+import { AuthStateChanged, AuthStateChangedRequest } from "@shared/proto/account"
+import { EmptyRequest } from "@shared/proto/common"
 
 interface ShengSuanYunAuthContextType {
 	userSSY: any | null
@@ -14,7 +16,8 @@ const ShengSuanYunAuthContext = createContext<ShengSuanYunAuthContextType | unde
 export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [userSSY, setUser] = useState<any | null>(null)
 	const [isInitSSY, setIsInitialized] = useState(false)
-	const { apiConfiguration } = useExtensionState()
+	const { apiConfiguration, setUserInfo } = useExtensionState()
+
 	useEffect(() => {
 		if (apiConfiguration?.shengSuanYunToken) signInWithTokenSSY(apiConfiguration?.shengSuanYunToken)
 	}, [apiConfiguration?.shengSuanYunToken])
@@ -32,43 +35,46 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 			if (!res.data || !res.data.data || res.data.code != 0) {
 				throw new Error(`Invalid response from ${uri} API`)
 			}
-			const usi = {
-				Email: res.data.data.Email,
-				Nickname: res.data.data.Nickname,
-				HeadImg: res.data.data.HeadImg,
-				Username: res.data.data.Username,
-				Wallet: res.data.data.Wallet,
-				Phone: res.data.data.Phone,
+			const user: any = {
+				displayName: res.data.data.Nickname || res.data.data.Username || undefined,
+				email: res.data.data.Email ?? undefined,
+				photoURL: res.data.data.HeadImg ?? undefined,
 			}
-			setUser(usi)
+			setUser(user)
 			setIsInitialized(true)
-			console.log("ShengSuanYunAuthProvider onAuthStateChanged user", usi)
-			vscode.postMessage({
-				type: "authStateChanged",
-				userSSY: usi,
-			})
+			AccountServiceClient.authStateChanged(AuthStateChangedRequest.create({ user }))
+				.then((res: AuthStateChanged) => {
+					setUserInfo(res.user)
+				})
+				.catch((error) => {
+					console.error("Error updating auth state via gRPC:", error)
+				})
 		} catch (error) {
 			console.error("Error signing in with custom token:", error)
 			throw error
 		}
 	}
 
-	// Listen for auth callback from extension
 	useEffect(() => {
-		const handleMessage = (event: MessageEvent) => {
-			const message = event.data
-			if (message.type === "authCallback" && message.customToken) {
-				signInWithTokenSSY(message.customToken)
-			}
-		}
-
-		window.addEventListener("message", handleMessage)
-		return () => window.removeEventListener("message", handleMessage)
+		const cleanup = AccountServiceClient.subscribeSSYAuthCallback(EmptyRequest.create({}), {
+			onResponse: (event) => {
+				if (event.value) {
+					signInWithTokenSSY(event.value)
+				}
+			},
+			onError: (error) => {
+				console.error("Error in signInWithTokenSSY subscription:", error)
+			},
+			onComplete: () => {},
+		})
+		return cleanup
 	}, [signInWithTokenSSY])
 
 	const handleSignOutSSY = useCallback(async () => {
 		try {
-			vscode.postMessage({ type: "accountLogoutClickedSSY" })
+			AccountServiceClient.shengSuanYunLogoutClicked(EmptyRequest.create()).catch((err) =>
+				console.error("shengSuanYunLogoutClicked Failed to logout:", err),
+			)
 			console.log("Successfully signed out of ssy")
 		} catch (error) {
 			console.error("Error signing out of ssy:", error)

@@ -8,10 +8,9 @@ interface CreditsHistoryTableProps {
 	isLoading: boolean
 	usageData: UsageTransaction[]
 	paymentsData: PaymentTransaction[]
-	rateUSD?: number
 }
 
-const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, rateUSD = 0 }: CreditsHistoryTableProps) => {
+const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHistoryTableProps) => {
 	const [activeTab, setActiveTab] = useState<"usage" | "payments">("usage")
 	return (
 		<div className="flex flex-col flex-grow h-full">
@@ -27,7 +26,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, rateUSD = 0 }
 
 			{/* Content container */}
 			<div className="mt-[15px] mb-[0px] rounded-md overflow-auto flex-grow">
-				{isLoading && !rateUSD ? (
+				{isLoading ? (
 					<div className="flex justify-center items-center p-4">
 						<div className="text-[var(--vscode-descriptionForeground)]">加载中...</div>
 					</div>
@@ -65,7 +64,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, rateUSD = 0 }
 														</VSCodeDataGridCell>
 														<VSCodeDataGridCell grid-column="2">{model}</VSCodeDataGridCell>
 														{/* <VSCodeDataGridCell grid-column="3">{`${row.promptTokens} → ${row.completionTokens}`}</VSCodeDataGridCell> */}
-														<VSCodeDataGridCell grid-column="3">{`$${(rateUSD * Number(row.credits || "0")).toFixed(7)}`}</VSCodeDataGridCell>
+														<VSCodeDataGridCell grid-column="3">{`$${Number(row.credits || "0").toFixed(7)}`}</VSCodeDataGridCell>
 													</VSCodeDataGridRow>
 												)
 											})}
@@ -80,7 +79,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, rateUSD = 0 }
 
 						{activeTab === "payments" && (
 							<>
-								{paymentsData.length > 0 ? (
+								{paymentsData && paymentsData.length > 0 ? (
 									<VSCodeDataGrid>
 										<VSCodeDataGridRow row-type="header">
 											<VSCodeDataGridCell cell-type="columnheader" grid-column="1">
@@ -99,7 +98,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, rateUSD = 0 }
 												<VSCodeDataGridCell grid-column="1">
 													{formatTimestamp(row.paidAt, "zh-CN")}
 												</VSCodeDataGridCell>
-												<VSCodeDataGridCell grid-column="2">{`$${(rateUSD * Number(row.amountCents || "0")).toFixed(2)}`}</VSCodeDataGridCell>
+												<VSCodeDataGridCell grid-column="2">{`$${Number(row.amountCents || "0").toFixed(2)}`}</VSCodeDataGridCell>
 												<VSCodeDataGridCell grid-column="3">{`${row.credits || ""}`}</VSCodeDataGridCell>
 											</VSCodeDataGridRow>
 										))}

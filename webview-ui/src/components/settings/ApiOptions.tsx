@@ -17,9 +17,6 @@ import {
 	vertexGlobalModels,
 	vertexModels,
 	xaiModels,
-	shengSuanYunDefaultModelId,
-	shengSuanYunDefaultModelInfo,
-	sapAiCoreDefaultModelId,
 	sapAiCoreModels,
 } from "@shared/api"
 import { EmptyRequest, StringRequest } from "@shared/proto/common"
@@ -667,7 +664,7 @@ const ApiOptions = ({
 						)}
 					</p>
 					<label htmlFor="bedrock-model-dropdown">
-						<span style={{ fontWeight: 500 }}>Model</span>
+						<span style={{ fontWeight: 500 }}>模型</span>
 					</label>
 					<DropdownContainer zIndex={DROPDOWN_Z_INDEX - 2} className="dropdown-container">
 						<VSCodeDropdown
@@ -683,7 +680,7 @@ const ApiOptions = ({
 								})
 							}}
 							style={{ width: "100%" }}>
-							<VSCodeOption value="">Select a model...</VSCodeOption>
+							<VSCodeOption value="">选择模型...</VSCodeOption>
 							{Object.keys(bedrockModels).map((modelId) => (
 								<VSCodeOption
 									key={modelId}
@@ -696,7 +693,7 @@ const ApiOptions = ({
 									{modelId}
 								</VSCodeOption>
 							))}
-							<VSCodeOption value="custom">Custom</VSCodeOption>
+							<VSCodeOption value="custom">自定义</VSCodeOption>
 						</VSCodeDropdown>
 					</DropdownContainer>
 					{apiConfiguration?.awsBedrockCustomSelected && (
@@ -868,7 +865,7 @@ const ApiOptions = ({
 							marginTop: 3,
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						This key is stored locally and only used to make API requests from this extension.
+						此密钥存储在本地，仅用于从此扩展发出 API 请求。
 						{!apiConfiguration?.fireworksApiKey && (
 							<VSCodeLink
 								href="https://fireworks.ai/settings/users/api-keys"
@@ -876,7 +873,7 @@ const ApiOptions = ({
 									display: "inline",
 									fontSize: "inherit",
 								}}>
-								You can get a Fireworks API key by signing up here.
+								您可以通过在此处注册来获取 Fireworks API 密钥。
 							</VSCodeLink>
 						)}
 					</p>
@@ -894,8 +891,8 @@ const ApiOptions = ({
 							color: "var(--vscode-descriptionForeground)",
 						}}>
 						<span style={{ color: "var(--vscode-errorForeground)" }}>
-							(<span style={{ fontWeight: 500 }}>Note:</span> Cline uses complex prompts and works best with Claude
-							models. Less capable models may not work as expected.)
+							(<span style={{ fontWeight: 500 }}>注意:</span> Cline 使用复杂的提示，与 Claude
+							模型配合使用效果最佳。性能较差的模型可能无法达到预期效果。)
 						</span>
 					</p>
 					<VSCodeTextField
@@ -917,7 +914,7 @@ const ApiOptions = ({
 							})
 						}}
 						placeholder={"2000"}>
-						<span style={{ fontWeight: 500 }}>Max Completion Tokens</span>
+						<span style={{ fontWeight: 500 }}>最大输出 Tokens</span>
 					</VSCodeTextField>
 					<VSCodeTextField
 						value={apiConfiguration?.fireworksModelMaxTokens?.toString() || ""}
@@ -938,7 +935,7 @@ const ApiOptions = ({
 							})
 						}}
 						placeholder={"4000"}>
-						<span style={{ fontWeight: 500 }}>Max Context Tokens</span>
+						<span style={{ fontWeight: 500 }}>上下文窗口</span>
 					</VSCodeTextField>
 				</div>
 			)}
@@ -1077,7 +1074,7 @@ const ApiOptions = ({
 						type="url"
 						onInput={handleInputChange("liteLlmBaseUrl")}
 						placeholder={"Default: http://localhost:4000"}>
-						<span style={{ fontWeight: 500 }}>Base URL (optional)</span>
+						<span style={{ fontWeight: 500 }}>Base URL (可选)</span>
 					</VSCodeTextField>
 					<VSCodeTextField
 						value={apiConfiguration?.liteLlmApiKey || ""}
@@ -1108,7 +1105,7 @@ const ApiOptions = ({
 										})
 									}}
 									style={{ fontWeight: 500, color: "var(--vscode-charts-green)" }}>
-									Use prompt caching (GA)
+									使用提示词缓存 (GA)
 								</VSCodeCheckbox>
 								<p style={{ fontSize: "12px", marginTop: 3, color: "var(--vscode-charts-green)" }}>
 									提示缓存需要受支持的提供程序和模型
@@ -1129,7 +1126,7 @@ const ApiOptions = ({
 							<VSCodeLink
 								href="https://docs.litellm.ai/docs/reasoning_content"
 								style={{ display: "inline", fontSize: "inherit" }}>
-								Thinking Mode 配置
+								推理配置
 							</VSCodeLink>
 						</p>
 					</>
@@ -1210,7 +1207,7 @@ const ApiOptions = ({
 											liteLlmModelInfo: modelInfo,
 										})
 									}}>
-									<span style={{ fontWeight: 500 }}>Max Output Tokens</span>
+									<span style={{ fontWeight: 500 }}>最大输出 Tokens</span>
 								</VSCodeTextField>
 							</div>
 							<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
@@ -1275,7 +1272,7 @@ const ApiOptions = ({
 
 					{/* Model selection - use filterable picker */}
 					<label htmlFor="ollama-model-selection">
-						<span style={{ fontWeight: 500 }}>Model</span>
+						<span style={{ fontWeight: 500 }}>模型</span>
 					</label>
 					<OllamaModelPicker
 						ollamaModels={ollamaModels}
@@ -1286,7 +1283,7 @@ const ApiOptions = ({
 								ollamaModelId: modelId,
 							})
 						}}
-						placeholder={ollamaModels.length > 0 ? "Search and select a model..." : "e.g. llama3.1"}
+						placeholder={ollamaModels.length > 0 ? "搜索和选择模型..." : "e.g. llama3.1"}
 					/>
 
 					{/* Show status message based on model availability */}
@@ -1298,8 +1295,7 @@ const ApiOptions = ({
 								color: "var(--vscode-descriptionForeground)",
 								fontStyle: "italic",
 							}}>
-							Unable to fetch models from Ollama server. Please ensure Ollama is running and accessible, or enter
-							the model ID manually above.
+							无法从 Ollama 服务器获取模型。请确保 Ollama 正在运行且可访问，或者在上方手动输入模型 ID。
 						</p>
 					)}
 
@@ -1346,7 +1342,7 @@ const ApiOptions = ({
 							marginTop: 3,
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						This key is stored locally and only used to make API requests from this extension.{" "}
+						此密钥存储在本地，仅用于从此扩展发出 API 请求.{" "}
 						{!apiConfiguration?.nebiusApiKey && (
 							<VSCodeLink
 								href="https://studio.nebius.com/settings/api-keys"
@@ -1437,7 +1433,7 @@ const ApiOptions = ({
 							marginTop: 3,
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						This key is stored locally and only used to make API requests from this extension.
+						此密钥存储在本地，仅用于从此扩展发出 API 请求
 						{!apiConfiguration?.cerebrasApiKey && (
 							<VSCodeLink
 								href="https://cloud.cerebras.ai/"
@@ -1464,7 +1460,7 @@ const ApiOptions = ({
 					</VSCodeTextField>
 					{apiConfiguration?.sapAiCoreClientId && (
 						<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)" }}>
-							Client Id is set. To change it, please re-enter the value.
+							客户端 ID 已设置。如需更改，请重新输入该值。
 						</p>
 					)}
 					<VSCodeTextField
@@ -1507,11 +1503,11 @@ const ApiOptions = ({
 							marginTop: "5px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						These credentials are stored locally and only used to make API requests from this extension.
+						这些凭证存储在本地，仅用于从此扩展发出 API 请求。
 						<VSCodeLink
 							href="https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/access-sap-ai-core-via-api"
 							style={{ display: "inline" }}>
-							You can find more information about SAP AI Core API access here.
+							您可以在此处找到有关 SAP AI Core API 访问的更多信息。
 						</VSCodeLink>
 					</p>
 				</div>

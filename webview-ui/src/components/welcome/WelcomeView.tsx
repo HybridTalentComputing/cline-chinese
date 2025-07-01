@@ -2,7 +2,6 @@ import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useState, memo } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { validateApiConfiguration } from "@/utils/validate"
-import { vscode } from "@/utils/vscode"
 import ApiOptions from "@/components/settings/ApiOptions"
 import ClineLogoWhite from "@/assets/ClineLogoWhite"
 import { AccountServiceClient, ModelsServiceClient } from "@/services/grpc-client"
@@ -18,7 +17,9 @@ const WelcomeView = memo(() => {
 	const disableLetsGoButton = apiErrorMessage != null
 
 	const handleLogin = () => {
-		vscode.postMessage({ type: "accountLoginClickedSSY" })
+		AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create()).catch((err) =>
+			console.error("shengSuanYunLoginClicked Failed to get login URL:", err),
+		)
 	}
 
 	const handleSubmit = async () => {
@@ -47,10 +48,10 @@ const WelcomeView = memo(() => {
 					<ClineLogoWhite className="size-16" />
 				</div>
 				<div className="flex flex-col gap-3">
-					<div className="bg-white p-3 text-gray-800">
+					<div className="">
 						Cline中文版，由中国胜算云Router赞助开发，一分钟注册，国内就能调用，Claude / GPT 等全球100个大模型
 					</div>
-					<div className="bg-white p-3 text-gray-800">限时新用户，注册限时赠送 Claude 4 Sonnet 免费额度！</div>
+					<div className="">限时新用户，注册限时赠送 Claude 4 Sonnet 免费额度！</div>
 				</div>
 
 				<VSCodeButton appearance="primary" onClick={handleLogin} className="w-full mt-1">

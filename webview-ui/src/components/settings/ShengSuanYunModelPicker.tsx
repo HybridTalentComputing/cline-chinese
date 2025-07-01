@@ -63,7 +63,6 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 	useMount(() => {
 		ModelsServiceClient.refreshShengSuanYunModels(EmptyRequest.create({}))
 			.then((res) => {
-				console.log(res, "==============================")
 				setShengSuanYunModels({
 					[shengSuanYunDefaultModelId]: shengSuanYunDefaultModelInfo,
 					...res.models,

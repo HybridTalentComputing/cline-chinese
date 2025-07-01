@@ -14,12 +14,6 @@ export interface WebviewMessage {
 		| "telemetrySetting"
 		| "grpc_request"
 		| "grpc_request_cancel"
-		| "fetchUSDRate"
-		| "accountLoginClickedSSY"
-		| "accountLogoutClickedSSY"
-		| "authStateChanged"
-		| "fetchUserCreditsData"
-		| "authCallback"
 
 	text?: string
 	disabled?: boolean

@@ -26,6 +26,11 @@ service AccountService {
     
     // Fetches all user credits data (balance, usage transactions, payment transactions)
     rpc fetchUserCreditsData(EmptyRequest) returns (UserCreditsData);
+
+    rpc shengSuanYunLoginClicked(EmptyRequest) returns (String);
+    rpc shengSuanYunLogoutClicked(EmptyRequest) returns (Empty);
+    rpc shengSuanYunUserData(EmptyRequest) returns (UserCreditsData);
+    rpc subscribeSSYAuthCallback(EmptyRequest) returns (stream String);
 }
 
 message AuthStateChangedRequest {
