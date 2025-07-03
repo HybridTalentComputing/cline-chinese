@@ -75,6 +75,7 @@ export type GlobalStateKey =
 	| "shengSuanYunToken"
 	| "shengSuanYunModelId"
 	| "shengSuanYunModelInfo"
+	| "welcomeViewCompleted"
 	| "terminalOutputLineLimit"
 	| "mcpRichDisplayEnabled"
 	| "sapAiCoreTokenUrl"

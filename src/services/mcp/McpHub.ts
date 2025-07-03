@@ -139,7 +139,6 @@ export class McpHub {
 		console.log("[DEBUG] subscribing to mcp file changes")
 		const cancelSubscription = getHostBridgeProvider().watchServiceClient.subscribeToFile(
 			SubscribeToFileRequest.create({
-				metadata: Metadata.create({}),
 				path: settingsPath,
 			}),
 			{
@@ -154,7 +153,7 @@ export class McpHub {
 						if (settings) {
 							try {
 								await this.updateServerConnections(settings.mcpServers)
-								vscode.window.showInformationMessage("MCP servers updated")
+								vscode.window.showInformationMessage("MCP 更新成功")
 							} catch (error) {
 								console.error("Failed to process MCP settings change:", error)
 							}

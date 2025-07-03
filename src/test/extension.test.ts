@@ -8,7 +8,7 @@ const packagePath = path.join(__dirname, "..", "..", "package.json")
 
 describe("Cline Extension", () => {
 	after(() => {
-		vscode.window.showInformationMessage("All tests done!")
+		vscode.window.showInformationMessage("完成所有测试!")
 	})
 
 	it("should verify extension ID matches package.json", async () => {

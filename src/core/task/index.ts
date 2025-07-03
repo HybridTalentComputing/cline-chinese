@@ -1,13 +1,4 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import cloneDeep from "clone-deep"
-import { execa } from "execa"
-import { setTimeout as setTimeoutPromise } from "node:timers/promises"
-import os from "os"
-import pTimeout from "p-timeout"
-import pWaitFor from "p-wait-for"
-import * as path from "path"
-import * as vscode from "vscode"
-import { Logger } from "@services/logging/Logger"
 import { ApiHandler, buildApiHandler } from "@api/index"
 import { AnthropicHandler } from "@api/providers/anthropic"
 import { ClineHandler } from "@api/providers/cline"
@@ -21,6 +12,7 @@ import { TerminalManager } from "@integrations/terminal/TerminalManager"
 import { BrowserSession } from "@services/browser/BrowserSession"
 import { UrlContentFetcher } from "@services/browser/UrlContentFetcher"
 import { listFiles } from "@services/glob/list-files"
+import { Logger } from "@services/logging/Logger"
 import { telemetryService } from "@services/posthog/telemetry/TelemetryService"
 import { ApiConfiguration } from "@shared/api"
 import { findLast, findLastIndex } from "@shared/array"
@@ -29,42 +21,48 @@ import { BrowserSettings } from "@shared/BrowserSettings"
 import { ChatSettings } from "@shared/ChatSettings"
 import { combineApiRequests } from "@shared/combineApiRequests"
 import { combineCommandSequences } from "@shared/combineCommandSequences"
-import {
-	ClineApiReqCancelReason,
-	ClineApiReqInfo,
-	ClineAsk,
-	ClineMessage,
-	ClineSay,
-	ExtensionMessage,
-} from "@shared/ExtensionMessage"
+import { ClineApiReqCancelReason, ClineApiReqInfo, ClineAsk, ClineMessage, ClineSay } from "@shared/ExtensionMessage"
 import { getApiMetrics } from "@shared/getApiMetrics"
 import { HistoryItem } from "@shared/HistoryItem"
 import { DEFAULT_LANGUAGE_SETTINGS, getLanguageKey, LanguageDisplay } from "@shared/Languages"
 import { ClineAskResponse, ClineCheckpointRestore } from "@shared/WebviewMessage"
 import { arePathsEqual } from "@utils/path"
+import cloneDeep from "clone-deep"
+import { execa } from "execa"
+import { setTimeout as setTimeoutPromise } from "node:timers/promises"
+import os from "os"
+import pTimeout from "p-timeout"
+import pWaitFor from "p-wait-for"
+import * as path from "path"
+import * as vscode from "vscode"
+import { getGitRemoteUrls } from "@utils/git"
 
-import {
-	AssistantMessageContent,
-	parseAssistantMessageV2,
-	parseAssistantMessageV3,
-	ToolParamName,
-	ToolUseName,
-} from "@core/assistant-message"
-import { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
-import { parseMentions } from "@core/mentions"
-import { formatResponse } from "@core/prompts/responses"
-import { addUserInstructions, SYSTEM_PROMPT } from "@core/prompts/system"
-import { sendPartialMessageEvent } from "@core/controller/ui/subscribeToPartialMessage"
-import { sendRelinquishControlEvent } from "@core/controller/ui/subscribeToRelinquishControl"
-import { convertClineMessageToProto } from "@shared/proto-conversions/cline-message"
-import { getContextWindowInfo } from "@core/context/context-management/context-window-utils"
-import { FileContextTracker } from "@core/context/context-tracking/FileContextTracker"
-import { ModelContextTracker } from "@core/context/context-tracking/ModelContextTracker"
+import { parseAssistantMessageV2, parseAssistantMessageV3, ToolUseName } from "@core/assistant-message"
 import {
 	checkIsAnthropicContextWindowError,
 	checkIsOpenRouterContextWindowError,
 } from "@core/context/context-management/context-error-handling"
+import { getContextWindowInfo } from "@core/context/context-management/context-window-utils"
 import { ContextManager } from "@core/context/context-management/ContextManager"
+import { FileContextTracker } from "@core/context/context-tracking/FileContextTracker"
+import { ModelContextTracker } from "@core/context/context-tracking/ModelContextTracker"
+import {
+	getGlobalClineRules,
+	getLocalClineRules,
+	refreshClineRulesToggles,
+} from "@core/context/instructions/user-instructions/cline-rules"
+import {
+	getLocalCursorRules,
+	getLocalWindsurfRules,
+	refreshExternalRulesToggles,
+} from "@core/context/instructions/user-instructions/external-rules"
+import { sendPartialMessageEvent } from "@core/controller/ui/subscribeToPartialMessage"
+import { sendRelinquishControlEvent } from "@core/controller/ui/subscribeToRelinquishControl"
+import { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
+import { parseMentions } from "@core/mentions"
+import { formatResponse } from "@core/prompts/responses"
+import { addUserInstructions, SYSTEM_PROMPT } from "@core/prompts/system"
+import { parseSlashCommands } from "@core/slash-commands"
 import {
 	ensureRulesDirectoryExists,
 	ensureTaskDirectoryExists,
@@ -72,29 +70,19 @@ import {
 	getSavedClineMessages,
 	GlobalFileNames,
 } from "@core/storage/disk"
-import {
-	getGlobalClineRules,
-	getLocalClineRules,
-	refreshClineRulesToggles,
-} from "@core/context/instructions/user-instructions/cline-rules"
-import { ensureLocalClineDirExists } from "../context/instructions/user-instructions/rule-helpers"
-import {
-	refreshExternalRulesToggles,
-	getLocalWindsurfRules,
-	getLocalCursorRules,
-} from "@core/context/instructions/user-instructions/external-rules"
-import { refreshWorkflowToggles } from "../context/instructions/user-instructions/workflows"
 import { getWorkspaceState } from "@core/storage/state"
-import { parseSlashCommands } from "@core/slash-commands"
+import { processFilesIntoText } from "@integrations/misc/extract-text"
 import WorkspaceTracker from "@integrations/workspace/WorkspaceTracker"
 import { McpHub } from "@services/mcp/McpHub"
-import { isInTestMode } from "../../services/test/TestMode"
-import { processFilesIntoText } from "@integrations/misc/extract-text"
+import { convertClineMessageToProto } from "@shared/proto-conversions/cline-message"
 import { isClaude4ModelFamily, isGemini2dot5ModelFamily } from "@utils/model-utils"
+import { isInTestMode } from "../../services/test/TestMode"
+import { ensureLocalClineDirExists } from "../context/instructions/user-instructions/rule-helpers"
+import { refreshWorkflowToggles } from "../context/instructions/user-instructions/workflows"
 import { MessageStateHandler } from "./message-state"
-import { formatErrorWithStatusCode, updateApiReqMsg } from "./utils"
 import { TaskState } from "./TaskState"
 import { ToolExecutor } from "./ToolExecutor"
+import { formatErrorWithStatusCode, updateApiReqMsg } from "./utils"
 
 export const USE_EXPERIMENTAL_CLAUDE4_FEATURES = false
 
@@ -137,7 +125,6 @@ export class Task {
 	// Callbacks
 	private updateTaskHistory: (historyItem: HistoryItem) => Promise<HistoryItem[]>
 	private postStateToWebview: () => Promise<void>
-	private postMessageToWebview: (message: ExtensionMessage) => Promise<void>
 	private reinitExistingTaskFromId: (taskId: string) => Promise<void>
 	private cancelTask: () => Promise<void>
 
@@ -154,7 +141,6 @@ export class Task {
 		workspaceTracker: WorkspaceTracker,
 		updateTaskHistory: (historyItem: HistoryItem) => Promise<HistoryItem[]>,
 		postStateToWebview: () => Promise<void>,
-		postMessageToWebview: (message: ExtensionMessage) => Promise<void>,
 		reinitExistingTaskFromId: (taskId: string) => Promise<void>,
 		cancelTask: () => Promise<void>,
 		apiConfiguration: ApiConfiguration,
@@ -177,7 +163,6 @@ export class Task {
 		this.workspaceTracker = workspaceTracker
 		this.updateTaskHistory = updateTaskHistory
 		this.postStateToWebview = postStateToWebview
-		this.postMessageToWebview = postMessageToWebview
 		this.reinitExistingTaskFromId = reinitExistingTaskFromId
 		this.cancelTask = cancelTask
 		this.clineIgnoreController = new ClineIgnoreController(cwd)
@@ -295,7 +280,6 @@ export class Task {
 			this.taskState,
 			this.messageStateHandler,
 			this.api,
-			this.terminalManager,
 			this.urlContentFetcher,
 			this.browserSession,
 			this.diffViewProvider,
@@ -306,16 +290,11 @@ export class Task {
 			this.contextManager,
 			this.autoApprovalSettings,
 			this.browserSettings,
-			this.chatSettings,
 			cwd,
 			this.taskId,
 			this.say.bind(this),
 			this.ask.bind(this),
 			this.saveCheckpoint.bind(this),
-			this.reinitExistingTaskFromId.bind(this),
-			this.cancelTask.bind(this),
-			this.shouldAutoApproveTool.bind(this),
-			this.shouldAutoApproveToolWithPath.bind(this),
 			this.sayAndCreateMissingParamError.bind(this),
 			this.removeLastPartialMessageIfExistsWithType.bind(this),
 			this.executeCommandTool.bind(this),
@@ -331,6 +310,13 @@ export class Task {
 			throw new Error("Unable to access extension context")
 		}
 		return context
+	}
+
+	/**
+	 * Updates the auto approval settings for this task
+	 */
+	public updateAutoApprovalSettings(settings: AutoApprovalSettings): void {
+		this.toolExecutor.updateAutoApprovalSettings(settings)
 	}
 
 	async restoreCheckpoint(messageTs: number, restoreType: ClineCheckpointRestore, offset?: number) {
@@ -1451,7 +1437,10 @@ export class Task {
 			try {
 				const { response, text, images, files } = await this.ask("command_output", chunk)
 				if (response === "yesButtonClicked") {
-					// proceed while running
+					// proceed while running - but still capture user feedback if provided
+					if (text || (images && images.length > 0) || (files && files.length > 0)) {
+						userFeedback = { text, images, files }
+					}
 				} else {
 					userFeedback = { text, images, files }
 				}
@@ -1551,69 +1540,6 @@ export class Task {
 					result.length > 0 ? `\nHere's the output so far:\n${result}` : ""
 				}\n\nYou will be updated on the terminal status and new output in the future.`,
 			]
-		}
-	}
-
-	// Check if the tool should be auto-approved based on the settings
-	// Returns bool for most tools, and tuple for tools with nested settings
-	shouldAutoApproveTool(toolName: ToolUseName): boolean | [boolean, boolean] {
-		if (this.autoApprovalSettings.enabled) {
-			switch (toolName) {
-				case "read_file":
-				case "list_files":
-				case "list_code_definition_names":
-				case "search_files":
-					return [
-						this.autoApprovalSettings.actions.readFiles,
-						this.autoApprovalSettings.actions.readFilesExternally ?? false,
-					]
-				case "new_rule":
-				case "write_to_file":
-				case "replace_in_file":
-					return [
-						this.autoApprovalSettings.actions.editFiles,
-						this.autoApprovalSettings.actions.editFilesExternally ?? false,
-					]
-				case "execute_command":
-					return [
-						this.autoApprovalSettings.actions.executeSafeCommands ?? false,
-						this.autoApprovalSettings.actions.executeAllCommands ?? false,
-					]
-				case "browser_action":
-					return this.autoApprovalSettings.actions.useBrowser
-				case "web_fetch":
-					return this.autoApprovalSettings.actions.useBrowser
-				case "access_mcp_resource":
-				case "use_mcp_tool":
-					return this.autoApprovalSettings.actions.useMcp
-			}
-		}
-		return false
-	}
-
-	// Check if the tool should be auto-approved based on the settings
-	// and the path of the action. Returns true if the tool should be auto-approved
-	// based on the user's settings and the path of the action.
-	shouldAutoApproveToolWithPath(blockname: ToolUseName, autoApproveActionpath: string | undefined): boolean {
-		let isLocalRead: boolean = false
-		if (autoApproveActionpath) {
-			const absolutePath = path.resolve(cwd, autoApproveActionpath)
-			isLocalRead = absolutePath.startsWith(cwd)
-		} else {
-			// If we do not get a path for some reason, default to a (safer) false return
-			isLocalRead = false
-		}
-
-		// Get auto-approve settings for local and external edits
-		const autoApproveResult = this.shouldAutoApproveTool(blockname)
-		const [autoApproveLocal, autoApproveExternal] = Array.isArray(autoApproveResult)
-			? autoApproveResult
-			: [autoApproveResult, false]
-
-		if ((isLocalRead && autoApproveLocal) || (!isLocalRead && autoApproveLocal && autoApproveExternal)) {
-			return true
-		} else {
-			return false
 		}
 	}
 
@@ -2005,12 +1931,42 @@ export class Task {
 					message: `Cline has auto-approved ${this.autoApprovalSettings.maxRequests.toString()} API requests.`,
 				})
 			}
-			await this.ask(
+			const { response, text, images, files } = await this.ask(
 				"auto_approval_max_req_reached",
 				`Cline has auto-approved ${this.autoApprovalSettings.maxRequests.toString()} API requests. Would you like to reset the count and proceed with the task?`,
 			)
 			// if we get past the promise it means the user approved and did not start a new task
 			this.taskState.consecutiveAutoApprovedRequestsCount = 0
+
+			// Process user feedback if provided
+			if (response === "messageResponse") {
+				// Display the user's message in the chat UI
+				await this.say("user_feedback", text, images, files)
+
+				// This userContent is for the *next* API call.
+				const feedbackUserContent: UserContent = []
+				feedbackUserContent.push({
+					type: "text",
+					text: formatResponse.autoApprovalMaxReached(text),
+				})
+				if (images && images.length > 0) {
+					feedbackUserContent.push(...formatResponse.imageBlocks(images))
+				}
+
+				let fileContentString = ""
+				if (files && files.length > 0) {
+					fileContentString = await processFilesIntoText(files)
+				}
+
+				if (fileContentString) {
+					feedbackUserContent.push({
+						type: "text",
+						text: fileContentString,
+					})
+				}
+
+				userContent = feedbackUserContent
+			}
 		}
 
 		// get previous api req's index to check token usage and determine if we need to truncate conversation history
@@ -2624,6 +2580,12 @@ export class Task {
 				const [files, didHitLimit] = await listFiles(cwd, true, 200)
 				const result = formatResponse.formatFilesList(cwd, files, didHitLimit, this.clineIgnoreController)
 				details += result
+			}
+
+			// Add git remote URLs section
+			const gitRemotes = await getGitRemoteUrls(cwd)
+			if (gitRemotes.length > 0) {
+				details += `\n\n# Git Remote URLs\n${gitRemotes.join("\n")}`
 			}
 		}
 

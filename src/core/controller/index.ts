@@ -1,31 +1,31 @@
+import { telemetryService } from "@/services/posthog/telemetry/TelemetryService"
+import { getCwd } from "@/utils/path"
 import { Anthropic } from "@anthropic-ai/sdk"
+import { buildApiHandler } from "@api/index"
+import { cleanupLegacyCheckpoints } from "@integrations/checkpoints/CheckpointMigration"
+import { extractCommitMessage } from "@integrations/git/commit-message-generator"
+import { downloadTask } from "@integrations/misc/export-markdown"
+import WorkspaceTracker from "@integrations/workspace/WorkspaceTracker"
+import { ClineAccountService } from "@services/account/ClineAccountService"
+import { McpHub } from "@services/mcp/McpHub"
+import { ApiProvider, ModelInfo } from "@shared/api"
+import { ChatContent } from "@shared/ChatContent"
+import { ChatSettings, StoredChatSettings } from "@shared/ChatSettings"
+import { ClineRulesToggles } from "@shared/cline-rules"
+import { ExtensionMessage, ExtensionState, Platform } from "@shared/ExtensionMessage"
+import { HistoryItem } from "@shared/HistoryItem"
+import { McpMarketplaceCatalog } from "@shared/mcp"
+import { TelemetrySetting } from "@shared/TelemetrySetting"
+import { UserInfo } from "@shared/UserInfo"
+import { WebviewMessage } from "@shared/WebviewMessage"
+import { fileExistsAtPath } from "@utils/fs"
+import { getWorkingState } from "@utils/git"
 import axios from "axios"
-import { v4 as uuidv4 } from "uuid"
 import fs from "fs/promises"
 import { setTimeout as setTimeoutPromise } from "node:timers/promises"
 import pWaitFor from "p-wait-for"
 import * as path from "path"
 import * as vscode from "vscode"
-import { handleGrpcRequest, handleGrpcRequestCancel } from "./grpc-handler"
-import { buildApiHandler } from "@api/index"
-import { cleanupLegacyCheckpoints } from "@integrations/checkpoints/CheckpointMigration"
-import { downloadTask } from "@integrations/misc/export-markdown"
-import WorkspaceTracker from "@integrations/workspace/WorkspaceTracker"
-import { ClineAccountService } from "@services/account/ClineAccountService"
-import { McpHub } from "@services/mcp/McpHub"
-import { telemetryService } from "@/services/posthog/telemetry/TelemetryService"
-import { ApiProvider, ModelInfo } from "@shared/api"
-import { ChatContent } from "@shared/ChatContent"
-import { ChatSettings, StoredChatSettings } from "@shared/ChatSettings"
-import { ExtensionMessage, ExtensionState, Platform } from "@shared/ExtensionMessage"
-import { HistoryItem } from "@shared/HistoryItem"
-import { McpMarketplaceCatalog } from "@shared/mcp"
-import { UserInfo } from "@shared/UserInfo"
-import { TelemetrySetting } from "@shared/TelemetrySetting"
-import { WebviewMessage } from "@shared/WebviewMessage"
-import { fileExistsAtPath } from "@utils/fs"
-import { getWorkingState } from "@utils/git"
-import { extractCommitMessage } from "@integrations/git/commit-message-generator"
 import { ensureMcpServersDirectoryExists, ensureSettingsDirectoryExists, GlobalFileNames } from "../storage/disk"
 import {
 	getAllExtensionState,
@@ -33,20 +33,16 @@ import {
 	getSecret,
 	getWorkspaceState,
 	storeSecret,
-	updateApiConfiguration,
 	updateGlobalState,
 	updateWorkspaceState,
 } from "../storage/state"
 import { Task } from "../task"
-import { ClineRulesToggles } from "@shared/cline-rules"
+import { sendAuthCallbackEvent } from "./account/subscribeToAuthCallback"
+import { handleGrpcRequest, handleGrpcRequestCancel } from "./grpc-handler"
+import { sendMcpMarketplaceCatalogEvent } from "./mcp/subscribeToMcpMarketplaceCatalog"
 import { sendStateUpdate } from "./state/subscribeToState"
 import { sendAddToInputEvent } from "./ui/subscribeToAddToInput"
-import { sendAuthCallbackEvent } from "./account/subscribeToAuthCallback"
 import { SSYAccountService } from "../../services/account/SSYAccountService"
-import { sendMcpMarketplaceCatalogEvent } from "./mcp/subscribeToMcpMarketplaceCatalog"
-import { sendRelinquishControlEvent } from "./ui/subscribeToRelinquishControl"
-import { handleTaskServiceRequest } from "./task"
-import { BooleanRequest } from "@shared/proto/common"
 import { sendSSYAuthCallbackEvent } from "./account/subscribeSSYAuthCallback"
 
 /*
@@ -85,17 +81,15 @@ export class Controller {
 			(msg) => this.postMessageToWebview(msg),
 			this.context.extension?.packageJSON?.version ?? "1.0.0",
 		)
-		this.accountService = new ClineAccountService(
-			(msg) => this.postMessageToWebview(msg),
-			async () => {
-				const { apiConfiguration } = await this.getStateToPostToWebview()
-				return apiConfiguration?.clineApiKey
-			},
-		)
 		this.accountServiceSSY = new SSYAccountService(async () => {
 			const { apiConfiguration } = await this.getStateToPostToWebview()
 			return apiConfiguration?.shengSuanYunToken
 		})
+		this.accountService = new ClineAccountService(async () => {
+			const { apiConfiguration } = await this.getStateToPostToWebview()
+			return apiConfiguration?.clineApiKey
+		})
+
 		// Clean up legacy checkpoints
 		cleanupLegacyCheckpoints(this.context.globalStorageUri.fsPath, this.outputChannel).catch((error) => {
 			console.error("Failed to cleanup legacy checkpoints:", error)
@@ -181,7 +175,6 @@ export class Controller {
 			this.workspaceTracker,
 			(historyItem) => this.updateTaskHistory(historyItem),
 			() => this.postStateToWebview(),
-			(message) => this.postMessageToWebview(message),
 			(taskId) => this.reinitExistingTaskFromId(taskId),
 			() => this.cancelTask(),
 			apiConfiguration,
@@ -245,6 +238,7 @@ export class Controller {
 		await updateGlobalState(this.context, "telemetrySetting", telemetrySetting)
 		const isOptedIn = telemetrySetting !== "disabled"
 		telemetryService.updateTelemetryState(isOptedIn)
+		await this.postStateToWebview()
 	}
 
 	async togglePlanActModeWithChatSettings(chatSettings: ChatSettings, chatContent?: ChatContent): Promise<boolean> {
@@ -741,8 +735,8 @@ export class Controller {
 
 	// Context menus and code actions
 
-	getFileMentionFromPath(filePath: string) {
-		const cwd = vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0)
+	async getFileMentionFromPath(filePath: string) {
+		const cwd = await getCwd()
 		if (!cwd) {
 			return "@/" + filePath
 		}
@@ -757,7 +751,7 @@ export class Controller {
 		await setTimeoutPromise(100)
 
 		// Post message to webview with the selected code
-		const fileMention = this.getFileMentionFromPath(filePath)
+		const fileMention = await this.getFileMentionFromPath(filePath)
 
 		let input = `${fileMention}\n\`\`\`\n${code}\n\`\`\``
 		if (diagnostics) {
@@ -794,7 +788,7 @@ export class Controller {
 		await vscode.commands.executeCommand("ClineShengsuan.SidebarProvider.focus")
 		await setTimeoutPromise(100)
 
-		const fileMention = this.getFileMentionFromPath(filePath)
+		const fileMention = await this.getFileMentionFromPath(filePath)
 		const problemsString = this.convertDiagnosticsToProblemsString(diagnostics)
 		await this.initTask(`Fix the following code in ${fileMention}\n\`\`\`\n${code}\n\`\`\`\n\nProblems:\n${problemsString}`)
 
@@ -910,6 +904,7 @@ export class Controller {
 			terminalReuseEnabled,
 			defaultTerminalProfile,
 			isNewUser,
+			welcomeViewCompleted,
 			mcpResponsesCollapsed,
 			terminalOutputLineLimit,
 		} = await getAllExtensionState(this.context)
@@ -964,6 +959,7 @@ export class Controller {
 			terminalReuseEnabled,
 			defaultTerminalProfile,
 			isNewUser,
+			welcomeViewCompleted: welcomeViewCompleted as boolean, // Can be undefined but is set to either true or false by the migration that runs on extension launch in extension.ts
 			mcpResponsesCollapsed,
 			terminalOutputLineLimit,
 		}
@@ -973,7 +969,7 @@ export class Controller {
 		if (this.task) {
 			await telemetryService.sendCollectedEvents(this.task.taskId)
 		}
-		this.task?.abortTask()
+		await this.task?.abortTask()
 		this.task = undefined // removes reference to it, so once promises end it will be garbage collected
 	}
 
@@ -1046,7 +1042,7 @@ export class Controller {
 	async generateGitCommitMessage() {
 		try {
 			// Check if there's a workspace folder open
-			const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+			const cwd = await getCwd()
 			if (!cwd) {
 				vscode.window.showErrorMessage("没有打开工作目录")
 				return

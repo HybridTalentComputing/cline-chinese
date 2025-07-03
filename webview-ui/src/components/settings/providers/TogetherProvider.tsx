@@ -1,13 +1,13 @@
 import { ApiConfiguration } from "@shared/api"
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { DebouncedTextField } from "../common/DebouncedTextField"
 import { ApiKeyField } from "../common/ApiKeyField"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
 
 /**
  * Props for the TogetherProvider component
  */
 interface TogetherProviderProps {
-	apiConfiguration: ApiConfiguration
-	handleInputChange: (field: keyof ApiConfiguration) => (event: any) => void
 	showModelOptions: boolean
 	isPopup?: boolean
 }
@@ -15,21 +15,24 @@ interface TogetherProviderProps {
 /**
  * The Together provider configuration component
  */
-export const TogetherProvider = ({ apiConfiguration, handleInputChange, showModelOptions, isPopup }: TogetherProviderProps) => {
+export const TogetherProvider = ({ showModelOptions, isPopup }: TogetherProviderProps) => {
+	const { apiConfiguration } = useExtensionState()
+	const { handleFieldChange } = useApiConfigurationHandlers()
+
 	return (
 		<div>
 			<ApiKeyField
-				value={apiConfiguration?.togetherApiKey || ""}
-				onChange={handleInputChange("togetherApiKey")}
+				initialValue={apiConfiguration?.togetherApiKey || ""}
+				onChange={(value) => handleFieldChange("togetherApiKey", value)}
 				providerName="Together"
 			/>
-			<VSCodeTextField
-				value={apiConfiguration?.togetherModelId || ""}
+			<DebouncedTextField
+				initialValue={apiConfiguration?.togetherModelId || ""}
+				onChange={(value) => handleFieldChange("togetherModelId", value)}
 				style={{ width: "100%" }}
-				onInput={handleInputChange("togetherModelId")}
 				placeholder={"Enter Model ID..."}>
-				<span style={{ fontWeight: 500 }}>Model ID</span>
-			</VSCodeTextField>
+				<span style={{ fontWeight: 500 }}>模型 ID</span>
+			</DebouncedTextField>
 			<p
 				style={{
 					fontSize: "12px",
@@ -37,8 +40,8 @@ export const TogetherProvider = ({ apiConfiguration, handleInputChange, showMode
 					color: "var(--vscode-descriptionForeground)",
 				}}>
 				<span style={{ color: "var(--vscode-errorForeground)" }}>
-					(<span style={{ fontWeight: 500 }}>Note:</span> Cline uses complex prompts and works best with Claude models.
-					Less capable models may not work as expected.)
+					(<span style={{ fontWeight: 500 }}>注意:</span> Cline 使用复杂的提示，与 Claude 模型配合使用效果最佳。
+					性能较差的模型可能无法达到预期效果。)
 				</span>
 			</p>
 		</div>

@@ -1,7 +1,7 @@
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
-import { openRouterDefaultModelId } from "@shared/api"
+import { ApiConfiguration, openRouterDefaultModelId } from "@shared/api"
 import { StringRequest } from "@shared/proto/common"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
@@ -10,10 +10,11 @@ import { useRemark } from "react-remark"
 import { useMount } from "react-use"
 import styled from "styled-components"
 import { highlight } from "../history/HistoryView"
-import { ModelInfoView } from "./ApiOptions"
+import { ModelInfoView } from "./common/ModelInfoView"
 import { normalizeApiConfiguration } from "./utils/providerUtils"
 import FeaturedModelCard from "./FeaturedModelCard"
 import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
+import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
 
 // Star icon for favorites
 const StarIcon = ({ isFavorite, onClick }: { isFavorite: boolean; onClick: (e: React.MouseEvent) => void }) => {
@@ -43,13 +44,13 @@ export interface OpenRouterModelPickerProps {
 // Featured models for Cline provider
 const featuredModels = [
 	{
-		id: "anthropic/claude-sonnet-4",
-		description: "Recommended for agentic coding in Cline",
+		id: "google/gemini-2.5-pro",
+		description: "Large 1M context window, great value",
 		label: "Best",
 	},
 	{
-		id: "google/gemini-2.5-pro",
-		description: "Large 1M context window, great value",
+		id: "anthropic/claude-sonnet-4",
+		description: "Recommended for agentic coding in Cline",
 		label: "Trending",
 	},
 	{
@@ -60,25 +61,24 @@ const featuredModels = [
 ]
 
 const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }) => {
-	const { apiConfiguration, setApiConfiguration, openRouterModels, refreshOpenRouterModels } = useExtensionState()
+	const { handleFieldsChange } = useApiConfigurationHandlers()
+	const { apiConfiguration, openRouterModels, refreshOpenRouterModels } = useExtensionState()
 	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.openRouterModelId || openRouterDefaultModelId)
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
 	const dropdownRef = useRef<HTMLDivElement>(null)
 	const itemRefs = useRef<(HTMLDivElement | null)[]>([])
-	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 	const dropdownListRef = useRef<HTMLDivElement>(null)
 
 	const handleModelChange = (newModelId: string) => {
 		// could be setting invalid model id/undefined info but validation will catch it
-		setApiConfiguration({
-			...apiConfiguration,
-			...{
-				openRouterModelId: newModelId,
-				openRouterModelInfo: openRouterModels[newModelId],
-			},
-		})
+
 		setSearchTerm(newModelId)
+
+		handleFieldsChange({
+			openRouterModelId: newModelId,
+			openRouterModelInfo: openRouterModels[newModelId],
+		})
 	}
 
 	const { selectedModelId, selectedModelInfo } = useMemo(() => {
@@ -195,6 +195,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 	}, [selectedIndex])
 
 	const showBudgetSlider = useMemo(() => {
+		setSearchTerm(selectedModelId)
 		return (
 			selectedModelId?.toLowerCase().includes("claude-sonnet-4") ||
 			selectedModelId?.toLowerCase().includes("claude-opus-4") ||
@@ -307,17 +308,9 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 
 			{hasInfo ? (
 				<>
-					{showBudgetSlider && (
-						<ThinkingBudgetSlider apiConfiguration={apiConfiguration} setApiConfiguration={setApiConfiguration} />
-					)}
+					{showBudgetSlider && <ThinkingBudgetSlider />}
 
-					<ModelInfoView
-						selectedModelId={selectedModelId}
-						modelInfo={selectedModelInfo}
-						isDescriptionExpanded={isDescriptionExpanded}
-						setIsDescriptionExpanded={setIsDescriptionExpanded}
-						isPopup={isPopup}
-					/>
+					<ModelInfoView selectedModelId={selectedModelId} modelInfo={selectedModelInfo} isPopup={isPopup} />
 				</>
 			) : (
 				<p
@@ -334,8 +327,8 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 						如果你不确定使用哪个模型, Cline 使用{" "}
 						<VSCodeLink
 							style={{ display: "inline", fontSize: "inherit" }}
-							onClick={() => handleModelChange("anthropic/claude-sonnet-4")}>
-							anthropic/claude-sonnet-4.
+							onClick={() => handleModelChange("google/gemini-2.5-pro")}>
+							google/gemini-2.5-pro.
 						</VSCodeLink>
 						你也可以尝试使用 "free" 搜索免费模型
 					</>

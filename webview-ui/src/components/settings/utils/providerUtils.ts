@@ -10,8 +10,6 @@ import {
 	deepSeekModels,
 	geminiDefaultModelId,
 	geminiModels,
-	geminiCliDefaultModelId,
-	geminiCliModels,
 	mistralDefaultModelId,
 	mistralModels,
 	openAiModelInfoSaneDefaults,
@@ -44,6 +42,8 @@ import {
 	sapAiCoreDefaultModelId,
 	claudeCodeDefaultModelId,
 	claudeCodeModels,
+	shengSuanYunDefaultModelId,
+	shengSuanYunDefaultModelInfo,
 } from "@shared/api"
 
 /**
@@ -98,8 +98,6 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 			return getProviderData(vertexModels, vertexDefaultModelId)
 		case "gemini":
 			return getProviderData(geminiModels, geminiDefaultModelId)
-		case "gemini-cli":
-			return getProviderData(geminiCliModels, geminiCliDefaultModelId)
 		case "openai-native":
 			return getProviderData(openAiNativeModels, openAiNativeDefaultModelId)
 		case "deepseek":
@@ -185,6 +183,12 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 			return getProviderData(cerebrasModels, cerebrasDefaultModelId)
 		case "sapaicore":
 			return getProviderData(sapAiCoreModels, sapAiCoreDefaultModelId)
+		case "shengsuanyun":
+			return {
+				selectedProvider: provider,
+				selectedModelId: apiConfiguration?.shengSuanYunModelId || shengSuanYunDefaultModelId,
+				selectedModelInfo: apiConfiguration?.shengSuanYunModelInfo || shengSuanYunDefaultModelInfo,
+			}
 		default:
 			return getProviderData(anthropicModels, anthropicDefaultModelId)
 	}

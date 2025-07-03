@@ -6,16 +6,7 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import {
-  BooleanRequest,
-  Empty,
-  EmptyRequest,
-  Int64,
-  Int64Request,
-  Metadata,
-  StringArrayRequest,
-  StringRequest,
-} from "./common";
+import { Empty, EmptyRequest, Int64, Int64Request, Metadata, StringArrayRequest, StringRequest } from "./common";
 
 /** Request message for creating a new task */
 export interface NewTaskRequest {
@@ -44,12 +35,6 @@ export interface TaskResponse {
   tokensOut: number;
   cacheWrites: number;
   cacheReads: number;
-}
-
-/** Results returned when deleting non-favorited tasks */
-export interface DeleteNonFavoritedTasksResults {
-  tasksPreserved: number;
-  tasksDeleted: number;
 }
 
 /** Request for getting task history with filtering */
@@ -517,84 +502,6 @@ export const TaskResponse: MessageFns<TaskResponse> = {
     message.tokensOut = object.tokensOut ?? 0;
     message.cacheWrites = object.cacheWrites ?? 0;
     message.cacheReads = object.cacheReads ?? 0;
-    return message;
-  },
-};
-
-function createBaseDeleteNonFavoritedTasksResults(): DeleteNonFavoritedTasksResults {
-  return { tasksPreserved: 0, tasksDeleted: 0 };
-}
-
-export const DeleteNonFavoritedTasksResults: MessageFns<DeleteNonFavoritedTasksResults> = {
-  encode(message: DeleteNonFavoritedTasksResults, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.tasksPreserved !== 0) {
-      writer.uint32(8).int32(message.tasksPreserved);
-    }
-    if (message.tasksDeleted !== 0) {
-      writer.uint32(16).int32(message.tasksDeleted);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): DeleteNonFavoritedTasksResults {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseDeleteNonFavoritedTasksResults();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.tasksPreserved = reader.int32();
-          continue;
-        }
-        case 2: {
-          if (tag !== 16) {
-            break;
-          }
-
-          message.tasksDeleted = reader.int32();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): DeleteNonFavoritedTasksResults {
-    return {
-      tasksPreserved: isSet(object.tasksPreserved) ? globalThis.Number(object.tasksPreserved) : 0,
-      tasksDeleted: isSet(object.tasksDeleted) ? globalThis.Number(object.tasksDeleted) : 0,
-    };
-  },
-
-  toJSON(message: DeleteNonFavoritedTasksResults): unknown {
-    const obj: any = {};
-    if (message.tasksPreserved !== 0) {
-      obj.tasksPreserved = Math.round(message.tasksPreserved);
-    }
-    if (message.tasksDeleted !== 0) {
-      obj.tasksDeleted = Math.round(message.tasksDeleted);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<DeleteNonFavoritedTasksResults>, I>>(base?: I): DeleteNonFavoritedTasksResults {
-    return DeleteNonFavoritedTasksResults.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<DeleteNonFavoritedTasksResults>, I>>(
-    object: I,
-  ): DeleteNonFavoritedTasksResults {
-    const message = createBaseDeleteNonFavoritedTasksResults();
-    message.tasksPreserved = object.tasksPreserved ?? 0;
-    message.tasksDeleted = object.tasksDeleted ?? 0;
     return message;
   },
 };
@@ -1373,15 +1280,6 @@ export const TaskServiceDefinition = {
       responseStream: false,
       options: {},
     },
-    /** Deletes all non-favorited tasks */
-    deleteNonFavoritedTasks: {
-      name: "deleteNonFavoritedTasks",
-      requestType: EmptyRequest,
-      requestStream: false,
-      responseType: DeleteNonFavoritedTasksResults,
-      responseStream: false,
-      options: {},
-    },
     /** Gets filtered task history */
     getTaskHistory: {
       name: "getTaskHistory",
@@ -1430,7 +1328,7 @@ export const TaskServiceDefinition = {
     /** Deletes all task history */
     deleteAllTaskHistory: {
       name: "deleteAllTaskHistory",
-      requestType: BooleanRequest,
+      requestType: EmptyRequest,
       requestStream: false,
       responseType: DeleteAllTaskHistoryCount,
       responseStream: false,

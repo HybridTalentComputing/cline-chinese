@@ -3253,6 +3253,14 @@ export const StateServiceDefinition = {
       responseStream: false,
       options: {},
     },
+    setWelcomeViewCompleted: {
+      name: "setWelcomeViewCompleted",
+      requestType: BooleanRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: false,
+      options: {},
+    },
   },
 } as const;
 

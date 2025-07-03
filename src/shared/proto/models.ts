@@ -18,26 +18,25 @@ export enum ApiProvider {
   OLLAMA = 5,
   LMSTUDIO = 6,
   GEMINI = 7,
-  GEMINI_CLI = 8,
-  OPENAI_NATIVE = 9,
-  REQUESTY = 10,
-  TOGETHER = 11,
-  DEEPSEEK = 12,
-  QWEN = 13,
-  DOUBAO = 14,
-  MISTRAL = 15,
-  VSCODE_LM = 16,
-  CLINE = 17,
-  LITELLM = 18,
-  NEBIUS = 19,
-  FIREWORKS = 20,
-  ASKSAGE = 21,
-  XAI = 22,
-  SAMBANOVA = 23,
-  CEREBRAS = 24,
-  SAPAICORE = 25,
-  CLAUDE_CODE = 26,
-  SHENG_SUAN_YUN = 27,
+  OPENAI_NATIVE = 8,
+  REQUESTY = 9,
+  TOGETHER = 10,
+  DEEPSEEK = 11,
+  QWEN = 12,
+  DOUBAO = 13,
+  MISTRAL = 14,
+  VSCODE_LM = 15,
+  CLINE = 16,
+  LITELLM = 17,
+  NEBIUS = 18,
+  FIREWORKS = 19,
+  ASKSAGE = 20,
+  XAI = 21,
+  SAMBANOVA = 22,
+  CEREBRAS = 23,
+  SAPAICORE = 24,
+  CLAUDE_CODE = 25,
+  SHENG_SUAN_YUN = 26,
   UNRECOGNIZED = -1,
 }
 
@@ -68,63 +67,60 @@ export function apiProviderFromJSON(object: any): ApiProvider {
     case "GEMINI":
       return ApiProvider.GEMINI;
     case 8:
-    case "GEMINI_CLI":
-      return ApiProvider.GEMINI_CLI;
-    case 9:
     case "OPENAI_NATIVE":
       return ApiProvider.OPENAI_NATIVE;
-    case 10:
+    case 9:
     case "REQUESTY":
       return ApiProvider.REQUESTY;
-    case 11:
+    case 10:
     case "TOGETHER":
       return ApiProvider.TOGETHER;
-    case 12:
+    case 11:
     case "DEEPSEEK":
       return ApiProvider.DEEPSEEK;
-    case 13:
+    case 12:
     case "QWEN":
       return ApiProvider.QWEN;
-    case 14:
+    case 13:
     case "DOUBAO":
       return ApiProvider.DOUBAO;
-    case 15:
+    case 14:
     case "MISTRAL":
       return ApiProvider.MISTRAL;
-    case 16:
+    case 15:
     case "VSCODE_LM":
       return ApiProvider.VSCODE_LM;
-    case 17:
+    case 16:
     case "CLINE":
       return ApiProvider.CLINE;
-    case 18:
+    case 17:
     case "LITELLM":
       return ApiProvider.LITELLM;
-    case 19:
+    case 18:
     case "NEBIUS":
       return ApiProvider.NEBIUS;
-    case 20:
+    case 19:
     case "FIREWORKS":
       return ApiProvider.FIREWORKS;
-    case 21:
+    case 20:
     case "ASKSAGE":
       return ApiProvider.ASKSAGE;
-    case 22:
+    case 21:
     case "XAI":
       return ApiProvider.XAI;
-    case 23:
+    case 22:
     case "SAMBANOVA":
       return ApiProvider.SAMBANOVA;
-    case 24:
+    case 23:
     case "CEREBRAS":
       return ApiProvider.CEREBRAS;
-    case 25:
+    case 24:
     case "SAPAICORE":
       return ApiProvider.SAPAICORE;
-    case 26:
+    case 25:
     case "CLAUDE_CODE":
       return ApiProvider.CLAUDE_CODE;
-    case 27:
+    case 26:
     case "SHENG_SUAN_YUN":
       return ApiProvider.SHENG_SUAN_YUN;
     case -1:
@@ -152,8 +148,6 @@ export function apiProviderToJSON(object: ApiProvider): string {
       return "LMSTUDIO";
     case ApiProvider.GEMINI:
       return "GEMINI";
-    case ApiProvider.GEMINI_CLI:
-      return "GEMINI_CLI";
     case ApiProvider.OPENAI_NATIVE:
       return "OPENAI_NATIVE";
     case ApiProvider.REQUESTY:

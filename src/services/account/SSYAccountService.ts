@@ -1,5 +1,3 @@
-import type { BalanceResponse, PaymentTransaction, UsageTransaction } from "../../shared/ClineAccount"
-import { ExtensionMessage } from "../../shared/ExtensionMessage"
 import axios, { AxiosRequestConfig } from "axios"
 import { UserCreditsData } from "@shared/proto/account"
 
@@ -40,26 +38,26 @@ export class SSYAccountService {
 				this.authenticatedRequest<any>("/user/info"),
 			])
 
-			if (!usage || !Array.isArray(usage?.logs)) {
+			if (!usage || !Array.isArray(usage?.logs) || !rate) {
 				usage = []
 			} else {
 				usage = usage.logs.map((it: any) => ({
 					spentAt: it.request_time,
 					modelProvider: "",
 					model: `${it.model?.company}/${it.model?.name}`,
-					credits: it.total_amount / 10000000,
+					credits: (rate * it.total_amount) / 10000000,
 					totalTokens: it.total_amount,
 					promptTokens: it.input_tokens,
 					completionTokens: it.output_tokens,
 				}))
 			}
 
-			if (!payment || !Array.isArray(payment.records)) {
+			if (!payment || !Array.isArray(payment.records) || !rate) {
 				payment = []
 			} else {
 				payment = payment.records.map((it: any) => ({
 					paidAt: it.create_at,
-					amountCents: (it.price / 10000).toString(),
+					amountCents: ((rate * it.price) / 10000).toString(),
 				}))
 			}
 

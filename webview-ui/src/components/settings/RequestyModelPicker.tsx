@@ -5,37 +5,36 @@ import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from
 import { useRemark } from "react-remark"
 import { useMount } from "react-use"
 import styled from "styled-components"
-import { requestyDefaultModelId, requestyDefaultModelInfo } from "../../../../src/shared/api"
+import { requestyDefaultModelId, requestyDefaultModelInfo } from "@shared/api"
 import { useExtensionState } from "../../context/ExtensionStateContext"
 import { ModelsServiceClient } from "../../services/grpc-client"
 import { CODE_BLOCK_BG_COLOR } from "../common/CodeBlock"
 import { highlight } from "../history/HistoryView"
-import { ModelInfoView } from "./ApiOptions"
+import { ModelInfoView } from "./common/ModelInfoView"
 import { normalizeApiConfiguration } from "./utils/providerUtils"
 import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
+import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
 
 export interface RequestyModelPickerProps {
 	isPopup?: boolean
 }
 
 const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup }) => {
-	const { apiConfiguration, setApiConfiguration, requestyModels, setRequestyModels } = useExtensionState()
+	const { apiConfiguration, requestyModels, setRequestyModels } = useExtensionState()
+	const { handleFieldsChange } = useApiConfigurationHandlers()
 	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.requestyModelId || requestyDefaultModelId)
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
 	const dropdownRef = useRef<HTMLDivElement>(null)
 	const itemRefs = useRef<(HTMLDivElement | null)[]>([])
-	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 	const dropdownListRef = useRef<HTMLDivElement>(null)
 
 	const handleModelChange = (newModelId: string) => {
 		// could be setting invalid model id/undefined info but validation will catch it
-		setApiConfiguration({
-			...apiConfiguration,
-			...{
-				requestyModelId: newModelId,
-				requestyModelInfo: requestyModels[newModelId],
-			},
+
+		handleFieldsChange({
+			requestyModelId: newModelId,
+			requestyModelInfo: requestyModels[newModelId],
 		})
 		setSearchTerm(newModelId)
 	}
@@ -152,6 +151,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup }) =>
 	}, [selectedIndex])
 
 	const showBudgetSlider = useMemo(() => {
+		setSearchTerm(selectedModelId)
 		return selectedModelId?.includes("claude-3-7-sonnet")
 	}, [selectedModelId])
 
@@ -172,7 +172,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup }) =>
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField
 						id="model-search"
-						placeholder="Search and select a model..."
+						placeholder="选择模型..."
 						value={searchTerm}
 						onInput={(e) => {
 							handleModelChange((e.target as HTMLInputElement)?.value?.toLowerCase())
@@ -188,7 +188,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup }) =>
 						{searchTerm && (
 							<div
 								className="input-icon-button codicon codicon-close"
-								aria-label="Clear search"
+								aria-label="清除"
 								onClick={() => {
 									handleModelChange("")
 									setIsDropdownVisible(true)
@@ -227,16 +227,8 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup }) =>
 
 			{hasInfo ? (
 				<>
-					{showBudgetSlider && (
-						<ThinkingBudgetSlider apiConfiguration={apiConfiguration} setApiConfiguration={setApiConfiguration} />
-					)}
-					<ModelInfoView
-						selectedModelId={selectedModelId}
-						modelInfo={selectedModelInfo}
-						isDescriptionExpanded={isDescriptionExpanded}
-						setIsDescriptionExpanded={setIsDescriptionExpanded}
-						isPopup={isPopup}
-					/>
+					{showBudgetSlider && <ThinkingBudgetSlider />}
+					<ModelInfoView selectedModelId={selectedModelId} modelInfo={selectedModelInfo} isPopup={isPopup} />
 				</>
 			) : (
 				<p
@@ -246,16 +238,17 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup }) =>
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					<>
-						The extension automatically fetches the latest list of models available on{" "}
+						插件会自动获取最新模型列表{" "}
 						<VSCodeLink style={{ display: "inline", fontSize: "inherit" }} href="https://app.requesty.ai/router/list">
 							Requesty.
 						</VSCodeLink>
-						If you're unsure which model to choose, Cline works best with{" "}
+						如果你不确定选择那个模型, Cline 能很好的和{" "}
 						<VSCodeLink
 							style={{ display: "inline", fontSize: "inherit" }}
 							onClick={() => handleModelChange("anthropic/claude-3-7-sonnet-latest")}>
 							anthropic/claude-3-7-sonnet-latest.
 						</VSCodeLink>
+						工作。
 					</>
 				</p>
 			)}

@@ -1,5 +1,6 @@
 import { ApiConfiguration } from "@shared/api"
-import { VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { DebouncedTextField } from "../common/DebouncedTextField"
 import { DropdownContainer } from "../common/ModelSelector"
 import { useState } from "react"
 import { getOpenRouterAuthUrl } from "../utils/providerUtils"
@@ -7,6 +8,8 @@ import { useOpenRouterKeyInfo } from "../../ui/hooks/useOpenRouterKeyInfo"
 import VSCodeButtonLink from "../../common/VSCodeButtonLink"
 import OpenRouterModelPicker, { OPENROUTER_MODEL_PICKER_Z_INDEX } from "../OpenRouterModelPicker"
 import { formatPrice } from "../utils/pricingUtils"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
 
 /**
  * Component to display OpenRouter balance information
@@ -15,7 +18,7 @@ const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
 	const { data: keyInfo, isLoading, error } = useOpenRouterKeyInfo(apiKey)
 
 	if (isLoading) {
-		return <span style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)" }}>Loading...</span>
+		return <span style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)" }}>加载中...</span>
 	}
 
 	if (error || !keyInfo || keyInfo.limit === null) {
@@ -39,7 +42,7 @@ const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
 				paddingLeft: 4,
 				cursor: "pointer",
 			}}>
-			Balance: {formattedBalance}
+			余额: {formattedBalance}
 		</VSCodeLink>
 	)
 }
@@ -48,8 +51,6 @@ const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
  * Props for the OpenRouterProvider component
  */
 interface OpenRouterProviderProps {
-	apiConfiguration: ApiConfiguration
-	handleInputChange: (field: keyof ApiConfiguration) => (event: any) => void
 	showModelOptions: boolean
 	isPopup?: boolean
 	uriScheme?: string
@@ -58,28 +59,20 @@ interface OpenRouterProviderProps {
 /**
  * The OpenRouter provider configuration component
  */
-export const OpenRouterProvider = ({
-	apiConfiguration,
-	handleInputChange,
-	showModelOptions,
-	isPopup,
-	uriScheme,
-}: OpenRouterProviderProps) => {
-	const [providerSortingSelected, setProviderSortingSelected] = useState(!!apiConfiguration?.openRouterProviderSorting)
+export const OpenRouterProvider = ({ showModelOptions, isPopup, uriScheme }: OpenRouterProviderProps) => {
+	const { apiConfiguration } = useExtensionState()
+	const { handleFieldChange } = useApiConfigurationHandlers()
 
-	// Create a wrapper for handling field changes more directly
-	const handleFieldChange = (field: keyof ApiConfiguration) => (value: any) => {
-		handleInputChange(field)({ target: { value } })
-	}
+	const [providerSortingSelected, setProviderSortingSelected] = useState(!!apiConfiguration?.openRouterProviderSorting)
 
 	return (
 		<div>
 			<div>
-				<VSCodeTextField
-					value={apiConfiguration?.openRouterApiKey || ""}
+				<DebouncedTextField
+					initialValue={apiConfiguration?.openRouterApiKey || ""}
+					onChange={(value) => handleFieldChange("openRouterApiKey", value)}
 					style={{ width: "100%" }}
 					type="password"
-					onInput={handleInputChange("openRouterApiKey")}
 					placeholder="Enter API Key...">
 					<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
 						<span style={{ fontWeight: 500 }}>OpenRouter API Key</span>
@@ -87,13 +80,13 @@ export const OpenRouterProvider = ({
 							<OpenRouterBalanceDisplay apiKey={apiConfiguration.openRouterApiKey} />
 						)}
 					</div>
-				</VSCodeTextField>
+				</DebouncedTextField>
 				{!apiConfiguration?.openRouterApiKey && (
 					<VSCodeButtonLink
 						href={getOpenRouterAuthUrl(uriScheme)}
 						style={{ margin: "5px 0 0 0" }}
 						appearance="secondary">
-						Get OpenRouter API Key
+						获取 OpenRouter API Key
 					</VSCodeButtonLink>
 				)}
 				<p
@@ -102,7 +95,7 @@ export const OpenRouterProvider = ({
 						marginTop: "5px",
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					This key is stored locally and only used to make API requests from this extension.
+					此密钥存储在本地，仅用于从此扩展发出 API 请求。
 				</p>
 			</div>
 
@@ -115,10 +108,10 @@ export const OpenRouterProvider = ({
 							const isChecked = e.target.checked === true
 							setProviderSortingSelected(isChecked)
 							if (!isChecked) {
-								handleFieldChange("openRouterProviderSorting")("")
+								handleFieldChange("openRouterProviderSorting", "")
 							}
 						}}>
-						Sort underlying provider routing
+						对底层提供商路由进行排序
 					</VSCodeCheckbox>
 
 					{providerSortingSelected && (
@@ -128,23 +121,23 @@ export const OpenRouterProvider = ({
 									style={{ width: "100%", marginTop: 3 }}
 									value={apiConfiguration?.openRouterProviderSorting}
 									onChange={(e: any) => {
-										handleFieldChange("openRouterProviderSorting")(e.target.value)
+										handleFieldChange("openRouterProviderSorting", e.target.value)
 									}}>
-									<VSCodeOption value="">Default</VSCodeOption>
-									<VSCodeOption value="price">Price</VSCodeOption>
-									<VSCodeOption value="throughput">Throughput</VSCodeOption>
-									<VSCodeOption value="latency">Latency</VSCodeOption>
+									<VSCodeOption value="">默认</VSCodeOption>
+									<VSCodeOption value="price">价格</VSCodeOption>
+									<VSCodeOption value="throughput">吞吐量</VSCodeOption>
+									<VSCodeOption value="latency">响应时间</VSCodeOption>
 								</VSCodeDropdown>
 							</DropdownContainer>
 							<p style={{ fontSize: "12px", marginTop: 3, color: "var(--vscode-descriptionForeground)" }}>
 								{!apiConfiguration?.openRouterProviderSorting &&
-									"Default behavior is to load balance requests across providers (like AWS, Google Vertex, Anthropic), prioritizing price while considering provider uptime"}
+									"默认行为是跨提供商（如 AWS、Google Vertex、Anthropic）对请求进行负载平衡，优先考虑价格，同时考虑提供商的正常运行时间"}
 								{apiConfiguration?.openRouterProviderSorting === "price" &&
-									"Sort providers by price, prioritizing the lowest cost provider"}
+									"按价格对供应商进行排序，优先选择成本最低的供应商"}
 								{apiConfiguration?.openRouterProviderSorting === "throughput" &&
-									"Sort providers by throughput, prioritizing the provider with the highest throughput (may increase cost)"}
+									"按吞吐量对提供商进行排序，优先考虑吞吐量最高的提供商（可能会增加成本）"}
 								{apiConfiguration?.openRouterProviderSorting === "latency" &&
-									"Sort providers by response time, prioritizing the provider with the lowest latency"}
+									"按响应时间对提供商进行排序，优先选择延迟最低的提供商"}
 							</p>
 						</div>
 					)}

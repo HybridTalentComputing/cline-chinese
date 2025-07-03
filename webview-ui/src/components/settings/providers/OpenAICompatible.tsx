@@ -2,19 +2,20 @@ import { ApiConfiguration, azureOpenAiDefaultApiVersion, openAiModelInfoSaneDefa
 import { OpenAiModelsRequest } from "@shared/proto/models"
 import { ModelsServiceClient } from "@/services/grpc-client"
 import { getAsVar, VSC_DESCRIPTION_FOREGROUND } from "@/utils/vscStyles"
-import { VSCodeTextField, VSCodeButton, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeButton, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { DebouncedTextField } from "../common/DebouncedTextField"
 import { ModelInfoView } from "../common/ModelInfoView"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { BaseUrlField } from "../common/BaseUrlField"
 import { normalizeApiConfiguration } from "../utils/providerUtils"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
 
 /**
  * Props for the OpenAICompatibleProvider component
  */
 interface OpenAICompatibleProviderProps {
-	apiConfiguration: ApiConfiguration
-	handleInputChange: (field: keyof ApiConfiguration) => (event: any) => void
 	showModelOptions: boolean
 	isPopup?: boolean
 }
@@ -22,12 +23,10 @@ interface OpenAICompatibleProviderProps {
 /**
  * The OpenAI Compatible provider configuration component
  */
-export const OpenAICompatibleProvider = ({
-	apiConfiguration,
-	handleInputChange,
-	showModelOptions,
-	isPopup,
-}: OpenAICompatibleProviderProps) => {
+export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICompatibleProviderProps) => {
+	const { apiConfiguration } = useExtensionState()
+	const { handleFieldChange } = useApiConfigurationHandlers()
+
 	const [modelConfigurationSelected, setModelConfigurationSelected] = useState(false)
 
 	// Get the normalized configuration
@@ -65,38 +64,34 @@ export const OpenAICompatibleProvider = ({
 
 	return (
 		<div>
-			<VSCodeTextField
-				value={apiConfiguration?.openAiBaseUrl || ""}
+			<DebouncedTextField
+				initialValue={apiConfiguration?.openAiBaseUrl || ""}
+				onChange={(value) => {
+					handleFieldChange("openAiBaseUrl", value)
+					debouncedRefreshOpenAiModels(value, apiConfiguration?.openAiApiKey)
+				}}
 				style={{ width: "100%", marginBottom: 10 }}
 				type="url"
-				onInput={(e: any) => {
-					const baseUrl = e.target.value
-					handleInputChange("openAiBaseUrl")({ target: { value: baseUrl } })
-
-					debouncedRefreshOpenAiModels(baseUrl, apiConfiguration?.openAiApiKey)
-				}}
 				placeholder={"Enter base URL..."}>
 				<span style={{ fontWeight: 500 }}>Base URL</span>
-			</VSCodeTextField>
+			</DebouncedTextField>
 
 			<ApiKeyField
-				value={apiConfiguration?.openAiApiKey || ""}
-				onChange={(e: any) => {
-					const apiKey = e.target.value
-					handleInputChange("openAiApiKey")({ target: { value: apiKey } })
-
-					debouncedRefreshOpenAiModels(apiConfiguration?.openAiBaseUrl, apiKey)
+				initialValue={apiConfiguration?.openAiApiKey || ""}
+				onChange={(value) => {
+					handleFieldChange("openAiApiKey", value)
+					debouncedRefreshOpenAiModels(apiConfiguration?.openAiBaseUrl, value)
 				}}
-				providerName="OpenAI Compatible"
+				providerName="OpenAI 兼容"
 			/>
 
-			<VSCodeTextField
-				value={apiConfiguration?.openAiModelId || ""}
+			<DebouncedTextField
+				initialValue={apiConfiguration?.openAiModelId || ""}
+				onChange={(value) => handleFieldChange("openAiModelId", value)}
 				style={{ width: "100%", marginBottom: 10 }}
-				onInput={handleInputChange("openAiModelId")}
-				placeholder={"Enter Model ID..."}>
-				<span style={{ fontWeight: 500 }}>Model ID</span>
-			</VSCodeTextField>
+				placeholder={"输入模型 ID..."}>
+				<span style={{ fontWeight: 500 }}>模型 ID</span>
+			</DebouncedTextField>
 
 			{/* OpenAI Compatible Custom Headers */}
 			{(() => {
@@ -104,57 +99,44 @@ export const OpenAICompatibleProvider = ({
 				return (
 					<div style={{ marginBottom: 10 }}>
 						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-							<span style={{ fontWeight: 500 }}>Custom Headers</span>
+							<span style={{ fontWeight: 500 }}>自定义 Headers</span>
 							<VSCodeButton
 								onClick={() => {
 									const currentHeaders = { ...(apiConfiguration?.openAiHeaders || {}) }
 									const headerCount = Object.keys(currentHeaders).length
 									const newKey = `header${headerCount + 1}`
 									currentHeaders[newKey] = ""
-									handleInputChange("openAiHeaders")({
-										target: {
-											value: currentHeaders,
-										},
-									})
+									handleFieldChange("openAiHeaders", currentHeaders)
 								}}>
-								Add Header
+								添加 HTTP Haeder
 							</VSCodeButton>
 						</div>
 						<div>
 							{headerEntries.map(([key, value], index) => (
 								<div key={index} style={{ display: "flex", gap: 5, marginTop: 5 }}>
-									<VSCodeTextField
-										value={key}
+									<DebouncedTextField
+										initialValue={key}
 										style={{ width: "40%" }}
 										placeholder="Header name"
-										onInput={(e: any) => {
+										onChange={(newValue) => {
 											const currentHeaders = apiConfiguration?.openAiHeaders ?? {}
-											const newValue = e.target.value
 											if (newValue && newValue !== key) {
 												const { [key]: _, ...rest } = currentHeaders
-												handleInputChange("openAiHeaders")({
-													target: {
-														value: {
-															...rest,
-															[newValue]: value,
-														},
-													},
+												handleFieldChange("openAiHeaders", {
+													...rest,
+													[newValue]: value,
 												})
 											}
 										}}
 									/>
-									<VSCodeTextField
-										value={value}
+									<DebouncedTextField
+										initialValue={value}
 										style={{ width: "40%" }}
 										placeholder="Header value"
-										onInput={(e: any) => {
-											handleInputChange("openAiHeaders")({
-												target: {
-													value: {
-														...(apiConfiguration?.openAiHeaders ?? {}),
-														[key]: e.target.value,
-													},
-												},
+										onChange={(newValue) => {
+											handleFieldChange("openAiHeaders", {
+												...(apiConfiguration?.openAiHeaders ?? {}),
+												[key]: newValue,
 											})
 										}}
 									/>
@@ -162,13 +144,9 @@ export const OpenAICompatibleProvider = ({
 										appearance="secondary"
 										onClick={() => {
 											const { [key]: _, ...rest } = apiConfiguration?.openAiHeaders ?? {}
-											handleInputChange("openAiHeaders")({
-												target: {
-													value: rest,
-												},
-											})
+											handleFieldChange("openAiHeaders", rest)
 										}}>
-										Remove
+										移除
 									</VSCodeButton>
 								</div>
 							))}
@@ -178,8 +156,8 @@ export const OpenAICompatibleProvider = ({
 			})()}
 
 			<BaseUrlField
-				value={apiConfiguration?.azureApiVersion}
-				onChange={(value) => handleInputChange("azureApiVersion")({ target: { value } })}
+				initialValue={apiConfiguration?.azureApiVersion}
+				onChange={(value) => handleFieldChange("azureApiVersion", value)}
 				label="Set Azure API version"
 				placeholder={`Default: ${azureOpenAiDefaultApiVersion}`}
 			/>
@@ -203,7 +181,7 @@ export const OpenAICompatibleProvider = ({
 						fontWeight: 700,
 						textTransform: "uppercase",
 					}}>
-					Model Configuration
+					模型配置
 				</span>
 			</div>
 
@@ -217,11 +195,9 @@ export const OpenAICompatibleProvider = ({
 								? apiConfiguration.openAiModelInfo
 								: { ...openAiModelInfoSaneDefaults }
 							modelInfo.supportsImages = isChecked
-							handleInputChange("openAiModelInfo")({
-								target: { value: modelInfo },
-							})
+							handleFieldChange("openAiModelInfo", modelInfo)
 						}}>
-						Supports Images
+						支持图片
 					</VSCodeCheckbox>
 
 					<VSCodeCheckbox
@@ -232,11 +208,9 @@ export const OpenAICompatibleProvider = ({
 								? apiConfiguration.openAiModelInfo
 								: { ...openAiModelInfoSaneDefaults }
 							modelInfo.supportsImages = isChecked
-							handleInputChange("openAiModelInfo")({
-								target: { value: modelInfo },
-							})
+							handleFieldChange("openAiModelInfo", modelInfo)
 						}}>
-						Supports browser use
+						支持浏览器使用
 					</VSCodeCheckbox>
 
 					<VSCodeCheckbox
@@ -248,122 +222,108 @@ export const OpenAICompatibleProvider = ({
 								: { ...openAiModelInfoSaneDefaults }
 							modelInfo = { ...modelInfo, isR1FormatRequired: isChecked }
 
-							handleInputChange("openAiModelInfo")({
-								target: { value: modelInfo },
-							})
+							handleFieldChange("openAiModelInfo", modelInfo)
 						}}>
-						Enable R1 messages format
+						启用 R1 输出格式
 					</VSCodeCheckbox>
 
 					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
-						<VSCodeTextField
-							value={
+						<DebouncedTextField
+							initialValue={
 								apiConfiguration?.openAiModelInfo?.contextWindow
 									? apiConfiguration.openAiModelInfo.contextWindow.toString()
-									: openAiModelInfoSaneDefaults.contextWindow?.toString()
+									: (openAiModelInfoSaneDefaults.contextWindow?.toString() ?? "")
 							}
 							style={{ flex: 1 }}
-							onInput={(input: any) => {
+							onChange={(value) => {
 								const modelInfo = apiConfiguration?.openAiModelInfo
 									? apiConfiguration.openAiModelInfo
 									: { ...openAiModelInfoSaneDefaults }
-								modelInfo.contextWindow = Number(input.target.value)
-								handleInputChange("openAiModelInfo")({
-									target: { value: modelInfo },
-								})
+								modelInfo.contextWindow = Number(value)
+								handleFieldChange("openAiModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Context Window Size</span>
-						</VSCodeTextField>
+							<span style={{ fontWeight: 500 }}>最大输入</span>
+						</DebouncedTextField>
 
-						<VSCodeTextField
-							value={
+						<DebouncedTextField
+							initialValue={
 								apiConfiguration?.openAiModelInfo?.maxTokens
 									? apiConfiguration.openAiModelInfo.maxTokens.toString()
-									: openAiModelInfoSaneDefaults.maxTokens?.toString()
+									: (openAiModelInfoSaneDefaults.maxTokens?.toString() ?? "")
 							}
 							style={{ flex: 1 }}
-							onInput={(input: any) => {
+							onChange={(value) => {
 								const modelInfo = apiConfiguration?.openAiModelInfo
 									? apiConfiguration.openAiModelInfo
 									: { ...openAiModelInfoSaneDefaults }
-								modelInfo.maxTokens = input.target.value
-								handleInputChange("openAiModelInfo")({
-									target: { value: modelInfo },
-								})
+								modelInfo.maxTokens = Number(value)
+								handleFieldChange("openAiModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Max Output Tokens</span>
-						</VSCodeTextField>
+							<span style={{ fontWeight: 500 }}>最大输出 Tokens</span>
+						</DebouncedTextField>
 					</div>
 
 					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
-						<VSCodeTextField
-							value={
+						<DebouncedTextField
+							initialValue={
 								apiConfiguration?.openAiModelInfo?.inputPrice
 									? apiConfiguration.openAiModelInfo.inputPrice.toString()
-									: openAiModelInfoSaneDefaults.inputPrice?.toString()
+									: (openAiModelInfoSaneDefaults.inputPrice?.toString() ?? "")
 							}
 							style={{ flex: 1 }}
-							onInput={(input: any) => {
+							onChange={(value) => {
 								const modelInfo = apiConfiguration?.openAiModelInfo
 									? apiConfiguration.openAiModelInfo
 									: { ...openAiModelInfoSaneDefaults }
-								modelInfo.inputPrice = input.target.value
-								handleInputChange("openAiModelInfo")({
-									target: { value: modelInfo },
-								})
+								modelInfo.inputPrice = Number(value)
+								handleFieldChange("openAiModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Input Price / 1M tokens</span>
-						</VSCodeTextField>
+							<span style={{ fontWeight: 500 }}>输入价格 / 1M tokens</span>
+						</DebouncedTextField>
 
-						<VSCodeTextField
-							value={
+						<DebouncedTextField
+							initialValue={
 								apiConfiguration?.openAiModelInfo?.outputPrice
 									? apiConfiguration.openAiModelInfo.outputPrice.toString()
-									: openAiModelInfoSaneDefaults.outputPrice?.toString()
+									: (openAiModelInfoSaneDefaults.outputPrice?.toString() ?? "")
 							}
 							style={{ flex: 1 }}
-							onInput={(input: any) => {
+							onChange={(value) => {
 								const modelInfo = apiConfiguration?.openAiModelInfo
 									? apiConfiguration.openAiModelInfo
 									: { ...openAiModelInfoSaneDefaults }
-								modelInfo.outputPrice = input.target.value
-								handleInputChange("openAiModelInfo")({
-									target: { value: modelInfo },
-								})
+								modelInfo.outputPrice = Number(value)
+								handleFieldChange("openAiModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Output Price / 1M tokens</span>
-						</VSCodeTextField>
+							<span style={{ fontWeight: 500 }}>输出价格 / 1M tokens</span>
+						</DebouncedTextField>
 					</div>
 
 					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
-						<VSCodeTextField
-							value={
+						<DebouncedTextField
+							initialValue={
 								apiConfiguration?.openAiModelInfo?.temperature
 									? apiConfiguration.openAiModelInfo.temperature.toString()
-									: openAiModelInfoSaneDefaults.temperature?.toString()
+									: (openAiModelInfoSaneDefaults.temperature?.toString() ?? "")
 							}
-							onInput={(input: any) => {
+							onChange={(value) => {
 								const modelInfo = apiConfiguration?.openAiModelInfo
 									? apiConfiguration.openAiModelInfo
 									: { ...openAiModelInfoSaneDefaults }
 
-								// Check if the input ends with a decimal point or has trailing zeros after decimal
-								const value = input.target.value
 								const shouldPreserveFormat = value.endsWith(".") || (value.includes(".") && value.endsWith("0"))
 
 								modelInfo.temperature =
 									value === ""
 										? openAiModelInfoSaneDefaults.temperature
 										: shouldPreserveFormat
-											? value // Keep as string to preserve decimal format
+											? (value as any)
 											: parseFloat(value)
 
-								handleInputChange("openAiModelInfo")({
-									target: { value: modelInfo },
-								})
+								handleFieldChange("openAiModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Temperature</span>
-						</VSCodeTextField>
+							<span style={{ fontWeight: 500 }}>温度</span>
+						</DebouncedTextField>
 					</div>
 				</>
 			)}
@@ -375,8 +335,8 @@ export const OpenAICompatibleProvider = ({
 					color: "var(--vscode-descriptionForeground)",
 				}}>
 				<span style={{ color: "var(--vscode-errorForeground)" }}>
-					(<span style={{ fontWeight: 500 }}>Note:</span> Cline uses complex prompts and works best with Claude models.
-					Less capable models may not work as expected.)
+					(<span style={{ fontWeight: 500 }}>注意:</span> Cline 使用复杂的提示，与 Claude
+					模型配合使用效果最佳。性能较差的模型可能无法达到预期效果。)
 				</span>
 			</p>
 

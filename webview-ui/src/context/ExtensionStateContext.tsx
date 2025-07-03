@@ -16,7 +16,7 @@ import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mc
 import { DEFAULT_AUTO_APPROVAL_SETTINGS } from "@shared/AutoApprovalSettings"
 import { DEFAULT_BROWSER_SETTINGS, BrowserSettings } from "@shared/BrowserSettings"
 import { ChatSettings, DEFAULT_CHAT_SETTINGS } from "@shared/ChatSettings"
-import { DEFAULT_PLATFORM, ExtensionMessage, ExtensionState } from "@shared/ExtensionMessage"
+import { DEFAULT_PLATFORM, ExtensionState } from "@shared/ExtensionMessage"
 import { TelemetrySetting } from "@shared/TelemetrySetting"
 import { findLastIndex } from "@shared/array"
 import {
@@ -206,6 +206,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		terminalOutputLineLimit: 500,
 		defaultTerminalProfile: "default",
 		isNewUser: false,
+		welcomeViewCompleted: false,
 		mcpResponsesCollapsed: false, // Default value (expanded), will be overwritten by extension state
 	})
 	const [didHydrateState, setDidHydrateState] = useState(false)
@@ -285,36 +286,7 @@ export const ExtensionStateContextProvider: React.FC<{
 							}
 
 							// Update welcome screen state based on API configuration
-							const config = stateData.apiConfiguration
-							const hasKey = config
-								? [
-										config.apiKey,
-										config.openRouterApiKey,
-										config.awsRegion,
-										config.vertexProjectId,
-										config.openAiApiKey,
-										config.ollamaModelId,
-										config.lmStudioModelId,
-										config.liteLlmApiKey,
-										config.geminiApiKey,
-										config.openAiNativeApiKey,
-										config.deepSeekApiKey,
-										config.requestyApiKey,
-										config.togetherApiKey,
-										config.qwenApiKey,
-										config.doubaoApiKey,
-										config.mistralApiKey,
-										config.vsCodeLmModelSelector,
-										config.clineApiKey,
-										config.asksageApiKey,
-										config.xaiApiKey,
-										config.sambanovaApiKey,
-										config.shengSuanYunApiKey,
-										config.sapAiCoreClientId,
-									].some((key) => key !== undefined)
-								: false
-
-							setShowWelcome(!hasKey)
+							setShowWelcome(!newState.welcomeViewCompleted)
 							setDidHydrateState(true)
 
 							console.log("[DEBUG] returning new state in ESC")

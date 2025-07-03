@@ -1,0 +1,147 @@
+import React, { useState, useEffect } from "react"
+import { VSCodeTextField, VSCodeCheckbox, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import TerminalOutputLineLimitSlider from "../TerminalOutputLineLimitSlider"
+import { StateServiceClient } from "../../../services/grpc-client"
+import { Int64, Int64Request, StringRequest } from "@shared/proto/common"
+import Section from "../Section"
+import { updateSetting } from "../utils/settingsHandlers"
+
+interface TerminalSettingsSectionProps {
+	renderSectionHeader: (tabId: string) => JSX.Element | null
+}
+
+export const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ renderSectionHeader }) => {
+	const { shellIntegrationTimeout, terminalReuseEnabled, defaultTerminalProfile, availableTerminalProfiles } =
+		useExtensionState()
+
+	const [inputValue, setInputValue] = useState((shellIntegrationTimeout / 1000).toString())
+	const [inputError, setInputError] = useState<string | null>(null)
+
+	const handleTimeoutChange = (event: Event) => {
+		const target = event.target as HTMLInputElement
+		const value = target.value
+
+		setInputValue(value)
+
+		const seconds = parseFloat(value)
+		if (isNaN(seconds) || seconds <= 0) {
+			setInputError("Please enter a positive number")
+			return
+		}
+
+		setInputError(null)
+		const timeout = Math.round(seconds * 1000)
+
+		StateServiceClient.updateTerminalConnectionTimeout({
+			value: timeout,
+		} as Int64Request)
+			.then((response: Int64) => {
+				// Backend calls postStateToWebview(), so state will update via subscription
+				// Just sync the input value with the confirmed backend value
+				setInputValue((response.value / 1000).toString())
+			})
+			.catch((error) => {
+				console.error("Failed to update terminal connection timeout:", error)
+			})
+	}
+
+	const handleInputBlur = () => {
+		if (inputError) {
+			setInputValue((shellIntegrationTimeout / 1000).toString())
+			setInputError(null)
+		}
+	}
+
+	const handleTerminalReuseChange = (event: Event) => {
+		const target = event.target as HTMLInputElement
+		const checked = target.checked
+		updateSetting("terminalReuseEnabled", checked)
+	}
+
+	// Use any to avoid type conflicts between Event and FormEvent
+	const handleDefaultTerminalProfileChange = (event: any) => {
+		const target = event.target as HTMLSelectElement
+		const profileId = target.value
+
+		// Save immediately - the backend will call postStateToWebview() to update our state
+		StateServiceClient.updateDefaultTerminalProfile({
+			value: profileId || "default",
+		} as StringRequest).catch((error) => {
+			console.error("Failed to update default terminal profile:", error)
+		})
+	}
+
+	const profilesToShow = availableTerminalProfiles
+
+	return (
+		<div>
+			{renderSectionHeader("terminal")}
+			<Section>
+				<div id="terminal-settings-section" style={{ marginBottom: 20 }}>
+					<div style={{ marginBottom: 15 }}>
+						<label
+							htmlFor="default-terminal-profile"
+							style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>
+							默认终端配置文件
+						</label>
+						<VSCodeDropdown
+							id="default-terminal-profile"
+							value={defaultTerminalProfile || "default"}
+							onChange={handleDefaultTerminalProfileChange}
+							style={{ width: "100%" }}>
+							{profilesToShow.map((profile) => (
+								<VSCodeOption key={profile.id} value={profile.id} title={profile.description}>
+									{profile.name}
+								</VSCodeOption>
+							))}
+						</VSCodeDropdown>
+						<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: "5px 0 0 0" }}>
+							选择 Cline 将使用的默认终端。“默认”使用您的 VSCode 全局设置。
+						</p>
+					</div>
+
+					<div style={{ marginBottom: 15 }}>
+						<div style={{ marginBottom: 8 }}>
+							<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>Shell 集成超时（秒）</label>
+							<div style={{ display: "flex", alignItems: "center" }}>
+								<VSCodeTextField
+									style={{ width: "100%" }}
+									value={inputValue}
+									placeholder="Enter timeout in seconds"
+									onChange={(event) => handleTimeoutChange(event as Event)}
+									onBlur={handleInputBlur}
+								/>
+							</div>
+							{inputError && (
+								<div style={{ color: "var(--vscode-errorForeground)", fontSize: "12px", marginTop: 5 }}>
+									{inputError}
+								</div>
+							)}
+						</div>
+						<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: 0 }}>
+							设置 Cline 在执行命令前等待 Shell 集成激活的时间。如果遇到终端连接超时，请增加此值。
+						</p>
+					</div>
+
+					<div style={{ marginBottom: 15 }}>
+						<div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+							<VSCodeCheckbox
+								checked={terminalReuseEnabled ?? true}
+								onChange={(event) => handleTerminalReuseChange(event as Event)}>
+								实现积极的终端重用
+							</VSCodeCheckbox>
+						</div>
+						<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: 0 }}>
+							启用后，Cline
+							将重用不在当前工作目录中的现有终端窗口。如果您在执行终端命令后遇到任务锁定问题，请禁用此功能。
+						</p>
+					</div>
+					<TerminalOutputLineLimitSlider />
+				</div>
+			</Section>
+		</div>
+	)
+}
+
+export default TerminalSettingsSection

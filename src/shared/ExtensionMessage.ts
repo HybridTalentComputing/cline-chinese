@@ -58,6 +58,7 @@ export const DEFAULT_PLATFORM = "unknown"
 
 export interface ExtensionState {
 	isNewUser: boolean
+	welcomeViewCompleted: boolean
 	apiConfiguration?: ApiConfiguration
 	autoApprovalSettings: AutoApprovalSettings
 	browserSettings: BrowserSettings
