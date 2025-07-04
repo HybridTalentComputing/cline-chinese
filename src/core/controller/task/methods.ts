@@ -6,7 +6,7 @@ import { registerMethod } from "./index"
 import { askResponse } from "./askResponse"
 import { cancelTask } from "./cancelTask"
 import { clearTask } from "./clearTask"
-import { deleteNonFavoritedTasks } from "./deleteNonFavoritedTasks"
+import { deleteAllTaskHistory } from "./deleteAllTaskHistory"
 import { deleteTasksWithIds } from "./deleteTasksWithIds"
 import { executeQuickWin } from "./executeQuickWin"
 import { exportTaskWithId } from "./exportTaskWithId"
@@ -24,7 +24,7 @@ export function registerAllMethods(): void {
 	registerMethod("askResponse", askResponse)
 	registerMethod("cancelTask", cancelTask)
 	registerMethod("clearTask", clearTask)
-	registerMethod("deleteNonFavoritedTasks", deleteNonFavoritedTasks)
+	registerMethod("deleteAllTaskHistory", deleteAllTaskHistory)
 	registerMethod("deleteTasksWithIds", deleteTasksWithIds)
 	registerMethod("executeQuickWin", executeQuickWin)
 	registerMethod("exportTaskWithId", exportTaskWithId)

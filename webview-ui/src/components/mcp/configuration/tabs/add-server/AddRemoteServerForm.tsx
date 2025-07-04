@@ -2,6 +2,7 @@ import { LINKS } from "@/constants"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
+import { McpServers } from "@shared/proto/mcp"
 import { EmptyRequest } from "@shared/proto/common"
 import { AddRemoteMcpServerRequest } from "@shared/proto/mcp"
 import { VSCodeButton, VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
@@ -40,7 +41,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 		setShowConnectingMessage(true)
 
 		try {
-			const servers = await McpServiceClient.addRemoteMcpServer(
+			const servers: McpServers = await McpServiceClient.addRemoteMcpServer(
 				AddRemoteMcpServerRequest.create({
 					serverName: serverName.trim(),
 					serverUrl: serverUrl.trim(),
@@ -49,7 +50,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 
 			setIsSubmitting(false)
 
-			const mcpServers = convertProtoMcpServersToMcpServers(servers)
+			const mcpServers = convertProtoMcpServersToMcpServers(servers.mcpServers)
 			setMcpServers(mcpServers)
 
 			setServerName("")
@@ -66,9 +67,9 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 	return (
 		<div className="p-4 px-5">
 			<div className="text-[var(--vscode-foreground)] mb-2">
-				通过提供名称及其 URL 端点来添加远程 MCP 服务器。{" "}
+				Add a remote MCP server by providing a name and its URL endpoint. Learn more{" "}
 				<VSCodeLink href={LINKS.DOCUMENTATION.REMOTE_MCP_SERVER_DOCS} style={{ display: "inline" }}>
-					了解更多信息
+					here.
 				</VSCodeLink>
 			</div>
 
@@ -83,7 +84,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 						disabled={isSubmitting}
 						className="w-full"
 						placeholder="mcp-server">
-						服务名称
+						Server Name
 					</VSCodeTextField>
 				</div>
 
@@ -97,7 +98,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 						disabled={isSubmitting}
 						placeholder="https://example.com/mcp-server"
 						className="w-full mr-4">
-						服务URL
+						Server URL
 					</VSCodeTextField>
 				</div>
 
@@ -105,12 +106,12 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 
 				<div className="flex items-center mt-3 w-full">
 					<VSCodeButton type="submit" disabled={isSubmitting} className="w-full">
-						{isSubmitting ? "添加..." : "添加服务"}
+						{isSubmitting ? "Adding..." : "Add Server"}
 					</VSCodeButton>
 
 					{showConnectingMessage && (
 						<div className="ml-3 text-[var(--vscode-notificationsInfoIcon-foreground)] text-sm">
-							正在连接服务... 可能需要几秒钟.
+							Connecting to server... This may take a few seconds.
 						</div>
 					)}
 				</div>
@@ -123,7 +124,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 							console.error("Error opening MCP settings:", error)
 						})
 					}}>
-					编辑配置
+					Edit Configuration
 				</VSCodeButton>
 			</form>
 		</div>

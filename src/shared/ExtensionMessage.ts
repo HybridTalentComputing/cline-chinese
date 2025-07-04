@@ -10,26 +10,13 @@ import { McpServer, McpMarketplaceCatalog, McpDownloadResponse, McpViewTab } fro
 import { TelemetrySetting } from "./TelemetrySetting"
 import type { BalanceResponse, UsageTransaction, PaymentTransaction } from "../shared/ClineAccount"
 import { ClineRulesToggles } from "./cline-rules"
+import { UserInfo } from "./UserInfo"
 
 // webview will hold state
 export interface ExtensionMessage {
-	type:
-		| "action"
-		| "state"
-		| "selectedImages"
-		| "openAiModels"
-		| "requestyModels"
-		| "mcpDownloadDetails"
-		| "userCreditsBalance"
-		| "userCreditsUsage"
-		| "userCreditsPayments"
-		| "grpc_response" // New type for gRPC responses
-		| "setActiveQuote"
-		| "fetchUSDRate"
-		| "shengSuanYunModels"
-		| "authCallback"
+	type: "action" | "state" | "selectedImages" | "mcpDownloadDetails" | "grpc_response" // New type for gRPC responses
 	text?: string
-	action?: "didBecomeVisible" | "accountLogoutClicked" | "focusChatInput"
+	action?: "accountLogoutClicked"
 	state?: ExtensionState
 	images?: string[]
 	files?: string[]
@@ -37,7 +24,6 @@ export interface ExtensionMessage {
 	lmStudioModels?: string[]
 	vsCodeLmModels?: { vendor?: string; family?: string; version?: string; id?: string }[]
 	openAiModels?: string[]
-	requestyModels?: Record<string, ModelInfo>
 	mcpServers?: McpServer[]
 	customToken?: string
 	mcpMarketplaceCatalog?: McpMarketplaceCatalog
@@ -46,10 +32,6 @@ export interface ExtensionMessage {
 	commits?: GitCommit[]
 	url?: string
 	isImage?: boolean
-	fetchUSDRate?: number
-	userCreditsBalance?: BalanceResponse
-	userCreditsUsage?: UsageTransaction[]
-	userCreditsPayments?: PaymentTransaction[]
 	success?: boolean
 	endpoint?: string
 	isBundled?: boolean
@@ -70,7 +52,6 @@ export interface ExtensionMessage {
 		is_streaming?: boolean // Whether this is part of a streaming response
 		sequence_number?: number // For ordering chunks in streaming responses
 	}
-	shengSuanYunModels?: Record<string, ModelInfo>
 }
 
 export type Platform = "aix" | "darwin" | "freebsd" | "linux" | "openbsd" | "sunos" | "win32" | "unknown"
@@ -79,6 +60,7 @@ export const DEFAULT_PLATFORM = "unknown"
 
 export interface ExtensionState {
 	isNewUser: boolean
+	welcomeViewCompleted: boolean
 	apiConfiguration?: ApiConfiguration
 	autoApprovalSettings: AutoApprovalSettings
 	browserSettings: BrowserSettings
@@ -87,8 +69,8 @@ export interface ExtensionState {
 	checkpointTrackerErrorMessage?: string
 	clineMessages: ClineMessage[]
 	currentTaskItem?: HistoryItem
-	customInstructions?: string
 	mcpMarketplaceEnabled?: boolean
+	mcpRichDisplayEnabled: boolean
 	planActSeparateModelsSetting: boolean
 	enableCheckpointsSetting?: boolean
 	platform: Platform
@@ -97,8 +79,10 @@ export interface ExtensionState {
 	telemetrySetting: TelemetrySetting
 	shellIntegrationTimeout: number
 	terminalReuseEnabled?: boolean
+	terminalOutputLineLimit: number
+	defaultTerminalProfile?: string
 	uriScheme?: string
-	userInfo?: any
+	userInfo?: UserInfo
 	version: string
 	distinctId: string
 	globalClineRulesToggles: ClineRulesToggles
@@ -165,6 +149,7 @@ export type ClineSay =
 	| "browser_action_result"
 	| "mcp_server_request_started"
 	| "mcp_server_response"
+	| "mcp_notification"
 	| "use_mcp_server"
 	| "diff_error"
 	| "deleted_api_reqs"

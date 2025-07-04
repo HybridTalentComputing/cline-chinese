@@ -7,10 +7,11 @@ const DeleteTaskButton: React.FC<{
 	taskSize: string
 	taskId?: string
 }> = ({ taskSize, taskId }) => (
-	<HeroTooltip content="Delete Task & Checkpoints">
+	<HeroTooltip content="Delete Task">
 		<VSCodeButton
 			appearance="icon"
 			onClick={() => taskId && TaskServiceClient.deleteTasksWithIds(StringArrayRequest.create({ value: [taskId] }))}
+			aria-label="Delete task"
 			style={{ padding: "0px 0px" }}>
 			<div
 				style={{

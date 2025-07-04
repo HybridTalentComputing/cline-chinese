@@ -5,7 +5,6 @@ import { ApiHandlerOptions, ModelInfo, openAiModelInfoSaneDefaults } from "../..
 import { convertToOllamaMessages } from "../transform/ollama-format"
 import { ApiStream } from "../transform/stream"
 import { withRetry } from "../retry"
-import fetch from "node-fetch"
 
 export class OllamaHandler implements ApiHandler {
 	private options: ApiHandlerOptions
@@ -71,7 +70,9 @@ export class OllamaHandler implements ApiHandler {
 			// Enhance error reporting
 			const statusCode = error.status || error.statusCode
 			const errorMessage = error.message || "Unknown error"
+
 			console.error(`Ollama API error (${statusCode || "unknown"}): ${errorMessage}`)
+			throw error
 		}
 	}
 

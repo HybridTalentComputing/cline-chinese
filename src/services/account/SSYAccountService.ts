@@ -1,23 +1,17 @@
-import type { BalanceResponse, PaymentTransaction, UsageTransaction } from "../../shared/ClineAccount"
-import { ExtensionMessage } from "../../shared/ExtensionMessage"
 import axios, { AxiosRequestConfig } from "axios"
+import { UserCreditsData } from "@shared/proto/account"
 
 export class SSYAccountService {
 	private readonly baseUrl = "https://api.shengsuanyun.com"
-	private postMessageToWebview: (message: ExtensionMessage) => Promise<void>
 	private getSSYApiKey: () => Promise<string | undefined>
 
-	constructor(
-		postMessageToWebview: (message: ExtensionMessage) => Promise<void>,
-		getSSYApiKey: () => Promise<string | undefined>,
-	) {
-		this.postMessageToWebview = postMessageToWebview
+	constructor(getSSYApiKey: () => Promise<string | undefined>) {
 		this.getSSYApiKey = getSSYApiKey
 	}
 	private async authenticatedRequest<T>(endpoint: string, config: AxiosRequestConfig = {}): Promise<T> {
 		const ssyApiKey = await this.getSSYApiKey()
 		if (!ssyApiKey) {
-			throw new Error("未找到胜算云Router API key ")
+			throw new Error("未找到胜算云 API key ")
 		}
 		const reqConfig: AxiosRequestConfig = {
 			...config,
@@ -34,87 +28,52 @@ export class SSYAccountService {
 		return response.data.data
 	}
 
-	async fetchBalance(): Promise<BalanceResponse | undefined> {
-		try {
-			const data = await Promise.all([
-				this.authenticatedRequest<any>("/base/rate"),
-				this.authenticatedRequest<any>("/user/info"),
-			])
-			if (!Array.isArray(data)) {
-				return undefined
-			}
-			const balance: BalanceResponse = { currentBalance: (data[0] * data[1].Wallet?.Assets) / 10000 }
-			await this.postMessageToWebview({
-				type: "userCreditsBalance",
-				userCreditsBalance: balance,
-			})
-			return balance
-		} catch (error) {
-			console.error("Failed to fetch USD rate:", error)
-			return undefined
-		}
-	}
-	async fetchUsageTransactions(): Promise<UsageTransaction[] | undefined> {
+	async fetchUserDataRPC(): Promise<UserCreditsData> {
 		try {
 			const dqs = this.dateQueryString()
-			const data = await Promise.all([
+			let [rate, usage, payment, user] = await Promise.all([
 				this.authenticatedRequest<any>("/base/rate"),
 				this.authenticatedRequest<any>(`/modelrouter/userlog?page=1&pageSize=1000&${dqs}`),
-			])
-			if (!Array.isArray(data) || data.length !== 2) {
-				return undefined
-			}
-			const r = data[0]
-			const res = data[1]
-			const utl: UsageTransaction[] = res.logs.map((it: any) => ({
-				spentAt: it.request_time,
-				creatorId: "",
-				modelProvider: "",
-				model: `${it.model?.company}/${it.model?.name}`,
-				credits: ((r * it.total_amount) / 10000000).toFixed(7),
-				totalTokens: it.total_amount,
-				promptTokens: it.input_tokens.toString(),
-				completionTokens: it.output_tokens.toString(),
-			}))
-
-			await this.postMessageToWebview({
-				type: "userCreditsUsage",
-				userCreditsUsage: utl,
-			})
-			return utl
-		} catch (error) {
-			console.error("Failed to fetch usage transactions:", error)
-			return undefined
-		}
-	}
-	async fetchPaymentTransactions(): Promise<PaymentTransaction[] | undefined> {
-		try {
-			const data = await Promise.all([
-				this.authenticatedRequest<any>("/base/rate"),
 				this.authenticatedRequest<any>("/modelrouter/listrecharge?page=1&pageSize=10000"),
+				this.authenticatedRequest<any>("/user/info"),
 			])
-			if (!Array.isArray(data) || data.length !== 2) {
-				return undefined
+
+			if (!usage || !Array.isArray(usage?.logs) || !rate) {
+				usage = []
+			} else {
+				usage = usage.logs.map((it: any) => ({
+					spentAt: it.request_time,
+					modelProvider: "",
+					model: `${it.model?.company}/${it.model?.name}`,
+					credits: (rate * it.total_amount) / 10000000,
+					totalTokens: it.total_amount,
+					promptTokens: it.input_tokens,
+					completionTokens: it.output_tokens,
+				}))
 			}
-			const r = data[0]
-			const res = data[1]
-			if (!Array.isArray(res.records)) {
-				return undefined
+
+			if (!payment || !Array.isArray(payment.records) || !rate) {
+				payment = []
+			} else {
+				payment = payment.records.map((it: any) => ({
+					paidAt: it.create_at,
+					amountCents: ((rate * it.price) / 10000).toString(),
+				}))
 			}
-			const cpl: PaymentTransaction[] = res.records.map((it: any) => ({
-				creatorId: "",
-				credits: 0,
-				paidAt: it.create_at,
-				amountCents: ((r * it.price) / 10000).toFixed(2),
-			}))
-			await this.postMessageToWebview({
-				type: "userCreditsPayments",
-				userCreditsPayments: cpl,
+
+			let balance = { currentBalance: 0 }
+			if (user && user.Wallet && user.Wallet.Assets && rate) {
+				balance = { currentBalance: (rate * user.Wallet.Assets) / 10000 }
+			}
+
+			return UserCreditsData.create({
+				balance: balance,
+				usageTransactions: usage,
+				paymentTransactions: payment,
 			})
-			return cpl
 		} catch (error) {
-			console.error("Failed to fetch payment transactions:", error)
-			return undefined
+			console.error("Failed fetchUserDataRPC:", error)
+			throw error
 		}
 	}
 

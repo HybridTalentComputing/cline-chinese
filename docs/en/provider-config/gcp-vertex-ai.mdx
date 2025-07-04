@@ -25,7 +25,6 @@ This guide is tailored for organizations with established GCP environments (leve
 #### 1.2 Set Up IAM Permissions and Service Accounts
 
 - **Assign Required Roles:**
-
     - Grant your user (or service account) the **Vertex AI User** role (`roles/aiplatform.user`)
     - For service accounts, also attach the **Vertex AI Service Agent** role (`roles/aiplatform.serviceAgent`) to enable certain operations
     - Consider additional predefined roles as needed:
@@ -120,18 +119,15 @@ The Global endpoint may offer higher availability and reduce resource exhausted 
 #### Option B: Using a Service Account (JSON Key)
 
 1. **Create a Service Account:**
-
     - In the GCP Console, navigate to **IAM & Admin > Service Accounts**
     - Create a new service account (e.g., "vertex-ai-client")
 
 2. **Assign Roles:**
-
     - Attach **Vertex AI User** (`roles/aiplatform.user`)
     - Attach **Vertex AI Service Agent** (`roles/aiplatform.serviceAgent`)
     - Optionally, add other roles as required
 
 3. **Generate a JSON Key:**
-
     - In the Service Accounts section, manage keys for your service account and download the JSON key
 
 4. **Set the Environment Variable:**
@@ -164,7 +160,6 @@ The Global endpoint may offer higher availability and reduce resource exhausted 
 #### 5.3 Monitor Usage and Quotas
 
 - **Model Observability Dashboard:**
-
     - In the Vertex AI Console, navigate to the **Model Observability** dashboard
     - Monitor metrics such as request throughput, latency, and error rates (including 429 quota errors)
 
@@ -177,7 +172,6 @@ The Global endpoint may offer higher availability and reduce resource exhausted 
 
 - **Service Agents:**\
   Be aware of the different service agents:
-
     - Vertex AI Service Agent
     - Vertex AI RAG Data Service Agent
     - Vertex AI Custom Code Service Agent

@@ -12,10 +12,10 @@ const AddLocalServerForm = ({ onServerAdded }: AddLocalServerFormProps) => {
 	return (
 		<FormContainer>
 			<div className="text-[var(--vscode-foreground)]">
-				通过在 <code>cline_chinese_mcp_settings.json</code> 中配置本地 MCP 服务器来添加本地 MCP 服务器。您需要指定 JSON
-				配置中的服务器名称、命令、参数和任何必需的环境变量。
+				Add a local MCP server by configuring it in <code>cline_mcp_settings.json</code>. You'll need to specify the
+				server name, command, arguments, and any required environment variables in the JSON configuration. Learn more
 				<VSCodeLink href={LINKS.DOCUMENTATION.LOCAL_MCP_SERVER_DOCS} style={{ display: "inline" }}>
-					了解更多信息
+					here.
 				</VSCodeLink>
 			</div>
 
@@ -27,7 +27,7 @@ const AddLocalServerForm = ({ onServerAdded }: AddLocalServerFormProps) => {
 						console.error("Error opening MCP settings:", error)
 					})
 				}}>
-				打开 cline_chinese_mcp_settings.json
+				Open cline_mcp_settings.json
 			</VSCodeButton>
 		</FormContainer>
 	)

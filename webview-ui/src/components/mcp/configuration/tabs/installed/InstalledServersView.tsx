@@ -17,16 +17,18 @@ const InstalledServersView = () => {
 					marginBottom: "16px",
 					marginTop: "5px",
 				}}>
+				The{" "}
 				<VSCodeLink href="https://github.com/modelcontextprotocol" style={{ display: "inline" }}>
-					模型上下文协议
+					Model Context Protocol
 				</VSCodeLink>{" "}
-				支持与本地运行的 MCP 服务器通信，这些服务器提供额外的工具和资源来扩展 Cline 的能力。您可以使用
+				enables communication with locally running MCP servers that provide additional tools and resources to extend
+				Cline's capabilities. You can use{" "}
 				<VSCodeLink href="https://github.com/modelcontextprotocol/servers" style={{ display: "inline" }}>
-					社区版服务器
+					community-made servers
 				</VSCodeLink>{" "}
-				或要求 Cline 创建特定于您的工作流程的新工具（例如，“添加获取最新 npm 文档的工具”）.{" "}
+				or ask Cline to create new tools specific to your workflow (e.g., "add a tool that gets the latest npm docs").{" "}
 				<VSCodeLink href="https://x.com/sdrzn/status/1867271665086074969" style={{ display: "inline" }}>
-					查看 demo.
+					See a demo here.
 				</VSCodeLink>
 			</div>
 
@@ -43,7 +45,7 @@ const InstalledServersView = () => {
 						})
 					}}>
 					<span className="codicon codicon-server" style={{ marginRight: "6px" }}></span>
-					配置 MCP 服务
+					Configure MCP Servers
 				</VSCodeButton>
 
 				<div style={{ textAlign: "center" }}>
@@ -62,7 +64,7 @@ const InstalledServersView = () => {
 							}, 300)
 						}}
 						style={{ fontSize: "12px" }}>
-						MCP 高级设置
+						Advanced MCP Settings
 					</VSCodeLink>
 				</div>
 			</div>

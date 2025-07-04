@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package clineChinese;
-option java_package = "bot.clineChinese.proto";
+package cline;
+option java_package = "bot.cline.proto";
 option java_multiple_files = true;
 
 import "common.proto";
@@ -19,13 +19,18 @@ service AccountService {
 
     // Subscribe to auth callback events (when authentication tokens are received)
     rpc subscribeToAuthCallback(EmptyRequest) returns (stream String);
-
+    
     // Handles authentication state changes from the Firebase context.
     // Updates the user info in global state and returns the updated value.
     rpc authStateChanged(AuthStateChangedRequest) returns (AuthStateChanged);
     
     // Fetches all user credits data (balance, usage transactions, payment transactions)
     rpc fetchUserCreditsData(EmptyRequest) returns (UserCreditsData);
+
+    rpc shengSuanYunLoginClicked(EmptyRequest) returns (String);
+    rpc shengSuanYunLogoutClicked(EmptyRequest) returns (Empty);
+    rpc shengSuanYunUserData(EmptyRequest) returns (UserCreditsData);
+    rpc subscribeSSYAuthCallback(EmptyRequest) returns (stream String);
 }
 
 message AuthStateChangedRequest {

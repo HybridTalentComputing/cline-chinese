@@ -7,11 +7,16 @@ import { accountLoginClicked } from "./accountLoginClicked"
 import { accountLogoutClicked } from "./accountLogoutClicked"
 import { authStateChanged } from "./authStateChanged"
 import { fetchUserCreditsData } from "./fetchUserCreditsData"
+import { shengSuanYunLoginClicked } from "./shengSuanYunLoginClicked"
+import { shengSuanYunLogoutClicked } from "./shengSuanYunLogoutClicked"
+import { shengSuanYunUserData } from "./shengSuanYunUserData"
+import { subscribeSSYAuthCallback } from "./subscribeSSYAuthCallback"
 import { subscribeToAuthCallback } from "./subscribeToAuthCallback"
 
 // Streaming methods for this service
 export const streamingMethods = [
-  "subscribeToAuthCallback"
+  "subscribeToAuthCallback",
+  "subscribeSSYAuthCallback"
 ]
 
 // Register all account service methods
@@ -21,5 +26,9 @@ export function registerAllMethods(): void {
 	registerMethod("accountLogoutClicked", accountLogoutClicked)
 	registerMethod("authStateChanged", authStateChanged)
 	registerMethod("fetchUserCreditsData", fetchUserCreditsData)
+	registerMethod("shengSuanYunLoginClicked", shengSuanYunLoginClicked)
+	registerMethod("shengSuanYunLogoutClicked", shengSuanYunLogoutClicked)
+	registerMethod("shengSuanYunUserData", shengSuanYunUserData)
+	registerMethod("subscribeSSYAuthCallback", subscribeSSYAuthCallback, { isStreaming: true })
 	registerMethod("subscribeToAuthCallback", subscribeToAuthCallback, { isStreaming: true })
 }

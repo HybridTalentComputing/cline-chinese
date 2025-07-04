@@ -1,8 +1,8 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { vscode } from "@/utils/vscode"
-import { WebServiceClient } from "@/services/grpc-client"
-import { StringRequest } from "@shared/proto/common"
+import { AccountServiceClient, WebServiceClient } from "@/services/grpc-client"
+import { EmptyRequest, StringRequest } from "@shared/proto/common"
 
 export const ShengSuanYunAccountInfoCard = () => {
 	const { apiConfiguration } = useExtensionState()
@@ -13,7 +13,9 @@ export const ShengSuanYunAccountInfoCard = () => {
 				<VSCodeButton
 					appearance="primary"
 					onClick={() => {
-						vscode.postMessage({ type: "accountLoginClickedSSY" })
+						AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create()).catch((err) =>
+							console.error("shengSuanYunLoginClicked Failed to get login URL:", err),
+						)
 					}}>
 					登录胜算云Router
 				</VSCodeButton>

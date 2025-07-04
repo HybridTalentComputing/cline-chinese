@@ -2,6 +2,7 @@ import { mkdir, access, constants } from "fs/promises"
 import * as path from "path"
 import * as vscode from "vscode"
 import os from "os"
+import { getCwd, getDesktopDir } from "@/utils/path"
 
 /**
  * Gets the path to the shadow Git repository in globalStorage.
@@ -20,7 +21,7 @@ import os from "os"
  */
 export async function getShadowGitPath(globalStoragePath: string, taskId: string, cwdHash: string): Promise<string> {
 	if (!globalStoragePath) {
-		throw new Error("全局存储 uri 无效")
+		throw new Error("Global storage uri is invalid")
 	}
 	const checkpointsDir = path.join(globalStoragePath, "checkpoints", cwdHash)
 	await mkdir(checkpointsDir, { recursive: true })
@@ -45,9 +46,9 @@ export async function getShadowGitPath(globalStoragePath: string, taskId: string
  * @throws Error if no workspace is detected, if in a protected directory, or if no read access
  */
 export async function getWorkingDirectory(): Promise<string> {
-	const cwd = vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0)
+	const cwd = await getCwd()
 	if (!cwd) {
-		throw new Error("未检测到工作区。请在工作区中打开 Cline 以使用检查点。")
+		throw new Error("No workspace detected. Please open Cline in a workspace to use checkpoints.")
 	}
 
 	// Check if directory exists and we have read permissions
@@ -55,24 +56,24 @@ export async function getWorkingDirectory(): Promise<string> {
 		await access(cwd, constants.R_OK)
 	} catch (error) {
 		throw new Error(
-			`无法访问工作区目录。请确保 VS Code 有权访问您的工作区。错误: ${error instanceof Error ? error.message : String(error)}`,
+			`Cannot access workspace directory. Please ensure VS Code has permission to access your workspace. Error: ${error instanceof Error ? error.message : String(error)}`,
 		)
 	}
 
 	const homedir = os.homedir()
-	const desktopPath = path.join(homedir, "Desktop")
+	const desktopPath = getDesktopDir()
 	const documentsPath = path.join(homedir, "Documents")
 	const downloadsPath = path.join(homedir, "Downloads")
 
 	switch (cwd) {
 		case homedir:
-			throw new Error("不能在主目录中使用检查点")
+			throw new Error("Cannot use checkpoints in home directory")
 		case desktopPath:
-			throw new Error("无法使用 Desktop 目录中的检查点")
+			throw new Error("Cannot use checkpoints in Desktop directory")
 		case documentsPath:
-			throw new Error("无法使用 Documents 目录中的检查点")
+			throw new Error("Cannot use checkpoints in Documents directory")
 		case downloadsPath:
-			throw new Error("无法使用 Downloads 目录中的检查点")
+			throw new Error("Cannot use checkpoints in Downloads directory")
 		default:
 			return cwd
 	}
@@ -86,7 +87,7 @@ export async function getWorkingDirectory(): Promise<string> {
  */
 export function hashWorkingDir(workingDir: string): string {
 	if (!workingDir) {
-		throw new Error("工作目录路径不能为空")
+		throw new Error("Working directory path cannot be empty")
 	}
 	let hash = 0
 	for (let i = 0; i < workingDir.length; i++) {

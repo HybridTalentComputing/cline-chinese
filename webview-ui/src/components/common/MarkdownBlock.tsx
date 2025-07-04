@@ -1,38 +1,48 @@
-import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import MermaidBlock from "@/components/common/MermaidBlock"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { StateServiceClient } from "@/services/grpc-client"
-import { PlanActMode, TogglePlanActModeRequest } from "@shared/proto/state"
-import type { ComponentProps } from "react"
 import React, { memo, useEffect, useRef, useState } from "react"
+import type { ComponentProps } from "react"
 import { useRemark } from "react-remark"
 import rehypeHighlight, { Options } from "rehype-highlight"
-import rehypeKatex from "rehype-katex"
-import remarkMath from "remark-math"
 import styled from "styled-components"
-import type { Node } from "unist"
 import { visit } from "unist-util-visit"
+import type { Node } from "unist"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import CodeBlock, { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
+import MermaidBlock from "@/components/common/MermaidBlock"
+import { WithCopyButton } from "./CopyButton"
+import { StateServiceClient } from "@/services/grpc-client"
+import { PlanActMode, TogglePlanActModeRequest } from "@shared/proto/state"
 
 // Styled component for Act Mode text with more specific styling
-const ActModeHighlight: React.FC = () => (
-	<span
-		onClick={() => {
-			StateServiceClient.togglePlanActMode(
-				TogglePlanActModeRequest.create({
-					chatSettings: {
-						mode: PlanActMode.ACT,
-					},
-				}),
-			)
-		}}
-		title="Click to toggle to Act Mode"
-		className="text-[var(--vscode-textLink-foreground)] hover:opacity-90 cursor-pointer inline-flex items-center gap-1">
-		<div className="p-1 rounded-[12px] bg-[var(--vscode-editor-background)] flex items-center justify-end w-4 border-[1px] border-[var(--vscode-input-border)]">
-			<div className="rounded-full bg-[var(--vscode-textLink-foreground)] w-2 h-2" />
-		</div>
-		Act Mode (⌘⇧A)
-	</span>
-)
+const ActModeHighlight: React.FC = () => {
+	const { chatSettings } = useExtensionState()
+
+	return (
+		<span
+			onClick={() => {
+				// Only toggle to Act mode if we're currently in Plan mode
+				if (chatSettings.mode === "plan") {
+					StateServiceClient.togglePlanActMode(
+						TogglePlanActModeRequest.create({
+							chatSettings: {
+								mode: PlanActMode.ACT,
+								preferredLanguage: chatSettings.preferredLanguage,
+								openAiReasoningEffort: chatSettings.openAIReasoningEffort,
+							},
+						}),
+					)
+				}
+			}}
+			title={chatSettings.mode === "plan" ? "Click to toggle to Act Mode" : "Already in Act Mode"}
+			className={`text-[var(--vscode-textLink-foreground)] inline-flex items-center gap-1 ${
+				chatSettings.mode === "plan" ? "hover:opacity-90 cursor-pointer" : "cursor-default opacity-60"
+			}`}>
+			<div className="p-1 rounded-[12px] bg-[var(--vscode-editor-background)] flex items-center justify-end w-4 border-[1px] border-[var(--vscode-input-border)]">
+				<div className="rounded-full bg-[var(--vscode-textLink-foreground)] w-2 h-2" />
+			</div>
+			Act Mode (⌘⇧A)
+		</span>
+	)
+}
 
 interface MarkdownBlockProps {
 	markdown?: string
@@ -178,24 +188,6 @@ const remarkPreventBoldFilenames = () => {
 	}
 }
 
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-
-const CopyButton = styled(VSCodeButton)`
-	position: absolute;
-	top: 5px;
-	right: 5px;
-	z-index: 1;
-	opacity: 0;
-`
-
-const CodeBlockContainer = styled.div`
-	position: relative;
-
-	&:hover ${CopyButton} {
-		opacity: 1;
-	}
-`
-
 const StyledMarkdown = styled.div`
 	pre {
 		background-color: ${CODE_BLOCK_BG_COLOR};
@@ -242,34 +234,6 @@ const StyledMarkdown = styled.div`
 		white-space: pre-line;
 		word-break: break-word;
 		overflow-wrap: anywhere;
-	}
-
-	/* KaTeX styling */
-	.katex {
-		font-size: 1.1em;
-		color: var(--vscode-editor-foreground);
-		font-family: KaTeX_Main, "Times New Roman", serif;
-		line-height: 1.2;
-		white-space: normal;
-		text-indent: 0;
-	}
-
-	.katex-display {
-		display: block;
-		margin: 1em 0;
-		text-align: center;
-		padding: 0.5em;
-		overflow-x: auto;
-		overflow-y: hidden;
-		background-color: var(--vscode-textCodeBlock-background);
-		border-radius: 3px;
-	}
-
-	.katex-error {
-		color: var(--vscode-errorForeground);
-		border: 1px solid var(--vscode-inputValidation-errorBorder);
-		padding: 8px;
-		border-radius: 3px;
 	}
 
 	font-family:
@@ -337,7 +301,6 @@ const PreWithCopyButton = ({
 	...preProps
 }: { theme: Record<string, string> } & React.HTMLAttributes<HTMLPreElement>) => {
 	const preRef = useRef<HTMLPreElement>(null)
-	const [copied, setCopied] = useState(false)
 
 	const handleCopy = () => {
 		if (preRef.current) {
@@ -345,22 +308,19 @@ const PreWithCopyButton = ({
 			const textToCopy = codeElement ? codeElement.textContent : preRef.current.textContent
 
 			if (!textToCopy) return
-			navigator.clipboard.writeText(textToCopy).then(() => {
-				setCopied(true)
-				setTimeout(() => setCopied(false), 1500)
-			})
+			return textToCopy
 		}
+		return null
 	}
 
+	const styledPreProps = theme ? { ...preProps, theme } : preProps
+
 	return (
-		<CodeBlockContainer>
-			<CopyButton appearance="icon" onClick={handleCopy} aria-label={copied ? "Copied" : "Copy"}>
-				<span className={`codicon codicon-${copied ? "check" : "copy"}`}></span>
-			</CopyButton>
-			<StyledPre {...preProps} theme={theme} ref={preRef}>
+		<WithCopyButton onCopy={handleCopy} position="top-right" ariaLabel="Copy code">
+			<StyledPre {...styledPreProps} ref={preRef}>
 				{children}
 			</StyledPre>
-		</CodeBlockContainer>
+		</WithCopyButton>
 	)
 }
 
@@ -372,7 +332,6 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 			remarkPreventBoldFilenames,
 			remarkUrlToLink,
 			remarkHighlightActMode,
-			remarkMath,
 			() => {
 				return (tree) => {
 					visit(tree, "code", (node: any) => {
@@ -390,7 +349,6 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 			{
 				// languages: {},
 			} as Options,
-			rehypeKatex,
 		],
 		rehypeReactOptions: {
 			components: {

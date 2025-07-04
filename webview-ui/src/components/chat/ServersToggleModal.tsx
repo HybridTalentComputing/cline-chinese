@@ -55,10 +55,10 @@ const ServersToggleModal: React.FC = () => {
 	return (
 		<div ref={modalRef}>
 			<div ref={buttonRef} className="inline-flex min-w-0 max-w-full">
-				<Tooltip tipText="管理 MCP 服务" visible={isVisible ? false : undefined}>
+				<Tooltip tipText="Manage MCP Servers" visible={isVisible ? false : undefined}>
 					<VSCodeButton
 						appearance="icon"
-						aria-label="MCP 服务"
+						aria-label="MCP Servers"
 						onClick={() => setIsVisible(!isVisible)}
 						style={{ padding: "0px 0px", height: "20px" }}>
 						<div className="flex items-center gap-1 text-xs whitespace-nowrap min-w-0 w-full">
@@ -90,7 +90,7 @@ const ServersToggleModal: React.FC = () => {
 					/>
 
 					<div className="flex justify-between items-center mb-2.5">
-						<div className="m-0 text-base font-semibold">MCP 服务</div>
+						<div className="m-0 text-base font-semibold">MCP Servers</div>
 						<VSCodeButton
 							appearance="icon"
 							onClick={() => {

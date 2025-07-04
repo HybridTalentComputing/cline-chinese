@@ -83,18 +83,18 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 		// Return an empty response - the client only cares if the call succeeded
 		return Empty.create()
 	} catch (error) {
-		console.error("下载 MCP 失败:", error)
-		let errorMessage = "下载 MCP 失败"
+		console.error("Failed to download MCP:", error)
+		let errorMessage = "Failed to download MCP"
 
 		if (axios.isAxiosError(error)) {
 			if (error.code === "ECONNABORTED") {
-				errorMessage = "超时，请重试."
+				errorMessage = "Request timed out. Please try again."
 			} else if (error.response?.status === 404) {
-				errorMessage = "MCP 在市场没有找到."
+				errorMessage = "MCP server not found in marketplace."
 			} else if (error.response?.status === 500) {
-				errorMessage = "网络错误.请稍后重试."
+				errorMessage = "Internal server error. Please try again later."
 			} else if (!error.response && error.request) {
-				errorMessage = "网络错误. 请检查你的网络链接."
+				errorMessage = "Network error. Please check your internet connection."
 			}
 		} else if (error instanceof Error) {
 			errorMessage = error.message

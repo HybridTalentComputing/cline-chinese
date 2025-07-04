@@ -1,5 +1,8 @@
 import * as vscode from "vscode"
 import { getWorkingState } from "@utils/git"
+import { writeTextToClipboard } from "@utils/env"
+import { getHostBridgeProvider } from "@/hosts/host-providers"
+import { ShowTextDocumentRequest } from "@/shared/proto/host/window"
 
 /**
  * Formats the git diff into a prompt for the AI
@@ -57,8 +60,8 @@ export function extractCommitMessage(aiResponse: string): string {
  * @param message The commit message to copy
  */
 export async function copyCommitMessageToClipboard(message: string): Promise<void> {
-	await vscode.env.clipboard.writeText(message)
-	vscode.window.showInformationMessage("提交信息复制到剪贴板")
+	await writeTextToClipboard(message)
+	vscode.window.showInformationMessage("Commit message copied to clipboard")
 }
 
 /**
@@ -66,12 +69,12 @@ export async function copyCommitMessageToClipboard(message: string): Promise<voi
  * @param message The generated commit message
  */
 export async function showCommitMessageOptions(message: string): Promise<void> {
-	const copyAction = "复制到剪贴板"
-	const applyAction = "应用到 Git 输入"
-	const editAction = "编辑消息"
+	const copyAction = "Copy to Clipboard"
+	const applyAction = "Apply to Git Input"
+	const editAction = "Edit Message"
 
 	const selectedAction = await vscode.window.showInformationMessage(
-		"生成提交信息",
+		"Commit message generated",
 		{ modal: false, detail: message },
 		copyAction,
 		applyAction,
@@ -108,13 +111,13 @@ async function applyCommitMessageToGitInput(message: string): Promise<void> {
 		if (api && api.repositories.length > 0) {
 			const repo = api.repositories[0]
 			repo.inputBox.value = message
-			vscode.window.showInformationMessage("提交信息应用到 Git 输入")
+			vscode.window.showInformationMessage("Commit message applied to Git input")
 		} else {
-			vscode.window.showErrorMessage("未发现 Git 库")
+			vscode.window.showErrorMessage("No Git repositories found")
 			await copyCommitMessageToClipboard(message)
 		}
 	} else {
-		vscode.window.showErrorMessage("Git 扩展未找到")
+		vscode.window.showErrorMessage("Git extension not found")
 		await copyCommitMessageToClipboard(message)
 	}
 }
@@ -129,6 +132,10 @@ async function editCommitMessage(message: string): Promise<void> {
 		language: "markdown",
 	})
 
-	await vscode.window.showTextDocument(document)
-	vscode.window.showInformationMessage("编辑提交信息并复制")
+	await getHostBridgeProvider().windowClient.showTextDocument(
+		ShowTextDocumentRequest.create({
+			path: document.uri.fsPath,
+		}),
+	)
+	vscode.window.showInformationMessage("Edit the commit message and copy when ready")
 }

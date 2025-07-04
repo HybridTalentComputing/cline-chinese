@@ -109,16 +109,16 @@ const RuleRow: React.FC<{
 					</div>
 					<VSCodeButton
 						appearance="icon"
-						aria-label="编辑规则文件"
-						title="编辑规则文件"
+						aria-label="Edit rule file"
+						title="Edit rule file"
 						onClick={handleEditClick}
 						style={{ height: "20px" }}>
 						<span className="codicon codicon-edit" style={{ fontSize: "14px" }} />
 					</VSCodeButton>
 					<VSCodeButton
 						appearance="icon"
-						aria-label="删除规则文件"
-						title="删除规则文件"
+						aria-label="Delete rule file"
+						title="Delete rule file"
 						onClick={handleDeleteClick}
 						style={{ height: "20px" }}>
 						<span className="codicon codicon-trash" style={{ fontSize: "14px" }} />

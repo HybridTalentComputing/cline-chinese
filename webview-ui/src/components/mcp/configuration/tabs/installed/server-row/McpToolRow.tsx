@@ -52,7 +52,7 @@ const McpToolRow = ({ tool, serverName }: McpToolRowProps) => {
 				</div>
 				{serverName && autoApprovalSettings.enabled && autoApprovalSettings.actions.useMcp && (
 					<VSCodeCheckbox checked={tool.autoApprove ?? false} onChange={handleAutoApproveChange} data-tool={tool.name}>
-						自动批准
+						Auto-approve
 					</VSCodeCheckbox>
 				)}
 			</div>

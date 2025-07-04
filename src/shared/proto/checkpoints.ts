@@ -128,7 +128,7 @@ export const CheckpointRestoreRequest: MessageFns<CheckpointRestoreRequest> = {
 export type CheckpointsServiceDefinition = typeof CheckpointsServiceDefinition;
 export const CheckpointsServiceDefinition = {
   name: "CheckpointsService",
-  fullName: "clineChinese.CheckpointsService",
+  fullName: "cline.CheckpointsService",
   methods: {
     checkpointDiff: {
       name: "checkpointDiff",

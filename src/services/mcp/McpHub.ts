@@ -1,5 +1,5 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
+import { StdioClientTransport, getDefaultEnvironment } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import ReconnectingEventSource from "reconnecting-eventsource"
@@ -19,7 +19,6 @@ import * as fs from "fs/promises"
 import * as path from "path"
 import * as vscode from "vscode"
 import { z } from "zod"
-import { WatchServiceClient } from "../../standalone/services/host-grpc-client"
 import { FileChangeEvent_ChangeType, SubscribeToFileRequest } from "../../shared/proto/host/watch"
 import { Metadata } from "../../shared/proto/common"
 import {
@@ -41,6 +40,7 @@ import { ExtensionMessage } from "@shared/ExtensionMessage"
 import { DEFAULT_REQUEST_TIMEOUT_MS } from "./constants"
 import { Transport, McpConnection, McpTransportType, McpServerConfig } from "./types"
 import { BaseConfigSchema, ServerConfigSchema, McpSettingsSchema } from "./schemas"
+import { getHostBridgeProvider } from "@/hosts/host-providers"
 
 export class McpHub {
 	getMcpServersPath: () => Promise<string>
@@ -53,6 +53,17 @@ export class McpHub {
 	private fileWatchers: Map<string, FSWatcher> = new Map()
 	connections: McpConnection[] = []
 	isConnecting: boolean = false
+
+	// Store notifications for display in chat
+	private pendingNotifications: Array<{
+		serverName: string
+		level: string
+		message: string
+		timestamp: number
+	}> = []
+
+	// Callback for sending notifications to active task
+	private notificationCallback?: (serverName: string, level: string, message: string) => void
 
 	constructor(
 		getMcpServersPath: () => Promise<string>,
@@ -101,14 +112,16 @@ export class McpHub {
 			try {
 				config = JSON.parse(content)
 			} catch (error) {
-				vscode.window.showErrorMessage("MCP 设置格式无效。请确保您的设置遵循正确的 JSON 格式。")
+				vscode.window.showErrorMessage(
+					"Invalid MCP settings format. Please ensure your settings follow the correct JSON format.",
+				)
 				return undefined
 			}
 
 			// Validate against schema
 			const result = McpSettingsSchema.safeParse(config)
 			if (!result.success) {
-				vscode.window.showErrorMessage("MCP 设置架构无效.")
+				vscode.window.showErrorMessage("Invalid MCP settings schema.")
 				return undefined
 			}
 
@@ -124,9 +137,8 @@ export class McpHub {
 
 		// Subscribe to file changes using the gRPC WatchService
 		console.log("[DEBUG] subscribing to mcp file changes")
-		const cancelSubscription = WatchServiceClient.subscribeToFile(
+		const cancelSubscription = getHostBridgeProvider().watchServiceClient.subscribeToFile(
 			SubscribeToFileRequest.create({
-				metadata: Metadata.create({}),
 				path: settingsPath,
 			}),
 			{
@@ -140,9 +152,8 @@ export class McpHub {
 						const settings = await this.readAndValidateMcpSettingsFile()
 						if (settings) {
 							try {
-								vscode.window.showInformationMessage("更新 MCP 服务...")
 								await this.updateServerConnections(settings.mcpServers)
-								vscode.window.showInformationMessage("MCP 服务已更新")
+								vscode.window.showInformationMessage("MCP servers updated")
 							} catch (error) {
 								console.error("Failed to process MCP settings change:", error)
 							}
@@ -185,7 +196,7 @@ export class McpHub {
 			// Each MCP server requires its own transport connection and has unique capabilities, configurations, and error handling. Having separate clients also allows proper scoping of resources/tools and independent server management like reconnection.
 			const client = new Client(
 				{
-					name: "clineChinese",
+					name: "Cline",
 					version: this.clientVersion,
 				},
 				{
@@ -203,8 +214,8 @@ export class McpHub {
 						cwd: config.cwd,
 						env: {
 							// ...(config.env ? await injectEnv(config.env) : {}), // Commented out as injectEnv is not found
+							...getDefaultEnvironment(),
 							...(config.env || {}), // Use config.env directly or an empty object
-							...(process.env.PATH ? { PATH: process.env.PATH } : {}),
 						},
 						stderr: "pipe",
 					})
@@ -318,6 +329,88 @@ export class McpHub {
 
 			connection.server.status = "connected"
 			connection.server.error = ""
+
+			// Register notification handler for real-time messages
+			console.log(`[MCP Debug] Setting up notification handlers for server: ${name}`)
+			console.log(`[MCP Debug] Client instance:`, connection.client)
+			console.log(`[MCP Debug] Transport type:`, config.type)
+
+			// Try to set notification handler using the client's method
+			try {
+				// Import the notification schema from MCP SDK
+				const { z } = await import("zod")
+
+				// Define the notification schema for notifications/message
+				const NotificationMessageSchema = z.object({
+					method: z.literal("notifications/message"),
+					params: z
+						.object({
+							level: z.enum(["debug", "info", "warning", "error"]).optional(),
+							logger: z.string().optional(),
+							data: z.string().optional(),
+							message: z.string().optional(),
+						})
+						.optional(),
+				})
+
+				// Set the notification handler
+				connection.client.setNotificationHandler(NotificationMessageSchema as any, async (notification: any) => {
+					console.log(`[MCP Notification] ${name}:`, JSON.stringify(notification, null, 2))
+
+					const params = notification.params || {}
+					const level = params.level || "info"
+					const data = params.data || params.message || ""
+					const logger = params.logger || ""
+
+					console.log(`[MCP Message Notification] ${name}: level=${level}, data=${data}, logger=${logger}`)
+
+					// Format the message
+					const message = logger ? `[${logger}] ${data}` : data
+
+					// Send notification directly to active task if callback is set
+					if (this.notificationCallback) {
+						console.log(`[MCP Debug] Sending notification to active task: ${message}`)
+						this.notificationCallback(name, level, message)
+					} else {
+						// Fallback: store for later retrieval
+						console.log(`[MCP Debug] No active task, storing notification: ${message}`)
+						this.pendingNotifications.push({
+							serverName: name,
+							level,
+							message,
+							timestamp: Date.now(),
+						})
+					}
+
+					// Forward to webview if available
+					if (this.postMessageToWebview) {
+						await this.postMessageToWebview({
+							type: "mcpNotification",
+							serverName: name,
+							notification: {
+								level,
+								data,
+								logger,
+								timestamp: Date.now(),
+							},
+						} as any)
+					}
+				})
+				console.log(`[MCP Debug] Successfully set notifications/message handler for ${name}`)
+
+				// Also set a fallback handler for any other notification types
+				connection.client.fallbackNotificationHandler = async (notification: any) => {
+					console.log(`[MCP Fallback Notification] ${name}:`, JSON.stringify(notification, null, 2))
+
+					// Show in VS Code for visibility
+					vscode.window.showInformationMessage(
+						`MCP ${name}: ${notification.method || "unknown"} - ${JSON.stringify(notification.params || {})}`,
+					)
+				}
+				console.log(`[MCP Debug] Successfully set fallback notification handler for ${name}`)
+			} catch (error) {
+				console.error(`[MCP Debug] Error setting notification handlers for ${name}:`, error)
+			}
 
 			// Initial fetch of tools and resources
 			connection.server.tools = await this.fetchToolsList(name)
@@ -577,7 +670,7 @@ export class McpHub {
 				vscode.window.showInformationMessage(`${serverName} MCP server connected`)
 			} catch (error) {
 				console.error(`Failed to restart connection for ${serverName}:`, error)
-				vscode.window.showErrorMessage(`链接 ${serverName} MCP 服务失败`)
+				vscode.window.showErrorMessage(`Failed to connect to ${serverName} MCP server`)
 			}
 		}
 
@@ -663,7 +756,9 @@ export class McpHub {
 			if (error instanceof Error) {
 				console.error("Error details:", error.message, error.stack)
 			}
-			vscode.window.showErrorMessage(`更新服务状态失败: ${error instanceof Error ? error.message : String(error)}`)
+			vscode.window.showErrorMessage(
+				`Failed to update server state: ${error instanceof Error ? error.message : String(error)}`,
+			)
 			throw error
 		}
 	}
@@ -671,7 +766,7 @@ export class McpHub {
 	async readResource(serverName: string, uri: string): Promise<McpResourceResponse> {
 		const connection = this.connections.find((conn) => conn.server.name === serverName)
 		if (!connection) {
-			throw new Error(`未找到服务的连接: ${serverName}`)
+			throw new Error(`No connection found for server: ${serverName}`)
 		}
 		if (connection.server.disabled) {
 			throw new Error(`Server "${serverName}" is disabled`)
@@ -691,11 +786,13 @@ export class McpHub {
 	async callTool(serverName: string, toolName: string, toolArguments?: Record<string, unknown>): Promise<McpToolCallResponse> {
 		const connection = this.connections.find((conn) => conn.server.name === serverName)
 		if (!connection) {
-			throw new Error(`连接: ${serverName}服务失败. 请确保使用“连接的 MCP 服务器”下提供的 MCP 服务器'.`)
+			throw new Error(
+				`No connection found for server: ${serverName}. Please make sure to use MCP servers available under 'Connected MCP Servers'.`,
+			)
 		}
 
 		if (connection.server.disabled) {
-			throw new Error(`服务 "${serverName}" 未启用`)
+			throw new Error(`Server "${serverName}" is disabled and cannot be used`)
 		}
 
 		let timeout = secondsToMs(DEFAULT_MCP_TIMEOUT_SECONDS) // sdk expects ms
@@ -705,7 +802,7 @@ export class McpHub {
 			const parsedConfig = ServerConfigSchema.parse(config)
 			timeout = secondsToMs(parsedConfig.timeout)
 		} catch (error) {
-			console.error(`无法解析服务器的超时配置 ${serverName}: ${error}`)
+			console.error(`Failed to parse timeout configuration for server ${serverName}: ${error}`)
 		}
 
 		const result = await connection.client.request(
@@ -722,6 +819,20 @@ export class McpHub {
 			},
 		)
 
+		const transformedContent = (result.content ?? []).map((item) => {
+			const { _meta, ...rest } = item // Remove _meta from all items
+
+			// Restructure resource items
+			if (rest.type === "resource") {
+				const { uri, mimeType, text, blob, ...resourceProps } = rest
+				return {
+					type: "resource",
+					resource: { uri, mimeType, text, blob },
+				}
+			}
+
+			return rest
+		})
 		return {
 			...result,
 			content: result.content ?? [],
@@ -818,7 +929,7 @@ export class McpHub {
 			}
 		} catch (error) {
 			console.error("Failed to update autoApprove settings:", error)
-			vscode.window.showErrorMessage("更新自动保存设置失败")
+			vscode.window.showErrorMessage("Failed to update autoApprove settings")
 			throw error // Re-throw to ensure the error is properly handled
 		}
 	}
@@ -827,16 +938,16 @@ export class McpHub {
 		try {
 			const settings = await this.readAndValidateMcpSettingsFile()
 			if (!settings) {
-				throw new Error("无法读取 MCP 设置")
+				throw new Error("Failed to read MCP settings")
 			}
 
 			if (settings.mcpServers[serverName]) {
-				throw new Error(`名称为 "${serverName}" MCP server 已经存在。`)
+				throw new Error(`An MCP server with the name "${serverName}" already exists`)
 			}
 
 			const urlValidation = z.string().url().safeParse(serverUrl)
 			if (!urlValidation.success) {
-				throw new Error(`无效的服务 URL: ${serverUrl}. 请提供有效的 URL.`)
+				throw new Error(`Invalid server URL: ${serverUrl}. Please provide a valid URL.`)
 			}
 
 			const serverConfig = {
@@ -896,7 +1007,7 @@ export class McpHub {
 				const serverOrder = Object.keys(config.mcpServers || {})
 				return this.getSortedMcpServers(serverOrder)
 			} else {
-				throw new Error(`${serverName} 未找到配置文件`)
+				throw new Error(`${serverName} not found in MCP configuration`)
 			}
 		} catch (error) {
 			console.error(`Failed to delete MCP server: ${error instanceof Error ? error.message : String(error)}`)
@@ -909,7 +1020,7 @@ export class McpHub {
 			// Validate timeout against schema
 			const setConfigResult = BaseConfigSchema.shape.timeout.safeParse(timeout)
 			if (!setConfigResult.success) {
-				throw new Error(`无效超时值: ${timeout}. 最小 ${MIN_MCP_TIMEOUT_SECONDS} 秒.`)
+				throw new Error(`Invalid timeout value: ${timeout}. Must be at minimum ${MIN_MCP_TIMEOUT_SECONDS} seconds.`)
 			}
 
 			const settingsPath = await this.getMcpSettingsFilePath()
@@ -917,7 +1028,7 @@ export class McpHub {
 			const config = JSON.parse(content)
 
 			if (!config.mcpServers?.[serverName]) {
-				throw new Error(`服务 "${serverName}" 在设置中未找到`)
+				throw new Error(`Server "${serverName}" not found in settings`)
 			}
 
 			config.mcpServers[serverName] = {
@@ -936,9 +1047,43 @@ export class McpHub {
 			if (error instanceof Error) {
 				console.error("Error details:", error.message, error.stack)
 			}
-			vscode.window.showErrorMessage(`更新服务器超时失败: ${error instanceof Error ? error.message : String(error)}`)
+			vscode.window.showErrorMessage(
+				`Failed to update server timeout: ${error instanceof Error ? error.message : String(error)}`,
+			)
 			throw error
 		}
+	}
+
+	/**
+	 * Get and clear pending notifications
+	 * @returns Array of pending notifications
+	 */
+	getPendingNotifications(): Array<{
+		serverName: string
+		level: string
+		message: string
+		timestamp: number
+	}> {
+		const notifications = [...this.pendingNotifications]
+		this.pendingNotifications = []
+		return notifications
+	}
+
+	/**
+	 * Set the notification callback for real-time notifications
+	 * @param callback Function to call when notifications arrive
+	 */
+	setNotificationCallback(callback: (serverName: string, level: string, message: string) => void): void {
+		this.notificationCallback = callback
+		console.log("[MCP Debug] Notification callback set")
+	}
+
+	/**
+	 * Clear the notification callback
+	 */
+	clearNotificationCallback(): void {
+		this.notificationCallback = undefined
+		console.log("[MCP Debug] Notification callback cleared")
 	}
 
 	async dispose(): Promise<void> {
@@ -947,7 +1092,7 @@ export class McpHub {
 			try {
 				await this.deleteConnection(connection.server.name)
 			} catch (error) {
-				console.error(`关闭连接失败 ${connection.server.name}:`, error)
+				console.error(`Failed to close connection for ${connection.server.name}:`, error)
 			}
 		}
 		this.connections = []

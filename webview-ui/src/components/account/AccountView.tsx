@@ -91,27 +91,37 @@ export const ClineAccountView = ({ vendorCode, user }: ClineAccountViewProps) =>
 
 	// 监听来自扩展的余额和交易数据更新
 	useEffect(() => {
-		const handleMessage = (event: MessageEvent) => {
-			const message = event.data
-			if (message.type === "userCreditsBalance" && message.userCreditsBalance) {
-				setBalance(message.userCreditsBalance.currentBalance)
-			} else if (message.type === "userCreditsUsage" && message.userCreditsUsage) {
-				setUsageData(message.userCreditsUsage)
-			} else if (message.type === "userCreditsPayments" && message.userCreditsPayments) {
-				setPaymentsData(message.userCreditsPayments)
-			}
-			setIsLoading(false)
+		if (!user) return
+		setIsLoading(true)
+		if (vendorCode == "ssy") {
+			AccountServiceClient.shengSuanYunUserData(EmptyRequest.create())
+				.then((response) => {
+					setBalance(response.balance?.currentBalance || 0)
+					setUsageData(response.usageTransactions)
+					setPaymentsData(response.paymentTransactions)
+					setIsLoading(false)
+				})
+				.catch((error) => {
+					console.error("Failed to fetch user credits data:", error)
+					setIsLoading(false)
+				})
+		} else {
+			AccountServiceClient.fetchUserCreditsData(EmptyRequest.create())
+				.then((response) => {
+					setBalance(response.balance?.currentBalance || 0)
+					setUsageData(response.usageTransactions)
+					setPaymentsData(response.paymentTransactions)
+					setIsLoading(false)
+				})
+				.catch((error) => {
+					console.error("Failed to fetch user credits data:", error)
+					setIsLoading(false)
+				})
 		}
+	}, [user])
 
-		window.addEventListener("message", handleMessage)
-
-		// 组件挂载时获取所有账户数据
-		if (user && vendorCode == "ssy") {
-			setIsLoading(true)
-			vscode.postMessage({ type: "fetchUserCreditsData" })
-		}
-
-		if (user && vendorCode == "cline") {
+	useEffect(() => {
+		if (user) {
 			setIsLoading(true)
 			AccountServiceClient.fetchUserCreditsData(EmptyRequest.create())
 				.then((response) => {
@@ -125,11 +135,7 @@ export const ClineAccountView = ({ vendorCode, user }: ClineAccountViewProps) =>
 					setIsLoading(false)
 				})
 		}
-		return () => {
-			window.removeEventListener("message", handleMessage)
-		}
 	}, [user])
-
 	// 处理登录
 	const handleLogin = () => {
 		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
@@ -216,10 +222,6 @@ export const ClineAccountView = ({ vendorCode, user }: ClineAccountViewProps) =>
 										className="mt-1"
 										onClick={() => {
 											setIsLoading(true)
-											if (vendorCode == "ssy") {
-												vscode.postMessage({ type: "fetchUserCreditsData" })
-												return
-											}
 											AccountServiceClient.fetchUserCreditsData(EmptyRequest.create())
 												.then((response) => {
 													setBalance(response.balance?.currentBalance || 0)

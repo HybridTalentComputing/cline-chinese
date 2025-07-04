@@ -104,9 +104,9 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({
 
 				<div className="flex justify-between items-center mb-3">
 					<HeroTooltip
-						content="自动批准允许 Cline 在不询问权限的情况下执行以下操作。请谨慎使用，仅在了解风险的情况下启用。"
+						content="Auto-approve allows Cline to perform the following actions without asking for permission. Please use with caution and only enable if you understand the risks."
 						placement="top">
-						<div className="text-base font-semibold mb-1">自动批准设置</div>
+						<div className="text-base font-semibold mb-1">Auto-approve Settings</div>
 					</HeroTooltip>
 					<VSCodeButton appearance="icon" onClick={() => setIsVisible(false)}>
 						<span className="codicon codicon-close text-[10px]"></span>
@@ -114,7 +114,7 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({
 				</div>
 
 				<div className="mb-2.5">
-					<span className="text-[color:var(--vscode-foreground)] font-medium">操作:</span>
+					<span className="text-[color:var(--vscode-foreground)] font-medium">Actions:</span>
 				</div>
 
 				<div
@@ -149,7 +149,7 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({
 				</div>
 
 				<div className="mb-2.5">
-					<span className="text-[color:var(--vscode-foreground)] font-medium">快速设置:</span>
+					<span className="text-[color:var(--vscode-foreground)] font-medium">Quick Settings:</span>
 				</div>
 
 				<AutoApproveMenuItem
@@ -161,10 +161,12 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({
 					onToggleFavorite={toggleFavorite}
 				/>
 
-				<HeroTooltip content="Cline 将自动发出这么多 API 请求，然后再请求批准继续执行任务。" placement="top">
+				<HeroTooltip
+					content="Cline will automatically make this many API requests before asking for approval to proceed with the task."
+					placement="top">
 					<div className="flex items-center pl-1.5 my-2">
 						<span className="codicon codicon-settings text-[#CCCCCC] text-[14px]" />
-						<span className="text-[#CCCCCC] text-xs font-medium ml-2">最大请求数:</span>
+						<span className="text-[#CCCCCC] text-xs font-medium ml-2">Max Requests:</span>
 						<VSCodeTextField
 							className="flex-1 w-full pr-[35px] ml-4"
 							value={autoApprovalSettings.maxRequests.toString()}

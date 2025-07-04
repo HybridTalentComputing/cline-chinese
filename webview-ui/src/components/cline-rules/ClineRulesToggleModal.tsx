@@ -197,10 +197,10 @@ const ClineRulesToggleModal: React.FC = () => {
 	return (
 		<div ref={modalRef}>
 			<div ref={buttonRef} className="inline-flex min-w-0 max-w-full">
-				<Tooltip tipText="管理 Cline 规则和工作流" visible={isVisible ? false : undefined}>
+				<Tooltip tipText="Manage Cline Rules & Workflows" visible={isVisible ? false : undefined}>
 					<VSCodeButton
 						appearance="icon"
-						aria-label="Cline 规则"
+						aria-label="Cline Rules"
 						onClick={() => setIsVisible(!isVisible)}
 						style={{ padding: "0px 0px", height: "20px" }}>
 						<div className="flex items-center gap-1 text-xs whitespace-nowrap min-w-0 w-full">
@@ -245,10 +245,10 @@ const ClineRulesToggleModal: React.FC = () => {
 								borderBottom: "1px solid var(--vscode-panel-border)",
 							}}>
 							<TabButton isActive={currentView === "rules"} onClick={() => setCurrentView("rules")}>
-								规则
+								Rules
 							</TabButton>
 							<TabButton isActive={currentView === "workflows"} onClick={() => setCurrentView("workflows")}>
-								工作流
+								Workflows
 							</TabButton>
 						</div>
 					</div>
@@ -257,29 +257,30 @@ const ClineRulesToggleModal: React.FC = () => {
 					<div className="text-xs text-[var(--vscode-descriptionForeground)] mb-4">
 						{currentView === "rules" ? (
 							<p>
-								规则允许您向 Cline
-								提供系统级的指导。将它们视为一种持久的方式，以便在您的项目或每次对话中包含上下文和偏好。{" "}
+								Rules allow you to provide Cline with system-level guidance. Think of them as a persistent way to
+								include context and preferences for your projects or globally for every conversation.{" "}
 								<VSCodeLink
 									href="https://docs.cline.bot/features/cline-rules"
 									style={{ display: "inline" }}
 									className="text-xs">
-									文档
+									Docs
 								</VSCodeLink>
 							</p>
 						) : (
 							<p>
-								工作流程允许您定义一系列步骤，以指导Cline完成一系列重复的任务，例如部署服务或提交PR。要调用工作流程，请输入{" "}
+								Workflows allow you to define a series of steps to guide Cline through a repetitive set of tasks,
+								such as deploying a service or submitting a PR. To invoke a workflow, type{" "}
 								<span
 									className=" 
 								text-[var(--vscode-foreground)] font-bold">
-									/工作流名
+									/workflow-name
 								</span>{" "}
-								对话窗口.{" "}
+								in the chat.{" "}
 								<VSCodeLink
 									href="https://docs.cline.bot/features/slash-commands/workflows"
 									style={{ display: "inline" }}
 									className="text-xs">
-									文档
+									Docs
 								</VSCodeLink>
 							</p>
 						)}
@@ -289,7 +290,7 @@ const ClineRulesToggleModal: React.FC = () => {
 						<>
 							{/* Global Rules Section */}
 							<div className="mb-3">
-								<div className="text-sm font-normal mb-2">全局规则</div>
+								<div className="text-sm font-normal mb-2">Global Rules</div>
 								<RulesToggleList
 									rules={globalRules}
 									toggleRule={(rulePath, enabled) => toggleRule(true, rulePath, enabled)}
@@ -303,7 +304,7 @@ const ClineRulesToggleModal: React.FC = () => {
 
 							{/* Local Rules Section */}
 							<div style={{ marginBottom: -10 }}>
-								<div className="text-sm font-normal mb-2">工作区规则</div>
+								<div className="text-sm font-normal mb-2">Workspace Rules</div>
 								<RulesToggleList
 									rules={localRules}
 									toggleRule={(rulePath, enabled) => toggleRule(false, rulePath, enabled)}
@@ -337,7 +338,7 @@ const ClineRulesToggleModal: React.FC = () => {
 						<>
 							{/* Global Workflows Section */}
 							<div className="mb-3">
-								<div className="text-sm font-normal mb-2">全局工作流</div>
+								<div className="text-sm font-normal mb-2">Global Workflows</div>
 								<RulesToggleList
 									rules={globalWorkflows}
 									toggleRule={(rulePath, enabled) => toggleWorkflow(true, rulePath, enabled)}
@@ -351,7 +352,7 @@ const ClineRulesToggleModal: React.FC = () => {
 
 							{/* Local Workflows Section */}
 							<div style={{ marginBottom: -10 }}>
-								<div className="text-sm font-normal mb-2">项目工作流</div>
+								<div className="text-sm font-normal mb-2">Workspace Workflows</div>
 								<RulesToggleList
 									rules={localWorkflows}
 									toggleRule={(rulePath, enabled) => toggleWorkflow(false, rulePath, enabled)}

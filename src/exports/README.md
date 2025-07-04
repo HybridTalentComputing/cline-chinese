@@ -7,7 +7,7 @@ The Cline extension exposes an API that can be used by other extensions. To use 
 3. Get access to the API with the following code:
 
     ```ts
-    const clineExtension = vscode.extensions.getExtension<ClineAPI>("HybridTalentComputing.cline-chinese")
+    const clineExtension = vscode.extensions.getExtension<ClineAPI>("saoudrizwan.claude-dev")
 
     if (!clineExtension?.isActive) {
     	throw new Error("Cline extension is not activated")
@@ -17,13 +17,6 @@ The Cline extension exposes an API that can be used by other extensions. To use 
 
     if (cline) {
     	// Now you can use the API
-
-    	// Set custom instructions
-    	await cline.setCustomInstructions("Talk like a pirate")
-
-    	// Get custom instructions
-    	const instructions = await cline.getCustomInstructions()
-    	console.log("Current custom instructions:", instructions)
 
     	// Start a new task with an initial message
     	await cline.startNewTask("Hello, Cline! Let's make a new project...")
@@ -44,11 +37,11 @@ The Cline extension exposes an API that can be used by other extensions. To use 
     }
     ```
 
-    **Note:** To ensure that the `HybridTalentComputing.cline-chinese` extension is activated before your extension, add it to the `extensionDependencies` in your `package.json`:
+    **Note:** To ensure that the `saoudrizwan.claude-dev` extension is activated before your extension, add it to the `extensionDependencies` in your `package.json`:
 
     ```json
     "extensionDependencies": [
-        "HybridTalentComputing.cline-chinese"
+        "saoudrizwan.claude-dev"
     ]
     ```
 

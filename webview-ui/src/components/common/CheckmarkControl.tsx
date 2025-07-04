@@ -5,7 +5,7 @@ import { CheckpointRestoreRequest } from "@shared/proto/checkpoints"
 import { Int64Request } from "@shared/proto/common"
 import { ClineCheckpointRestore } from "@shared/WebviewMessage"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -21,10 +21,42 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 	const [restoreWorkspaceDisabled, setRestoreWorkspaceDisabled] = useState(false)
 	const [restoreBothDisabled, setRestoreBothDisabled] = useState(false)
 	const [showRestoreConfirm, setShowRestoreConfirm] = useState(false)
-	const [hasMouseEntered, setHasMouseEntered] = useState(false)
-	const containerRef = useRef<HTMLDivElement>(null)
-	const tooltipRef = useRef<HTMLDivElement>(null)
 	const { onRelinquishControl } = useExtensionState()
+
+	// Debounce
+	const closeMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const scheduleCloseRestore = useCallback(() => {
+		if (closeMenuTimeoutRef.current) {
+			clearTimeout(closeMenuTimeoutRef.current)
+		}
+		closeMenuTimeoutRef.current = setTimeout(() => {
+			setShowRestoreConfirm(false)
+		}, 350)
+	}, [])
+
+	const cancelCloseRestore = useCallback(() => {
+		if (closeMenuTimeoutRef.current) {
+			clearTimeout(closeMenuTimeoutRef.current)
+			closeMenuTimeoutRef.current = null
+		}
+	}, [])
+
+	// Debounce cleanup
+	useEffect(() => {
+		return () => {
+			if (closeMenuTimeoutRef.current) {
+				clearTimeout(closeMenuTimeoutRef.current)
+				closeMenuTimeoutRef.current = null
+			}
+		}
+	}, [showRestoreConfirm])
+
+	// Clear "Restore Files" button when checkpoint is no longer checked out
+	useEffect(() => {
+		if (!isCheckpointCheckedOut && restoreWorkspaceDisabled) {
+			setRestoreWorkspaceDisabled(false)
+		}
+	}, [isCheckpointCheckedOut, restoreWorkspaceDisabled])
 
 	const { refs, floatingStyles, update, placement } = useFloating({
 		placement: "bottom-end",
@@ -112,38 +144,27 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 	}
 
 	const handleMouseEnter = () => {
-		setHasMouseEntered(true)
+		cancelCloseRestore()
 	}
 
 	const handleMouseLeave = () => {
-		if (hasMouseEntered) {
-			setShowRestoreConfirm(false)
-			setHasMouseEntered(false)
-		}
+		scheduleCloseRestore()
 	}
 
-	const handleControlsMouseLeave = (e: React.MouseEvent) => {
-		const tooltipElement = tooltipRef.current
+	const handleControlsMouseEnter = () => {
+		cancelCloseRestore()
+	}
 
-		if (tooltipElement && showRestoreConfirm) {
-			const tooltipRect = tooltipElement.getBoundingClientRect()
-
-			if (
-				e.clientY >= tooltipRect.top &&
-				e.clientY <= tooltipRect.bottom &&
-				e.clientX >= tooltipRect.left &&
-				e.clientX <= tooltipRect.right
-			) {
-				return
-			}
-		}
-
-		setShowRestoreConfirm(false)
-		setHasMouseEntered(false)
+	const handleControlsMouseLeave = () => {
+		scheduleCloseRestore()
 	}
 
 	return (
-		<Container isMenuOpen={showRestoreConfirm} $isCheckedOut={isCheckpointCheckedOut} onMouseLeave={handleControlsMouseLeave}>
+		<Container
+			isMenuOpen={showRestoreConfirm}
+			$isCheckedOut={isCheckpointCheckedOut}
+			onMouseEnter={handleControlsMouseEnter}
+			onMouseLeave={handleControlsMouseLeave}>
 			<i
 				className="codicon codicon-bookmark"
 				style={{
@@ -152,7 +173,9 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 					flexShrink: 0,
 				}}
 			/>
-			<Label $isCheckedOut={isCheckpointCheckedOut}>{isCheckpointCheckedOut ? "检查点 (恢复)" : "检查点"}</Label>
+			<Label $isCheckedOut={isCheckpointCheckedOut}>
+				{isCheckpointCheckedOut ? "Checkpoint (restored)" : "Checkpoint"}
+			</Label>
 			<DottedLine $isCheckedOut={isCheckpointCheckedOut} />
 			<ButtonGroup>
 				<CustomButton
@@ -173,7 +196,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 							setCompareDisabled(false)
 						}
 					}}>
-					对比
+					Compare
 				</CustomButton>
 				<DottedLine small $isCheckedOut={isCheckpointCheckedOut} />
 				<div ref={refs.setReference} style={{ position: "relative", marginTop: -2 }}>
@@ -181,7 +204,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 						$isCheckedOut={isCheckpointCheckedOut}
 						isActive={showRestoreConfirm}
 						onClick={() => setShowRestoreConfirm(true)}>
-						恢复
+						Restore
 					</CustomButton>
 					{showRestoreConfirm &&
 						createPortal(
@@ -194,15 +217,18 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 								<RestoreOption>
 									<VSCodeButton
 										onClick={handleRestoreWorkspace}
-										disabled={restoreWorkspaceDisabled}
+										disabled={restoreWorkspaceDisabled || isCheckpointCheckedOut}
 										style={{
-											cursor: restoreWorkspaceDisabled ? "wait" : "pointer",
+											cursor: restoreWorkspaceDisabled || isCheckpointCheckedOut ? "wait" : "pointer",
 											width: "100%",
 											marginBottom: "10px",
 										}}>
-										恢复文件
+										Restore Files
 									</VSCodeButton>
-									<p>恢复你的项目文件到此检查点之前的快照(使用 "对比" 查看将执行的操作)</p>
+									<p>
+										Restores your project's files back to a snapshot taken at this point (use "Compare" to see
+										what will be reverted)
+									</p>
 								</RestoreOption>
 								<RestoreOption>
 									<VSCodeButton
@@ -213,9 +239,9 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 											width: "100%",
 											marginBottom: "10px",
 										}}>
-										仅恢复任务
+										Restore Task Only
 									</VSCodeButton>
-									<p>删除此检查点以后的消息 (不会影响项目文件)</p>
+									<p>Deletes messages after this point (does not affect workspace files)</p>
 								</RestoreOption>
 								<RestoreOption>
 									<VSCodeButton
@@ -226,9 +252,9 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 											width: "100%",
 											marginBottom: "10px",
 										}}>
-										恢复文件和任务
+										Restore Files & Task
 									</VSCodeButton>
-									<p>恢复你的项目文件，删除此检查点后的所有消息</p>
+									<p>Restores your project's files and deletes all messages after this point</p>
 								</RestoreOption>
 							</RestoreConfirmTooltip>,
 							document.body,
@@ -313,9 +339,9 @@ const CustomButton = styled.button<{ disabled?: boolean; isActive?: boolean; $is
 			props.isActive || props.disabled
 				? "none"
 				: `linear-gradient(to right, ${props.$isCheckedOut ? "var(--vscode-textLink-foreground)" : "var(--vscode-descriptionForeground)"} 50%, transparent 50%),
-			linear-gradient(to bottom, ${props.$isCheckedOut ? "var(--vscode-textLink-foreground)" : "var(--vscode-descriptionForeground)"} 50%, transparent 50%),
-			linear-gradient(to right, ${props.$isCheckedOut ? "var(--vscode-textLink-foreground)" : "var(--vscode-descriptionForeground)"} 50%, transparent 50%),
-			linear-gradient(to bottom, ${props.$isCheckedOut ? "var(--vscode-textLink-foreground)" : "var(--vscode-descriptionForeground)"} 50%, transparent 50%)`};
+            linear-gradient(to bottom, ${props.$isCheckedOut ? "var(--vscode-textLink-foreground)" : "var(--vscode-descriptionForeground)"} 50%, transparent 50%),
+            linear-gradient(to right, ${props.$isCheckedOut ? "var(--vscode-textLink-foreground)" : "var(--vscode-descriptionForeground)"} 50%, transparent 50%),
+            linear-gradient(to bottom, ${props.$isCheckedOut ? "var(--vscode-textLink-foreground)" : "var(--vscode-descriptionForeground)"} 50%, transparent 50%)`};
 		background-size: ${(props) => (props.isActive || props.disabled ? "auto" : `4px 1px, 1px 4px, 4px 1px, 1px 4px`)};
 		background-repeat: repeat-x, repeat-y, repeat-x, repeat-y;
 		background-position:

@@ -6,7 +6,7 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import { Empty, EmptyRequest, Int64, Int64Request, Metadata, StringRequest } from "./common";
+import { Boolean, BooleanRequest, Empty, EmptyRequest, Int64, Int64Request, Metadata, StringRequest } from "./common";
 
 export enum PlanActMode {
   PLAN = 0,
@@ -41,8 +41,64 @@ export function planActModeToJSON(object: PlanActMode): string {
   }
 }
 
+export enum TelemetrySettingEnum {
+  UNSET = 0,
+  ENABLED = 1,
+  DISABLED = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function telemetrySettingEnumFromJSON(object: any): TelemetrySettingEnum {
+  switch (object) {
+    case 0:
+    case "UNSET":
+      return TelemetrySettingEnum.UNSET;
+    case 1:
+    case "ENABLED":
+      return TelemetrySettingEnum.ENABLED;
+    case 2:
+    case "DISABLED":
+      return TelemetrySettingEnum.DISABLED;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return TelemetrySettingEnum.UNRECOGNIZED;
+  }
+}
+
+export function telemetrySettingEnumToJSON(object: TelemetrySettingEnum): string {
+  switch (object) {
+    case TelemetrySettingEnum.UNSET:
+      return "UNSET";
+    case TelemetrySettingEnum.ENABLED:
+      return "ENABLED";
+    case TelemetrySettingEnum.DISABLED:
+      return "DISABLED";
+    case TelemetrySettingEnum.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export interface State {
   stateJson: string;
+}
+
+export interface TerminalProfiles {
+  profiles: TerminalProfile[];
+}
+
+export interface TerminalProfile {
+  id: string;
+  name: string;
+  path?: string | undefined;
+  description?: string | undefined;
+}
+
+export interface TerminalProfileUpdateResponse {
+  closedCount: number;
+  busyTerminalsCount: number;
+  hasBusyTerminals: boolean;
 }
 
 export interface TogglePlanActModeRequest {
@@ -63,7 +119,11 @@ export interface ChatContent {
   files: string[];
 }
 
-/** Message for auto approval settings */
+export interface ResetStateRequest {
+  metadata?: Metadata | undefined;
+  global?: boolean | undefined;
+}
+
 export interface AutoApprovalSettingsRequest {
   metadata?: Metadata | undefined;
   version: number;
@@ -85,11 +145,15 @@ export interface AutoApprovalSettingsRequest_Actions {
   useMcp: boolean;
 }
 
+export interface TelemetrySettingRequest {
+  metadata?: Metadata | undefined;
+  setting: TelemetrySettingEnum;
+}
+
 /** Message for updating settings */
 export interface UpdateSettingsRequest {
   metadata?: Metadata | undefined;
   apiConfiguration?: ApiConfiguration | undefined;
-  customInstructionsSetting?: string | undefined;
   telemetrySetting?: string | undefined;
   planActSeparateModelsSetting?: boolean | undefined;
   enableCheckpointsSetting?: boolean | undefined;
@@ -98,6 +162,8 @@ export interface UpdateSettingsRequest {
   shellIntegrationTimeout?: number | undefined;
   terminalReuseEnabled?: boolean | undefined;
   mcpResponsesCollapsed?: boolean | undefined;
+  mcpRichDisplayEnabled?: boolean | undefined;
+  terminalOutputLineLimit?: number | undefined;
 }
 
 /** Complete API Configuration message */
@@ -225,14 +291,23 @@ export interface ApiConfiguration {
     | undefined;
   /** Favorited model IDs */
   favoritedModelIds: string[];
+  /** SAP AI Core specific */
+  sapAiCoreClientId?: string | undefined;
+  sapAiCoreClientSecret?: string | undefined;
+  sapAiCoreBaseUrl?: string | undefined;
+  sapAiCoreTokenUrl?: string | undefined;
+  sapAiResourceGroup?:
+    | string
+    | undefined;
+  /** Claude Code specific */
+  claudeCodePath?:
+    | string
+    | undefined;
   /** ShengSuanYun */
   shengsuanyunApiKey?: string | undefined;
   shengsuanyunModelId?: string | undefined;
   shengsuanyunModelInfo?: string | undefined;
-  shengsuanyunToken?:
-    | string
-    | undefined;
-  /** Dify */
+  shengsuanyunToken?: string | undefined;
   difyApiKey?: string | undefined;
   difyBaseUrl?: string | undefined;
 }
@@ -291,6 +366,270 @@ export const State: MessageFns<State> = {
   fromPartial<I extends Exact<DeepPartial<State>, I>>(object: I): State {
     const message = createBaseState();
     message.stateJson = object.stateJson ?? "";
+    return message;
+  },
+};
+
+function createBaseTerminalProfiles(): TerminalProfiles {
+  return { profiles: [] };
+}
+
+export const TerminalProfiles: MessageFns<TerminalProfiles> = {
+  encode(message: TerminalProfiles, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.profiles) {
+      TerminalProfile.encode(v!, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TerminalProfiles {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTerminalProfiles();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.profiles.push(TerminalProfile.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TerminalProfiles {
+    return {
+      profiles: globalThis.Array.isArray(object?.profiles)
+        ? object.profiles.map((e: any) => TerminalProfile.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: TerminalProfiles): unknown {
+    const obj: any = {};
+    if (message.profiles?.length) {
+      obj.profiles = message.profiles.map((e) => TerminalProfile.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<TerminalProfiles>, I>>(base?: I): TerminalProfiles {
+    return TerminalProfiles.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<TerminalProfiles>, I>>(object: I): TerminalProfiles {
+    const message = createBaseTerminalProfiles();
+    message.profiles = object.profiles?.map((e) => TerminalProfile.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseTerminalProfile(): TerminalProfile {
+  return { id: "", name: "", path: undefined, description: undefined };
+}
+
+export const TerminalProfile: MessageFns<TerminalProfile> = {
+  encode(message: TerminalProfile, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
+    }
+    if (message.name !== "") {
+      writer.uint32(18).string(message.name);
+    }
+    if (message.path !== undefined) {
+      writer.uint32(26).string(message.path);
+    }
+    if (message.description !== undefined) {
+      writer.uint32(34).string(message.description);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TerminalProfile {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTerminalProfile();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.id = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.path = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TerminalProfile {
+    return {
+      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      path: isSet(object.path) ? globalThis.String(object.path) : undefined,
+      description: isSet(object.description) ? globalThis.String(object.description) : undefined,
+    };
+  },
+
+  toJSON(message: TerminalProfile): unknown {
+    const obj: any = {};
+    if (message.id !== "") {
+      obj.id = message.id;
+    }
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.path !== undefined) {
+      obj.path = message.path;
+    }
+    if (message.description !== undefined) {
+      obj.description = message.description;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<TerminalProfile>, I>>(base?: I): TerminalProfile {
+    return TerminalProfile.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<TerminalProfile>, I>>(object: I): TerminalProfile {
+    const message = createBaseTerminalProfile();
+    message.id = object.id ?? "";
+    message.name = object.name ?? "";
+    message.path = object.path ?? undefined;
+    message.description = object.description ?? undefined;
+    return message;
+  },
+};
+
+function createBaseTerminalProfileUpdateResponse(): TerminalProfileUpdateResponse {
+  return { closedCount: 0, busyTerminalsCount: 0, hasBusyTerminals: false };
+}
+
+export const TerminalProfileUpdateResponse: MessageFns<TerminalProfileUpdateResponse> = {
+  encode(message: TerminalProfileUpdateResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.closedCount !== 0) {
+      writer.uint32(8).int32(message.closedCount);
+    }
+    if (message.busyTerminalsCount !== 0) {
+      writer.uint32(16).int32(message.busyTerminalsCount);
+    }
+    if (message.hasBusyTerminals !== false) {
+      writer.uint32(24).bool(message.hasBusyTerminals);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TerminalProfileUpdateResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTerminalProfileUpdateResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.closedCount = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.busyTerminalsCount = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.hasBusyTerminals = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TerminalProfileUpdateResponse {
+    return {
+      closedCount: isSet(object.closedCount) ? globalThis.Number(object.closedCount) : 0,
+      busyTerminalsCount: isSet(object.busyTerminalsCount) ? globalThis.Number(object.busyTerminalsCount) : 0,
+      hasBusyTerminals: isSet(object.hasBusyTerminals) ? globalThis.Boolean(object.hasBusyTerminals) : false,
+    };
+  },
+
+  toJSON(message: TerminalProfileUpdateResponse): unknown {
+    const obj: any = {};
+    if (message.closedCount !== 0) {
+      obj.closedCount = Math.round(message.closedCount);
+    }
+    if (message.busyTerminalsCount !== 0) {
+      obj.busyTerminalsCount = Math.round(message.busyTerminalsCount);
+    }
+    if (message.hasBusyTerminals !== false) {
+      obj.hasBusyTerminals = message.hasBusyTerminals;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<TerminalProfileUpdateResponse>, I>>(base?: I): TerminalProfileUpdateResponse {
+    return TerminalProfileUpdateResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<TerminalProfileUpdateResponse>, I>>(
+    object: I,
+  ): TerminalProfileUpdateResponse {
+    const message = createBaseTerminalProfileUpdateResponse();
+    message.closedCount = object.closedCount ?? 0;
+    message.busyTerminalsCount = object.busyTerminalsCount ?? 0;
+    message.hasBusyTerminals = object.hasBusyTerminals ?? false;
     return message;
   },
 };
@@ -575,6 +914,84 @@ export const ChatContent: MessageFns<ChatContent> = {
     message.message = object.message ?? undefined;
     message.images = object.images?.map((e) => e) || [];
     message.files = object.files?.map((e) => e) || [];
+    return message;
+  },
+};
+
+function createBaseResetStateRequest(): ResetStateRequest {
+  return { metadata: undefined, global: undefined };
+}
+
+export const ResetStateRequest: MessageFns<ResetStateRequest> = {
+  encode(message: ResetStateRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.metadata !== undefined) {
+      Metadata.encode(message.metadata, writer.uint32(10).fork()).join();
+    }
+    if (message.global !== undefined) {
+      writer.uint32(16).bool(message.global);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ResetStateRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseResetStateRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.metadata = Metadata.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.global = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ResetStateRequest {
+    return {
+      metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+      global: isSet(object.global) ? globalThis.Boolean(object.global) : undefined,
+    };
+  },
+
+  toJSON(message: ResetStateRequest): unknown {
+    const obj: any = {};
+    if (message.metadata !== undefined) {
+      obj.metadata = Metadata.toJSON(message.metadata);
+    }
+    if (message.global !== undefined) {
+      obj.global = message.global;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ResetStateRequest>, I>>(base?: I): ResetStateRequest {
+    return ResetStateRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ResetStateRequest>, I>>(object: I): ResetStateRequest {
+    const message = createBaseResetStateRequest();
+    message.metadata = (object.metadata !== undefined && object.metadata !== null)
+      ? Metadata.fromPartial(object.metadata)
+      : undefined;
+    message.global = object.global ?? undefined;
     return message;
   },
 };
@@ -934,11 +1351,88 @@ export const AutoApprovalSettingsRequest_Actions: MessageFns<AutoApprovalSetting
   },
 };
 
+function createBaseTelemetrySettingRequest(): TelemetrySettingRequest {
+  return { metadata: undefined, setting: 0 };
+}
+
+export const TelemetrySettingRequest: MessageFns<TelemetrySettingRequest> = {
+  encode(message: TelemetrySettingRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.metadata !== undefined) {
+      Metadata.encode(message.metadata, writer.uint32(10).fork()).join();
+    }
+    if (message.setting !== 0) {
+      writer.uint32(16).int32(message.setting);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TelemetrySettingRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTelemetrySettingRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.metadata = Metadata.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.setting = reader.int32() as any;
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TelemetrySettingRequest {
+    return {
+      metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+      setting: isSet(object.setting) ? telemetrySettingEnumFromJSON(object.setting) : 0,
+    };
+  },
+
+  toJSON(message: TelemetrySettingRequest): unknown {
+    const obj: any = {};
+    if (message.metadata !== undefined) {
+      obj.metadata = Metadata.toJSON(message.metadata);
+    }
+    if (message.setting !== 0) {
+      obj.setting = telemetrySettingEnumToJSON(message.setting);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<TelemetrySettingRequest>, I>>(base?: I): TelemetrySettingRequest {
+    return TelemetrySettingRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<TelemetrySettingRequest>, I>>(object: I): TelemetrySettingRequest {
+    const message = createBaseTelemetrySettingRequest();
+    message.metadata = (object.metadata !== undefined && object.metadata !== null)
+      ? Metadata.fromPartial(object.metadata)
+      : undefined;
+    message.setting = object.setting ?? 0;
+    return message;
+  },
+};
+
 function createBaseUpdateSettingsRequest(): UpdateSettingsRequest {
   return {
     metadata: undefined,
     apiConfiguration: undefined,
-    customInstructionsSetting: undefined,
     telemetrySetting: undefined,
     planActSeparateModelsSetting: undefined,
     enableCheckpointsSetting: undefined,
@@ -947,6 +1441,8 @@ function createBaseUpdateSettingsRequest(): UpdateSettingsRequest {
     shellIntegrationTimeout: undefined,
     terminalReuseEnabled: undefined,
     mcpResponsesCollapsed: undefined,
+    mcpRichDisplayEnabled: undefined,
+    terminalOutputLineLimit: undefined,
   };
 }
 
@@ -958,32 +1454,35 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
     if (message.apiConfiguration !== undefined) {
       ApiConfiguration.encode(message.apiConfiguration, writer.uint32(18).fork()).join();
     }
-    if (message.customInstructionsSetting !== undefined) {
-      writer.uint32(26).string(message.customInstructionsSetting);
-    }
     if (message.telemetrySetting !== undefined) {
-      writer.uint32(34).string(message.telemetrySetting);
+      writer.uint32(26).string(message.telemetrySetting);
     }
     if (message.planActSeparateModelsSetting !== undefined) {
-      writer.uint32(40).bool(message.planActSeparateModelsSetting);
+      writer.uint32(32).bool(message.planActSeparateModelsSetting);
     }
     if (message.enableCheckpointsSetting !== undefined) {
-      writer.uint32(48).bool(message.enableCheckpointsSetting);
+      writer.uint32(40).bool(message.enableCheckpointsSetting);
     }
     if (message.mcpMarketplaceEnabled !== undefined) {
-      writer.uint32(56).bool(message.mcpMarketplaceEnabled);
+      writer.uint32(48).bool(message.mcpMarketplaceEnabled);
     }
     if (message.chatSettings !== undefined) {
-      ChatSettings.encode(message.chatSettings, writer.uint32(66).fork()).join();
+      ChatSettings.encode(message.chatSettings, writer.uint32(58).fork()).join();
     }
     if (message.shellIntegrationTimeout !== undefined) {
-      writer.uint32(72).int64(message.shellIntegrationTimeout);
+      writer.uint32(64).int64(message.shellIntegrationTimeout);
     }
     if (message.terminalReuseEnabled !== undefined) {
-      writer.uint32(80).bool(message.terminalReuseEnabled);
+      writer.uint32(72).bool(message.terminalReuseEnabled);
     }
     if (message.mcpResponsesCollapsed !== undefined) {
-      writer.uint32(88).bool(message.mcpResponsesCollapsed);
+      writer.uint32(80).bool(message.mcpResponsesCollapsed);
+    }
+    if (message.mcpRichDisplayEnabled !== undefined) {
+      writer.uint32(88).bool(message.mcpRichDisplayEnabled);
+    }
+    if (message.terminalOutputLineLimit !== undefined) {
+      writer.uint32(96).int64(message.terminalOutputLineLimit);
     }
     return writer;
   },
@@ -1016,15 +1515,15 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
             break;
           }
 
-          message.customInstructionsSetting = reader.string();
+          message.telemetrySetting = reader.string();
           continue;
         }
         case 4: {
-          if (tag !== 34) {
+          if (tag !== 32) {
             break;
           }
 
-          message.telemetrySetting = reader.string();
+          message.planActSeparateModelsSetting = reader.bool();
           continue;
         }
         case 5: {
@@ -1032,7 +1531,7 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
             break;
           }
 
-          message.planActSeparateModelsSetting = reader.bool();
+          message.enableCheckpointsSetting = reader.bool();
           continue;
         }
         case 6: {
@@ -1040,23 +1539,23 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
             break;
           }
 
-          message.enableCheckpointsSetting = reader.bool();
-          continue;
-        }
-        case 7: {
-          if (tag !== 56) {
-            break;
-          }
-
           message.mcpMarketplaceEnabled = reader.bool();
           continue;
         }
-        case 8: {
-          if (tag !== 66) {
+        case 7: {
+          if (tag !== 58) {
             break;
           }
 
           message.chatSettings = ChatSettings.decode(reader, reader.uint32());
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.shellIntegrationTimeout = longToNumber(reader.int64());
           continue;
         }
         case 9: {
@@ -1064,7 +1563,7 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
             break;
           }
 
-          message.shellIntegrationTimeout = longToNumber(reader.int64());
+          message.terminalReuseEnabled = reader.bool();
           continue;
         }
         case 10: {
@@ -1072,7 +1571,7 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
             break;
           }
 
-          message.terminalReuseEnabled = reader.bool();
+          message.mcpResponsesCollapsed = reader.bool();
           continue;
         }
         case 11: {
@@ -1080,7 +1579,15 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
             break;
           }
 
-          message.mcpResponsesCollapsed = reader.bool();
+          message.mcpRichDisplayEnabled = reader.bool();
+          continue;
+        }
+        case 12: {
+          if (tag !== 96) {
+            break;
+          }
+
+          message.terminalOutputLineLimit = longToNumber(reader.int64());
           continue;
         }
       }
@@ -1096,9 +1603,6 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
     return {
       metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
       apiConfiguration: isSet(object.apiConfiguration) ? ApiConfiguration.fromJSON(object.apiConfiguration) : undefined,
-      customInstructionsSetting: isSet(object.customInstructionsSetting)
-        ? globalThis.String(object.customInstructionsSetting)
-        : undefined,
       telemetrySetting: isSet(object.telemetrySetting) ? globalThis.String(object.telemetrySetting) : undefined,
       planActSeparateModelsSetting: isSet(object.planActSeparateModelsSetting)
         ? globalThis.Boolean(object.planActSeparateModelsSetting)
@@ -1119,6 +1623,12 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
       mcpResponsesCollapsed: isSet(object.mcpResponsesCollapsed)
         ? globalThis.Boolean(object.mcpResponsesCollapsed)
         : undefined,
+      mcpRichDisplayEnabled: isSet(object.mcpRichDisplayEnabled)
+        ? globalThis.Boolean(object.mcpRichDisplayEnabled)
+        : undefined,
+      terminalOutputLineLimit: isSet(object.terminalOutputLineLimit)
+        ? globalThis.Number(object.terminalOutputLineLimit)
+        : undefined,
     };
   },
 
@@ -1129,9 +1639,6 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
     }
     if (message.apiConfiguration !== undefined) {
       obj.apiConfiguration = ApiConfiguration.toJSON(message.apiConfiguration);
-    }
-    if (message.customInstructionsSetting !== undefined) {
-      obj.customInstructionsSetting = message.customInstructionsSetting;
     }
     if (message.telemetrySetting !== undefined) {
       obj.telemetrySetting = message.telemetrySetting;
@@ -1157,6 +1664,12 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
     if (message.mcpResponsesCollapsed !== undefined) {
       obj.mcpResponsesCollapsed = message.mcpResponsesCollapsed;
     }
+    if (message.mcpRichDisplayEnabled !== undefined) {
+      obj.mcpRichDisplayEnabled = message.mcpRichDisplayEnabled;
+    }
+    if (message.terminalOutputLineLimit !== undefined) {
+      obj.terminalOutputLineLimit = Math.round(message.terminalOutputLineLimit);
+    }
     return obj;
   },
 
@@ -1171,7 +1684,6 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
     message.apiConfiguration = (object.apiConfiguration !== undefined && object.apiConfiguration !== null)
       ? ApiConfiguration.fromPartial(object.apiConfiguration)
       : undefined;
-    message.customInstructionsSetting = object.customInstructionsSetting ?? undefined;
     message.telemetrySetting = object.telemetrySetting ?? undefined;
     message.planActSeparateModelsSetting = object.planActSeparateModelsSetting ?? undefined;
     message.enableCheckpointsSetting = object.enableCheckpointsSetting ?? undefined;
@@ -1182,6 +1694,8 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
     message.shellIntegrationTimeout = object.shellIntegrationTimeout ?? undefined;
     message.terminalReuseEnabled = object.terminalReuseEnabled ?? undefined;
     message.mcpResponsesCollapsed = object.mcpResponsesCollapsed ?? undefined;
+    message.mcpRichDisplayEnabled = object.mcpRichDisplayEnabled ?? undefined;
+    message.terminalOutputLineLimit = object.terminalOutputLineLimit ?? undefined;
     return message;
   },
 };
@@ -1259,6 +1773,12 @@ function createBaseApiConfiguration(): ApiConfiguration {
     litellmModelInfo: undefined,
     openaiHeaders: undefined,
     favoritedModelIds: [],
+    sapAiCoreClientId: undefined,
+    sapAiCoreClientSecret: undefined,
+    sapAiCoreBaseUrl: undefined,
+    sapAiCoreTokenUrl: undefined,
+    sapAiResourceGroup: undefined,
+    claudeCodePath: undefined,
     shengsuanyunApiKey: undefined,
     shengsuanyunModelId: undefined,
     shengsuanyunModelInfo: undefined,
@@ -1483,23 +2003,41 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     for (const v of message.favoritedModelIds) {
       writer.uint32(570).string(v!);
     }
+    if (message.sapAiCoreClientId !== undefined) {
+      writer.uint32(578).string(message.sapAiCoreClientId);
+    }
+    if (message.sapAiCoreClientSecret !== undefined) {
+      writer.uint32(586).string(message.sapAiCoreClientSecret);
+    }
+    if (message.sapAiCoreBaseUrl !== undefined) {
+      writer.uint32(594).string(message.sapAiCoreBaseUrl);
+    }
+    if (message.sapAiCoreTokenUrl !== undefined) {
+      writer.uint32(602).string(message.sapAiCoreTokenUrl);
+    }
+    if (message.sapAiResourceGroup !== undefined) {
+      writer.uint32(610).string(message.sapAiResourceGroup);
+    }
+    if (message.claudeCodePath !== undefined) {
+      writer.uint32(618).string(message.claudeCodePath);
+    }
     if (message.shengsuanyunApiKey !== undefined) {
-      writer.uint32(578).string(message.shengsuanyunApiKey);
+      writer.uint32(626).string(message.shengsuanyunApiKey);
     }
     if (message.shengsuanyunModelId !== undefined) {
-      writer.uint32(586).string(message.shengsuanyunModelId);
+      writer.uint32(634).string(message.shengsuanyunModelId);
     }
     if (message.shengsuanyunModelInfo !== undefined) {
-      writer.uint32(594).string(message.shengsuanyunModelInfo);
+      writer.uint32(642).string(message.shengsuanyunModelInfo);
     }
     if (message.shengsuanyunToken !== undefined) {
-      writer.uint32(602).string(message.shengsuanyunToken);
+      writer.uint32(650).string(message.shengsuanyunToken);
     }
     if (message.difyApiKey !== undefined) {
-      writer.uint32(610).string(message.difyApiKey);
+      writer.uint32(658).string(message.difyApiKey);
     }
     if (message.difyBaseUrl !== undefined) {
-      writer.uint32(618).string(message.difyBaseUrl);
+      writer.uint32(666).string(message.difyBaseUrl);
     }
     return writer;
   },
@@ -2084,7 +2622,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.shengsuanyunApiKey = reader.string();
+          message.sapAiCoreClientId = reader.string();
           continue;
         }
         case 73: {
@@ -2092,7 +2630,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.shengsuanyunModelId = reader.string();
+          message.sapAiCoreClientSecret = reader.string();
           continue;
         }
         case 74: {
@@ -2100,7 +2638,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.shengsuanyunModelInfo = reader.string();
+          message.sapAiCoreBaseUrl = reader.string();
           continue;
         }
         case 75: {
@@ -2108,7 +2646,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.shengsuanyunToken = reader.string();
+          message.sapAiCoreTokenUrl = reader.string();
           continue;
         }
         case 76: {
@@ -2116,11 +2654,59 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.difyApiKey = reader.string();
+          message.sapAiResourceGroup = reader.string();
           continue;
         }
         case 77: {
           if (tag !== 618) {
+            break;
+          }
+
+          message.claudeCodePath = reader.string();
+          continue;
+        }
+        case 78: {
+          if (tag !== 626) {
+            break;
+          }
+
+          message.shengsuanyunApiKey = reader.string();
+          continue;
+        }
+        case 79: {
+          if (tag !== 634) {
+            break;
+          }
+
+          message.shengsuanyunModelId = reader.string();
+          continue;
+        }
+        case 80: {
+          if (tag !== 642) {
+            break;
+          }
+
+          message.shengsuanyunModelInfo = reader.string();
+          continue;
+        }
+        case 81: {
+          if (tag !== 650) {
+            break;
+          }
+
+          message.shengsuanyunToken = reader.string();
+          continue;
+        }
+        case 82: {
+          if (tag !== 658) {
+            break;
+          }
+
+          message.difyApiKey = reader.string();
+          continue;
+        }
+        case 83: {
+          if (tag !== 666) {
             break;
           }
 
@@ -2235,6 +2821,14 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
       favoritedModelIds: globalThis.Array.isArray(object?.favoritedModelIds)
         ? object.favoritedModelIds.map((e: any) => globalThis.String(e))
         : [],
+      sapAiCoreClientId: isSet(object.sapAiCoreClientId) ? globalThis.String(object.sapAiCoreClientId) : undefined,
+      sapAiCoreClientSecret: isSet(object.sapAiCoreClientSecret)
+        ? globalThis.String(object.sapAiCoreClientSecret)
+        : undefined,
+      sapAiCoreBaseUrl: isSet(object.sapAiCoreBaseUrl) ? globalThis.String(object.sapAiCoreBaseUrl) : undefined,
+      sapAiCoreTokenUrl: isSet(object.sapAiCoreTokenUrl) ? globalThis.String(object.sapAiCoreTokenUrl) : undefined,
+      sapAiResourceGroup: isSet(object.sapAiResourceGroup) ? globalThis.String(object.sapAiResourceGroup) : undefined,
+      claudeCodePath: isSet(object.claudeCodePath) ? globalThis.String(object.claudeCodePath) : undefined,
       shengsuanyunApiKey: isSet(object.shengsuanyunApiKey) ? globalThis.String(object.shengsuanyunApiKey) : undefined,
       shengsuanyunModelId: isSet(object.shengsuanyunModelId)
         ? globalThis.String(object.shengsuanyunModelId)
@@ -2463,6 +3057,24 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     if (message.favoritedModelIds?.length) {
       obj.favoritedModelIds = message.favoritedModelIds;
     }
+    if (message.sapAiCoreClientId !== undefined) {
+      obj.sapAiCoreClientId = message.sapAiCoreClientId;
+    }
+    if (message.sapAiCoreClientSecret !== undefined) {
+      obj.sapAiCoreClientSecret = message.sapAiCoreClientSecret;
+    }
+    if (message.sapAiCoreBaseUrl !== undefined) {
+      obj.sapAiCoreBaseUrl = message.sapAiCoreBaseUrl;
+    }
+    if (message.sapAiCoreTokenUrl !== undefined) {
+      obj.sapAiCoreTokenUrl = message.sapAiCoreTokenUrl;
+    }
+    if (message.sapAiResourceGroup !== undefined) {
+      obj.sapAiResourceGroup = message.sapAiResourceGroup;
+    }
+    if (message.claudeCodePath !== undefined) {
+      obj.claudeCodePath = message.claudeCodePath;
+    }
     if (message.shengsuanyunApiKey !== undefined) {
       obj.shengsuanyunApiKey = message.shengsuanyunApiKey;
     }
@@ -2560,6 +3172,12 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     message.litellmModelInfo = object.litellmModelInfo ?? undefined;
     message.openaiHeaders = object.openaiHeaders ?? undefined;
     message.favoritedModelIds = object.favoritedModelIds?.map((e) => e) || [];
+    message.sapAiCoreClientId = object.sapAiCoreClientId ?? undefined;
+    message.sapAiCoreClientSecret = object.sapAiCoreClientSecret ?? undefined;
+    message.sapAiCoreBaseUrl = object.sapAiCoreBaseUrl ?? undefined;
+    message.sapAiCoreTokenUrl = object.sapAiCoreTokenUrl ?? undefined;
+    message.sapAiResourceGroup = object.sapAiResourceGroup ?? undefined;
+    message.claudeCodePath = object.claudeCodePath ?? undefined;
     message.shengsuanyunApiKey = object.shengsuanyunApiKey ?? undefined;
     message.shengsuanyunModelId = object.shengsuanyunModelId ?? undefined;
     message.shengsuanyunModelInfo = object.shengsuanyunModelInfo ?? undefined;
@@ -2573,13 +3191,45 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
 export type StateServiceDefinition = typeof StateServiceDefinition;
 export const StateServiceDefinition = {
   name: "StateService",
-  fullName: "clineChinese.StateService",
+  fullName: "cline.StateService",
   methods: {
     getLatestState: {
       name: "getLatestState",
       requestType: EmptyRequest,
       requestStream: false,
       responseType: State,
+      responseStream: false,
+      options: {},
+    },
+    updateTerminalConnectionTimeout: {
+      name: "updateTerminalConnectionTimeout",
+      requestType: Int64Request,
+      requestStream: false,
+      responseType: Int64,
+      responseStream: false,
+      options: {},
+    },
+    updateTerminalReuseEnabled: {
+      name: "updateTerminalReuseEnabled",
+      requestType: BooleanRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: false,
+      options: {},
+    },
+    updateDefaultTerminalProfile: {
+      name: "updateDefaultTerminalProfile",
+      requestType: StringRequest,
+      requestStream: false,
+      responseType: TerminalProfileUpdateResponse,
+      responseStream: false,
+      options: {},
+    },
+    getAvailableTerminalProfiles: {
+      name: "getAvailableTerminalProfiles",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: TerminalProfiles,
       responseStream: false,
       options: {},
     },
@@ -2601,7 +3251,7 @@ export const StateServiceDefinition = {
     },
     resetState: {
       name: "resetState",
-      requestType: EmptyRequest,
+      requestType: ResetStateRequest,
       requestStream: false,
       responseType: Empty,
       responseStream: false,
@@ -2611,15 +3261,7 @@ export const StateServiceDefinition = {
       name: "togglePlanActMode",
       requestType: TogglePlanActModeRequest,
       requestStream: false,
-      responseType: Empty,
-      responseStream: false,
-      options: {},
-    },
-    updateTerminalConnectionTimeout: {
-      name: "updateTerminalConnectionTimeout",
-      requestType: Int64Request,
-      requestStream: false,
-      responseType: Int64,
+      responseType: Boolean,
       responseStream: false,
       options: {},
     },
@@ -2634,6 +3276,22 @@ export const StateServiceDefinition = {
     updateSettings: {
       name: "updateSettings",
       requestType: UpdateSettingsRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: false,
+      options: {},
+    },
+    updateTelemetrySetting: {
+      name: "updateTelemetrySetting",
+      requestType: TelemetrySettingRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: false,
+      options: {},
+    },
+    setWelcomeViewCompleted: {
+      name: "setWelcomeViewCompleted",
+      requestType: BooleanRequest,
       requestStream: false,
       responseType: Empty,
       responseStream: false,

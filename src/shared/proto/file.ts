@@ -1811,7 +1811,7 @@ export const ToggleWorkflowRequest: MessageFns<ToggleWorkflowRequest> = {
 export type FileServiceDefinition = typeof FileServiceDefinition;
 export const FileServiceDefinition = {
   name: "FileService",
-  fullName: "clineChinese.FileService",
+  fullName: "cline.FileService",
   methods: {
     /** Copies text to clipboard */
     copyToClipboard: {
@@ -1873,15 +1873,6 @@ export const FileServiceDefinition = {
       requestType: StringRequest,
       requestStream: false,
       responseType: GitCommits,
-      responseStream: false,
-      options: {},
-    },
-    /** Select images from the file system and return as data URLs */
-    selectImages: {
-      name: "selectImages",
-      requestType: EmptyRequest,
-      requestStream: false,
-      responseType: StringArray,
       responseStream: false,
       options: {},
     },

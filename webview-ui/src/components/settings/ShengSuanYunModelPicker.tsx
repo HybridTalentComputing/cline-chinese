@@ -1,17 +1,17 @@
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
-import { useRemark } from "react-remark"
 import { useMount } from "react-use"
 import styled from "styled-components"
-import { shengSuanYunDefaultModelId } from "../../../../src/shared/api"
+import { shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "@shared/api"
 import { useExtensionState } from "../../context/ExtensionStateContext"
 import { ModelsServiceClient, StateServiceClient } from "@/services/grpc-client"
 import { highlight } from "../history/HistoryView"
-import { ModelInfoView, normalizeApiConfiguration } from "./ApiOptions"
-import { CODE_BLOCK_BG_COLOR } from "../common/CodeBlock"
+import { ModelInfoView } from "./common/ModelInfoView"
 import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
 import { EmptyRequest, StringRequest } from "@shared/proto/common"
+import { normalizeApiConfiguration } from "./utils/providerUtils"
+import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
 
 export interface ShengSuanYunModelPickerProps {
 	isPopup?: boolean
@@ -37,23 +37,20 @@ const StarIcon = ({ isFavorite, onClick }: { isFavorite: boolean; onClick: (e: R
 	)
 }
 const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPopup }) => {
-	const { apiConfiguration, setApiConfiguration, shengSuanYunModels } = useExtensionState()
+	const { apiConfiguration, shengSuanYunModels, setShengSuanYunModels } = useExtensionState()
 	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.shengSuanYunModelId || shengSuanYunDefaultModelId)
+	const { handleFieldsChange } = useApiConfigurationHandlers()
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
 	const dropdownRef = useRef<HTMLDivElement>(null)
 	const itemRefs = useRef<(HTMLDivElement | null)[]>([])
-	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 	const dropdownListRef = useRef<HTMLDivElement>(null)
 
 	const handleModelChange = (newModelId: string) => {
 		// could be setting invalid model id/undefined info but validation will catch it
-		setApiConfiguration({
-			...apiConfiguration,
-			...{
-				shengSuanYunModelId: newModelId,
-				shengSuanYunModelInfo: shengSuanYunModels[newModelId],
-			},
+		handleFieldsChange({
+			shengSuanYunModelId: newModelId,
+			shengSuanYunModelInfo: shengSuanYunModels[newModelId],
 		})
 		setSearchTerm(newModelId)
 	}
@@ -63,9 +60,14 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 	}, [apiConfiguration])
 
 	useMount(() => {
-		ModelsServiceClient.refreshShengSuanYunModels(EmptyRequest.create({})).catch((error: Error) =>
-			console.error("Failed to refresh ShengSuanYun models:", error),
-		)
+		ModelsServiceClient.refreshShengSuanYunModels(EmptyRequest.create({}))
+			.then((res) => {
+				setShengSuanYunModels({
+					[shengSuanYunDefaultModelId]: shengSuanYunDefaultModelInfo,
+					...res.models,
+				})
+			})
+			.catch((error: Error) => console.error("Failed to refresh ShengSuanYun models:", error))
 	})
 
 	useEffect(() => {
@@ -163,7 +165,14 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 	}, [selectedIndex])
 
 	const showBudgetSlider = useMemo(() => {
-		return selectedModelId?.includes("claude-3-7-sonnet")
+		setSearchTerm(selectedModelId)
+		return (
+			selectedModelId?.toLowerCase().includes("claude-sonnet-4") ||
+			selectedModelId?.toLowerCase().includes("claude-opus-4") ||
+			selectedModelId?.toLowerCase().includes("claude-3-7-sonnet") ||
+			selectedModelId?.toLowerCase().includes("claude-3.7-sonnet") ||
+			selectedModelId?.toLowerCase().includes(":thinking")
+		)
 	}, [selectedModelId])
 
 	return (
@@ -250,16 +259,8 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 
 			{hasInfo ? (
 				<>
-					{showBudgetSlider && (
-						<ThinkingBudgetSlider apiConfiguration={apiConfiguration} setApiConfiguration={setApiConfiguration} />
-					)}
-					<ModelInfoView
-						selectedModelId={selectedModelId}
-						modelInfo={selectedModelInfo}
-						isDescriptionExpanded={isDescriptionExpanded}
-						setIsDescriptionExpanded={setIsDescriptionExpanded}
-						isPopup={isPopup}
-					/>
+					{showBudgetSlider && <ThinkingBudgetSlider />}
+					<ModelInfoView selectedModelId={selectedModelId} modelInfo={selectedModelInfo} isPopup={isPopup} />
 				</>
 			) : (
 				<p
@@ -269,17 +270,17 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					<>
-						该扩展会自动获取胜算云Router上可用的最新模型列表{" "}
+						该扩展会自动获取胜算云上可用的最新模型列表{" "}
 						<VSCodeLink
 							style={{ display: "inline", fontSize: "inherit" }}
 							href="https://router.shengsuanyun.com/model">
-							胜算云Router
+							胜算云
 						</VSCodeLink>
 						如果你不确定使用哪个模型, Cline 可以和{" "}
 						<VSCodeLink
 							style={{ display: "inline", fontSize: "inherit" }}
-							onClick={() => handleModelChange("anthropic/claude-3.7-sonnet")}>
-							anthropic/claude-3.7-sonnet.
+							onClick={() => handleModelChange("anthropic/claude-sonnet-4")}>
+							anthropic/claude-sonnet-4
 						</VSCodeLink>
 						很好的工作
 					</>

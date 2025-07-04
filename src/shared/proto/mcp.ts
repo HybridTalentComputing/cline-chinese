@@ -1538,7 +1538,7 @@ export const McpMarketplaceCatalog: MessageFns<McpMarketplaceCatalog> = {
 export type McpServiceDefinition = typeof McpServiceDefinition;
 export const McpServiceDefinition = {
   name: "McpService",
-  fullName: "clineChinese.McpService",
+  fullName: "cline.McpService",
   methods: {
     toggleMcpServer: {
       name: "toggleMcpServer",

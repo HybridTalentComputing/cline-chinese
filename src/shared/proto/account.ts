@@ -732,7 +732,7 @@ export const PaymentTransaction: MessageFns<PaymentTransaction> = {
 export type AccountServiceDefinition = typeof AccountServiceDefinition;
 export const AccountServiceDefinition = {
   name: "AccountService",
-  fullName: "clineChinese.AccountService",
+  fullName: "cline.AccountService",
   methods: {
     /**
      * Handles the user clicking the login link in the UI.
@@ -787,6 +787,38 @@ export const AccountServiceDefinition = {
       requestStream: false,
       responseType: UserCreditsData,
       responseStream: false,
+      options: {},
+    },
+    shengSuanYunLoginClicked: {
+      name: "shengSuanYunLoginClicked",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: String,
+      responseStream: false,
+      options: {},
+    },
+    shengSuanYunLogoutClicked: {
+      name: "shengSuanYunLogoutClicked",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: false,
+      options: {},
+    },
+    shengSuanYunUserData: {
+      name: "shengSuanYunUserData",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: UserCreditsData,
+      responseStream: false,
+      options: {},
+    },
+    subscribeSSYAuthCallback: {
+      name: "subscribeSSYAuthCallback",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: String,
+      responseStream: true,
       options: {},
     },
   },

@@ -1,27 +1,27 @@
 import { URI } from "vscode-uri"
-
-import path from "path"
-import { mkdirSync } from "fs"
+import os from "os"
+import { mkdirSync, readFileSync } from "fs"
+import path, { join } from "path"
 import type { Extension, ExtensionContext } from "vscode"
-import { ExtensionKind, ExtensionMode, LanguageModelAccessInformation } from "vscode"
-import { outputChannel, postMessage } from "./vscode-context-stubs"
-import { EventEmitter } from "./vscode-context-utils"
-import { EnvironmentVariableCollection, MementoStore, readJson, SecretStore } from "./vscode-context-utils"
+import { ExtensionKind, ExtensionMode } from "vscode"
 import { log } from "./utils"
+import { outputChannel, postMessage } from "./vscode-context-stubs"
+import { EnvironmentVariableCollection, MementoStore, readJson, SecretStore, EventEmitter } from "./vscode-context-utils"
+import { LanguageModelChat } from "vscode"
 
-if (!process.env.CLINE_DIR) {
-	console.warn("Environment variable CLINE_DIR was not set.")
-	process.exit(1)
-}
-const DATA_DIR = path.join(process.env.CLINE_DIR, "data")
+const VERSION = getPackageVersion()
+log("Running standalone cline ", VERSION)
+
+const CLINE_DIR = process.env.CLINE_DIR || `${os.homedir()}/.cline`
+const DATA_DIR = path.join(CLINE_DIR, "data")
 mkdirSync(DATA_DIR, { recursive: true })
 log("Using settings dir:", DATA_DIR)
 
-const EXTENSION_DIR = path.join(process.env.CLINE_DIR, "core")
+const EXTENSION_DIR = path.join(CLINE_DIR, "core", VERSION, "extension")
 const EXTENSION_MODE = process.env.IS_DEV === "true" ? ExtensionMode.Development : ExtensionMode.Production
 
 const extension: Extension<void> = {
-	id: "HybridTalentComputing.cline-chinese",
+	id: "saoudrizwan.claude-dev",
 	isActive: true,
 	extensionPath: EXTENSION_DIR,
 	extensionUri: URI.file(EXTENSION_DIR),
@@ -58,16 +58,17 @@ const extensionContext: ExtensionContext = {
 
 	// TODO(sjf): Workspace state needs to be per project/workspace.
 	workspaceState: new MementoStore(path.join(DATA_DIR, "workspaceState.json")),
-
-	// Mock implementation for languageModelAccessInformation required by newer VSCode versions
 	languageModelAccessInformation: {
-		endpoint: "",
-		authenticationMethod: "none",
-		modelFamily: "none",
-		features: [],
 		onDidChange: new EventEmitter<void>().event,
-		canSendRequest: () => false,
-	} as unknown as LanguageModelAccessInformation,
+		canSendRequest: function (chat: LanguageModelChat): boolean | undefined {
+			throw new Error("Function not implemented.")
+		},
+	},
+}
+
+function getPackageVersion(): string {
+	const packageJson = JSON.parse(readFileSync(join(__dirname, "package.json"), "utf8"))
+	return packageJson.version
 }
 
 console.log("Finished loading vscode context...")

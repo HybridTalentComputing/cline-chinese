@@ -27,47 +27,47 @@ export interface ServiceHandlerConfig {
  * Map of service names to their handler configurations
  */
 export const serviceHandlers: Record<string, ServiceHandlerConfig> = {
-  "clineChinese.AccountService": {
+  "cline.AccountService": {
     requestHandler: handleAccountServiceRequest,
     streamingHandler: handleAccountServiceStreamingRequest
   },
-  "clineChinese.BrowserService": {
+  "cline.BrowserService": {
     requestHandler: handleBrowserServiceRequest,
     streamingHandler: handleBrowserServiceStreamingRequest
   },
-  "clineChinese.CheckpointsService": {
+  "cline.CheckpointsService": {
     requestHandler: handleCheckpointsServiceRequest,
     streamingHandler: handleCheckpointsServiceStreamingRequest
   },
-  "clineChinese.FileService": {
+  "cline.FileService": {
     requestHandler: handleFileServiceRequest,
     streamingHandler: handleFileServiceStreamingRequest
   },
-  "clineChinese.McpService": {
+  "cline.McpService": {
     requestHandler: handleMcpServiceRequest,
     streamingHandler: handleMcpServiceStreamingRequest
   },
-  "clineChinese.StateService": {
+  "cline.StateService": {
     requestHandler: handleStateServiceRequest,
     streamingHandler: handleStateServiceStreamingRequest
   },
-  "clineChinese.TaskService": {
+  "cline.TaskService": {
     requestHandler: handleTaskServiceRequest,
     streamingHandler: handleTaskServiceStreamingRequest
   },
-  "clineChinese.WebService": {
+  "cline.WebService": {
     requestHandler: handleWebServiceRequest,
     streamingHandler: handleWebServiceStreamingRequest
   },
-  "clineChinese.ModelsService": {
+  "cline.ModelsService": {
     requestHandler: handleModelsServiceRequest,
     streamingHandler: handleModelsServiceStreamingRequest
   },
-  "clineChinese.SlashService": {
+  "cline.SlashService": {
     requestHandler: handleSlashServiceRequest,
     streamingHandler: handleSlashServiceStreamingRequest
   },
-  "clineChinese.UiService": {
+  "cline.UiService": {
     requestHandler: handleUiServiceRequest,
     streamingHandler: handleUiServiceStreamingRequest
   }

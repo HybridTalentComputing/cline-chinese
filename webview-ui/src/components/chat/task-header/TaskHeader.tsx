@@ -1,6 +1,6 @@
 import HeroTooltip from "@/components/common/HeroTooltip"
 import Thumbnails from "@/components/common/Thumbnails"
-import { normalizeApiConfiguration } from "@/components/settings/ApiOptions"
+import { normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient, TaskServiceClient, UiServiceClient } from "@/services/grpc-client"
 import { formatLargeNumber, formatSize } from "@/utils/format"
@@ -16,7 +16,7 @@ import DeleteTaskButton from "./buttons/DeleteTaskButton"
 import CopyTaskButton from "./buttons/CopyTaskButton"
 import OpenDiskTaskHistoryButton from "./buttons/OpenDiskTaskHistoryButton"
 
-const { IS_DEV } = process.env
+const IS_DEV = process.env.IS_DEV
 
 interface TaskHeaderProps {
 	task: ClineMessage
@@ -260,7 +260,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 								minWidth: 0, // This allows the div to shrink below its content size
 							}}>
 							<span style={{ fontWeight: "bold" }}>
-								任务
+								Task
 								{!isTaskExpanded && ":"}
 							</span>
 							{!isTaskExpanded && (
@@ -286,7 +286,11 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 							${totalCost?.toFixed(4)}
 						</div>
 					)}
-					<VSCodeButton appearance="icon" onClick={onClose} style={{ marginLeft: 6, flexShrink: 0 }}>
+					<VSCodeButton
+						appearance="icon"
+						onClick={onClose}
+						style={{ marginLeft: 6, flexShrink: 0 }}
+						aria-label="Close task">
 						<span className="codicon codicon-close"></span>
 					</VSCodeButton>
 				</div>
@@ -340,7 +344,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 											backgroundColor: "var(--vscode-badge-background)",
 										}}
 										onClick={() => setIsTextExpanded(!isTextExpanded)}>
-										更多
+										See more
 									</div>
 								</div>
 							)}
@@ -355,7 +359,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 									paddingRight: 2,
 								}}
 								onClick={() => setIsTextExpanded(!isTextExpanded)}>
-								折叠
+								See less
 							</div>
 						)}
 						{((task.images && task.images.length > 0) || (task.files && task.files.length > 0)) && (
@@ -517,7 +521,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 														}, 300)
 													}}
 													className="underline cursor-pointer bg-transparent border-0 p-0 text-inherit font-inherit">
-													禁用检查点。
+													disabling checkpoints.
 												</button>
 											</>
 										)}
@@ -530,7 +534,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 														color: "inherit",
 														textDecoration: "underline",
 													}}>
-													查看说明.
+													See here for instructions.
 												</a>
 											</>
 										)}

@@ -12,17 +12,14 @@ Cline offers the option of utilizing AWS credentials or AWS profiles to access A
 ### Configuration Steps
 
 1. Install the [latest version](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) of AWS CLI
-
     - Follow the AWS docs to install your OS-specific version of AWS CLI
 
 2. [Configure IAM authentication](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html) with the AWS CLI
-
     - If you do not already have AWS access through the IAM Identity Center, follow the [IAM User Guide](https://docs.aws.amazon.com/singlesignon/latest/userguide/getting-started.html) to set up IAM users and roles. Ensure you have a `PowerUserAccess` role.
     - If you have access to AWS through your employer, open your AWS access portal and find the appropriate account. Ensure you have `PowerUserAccess` permissions.
     - Open the `Access keys` link and note the `SSO start URL` and `SSO region`, which are needed in the next step
 
 3. Continue configuring your profile using [the `aws configure sso` CLI wizard](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure)
-
     - Once configured, use the following command to authenticate the AWS CLI: `aws sso login --profile <AWS-profile-name>`
     - Note which profile name you attach to your AWS account, this is needed to configure Cline in the following steps
 

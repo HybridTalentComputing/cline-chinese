@@ -2,8 +2,8 @@ import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { memo, useState } from "react"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { vscode } from "@/utils/vscode"
-import { TelemetrySetting } from "@shared/TelemetrySetting"
+import { StateServiceClient } from "@/services/grpc-client"
+import { TelemetrySettingEnum, TelemetrySettingRequest } from "@shared/proto/state"
 
 const BannerContainer = styled.div`
 	background-color: var(--vscode-banner-background);
@@ -53,8 +53,16 @@ const TelemetryBanner = () => {
 		navigateToSettings()
 	}
 
-	const handleClose = () => {
-		vscode.postMessage({ type: "telemetrySetting", telemetrySetting: "enabled" satisfies TelemetrySetting })
+	const handleClose = async () => {
+		try {
+			await StateServiceClient.updateTelemetrySetting(
+				TelemetrySettingRequest.create({
+					setting: TelemetrySettingEnum.ENABLED,
+				}),
+			)
+		} catch (error) {
+			console.error("Error updating telemetry setting:", error)
+		}
 	}
 
 	return (
@@ -63,17 +71,18 @@ const TelemetryBanner = () => {
 				✕
 			</CloseButton>
 			<div>
-				<strong>帮助改进 Cline Chinese</strong>
+				<strong>Help Improve Cline</strong>
 				<i>
 					<br />
 					(and access experimental features)
 				</i>
 				<div style={{ marginTop: 4 }}>
-					Cline Chinese收集匿名错误和使用数据，以帮助我们修复错误并改进扩展。绝不会发送任何代码、提示或个人信息。
+					Cline collects anonymous error and usage data to help us fix bugs and improve the extension. No code, prompts,
+					or personal information is ever sent.
 					<div style={{ marginTop: 4 }}>
-						您可以在此关闭该设置{" "}
+						You can turn this setting off in{" "}
 						<VSCodeLink href="#" onClick={handleOpenSettings}>
-							设置
+							settings
 						</VSCodeLink>
 						.
 					</div>

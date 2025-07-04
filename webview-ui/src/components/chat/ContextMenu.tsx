@@ -82,13 +82,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	const renderOptionContent = (option: ContextMenuQueryItem) => {
 		switch (option.type) {
 			case ContextMenuOptionType.Problems:
-				return <span>问题</span>
+				return <span>Problems</span>
 			case ContextMenuOptionType.Terminal:
-				return <span>终端</span>
+				return <span>Terminal</span>
 			case ContextMenuOptionType.URL:
-				return <span>粘贴 URL 获取内容</span>
+				return <span>Paste URL to fetch contents</span>
 			case ContextMenuOptionType.NoResults:
-				return <span>没有发现内容</span>
+				return <span>No results found</span>
 			case ContextMenuOptionType.Git:
 				if (option.value) {
 					return (
@@ -134,7 +134,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						</>
 					)
 				} else {
-					return <span>添加 {option.type === ContextMenuOptionType.File ? "文件" : "目录"}</span>
+					return <span>Add {option.type === ContextMenuOptionType.File ? "File" : "Folder"}</span>
 				}
 		}
 	}
@@ -198,7 +198,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							opacity: 0.7,
 						}}>
 						<i className="codicon codicon-loading codicon-modifier-spin" style={{ fontSize: "14px" }} />
-						<span>搜索...</span>
+						<span>Searching...</span>
 					</div>
 				)}
 				{filteredOptions.map((option, index) => (

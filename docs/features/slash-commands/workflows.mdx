@@ -79,7 +79,6 @@ You have access to the `gh` terminal command. I already authenticated it for you
 ## 3. Analyze the Changes
 
 1. For each modified file, understand:
-
     - What was changed
     - Why it was changed (based on PR description)
     - How it affects the codebase
@@ -386,7 +385,7 @@ Hey, the PR looks good overall but I'm concerned about removing those timeouts. 
 Could you add back the timeouts after focusing the sidebar? Something like:
 
 ```typescript
-await vscode.commands.executeCommand("clineChinese.SidebarProvider.focus")
+await vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
 await setTimeoutPromise(100) // Give UI time to update
 visibleWebview = WebviewProvider.getSidebarInstance()
 ```

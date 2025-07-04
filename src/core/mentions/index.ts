@@ -11,13 +11,14 @@ import { getLatestTerminalOutput } from "@integrations/terminal/get-latest-outpu
 import { getCommitInfo } from "@utils/git"
 import { getWorkingState } from "@utils/git"
 import { FileContextTracker } from "../context/context-tracking/FileContextTracker"
+import { getCwd } from "@/utils/path"
 
-export function openMention(mention?: string): void {
+export async function openMention(mention?: string): Promise<void> {
 	if (!mention) {
 		return
 	}
 
-	const cwd = vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0)
+	const cwd = await getCwd()
 	if (!cwd) {
 		return
 	}
@@ -85,14 +86,14 @@ export async function parseMentions(
 		if (mention.startsWith("http")) {
 			let result: string
 			if (launchBrowserError) {
-				result = `获取内容失败: ${launchBrowserError.message}`
+				result = `Error fetching content: ${launchBrowserError.message}`
 			} else {
 				try {
 					const markdown = await urlContentFetcher.urlToMarkdown(mention)
 					result = markdown
 				} catch (error) {
-					vscode.window.showErrorMessage(`获取内容失败 ${mention}: ${error.message}`)
-					result = `获取内容失败: ${error.message}`
+					vscode.window.showErrorMessage(`Error fetching content for ${mention}: ${error.message}`)
+					result = `Error fetching content: ${error.message}`
 				}
 			}
 			parsedText += `\n\n<url_content url="${mention}">\n${result}\n</url_content>`

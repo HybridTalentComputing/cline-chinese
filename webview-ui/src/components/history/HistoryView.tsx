@@ -4,7 +4,7 @@ import { TaskServiceClient } from "@/services/grpc-client"
 import { formatLargeNumber, formatSize } from "@/utils/format"
 import { vscode } from "@/utils/vscode"
 import { ExtensionMessage } from "@shared/ExtensionMessage"
-import { EmptyRequest, StringArrayRequest, StringRequest } from "@shared/proto/common"
+import { BooleanRequest, EmptyRequest, StringArrayRequest, StringRequest } from "@shared/proto/common"
 import { GetTaskHistoryRequest, TaskFavoriteRequest } from "@shared/proto/task"
 import { VSCodeButton, VSCodeCheckbox, VSCodeRadio, VSCodeRadioGroup, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse, { FuseResult } from "fuse.js"
@@ -202,10 +202,10 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		[fetchTotalTasksSize],
 	)
 
-	const formatDate = useCallback((timestamp: number, tz: string = "en-US") => {
+	const formatDate = useCallback((timestamp: number) => {
 		const date = new Date(timestamp)
 		return date
-			?.toLocaleString(tz, {
+			?.toLocaleString("en-US", {
 				month: "long",
 				day: "numeric",
 				hour: "numeric",
@@ -323,9 +323,9 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							color: "var(--vscode-foreground)",
 							margin: 0,
 						}}>
-						历史记录
+						History
 					</h3>
-					<VSCodeButton onClick={onDone}>确定</VSCodeButton>
+					<VSCodeButton onClick={onDone}>Done</VSCodeButton>
 				</div>
 				<div style={{ padding: "5px 17px 6px 17px" }}>
 					<div
@@ -336,7 +336,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						}}>
 						<VSCodeTextField
 							style={{ width: "100%" }}
-							placeholder="查找历史..."
+							placeholder="Fuzzy search history..."
 							value={searchQuery}
 							onInput={(e) => {
 								const newValue = (e.target as HTMLInputElement)?.value
@@ -357,7 +357,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							{searchQuery && (
 								<div
 									className="input-icon-button codicon codicon-close"
-									aria-label="清除"
+									aria-label="Clear search"
 									onClick={() => setSearchQuery("")}
 									slot="end"
 									style={{
@@ -373,24 +373,24 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							style={{ display: "flex", flexWrap: "wrap" }}
 							value={sortOption}
 							onChange={(e) => setSortOption((e.target as HTMLInputElement).value as SortOption)}>
-							<VSCodeRadio value="newest">最新</VSCodeRadio>
-							<VSCodeRadio value="oldest">最早</VSCodeRadio>
-							<VSCodeRadio value="mostExpensive">最贵</VSCodeRadio>
-							<VSCodeRadio value="mostTokens">Tokens最多</VSCodeRadio>
+							<VSCodeRadio value="newest">Newest</VSCodeRadio>
+							<VSCodeRadio value="oldest">Oldest</VSCodeRadio>
+							<VSCodeRadio value="mostExpensive">Most Expensive</VSCodeRadio>
+							<VSCodeRadio value="mostTokens">Most Tokens</VSCodeRadio>
 							<VSCodeRadio value="mostRelevant" disabled={!searchQuery} style={{ opacity: searchQuery ? 1 : 0.5 }}>
-								最相关
+								Most Relevant
 							</VSCodeRadio>
 							<CustomFilterRadio
 								checked={showCurrentWorkspaceOnly}
 								onChange={() => setShowCurrentWorkspaceOnly(!showCurrentWorkspaceOnly)}
 								icon="workspace"
-								label="工作区"
+								label="Workspace"
 							/>
 							<CustomFilterRadio
 								checked={showFavoritesOnly}
 								onChange={() => setShowFavoritesOnly(!showFavoritesOnly)}
 								icon="star-full"
-								label="收藏"
+								label="Favorites"
 							/>
 						</VSCodeRadioGroup>
 
@@ -399,13 +399,13 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								onClick={() => {
 									handleBatchHistorySelect(true)
 								}}>
-								全选
+								Select All
 							</VSCodeButton>
 							<VSCodeButton
 								onClick={() => {
 									handleBatchHistorySelect(false)
 								}}>
-								全不选
+								Select None
 							</VSCodeButton>
 						</div>
 					</div>
@@ -476,7 +476,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 												fontSize: "0.85em",
 												textTransform: "uppercase",
 											}}>
-											{formatDate(item.ts, "zh-CN")}
+											{formatDate(item.ts)}
 										</span>
 										<div style={{ display: "flex", gap: "4px" }}>
 											{/* only show delete button if task not favorited */}
@@ -689,7 +689,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 															fontWeight: 500,
 															color: "var(--vscode-descriptionForeground)",
 														}}>
-														API 费用:
+														API Cost:
 													</span>
 													<span
 														style={{
@@ -718,7 +718,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							onClick={() => {
 								handleDeleteSelectedHistoryItems(selectedItems)
 							}}>
-							删除 {selectedItems.length > 1 ? selectedItems.length : ""} 选中
+							Delete {selectedItems.length > 1 ? selectedItems.length : ""} Selected
 							{selectedItemsSize > 0 ? ` (${formatSize(selectedItemsSize)})` : ""}
 						</DangerButton>
 					) : (
@@ -727,9 +727,11 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							disabled={deleteAllDisabled || taskHistory.length === 0}
 							onClick={() => {
 								setDeleteAllDisabled(true)
-								vscode.postMessage({ type: "clearAllTaskHistory" })
+								TaskServiceClient.deleteAllTaskHistory(BooleanRequest.create({}))
+									.catch((error) => console.error("Error deleting task history:", error))
+									.finally(() => setDeleteAllDisabled(false))
 							}}>
-							删除所有历史{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
+							Delete All History{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
 						</DangerButton>
 					)}
 				</div>
