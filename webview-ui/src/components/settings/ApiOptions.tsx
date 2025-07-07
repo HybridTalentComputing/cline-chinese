@@ -36,6 +36,8 @@ import { LiteLlmProvider } from "./providers/LiteLlmProvider"
 import { VSCodeLmProvider } from "./providers/VSCodeLmProvider"
 import { LMStudioProvider } from "./providers/LMStudioProvider"
 import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
+import { ShengSuanYunProvider } from "./providers/ShengSuanYunProvider"
+import { DifyProvider } from "./providers/DifyProvider"
 
 interface ApiOptionsProps {
 	showModelOptions: boolean
@@ -116,7 +118,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 		<div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: isPopup ? -10 : 0 }}>
 			<DropdownContainer className="dropdown-container">
 				<label htmlFor="api-provider">
-					<span style={{ fontWeight: 500 }}>API Provider</span>
+					<span style={{ fontWeight: 500 }}>API 供应商</span>
 				</label>
 				<VSCodeDropdown
 					id="api-provider"
@@ -126,6 +128,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 						minWidth: 130,
 						position: "relative",
 					}}>
+					<VSCodeOption value="shengsuanyun">胜算云Router</VSCodeOption>
 					<VSCodeOption value="cline">Cline</VSCodeOption>
 					<VSCodeOption value="openrouter">OpenRouter</VSCodeOption>
 					<VSCodeOption value="anthropic">Anthropic</VSCodeOption>
@@ -148,12 +151,17 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 					<VSCodeOption value="litellm">LiteLLM</VSCodeOption>
 					<VSCodeOption value="nebius">Nebius AI Studio</VSCodeOption>
 					<VSCodeOption value="asksage">AskSage</VSCodeOption>
+					<VSCodeOption value="dify">Dify</VSCodeOption>
 					<VSCodeOption value="xai">xAI</VSCodeOption>
 					<VSCodeOption value="sambanova">SambaNova</VSCodeOption>
 					<VSCodeOption value="cerebras">Cerebras</VSCodeOption>
 					<VSCodeOption value="sapaicore">SAP AI Core</VSCodeOption>
 				</VSCodeDropdown>
 			</DropdownContainer>
+
+			{apiConfiguration && selectedProvider === "shengsuanyun" && (
+				<ShengSuanYunProvider showModelOptions={showModelOptions} isPopup={isPopup} />
+			)}
 
 			{apiConfiguration && selectedProvider === "cline" && (
 				<ClineProvider showModelOptions={showModelOptions} isPopup={isPopup} />
@@ -218,6 +226,8 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 			{apiConfiguration && selectedProvider === "gemini" && (
 				<GeminiProvider showModelOptions={showModelOptions} isPopup={isPopup} />
 			)}
+
+			{apiConfiguration && selectedProvider === "dify" && <DifyProvider />}
 
 			{apiConfiguration && selectedProvider === "requesty" && (
 				<RequestyProvider showModelOptions={showModelOptions} isPopup={isPopup} />

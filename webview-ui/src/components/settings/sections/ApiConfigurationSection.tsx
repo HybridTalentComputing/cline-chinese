@@ -34,7 +34,7 @@ const ApiConfigurationSection = ({
 									opacity: isSwitchingMode ? 0.6 : 1,
 									cursor: isSwitchingMode ? "not-allowed" : "pointer",
 								}}>
-								{isSwitchingMode && chatSettings.mode === "act" ? "Switching..." : "Plan Mode"}
+								{isSwitchingMode && chatSettings.mode === "act" ? "切换中..." : "计划模式"}
 							</TabButton>
 							<TabButton
 								isActive={chatSettings.mode === "act"}
@@ -44,7 +44,7 @@ const ApiConfigurationSection = ({
 									opacity: isSwitchingMode ? 0.6 : 1,
 									cursor: isSwitchingMode ? "not-allowed" : "pointer",
 								}}>
-								{isSwitchingMode && chatSettings.mode === "plan" ? "Switching..." : "Act Mode"}
+								{isSwitchingMode && chatSettings.mode === "plan" ? "切换中..." : "执行模式"}
 							</TabButton>
 						</div>
 
@@ -73,11 +73,11 @@ const ApiConfigurationSection = ({
 								console.error("Failed to update separate models setting:", error)
 							}
 						}}>
-						Use different models for Plan and Act modes
+						在计划和执行模式用不同的模型
 					</VSCodeCheckbox>
 					<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
-						Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be
-						helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on.
+						在“计划”和“行动”模式之间切换将保留前一个模式中使用的 API
+						和模型。这可能会有所帮助，例如，在使用强推理模型构建计划以用于更低成本的编码模型时。
 					</p>
 				</div>
 			</Section>

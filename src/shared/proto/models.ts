@@ -392,6 +392,12 @@ export interface ModelsApiConfiguration {
   sapAiCoreTokenUrl?: string | undefined;
   sapAiCoreBaseUrl?: string | undefined;
   claudeCodePath?: string | undefined;
+  shengSuanYunToken?: string | undefined;
+  shengSuanYunApiKey?: string | undefined;
+  shengSuanYunModelId?: string | undefined;
+  shengSuanYunModelInfo?: ShengSuanYunModelInfo | undefined;
+  difyBaseUrl?: string | undefined;
+  difyApiKey?: string | undefined;
 }
 
 export interface ModelsApiConfiguration_OpenAiHeadersEntry {
@@ -2112,6 +2118,12 @@ function createBaseModelsApiConfiguration(): ModelsApiConfiguration {
     sapAiCoreTokenUrl: undefined,
     sapAiCoreBaseUrl: undefined,
     claudeCodePath: undefined,
+    shengSuanYunToken: undefined,
+    shengSuanYunApiKey: undefined,
+    shengSuanYunModelId: undefined,
+    shengSuanYunModelInfo: undefined,
+    difyBaseUrl: undefined,
+    difyApiKey: undefined,
   };
 }
 
@@ -2335,6 +2347,24 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     }
     if (message.claudeCodePath !== undefined) {
       writer.uint32(586).string(message.claudeCodePath);
+    }
+    if (message.shengSuanYunToken !== undefined) {
+      writer.uint32(594).string(message.shengSuanYunToken);
+    }
+    if (message.shengSuanYunApiKey !== undefined) {
+      writer.uint32(602).string(message.shengSuanYunApiKey);
+    }
+    if (message.shengSuanYunModelId !== undefined) {
+      writer.uint32(610).string(message.shengSuanYunModelId);
+    }
+    if (message.shengSuanYunModelInfo !== undefined) {
+      ShengSuanYunModelInfo.encode(message.shengSuanYunModelInfo, writer.uint32(618).fork()).join();
+    }
+    if (message.difyBaseUrl !== undefined) {
+      writer.uint32(626).string(message.difyBaseUrl);
+    }
+    if (message.difyApiKey !== undefined) {
+      writer.uint32(634).string(message.difyApiKey);
     }
     return writer;
   },
@@ -2933,6 +2963,54 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
           message.claudeCodePath = reader.string();
           continue;
         }
+        case 74: {
+          if (tag !== 594) {
+            break;
+          }
+
+          message.shengSuanYunToken = reader.string();
+          continue;
+        }
+        case 75: {
+          if (tag !== 602) {
+            break;
+          }
+
+          message.shengSuanYunApiKey = reader.string();
+          continue;
+        }
+        case 76: {
+          if (tag !== 610) {
+            break;
+          }
+
+          message.shengSuanYunModelId = reader.string();
+          continue;
+        }
+        case 77: {
+          if (tag !== 618) {
+            break;
+          }
+
+          message.shengSuanYunModelInfo = ShengSuanYunModelInfo.decode(reader, reader.uint32());
+          continue;
+        }
+        case 78: {
+          if (tag !== 626) {
+            break;
+          }
+
+          message.difyBaseUrl = reader.string();
+          continue;
+        }
+        case 79: {
+          if (tag !== 634) {
+            break;
+          }
+
+          message.difyApiKey = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3054,6 +3132,16 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
       sapAiCoreTokenUrl: isSet(object.sapAiCoreTokenUrl) ? globalThis.String(object.sapAiCoreTokenUrl) : undefined,
       sapAiCoreBaseUrl: isSet(object.sapAiCoreBaseUrl) ? globalThis.String(object.sapAiCoreBaseUrl) : undefined,
       claudeCodePath: isSet(object.claudeCodePath) ? globalThis.String(object.claudeCodePath) : undefined,
+      shengSuanYunToken: isSet(object.shengSuanYunToken) ? globalThis.String(object.shengSuanYunToken) : undefined,
+      shengSuanYunApiKey: isSet(object.shengSuanYunApiKey) ? globalThis.String(object.shengSuanYunApiKey) : undefined,
+      shengSuanYunModelId: isSet(object.shengSuanYunModelId)
+        ? globalThis.String(object.shengSuanYunModelId)
+        : undefined,
+      shengSuanYunModelInfo: isSet(object.shengSuanYunModelInfo)
+        ? ShengSuanYunModelInfo.fromJSON(object.shengSuanYunModelInfo)
+        : undefined,
+      difyBaseUrl: isSet(object.difyBaseUrl) ? globalThis.String(object.difyBaseUrl) : undefined,
+      difyApiKey: isSet(object.difyApiKey) ? globalThis.String(object.difyApiKey) : undefined,
     };
   },
 
@@ -3284,6 +3372,24 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     if (message.claudeCodePath !== undefined) {
       obj.claudeCodePath = message.claudeCodePath;
     }
+    if (message.shengSuanYunToken !== undefined) {
+      obj.shengSuanYunToken = message.shengSuanYunToken;
+    }
+    if (message.shengSuanYunApiKey !== undefined) {
+      obj.shengSuanYunApiKey = message.shengSuanYunApiKey;
+    }
+    if (message.shengSuanYunModelId !== undefined) {
+      obj.shengSuanYunModelId = message.shengSuanYunModelId;
+    }
+    if (message.shengSuanYunModelInfo !== undefined) {
+      obj.shengSuanYunModelInfo = ShengSuanYunModelInfo.toJSON(message.shengSuanYunModelInfo);
+    }
+    if (message.difyBaseUrl !== undefined) {
+      obj.difyBaseUrl = message.difyBaseUrl;
+    }
+    if (message.difyApiKey !== undefined) {
+      obj.difyApiKey = message.difyApiKey;
+    }
     return obj;
   },
 
@@ -3384,6 +3490,15 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     message.sapAiCoreTokenUrl = object.sapAiCoreTokenUrl ?? undefined;
     message.sapAiCoreBaseUrl = object.sapAiCoreBaseUrl ?? undefined;
     message.claudeCodePath = object.claudeCodePath ?? undefined;
+    message.shengSuanYunToken = object.shengSuanYunToken ?? undefined;
+    message.shengSuanYunApiKey = object.shengSuanYunApiKey ?? undefined;
+    message.shengSuanYunModelId = object.shengSuanYunModelId ?? undefined;
+    message.shengSuanYunModelInfo =
+      (object.shengSuanYunModelInfo !== undefined && object.shengSuanYunModelInfo !== null)
+        ? ShengSuanYunModelInfo.fromPartial(object.shengSuanYunModelInfo)
+        : undefined;
+    message.difyBaseUrl = object.difyBaseUrl ?? undefined;
+    message.difyApiKey = object.difyApiKey ?? undefined;
     return message;
   },
 };

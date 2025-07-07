@@ -54,7 +54,7 @@ export const LMStudioProvider = ({ showModelOptions, isPopup }: LMStudioProvider
 				initialValue={apiConfiguration?.lmStudioBaseUrl}
 				onChange={(value) => handleFieldChange("lmStudioBaseUrl", value)}
 				placeholder="Default: http://localhost:1234"
-				label="Use custom base URL"
+				label="自定义 URL"
 			/>
 
 			<DebouncedTextField
@@ -62,7 +62,7 @@ export const LMStudioProvider = ({ showModelOptions, isPopup }: LMStudioProvider
 				onChange={(value) => handleFieldChange("lmStudioModelId", value)}
 				style={{ width: "100%" }}
 				placeholder={"e.g. meta-llama-3.1-8b-instruct"}>
-				<span style={{ fontWeight: 500 }}>Model ID</span>
+				<span style={{ fontWeight: 500 }}>模型 ID</span>
 			</DebouncedTextField>
 
 			{lmStudioModels.length > 0 && (
@@ -91,18 +91,18 @@ export const LMStudioProvider = ({ showModelOptions, isPopup }: LMStudioProvider
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				LM Studio allows you to run models locally on your computer. For instructions on how to get started, see their
+				LM Studio 允许您在计算机上本地运行模型。有关如何开始使用的说明，请参阅其
 				<VSCodeLink href="https://lmstudio.ai/docs" style={{ display: "inline", fontSize: "inherit" }}>
-					quickstart guide.
+					快速入门指南。
 				</VSCodeLink>
-				You will also need to start LM Studio's{" "}
+				您还需要启动 LM Studio 的{" "}
 				<VSCodeLink href="https://lmstudio.ai/docs/basics/server" style={{ display: "inline", fontSize: "inherit" }}>
-					local server
+					本地服务
 				</VSCodeLink>{" "}
-				feature to use it with this extension.{" "}
+				功能以与此扩展一起使用.{" "}
 				<span style={{ color: "var(--vscode-errorForeground)" }}>
-					(<span style={{ fontWeight: 500 }}>Note:</span> Cline uses complex prompts and works best with Claude models.
-					Less capable models may not work as expected.)
+					(<span style={{ fontWeight: 500 }}>注意:</span> Cline 使用复杂的提示，与 Claude
+					模型配合使用效果最佳。性能较差的模型可能无法达到预期效果。)
 				</span>
 			</p>
 		</div>

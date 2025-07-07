@@ -139,7 +139,7 @@ export function createTestServer(webviewProvider?: WebviewProvider): http.Server
 	vscode.commands.executeCommand("workbench.view.claude-dev-ActivityBar")
 
 	// Then ensure the webview is focused/loaded
-	vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
+	vscode.commands.executeCommand("clineChinese.SidebarProvider.focus")
 
 	// Update auto approval settings if webviewProvider is available
 	if (webviewProvider?.controller?.context) {

@@ -644,7 +644,7 @@ export class McpHub {
 
 		const config = await this.readAndValidateMcpSettingsFile()
 		if (!config) {
-			throw new Error("Failed to read or validate MCP settings")
+			throw new Error("读取或验证 MCP 设置失败")
 		}
 
 		const serverOrder = Object.keys(config.mcpServers || {})
@@ -786,13 +786,11 @@ export class McpHub {
 	async callTool(serverName: string, toolName: string, toolArguments?: Record<string, unknown>): Promise<McpToolCallResponse> {
 		const connection = this.connections.find((conn) => conn.server.name === serverName)
 		if (!connection) {
-			throw new Error(
-				`No connection found for server: ${serverName}. Please make sure to use MCP servers available under 'Connected MCP Servers'.`,
-			)
+			throw new Error(`未找到服务器连接: ${serverName}. 请确保使用“已连接的 MCP 服务器”下可用的 MCP 服务器'.`)
 		}
 
 		if (connection.server.disabled) {
-			throw new Error(`Server "${serverName}" is disabled and cannot be used`)
+			throw new Error(`服务 "${serverName}" 被禁用或不能使用`)
 		}
 
 		let timeout = secondsToMs(DEFAULT_MCP_TIMEOUT_SECONDS) // sdk expects ms
@@ -929,7 +927,7 @@ export class McpHub {
 			}
 		} catch (error) {
 			console.error("Failed to update autoApprove settings:", error)
-			vscode.window.showErrorMessage("Failed to update autoApprove settings")
+			vscode.window.showErrorMessage("更新自动批准设置失败")
 			throw error // Re-throw to ensure the error is properly handled
 		}
 	}
@@ -938,16 +936,16 @@ export class McpHub {
 		try {
 			const settings = await this.readAndValidateMcpSettingsFile()
 			if (!settings) {
-				throw new Error("Failed to read MCP settings")
+				throw new Error("读 MCP 设置失败")
 			}
 
 			if (settings.mcpServers[serverName]) {
-				throw new Error(`An MCP server with the name "${serverName}" already exists`)
+				throw new Error(`MCP 服务名 "${serverName}" 已经存在`)
 			}
 
 			const urlValidation = z.string().url().safeParse(serverUrl)
 			if (!urlValidation.success) {
-				throw new Error(`Invalid server URL: ${serverUrl}. Please provide a valid URL.`)
+				throw new Error(`无效的 URL: ${serverUrl}. 请提供有效 URL.`)
 			}
 
 			const serverConfig = {

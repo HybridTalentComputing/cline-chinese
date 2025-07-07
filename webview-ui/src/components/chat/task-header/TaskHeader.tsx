@@ -198,7 +198,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 									/>
 								</div>
 							</HeroTooltip>
-							<HeroTooltip content="Maximum context window size for this model">
+							<HeroTooltip content="此模型的最大输入窗口大小">
 								<span className="cursor-pointer">{formatLargeNumber(contextWindow)}</span>
 							</HeroTooltip>
 						</div>
@@ -260,7 +260,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 								minWidth: 0, // This allows the div to shrink below its content size
 							}}>
 							<span style={{ fontWeight: "bold" }}>
-								Task
+								任务
 								{!isTaskExpanded && ":"}
 							</span>
 							{!isTaskExpanded && (
@@ -290,7 +290,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 						appearance="icon"
 						onClick={onClose}
 						style={{ marginLeft: 6, flexShrink: 0 }}
-						aria-label="Close task">
+						aria-label="关闭任务">
 						<span className="codicon codicon-close"></span>
 					</VSCodeButton>
 				</div>
@@ -344,7 +344,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 											backgroundColor: "var(--vscode-badge-background)",
 										}}
 										onClick={() => setIsTextExpanded(!isTextExpanded)}>
-										See more
+										更多
 									</div>
 								</div>
 							)}
@@ -359,7 +359,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 									paddingRight: 2,
 								}}
 								onClick={() => setIsTextExpanded(!isTextExpanded)}>
-								See less
+								折叠
 							</div>
 						)}
 						{((task.images && task.images.length > 0) || (task.files && task.files.length > 0)) && (
@@ -443,7 +443,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 											flexWrap: "wrap",
 										}}>
 										<div style={{ display: "flex", alignItems: "center" }}>
-											<span style={{ fontWeight: "bold" }}>Cache:</span>
+											<span style={{ fontWeight: "bold" }}>缓存:</span>
 										</div>
 										{cacheWrites !== undefined && cacheWrites > 0 && (
 											<HeroTooltip content="Tokens written to cache">
@@ -521,7 +521,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 														}, 300)
 													}}
 													className="underline cursor-pointer bg-transparent border-0 p-0 text-inherit font-inherit">
-													disabling checkpoints.
+													禁用检查点
 												</button>
 											</>
 										)}
@@ -534,7 +534,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 														color: "inherit",
 														textDecoration: "underline",
 													}}>
-													See here for instructions.
+													请参阅此处了解说明。
 												</a>
 											</>
 										)}

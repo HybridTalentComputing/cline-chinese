@@ -42,7 +42,7 @@ export const GeminiProvider = ({ showModelOptions, isPopup }: GeminiProviderProp
 				initialValue={apiConfiguration?.geminiBaseUrl}
 				onChange={(value) => handleFieldChange("geminiBaseUrl", value)}
 				placeholder="Default: https://generativelanguage.googleapis.com"
-				label="Use custom base URL"
+				label="自定义 URL"
 			/>
 
 			{showModelOptions && (

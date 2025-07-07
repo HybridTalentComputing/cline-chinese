@@ -43,8 +43,8 @@ export const XaiProvider = ({ showModelOptions, isPopup }: XaiProviderProps) => 
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					<span style={{ color: "var(--vscode-errorForeground)" }}>
-						(<span style={{ fontWeight: 500 }}>Note:</span> Cline uses complex prompts and works best with Claude
-						models. Less capable models may not work as expected.)
+						(<span style={{ fontWeight: 500 }}>注意:</span> Cline 使用复杂的提示，与 Claude
+						模型配合使用效果最佳。性能较差的模型可能无法达到预期效果。)
 					</span>
 				</p>
 			</div>
@@ -70,13 +70,13 @@ export const XaiProvider = ({ showModelOptions, isPopup }: XaiProviderProps) => 
 										handleFieldChange("reasoningEffort", "")
 									}
 								}}>
-								Modify reasoning effort
+								修改推理强度
 							</VSCodeCheckbox>
 
 							{reasoningEffortSelected && (
 								<div>
 									<label htmlFor="reasoning-effort-dropdown">
-										<span style={{}}>Reasoning Effort</span>
+										<span style={{}}>推理强度</span>
 									</label>
 									<DropdownContainer className="dropdown-container" zIndex={DROPDOWN_Z_INDEX - 100}>
 										<VSCodeDropdown
@@ -86,8 +86,8 @@ export const XaiProvider = ({ showModelOptions, isPopup }: XaiProviderProps) => 
 											onChange={(e: any) => {
 												handleFieldChange("reasoningEffort", e.target.value)
 											}}>
-											<VSCodeOption value="low">low</VSCodeOption>
-											<VSCodeOption value="high">high</VSCodeOption>
+											<VSCodeOption value="low">低</VSCodeOption>
+											<VSCodeOption value="high">高</VSCodeOption>
 										</VSCodeDropdown>
 									</DropdownContainer>
 									<p
@@ -97,7 +97,7 @@ export const XaiProvider = ({ showModelOptions, isPopup }: XaiProviderProps) => 
 											marginBottom: 0,
 											color: "var(--vscode-descriptionForeground)",
 										}}>
-										High effort may produce more thorough analysis but takes longer and uses more tokens.
+										付出更多努力可能会产生更彻底的分析，但需要更长的时间并使用更多的令牌。
 									</p>
 								</div>
 							)}

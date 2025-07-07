@@ -20,12 +20,12 @@ import McpResourceRow from "./McpResourceRow"
 import McpToolRow from "./McpToolRow"
 // constant JSX.Elements
 const TimeoutOptions = [
-	{ value: "30", label: "30 seconds" },
-	{ value: "60", label: "1 minute" },
-	{ value: "300", label: "5 minutes" },
-	{ value: "600", label: "10 minutes" },
-	{ value: "1800", label: "30 minutes" },
-	{ value: "3600", label: "1 hour" },
+	{ value: "30", label: "30 秒" },
+	{ value: "60", label: "1 分钟" },
+	{ value: "300", label: "5 分钟" },
+	{ value: "600", label: "10 分钟" },
+	{ value: "1800", label: "30 分钟" },
+	{ value: "3600", label: "1 小时" },
 ].map((option) => (
 	<VSCodeOption key={option.value} value={option.value}>
 		{option.label}
@@ -299,14 +299,14 @@ const ServerRow = ({
 							width: "calc(100% - 20px)",
 							margin: "0 10px 10px 10px",
 						}}>
-						{server.status === "connecting" || isRestarting ? "Retrying..." : "Retry Connection"}
+						{server.status === "connecting" || isRestarting ? "重试..." : "重新连接"}
 					</VSCodeButton>
 
 					<DangerButton
 						style={{ width: "calc(100% - 20px)", margin: "0 10px 10px 10px" }}
 						disabled={isDeleting}
 						onClick={handleDelete}>
-						{isDeleting ? "Deleting..." : "Delete Server"}
+						{isDeleting ? "正在删除..." : "删除服务"}
 					</DangerButton>
 				</div>
 			) : (
@@ -321,7 +321,7 @@ const ServerRow = ({
 						<VSCodePanels>
 							<VSCodePanelTab id="tools">Tools ({server.tools?.length || 0})</VSCodePanelTab>
 							<VSCodePanelTab id="resources">
-								Resources ({[...(server.resourceTemplates || []), ...(server.resources || [])].length || 0})
+								资源 ({[...(server.resourceTemplates || []), ...(server.resources || [])].length || 0})
 							</VSCodePanelTab>
 
 							<VSCodePanelView id="tools-view">
@@ -342,7 +342,7 @@ const ServerRow = ({
 												checked={server.tools.every((tool) => tool.autoApprove)}
 												onChange={handleAutoApproveChange}
 												data-tool="all-tools">
-												Auto-approve all tools
+												自动批准所有工具
 											</VSCodeCheckbox>
 										)}
 									</div>
@@ -352,7 +352,7 @@ const ServerRow = ({
 											padding: "10px 0",
 											color: "var(--vscode-descriptionForeground)",
 										}}>
-										No tools found
+										未找到工具
 									</div>
 								)}
 							</VSCodePanelView>
@@ -380,14 +380,14 @@ const ServerRow = ({
 											padding: "10px 0",
 											color: "var(--vscode-descriptionForeground)",
 										}}>
-										No resources found
+										未找到资源
 									</div>
 								)}
 							</VSCodePanelView>
 						</VSCodePanels>
 
 						<div style={{ margin: "10px 7px" }}>
-							<label style={{ display: "block", marginBottom: "4px", fontSize: "13px" }}>Request Timeout</label>
+							<label style={{ display: "block", marginBottom: "4px", fontSize: "13px" }}>请求超时</label>
 							<VSCodeDropdown style={{ width: "100%" }} value={timeoutValue} onChange={handleTimeoutChange}>
 								{TimeoutOptions}
 							</VSCodeDropdown>
@@ -400,14 +400,14 @@ const ServerRow = ({
 								width: "calc(100% - 14px)",
 								margin: "0 7px 3px 7px",
 							}}>
-							{server.status === "connecting" || isRestarting ? "Restarting..." : "Restart Server"}
+							{server.status === "connecting" || isRestarting ? "重启中..." : "重启服务"}
 						</VSCodeButton>
 
 						<DangerButton
 							style={{ width: "calc(100% - 14px)", margin: "5px 7px 3px 7px" }}
 							disabled={isDeleting}
 							onClick={handleDelete}>
-							{isDeleting ? "Deleting..." : "Delete Server"}
+							{isDeleting ? "正在删除..." : "删除服务"}
 						</DangerButton>
 					</div>
 				)

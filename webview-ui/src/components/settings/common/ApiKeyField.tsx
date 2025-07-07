@@ -21,7 +21,7 @@ export const ApiKeyField = ({
 	onChange,
 	providerName,
 	signupUrl,
-	placeholder = "Enter API Key...",
+	placeholder = "输入 API Key...",
 	helpText,
 }: ApiKeyFieldProps) => {
 	const [localValue, setLocalValue] = useDebouncedInput(initialValue, onChange)
@@ -42,7 +42,7 @@ export const ApiKeyField = ({
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				{helpText || "This key is stored locally and only used to make API requests from this extension."}
+				{helpText || "此密钥存储在本地，仅用于从此扩展发出 API 请求。"}
 				{!localValue && signupUrl && (
 					<VSCodeLink
 						href={signupUrl}
@@ -50,7 +50,7 @@ export const ApiKeyField = ({
 							display: "inline",
 							fontSize: "inherit",
 						}}>
-						You can get a{/^[aeiou]/i.test(providerName) ? "n" : ""} {providerName} API key by signing up here.
+						注册 {/^[aeiou]/i.test(providerName) ? "n" : ""} {providerName} 获取 API key.
 					</VSCodeLink>
 				)}
 			</p>

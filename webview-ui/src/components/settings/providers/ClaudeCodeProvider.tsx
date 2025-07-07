@@ -34,7 +34,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup }: ClaudeCodeProv
 				style={{ width: "100%", marginTop: 3 }}
 				type="text"
 				placeholder="Default: claude">
-				<span style={{ fontWeight: 500 }}>Claude Code CLI Path</span>
+				<span style={{ fontWeight: 500 }}>Claude Code CLI 路径</span>
 			</DebouncedTextField>
 
 			<p
@@ -43,7 +43,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup }: ClaudeCodeProv
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				Path to the Claude Code CLI.
+				Claude Code CLI 所在的文件夹.
 			</p>
 
 			{showModelOptions && (

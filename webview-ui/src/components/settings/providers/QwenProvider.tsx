@@ -57,8 +57,8 @@ export const QwenProvider = ({ showModelOptions, isPopup }: QwenProviderProps) =
 						minWidth: 130,
 						position: "relative",
 					}}>
-					<VSCodeOption value="china">China API</VSCodeOption>
-					<VSCodeOption value="international">International API</VSCodeOption>
+					<VSCodeOption value="china">中国大陆 API</VSCodeOption>
+					<VSCodeOption value="international">国际版 API</VSCodeOption>
 				</VSCodeDropdown>
 			</DropdownContainer>
 			<p
@@ -67,8 +67,7 @@ export const QwenProvider = ({ showModelOptions, isPopup }: QwenProviderProps) =
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				Please select the appropriate API interface based on your location. If you are in China, choose the China API
-				interface. Otherwise, choose the International API interface.
+				请根据您的位置选择合适的 API 接口。如果您在中国，请选择“中国 API 接口”。否则，请选择“国际 API 接口”。
 			</p>
 
 			<ApiKeyField

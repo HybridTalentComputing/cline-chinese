@@ -97,12 +97,12 @@ const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
 				style={{ maxHeight: "min(200px, calc(50vh))", overscrollBehavior: "contain" }}>
 				{filteredCommands.length > 0 ? (
 					<>
-						{renderCommandSection(defaultCommands, "Default Commands", 0, true)}
-						{renderCommandSection(workflowCommands, "Workflow Commands", defaultCommands.length, false)}
+						{renderCommandSection(defaultCommands, "默认命令", 0, true)}
+						{renderCommandSection(workflowCommands, "工作流命令", defaultCommands.length, false)}
 					</>
 				) : (
 					<div className="py-2 px-3 cursor-default flex flex-col">
-						<div className="text-[0.85em] text-[var(--vscode-descriptionForeground)]">No matching commands found</div>
+						<div className="text-[0.85em] text-[var(--vscode-descriptionForeground)]">未找到命令</div>
 					</div>
 				)}
 			</div>

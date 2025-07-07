@@ -39,8 +39,8 @@ export const BedrockProvider = ({ showModelOptions, isPopup }: BedrockProviderPr
 
 					handleFieldChange("awsUseProfile", useProfile)
 				}}>
-				<VSCodeRadio value="credentials">AWS Credentials</VSCodeRadio>
-				<VSCodeRadio value="profile">AWS Profile</VSCodeRadio>
+				<VSCodeRadio value="credentials">AWS 凭证</VSCodeRadio>
+				<VSCodeRadio value="profile">AWS 账号</VSCodeRadio>
 			</VSCodeRadioGroup>
 
 			{apiConfiguration?.awsUseProfile ? (
@@ -49,7 +49,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup }: BedrockProviderPr
 					onChange={(value) => handleFieldChange("awsProfile", value)}
 					style={{ width: "100%" }}
 					placeholder="Enter profile name (default if empty)">
-					<span style={{ fontWeight: 500 }}>AWS Profile Name</span>
+					<span style={{ fontWeight: 500 }}>AWS 账户名</span>
 				</DebouncedTextField>
 			) : (
 				<>
@@ -130,7 +130,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup }: BedrockProviderPr
 							handleFieldChange("awsBedrockEndpoint", "")
 						}
 					}}>
-					Use custom VPC endpoint
+					使用自定义 VPC 接口
 				</VSCodeCheckbox>
 
 				{awsEndpointSelected && (
@@ -150,7 +150,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup }: BedrockProviderPr
 
 						handleFieldChange("awsUseCrossRegionInference", isChecked)
 					}}>
-					Use cross-region inference
+					使用跨地区推理
 				</VSCodeCheckbox>
 
 				{selectedModelInfo.supportsPromptCache && (
@@ -161,7 +161,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup }: BedrockProviderPr
 								const isChecked = e.target.checked === true
 								handleFieldChange("awsBedrockUsePromptCache", isChecked)
 							}}>
-							Use prompt caching
+							使用提示词缓存
 						</VSCodeCheckbox>
 					</>
 				)}
@@ -175,14 +175,13 @@ export const BedrockProvider = ({ showModelOptions, isPopup }: BedrockProviderPr
 				}}>
 				{apiConfiguration?.awsUseProfile ? (
 					<>
-						Using AWS Profile credentials from ~/.aws/credentials. Leave profile name empty to use the default
-						profile. These credentials are only used locally to make API requests from this extension.
+						使用来自 ~/.aws/credentials 的 AWS
+						配置文件凭证。将配置文件名称留空即可使用默认配置文件。这些凭证仅在本地用于从此扩展程序发出 API 请求。
 					</>
 				) : (
 					<>
-						Authenticate by either providing the keys above or use the default AWS credential providers, i.e.
-						~/.aws/credentials or environment variables. These credentials are only used locally to make API requests
-						from this extension.
+						通过提供上述密钥或使用默认 AWS 凭证提供程序（即 ~/.aws/credentials
+						或环境变量）进行身份验证。这些凭证仅在本地用于从此扩展程序发出 API 请求。
 					</>
 				)}
 			</p>
@@ -190,7 +189,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup }: BedrockProviderPr
 			{showModelOptions && (
 				<>
 					<label htmlFor="bedrock-model-dropdown">
-						<span style={{ fontWeight: 500 }}>Model</span>
+						<span style={{ fontWeight: 500 }}>模型</span>
 					</label>
 					<DropdownContainer zIndex={DROPDOWN_Z_INDEX - 2} className="dropdown-container">
 						<VSCodeDropdown
@@ -206,7 +205,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup }: BedrockProviderPr
 								})
 							}}
 							style={{ width: "100%" }}>
-							<VSCodeOption value="">Select a model...</VSCodeOption>
+							<VSCodeOption value="">选择模型...</VSCodeOption>
 							{Object.keys(bedrockModels).map((modelId) => (
 								<VSCodeOption
 									key={modelId}
@@ -219,7 +218,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup }: BedrockProviderPr
 									{modelId}
 								</VSCodeOption>
 							))}
-							<VSCodeOption value="custom">Custom</VSCodeOption>
+							<VSCodeOption value="custom">自定义</VSCodeOption>
 						</VSCodeDropdown>
 					</DropdownContainer>
 
@@ -231,8 +230,8 @@ export const BedrockProvider = ({ showModelOptions, isPopup }: BedrockProviderPr
 									marginTop: "5px",
 									color: "var(--vscode-descriptionForeground)",
 								}}>
-								Select "Custom" when using the Application Inference Profile in Bedrock. Enter the Application
-								Inference Profile ARN in the Model ID field.
+								在 Bedrock 中使用应用程序推理配置文件时，请选择“自定义”。在“模型 ID”字段中输入应用程序推理配置文件
+								ARN。
 							</p>
 							<DebouncedTextField
 								id="bedrock-model-input"
@@ -240,10 +239,10 @@ export const BedrockProvider = ({ showModelOptions, isPopup }: BedrockProviderPr
 								onChange={(value) => handleFieldChange("apiModelId", value)}
 								style={{ width: "100%", marginTop: 3 }}
 								placeholder="Enter custom model ID...">
-								<span style={{ fontWeight: 500 }}>Model ID</span>
+								<span style={{ fontWeight: 500 }}>模型 ID</span>
 							</DebouncedTextField>
 							<label htmlFor="bedrock-base-model-dropdown">
-								<span style={{ fontWeight: 500 }}>Base Inference Model</span>
+								<span style={{ fontWeight: 500 }}>基本推理模型</span>
 							</label>
 							<DropdownContainer zIndex={DROPDOWN_Z_INDEX - 3} className="dropdown-container">
 								<VSCodeDropdown

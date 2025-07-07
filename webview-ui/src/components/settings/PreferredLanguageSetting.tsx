@@ -22,7 +22,7 @@ const PreferredLanguageSetting: React.FC = () => {
 	return (
 		<div style={{}}>
 			<label htmlFor="preferred-language-dropdown" className="block mb-1 text-sm font-medium">
-				Preferred Language
+				首选语言
 			</label>
 			<VSCodeDropdown
 				id="preferred-language-dropdown"
@@ -50,9 +50,7 @@ const PreferredLanguageSetting: React.FC = () => {
 				<VSCodeOption value="Traditional Chinese - 繁體中文">Traditional Chinese - 繁體中文</VSCodeOption>
 				<VSCodeOption value="Turkish - Türkçe">Turkish - Türkçe</VSCodeOption>
 			</VSCodeDropdown>
-			<p className="text-xs text-[var(--vscode-descriptionForeground)] mt-1">
-				The language that Cline should use for communication.
-			</p>
+			<p className="text-xs text-[var(--vscode-descriptionForeground)] mt-1">Cline 默认使用的交流语言.</p>
 		</div>
 	)
 }

@@ -31,7 +31,7 @@ export const NebiusProvider = ({ showModelOptions, isPopup }: NebiusProviderProp
 				onChange={(value) => handleFieldChange("nebiusApiKey", value)}
 				providerName="Nebius"
 				signupUrl="https://studio.nebius.com/settings/api-keys"
-				helpText="This key is stored locally and only used to make API requests from this extension. (Note: Cline uses complex prompts and works best with Claude models. Less capable models may not work as expected.)"
+				helpText="此密钥存储在本地，仅用于从此扩展程序发出 API 请求。（注意：Cline 使用复杂的提示符，并且与 Claude 模型配合使用效果最佳。性能较差的模型可能无法按预期工作。）"
 			/>
 
 			{showModelOptions && (

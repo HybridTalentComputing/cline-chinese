@@ -67,24 +67,23 @@ const TelemetryBanner = () => {
 
 	return (
 		<BannerContainer>
-			<CloseButton onClick={handleClose} aria-label="Close banner and enable telemetry">
+			<CloseButton onClick={handleClose} aria-label="关闭提示并启用遥测">
 				✕
 			</CloseButton>
 			<div>
-				<strong>Help Improve Cline</strong>
+				<strong>帮助改进 Cline</strong>
 				<i>
 					<br />
-					(and access experimental features)
+					(并访问实验功能)
 				</i>
 				<div style={{ marginTop: 4 }}>
-					Cline collects anonymous error and usage data to help us fix bugs and improve the extension. No code, prompts,
-					or personal information is ever sent.
+					Cline 会收集匿名错误和使用数据，以帮助我们修复错误并改进扩展程序。我们绝不会发送任何代码、提示或个人信息。
 					<div style={{ marginTop: 4 }}>
-						You can turn this setting off in{" "}
+						您可以在{" "}
 						<VSCodeLink href="#" onClick={handleOpenSettings}>
-							settings
+							设置
 						</VSCodeLink>
-						.
+						中关闭 .
 					</div>
 				</div>
 			</div>

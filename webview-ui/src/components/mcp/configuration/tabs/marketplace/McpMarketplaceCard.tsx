@@ -128,7 +128,7 @@ const McpMarketplaceCard = ({ item, installedServers }: McpMarketplaceCardProps)
 								}}
 								style={{}}>
 								<StyledInstallButton disabled={isInstalled || isDownloading} $isInstalled={isInstalled}>
-									{isInstalled ? "Installed" : isDownloading ? "Installing..." : "Install"}
+									{isInstalled ? "已安装" : isDownloading ? "正在安装..." : "安装"}
 								</StyledInstallButton>
 							</div>
 						</div>

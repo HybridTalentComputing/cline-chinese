@@ -20,19 +20,19 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 		e.preventDefault()
 
 		if (!serverName.trim()) {
-			setError("Server name is required")
+			setError("必须提供服务名称")
 			return
 		}
 
 		if (!serverUrl.trim()) {
-			setError("Server URL is required")
+			setError("必须提供服务 URL")
 			return
 		}
 
 		try {
 			new URL(serverUrl)
 		} catch (err) {
-			setError("Invalid URL format")
+			setError("URL 格式无效")
 			return
 		}
 
@@ -59,7 +59,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 			setShowConnectingMessage(false)
 		} catch (error) {
 			setIsSubmitting(false)
-			setError(error instanceof Error ? error.message : "Failed to add server")
+			setError(error instanceof Error ? error.message : "添加服务失败")
 			setShowConnectingMessage(false)
 		}
 	}
@@ -67,10 +67,11 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 	return (
 		<div className="p-4 px-5">
 			<div className="text-[var(--vscode-foreground)] mb-2">
-				Add a remote MCP server by providing a name and its URL endpoint. Learn more{" "}
+				通过提供名称及其 URL 端点来添加远程 MCP 服务器。{" "}
 				<VSCodeLink href={LINKS.DOCUMENTATION.REMOTE_MCP_SERVER_DOCS} style={{ display: "inline" }}>
-					here.
+					这里.
 				</VSCodeLink>
+				了解更多
 			</div>
 
 			<form onSubmit={handleSubmit}>
@@ -84,7 +85,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 						disabled={isSubmitting}
 						className="w-full"
 						placeholder="mcp-server">
-						Server Name
+						服务名称
 					</VSCodeTextField>
 				</div>
 
@@ -98,7 +99,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 						disabled={isSubmitting}
 						placeholder="https://example.com/mcp-server"
 						className="w-full mr-4">
-						Server URL
+						服务 URL
 					</VSCodeTextField>
 				</div>
 
@@ -106,12 +107,12 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 
 				<div className="flex items-center mt-3 w-full">
 					<VSCodeButton type="submit" disabled={isSubmitting} className="w-full">
-						{isSubmitting ? "Adding..." : "Add Server"}
+						{isSubmitting ? "添加中..." : "添加服务"}
 					</VSCodeButton>
 
 					{showConnectingMessage && (
 						<div className="ml-3 text-[var(--vscode-notificationsInfoIcon-foreground)] text-sm">
-							Connecting to server... This may take a few seconds.
+							正在连接到服务器...这可能需要几秒钟。
 						</div>
 					)}
 				</div>
@@ -124,7 +125,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 							console.error("Error opening MCP settings:", error)
 						})
 					}}>
-					Edit Configuration
+					编辑配置
 				</VSCodeButton>
 			</form>
 		</div>

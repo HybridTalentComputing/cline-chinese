@@ -173,9 +173,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 					flexShrink: 0,
 				}}
 			/>
-			<Label $isCheckedOut={isCheckpointCheckedOut}>
-				{isCheckpointCheckedOut ? "Checkpoint (restored)" : "Checkpoint"}
-			</Label>
+			<Label $isCheckedOut={isCheckpointCheckedOut}>{isCheckpointCheckedOut ? "检查点 (恢复后)" : "检查点"}</Label>
 			<DottedLine $isCheckedOut={isCheckpointCheckedOut} />
 			<ButtonGroup>
 				<CustomButton
@@ -196,7 +194,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 							setCompareDisabled(false)
 						}
 					}}>
-					Compare
+					比较
 				</CustomButton>
 				<DottedLine small $isCheckedOut={isCheckpointCheckedOut} />
 				<div ref={refs.setReference} style={{ position: "relative", marginTop: -2 }}>
@@ -204,7 +202,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 						$isCheckedOut={isCheckpointCheckedOut}
 						isActive={showRestoreConfirm}
 						onClick={() => setShowRestoreConfirm(true)}>
-						Restore
+						恢复
 					</CustomButton>
 					{showRestoreConfirm &&
 						createPortal(
@@ -223,12 +221,9 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 											width: "100%",
 											marginBottom: "10px",
 										}}>
-										Restore Files
+										恢复文件
 									</VSCodeButton>
-									<p>
-										Restores your project's files back to a snapshot taken at this point (use "Compare" to see
-										what will be reverted)
-									</p>
+									<p>将项目文件恢复到此时拍摄的快照（使用“比较”查看将恢复的内容）</p>
 								</RestoreOption>
 								<RestoreOption>
 									<VSCodeButton
@@ -239,9 +234,9 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 											width: "100%",
 											marginBottom: "10px",
 										}}>
-										Restore Task Only
+										仅恢复任务
 									</VSCodeButton>
-									<p>Deletes messages after this point (does not affect workspace files)</p>
+									<p>删除此后的消息（不影响工作区文件）</p>
 								</RestoreOption>
 								<RestoreOption>
 									<VSCodeButton
@@ -252,9 +247,9 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 											width: "100%",
 											marginBottom: "10px",
 										}}>
-										Restore Files & Task
+										恢复文件和任务
 									</VSCodeButton>
-									<p>Restores your project's files and deletes all messages after this point</p>
+									<p>恢复项目文件并删除此后的所有消息</p>
 								</RestoreOption>
 							</RestoreConfirmTooltip>,
 							document.body,

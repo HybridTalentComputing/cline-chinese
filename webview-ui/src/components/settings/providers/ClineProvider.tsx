@@ -44,7 +44,7 @@ export const ClineProvider = ({ showModelOptions, isPopup }: ClineProviderProps)
 								handleFieldChange("openRouterProviderSorting", "")
 							}
 						}}>
-						Sort underlying provider routing
+						上游供应商排序
 					</VSCodeCheckbox>
 
 					{providerSortingSelected && (
@@ -56,21 +56,21 @@ export const ClineProvider = ({ showModelOptions, isPopup }: ClineProviderProps)
 									onChange={(e: any) => {
 										handleFieldChange("openRouterProviderSorting", e.target.value)
 									}}>
-									<VSCodeOption value="">Default</VSCodeOption>
-									<VSCodeOption value="price">Price</VSCodeOption>
-									<VSCodeOption value="throughput">Throughput</VSCodeOption>
-									<VSCodeOption value="latency">Latency</VSCodeOption>
+									<VSCodeOption value="">默认</VSCodeOption>
+									<VSCodeOption value="price">价格</VSCodeOption>
+									<VSCodeOption value="throughput">吞吐量</VSCodeOption>
+									<VSCodeOption value="latency">延时</VSCodeOption>
 								</VSCodeDropdown>
 							</DropdownContainer>
 							<p style={{ fontSize: "12px", marginTop: 3, color: "var(--vscode-descriptionForeground)" }}>
 								{!apiConfiguration?.openRouterProviderSorting &&
-									"Default behavior is to load balance requests across providers (like AWS, Google Vertex, Anthropic), prioritizing price while considering provider uptime"}
+									"默认行为是跨提供商（如 AWS、Google Vertex、Anthropic）对请求进行负载平衡，优先考虑价格，同时考虑提供商的正常运行时间"}
 								{apiConfiguration?.openRouterProviderSorting === "price" &&
-									"Sort providers by price, prioritizing the lowest cost provider"}
+									"按价格对供应商进行排序，优先选择成本最低的供应商"}
 								{apiConfiguration?.openRouterProviderSorting === "throughput" &&
-									"Sort providers by throughput, prioritizing the provider with the highest throughput (may increase cost)"}
+									"按吞吐量对提供商进行排序，优先考虑吞吐量最高的提供商（可能会增加成本）"}
 								{apiConfiguration?.openRouterProviderSorting === "latency" &&
-									"Sort providers by response time, prioritizing the provider with the lowest latency"}
+									"按响应时间对提供商进行排序，优先选择延迟最低的提供商"}
 							</p>
 						</div>
 					)}

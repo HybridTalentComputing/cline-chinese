@@ -29,19 +29,19 @@ export function useButtonState(messages: ClineMessage[], chatState: ChatState) {
 							setSendingDisabled(true)
 							setEnableButtons(true)
 							setPrimaryButtonText("Retry")
-							setSecondaryButtonText("Start New Task")
+							setSecondaryButtonText("开始新任务")
 							break
 						case "mistake_limit_reached":
 							setSendingDisabled(false)
 							setEnableButtons(true)
 							setPrimaryButtonText("Proceed Anyways")
-							setSecondaryButtonText("Start New Task")
+							setSecondaryButtonText("开始新任务")
 							break
 						case "auto_approval_max_req_reached":
 							setSendingDisabled(true)
 							setEnableButtons(true)
 							setPrimaryButtonText("Proceed")
-							setSecondaryButtonText("Start New Task")
+							setSecondaryButtonText("开始新任务")
 							break
 						case "followup":
 							setSendingDisabled(isPartial)
@@ -58,75 +58,75 @@ export function useButtonState(messages: ClineMessage[], chatState: ChatState) {
 							switch (tool.tool) {
 								case "editedExistingFile":
 								case "newFileCreated":
-									setPrimaryButtonText("Save")
-									setSecondaryButtonText("Reject")
+									setPrimaryButtonText("保存")
+									setSecondaryButtonText("拒绝")
 									break
 								default:
-									setPrimaryButtonText("Approve")
-									setSecondaryButtonText("Reject")
+									setPrimaryButtonText("批准")
+									setSecondaryButtonText("拒绝")
 									break
 							}
 							break
 						case "browser_action_launch":
 							setSendingDisabled(isPartial)
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Approve")
-							setSecondaryButtonText("Reject")
+							setPrimaryButtonText("批准")
+							setSecondaryButtonText("拒绝")
 							break
 						case "command":
 							setSendingDisabled(isPartial)
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Run Command")
-							setSecondaryButtonText("Reject")
+							setPrimaryButtonText("运行命令")
+							setSecondaryButtonText("拒绝")
 							break
 						case "command_output":
 							setSendingDisabled(false)
 							setEnableButtons(true)
-							setPrimaryButtonText("Proceed While Running")
+							setPrimaryButtonText("运行中继续")
 							setSecondaryButtonText(undefined)
 							break
 						case "use_mcp_server":
 							setSendingDisabled(isPartial)
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Approve")
-							setSecondaryButtonText("Reject")
+							setPrimaryButtonText("批准")
+							setSecondaryButtonText("拒绝")
 							break
 						case "completion_result":
 							setSendingDisabled(isPartial)
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Start New Task")
+							setPrimaryButtonText("开始新任务")
 							setSecondaryButtonText(undefined)
 							break
 						case "resume_task":
 							setSendingDisabled(false)
 							setEnableButtons(true)
-							setPrimaryButtonText("Resume Task")
+							setPrimaryButtonText("重启任务")
 							setSecondaryButtonText(undefined)
 							setDidClickCancel(false)
 							break
 						case "resume_completed_task":
 							setSendingDisabled(false)
 							setEnableButtons(true)
-							setPrimaryButtonText("Start New Task")
+							setPrimaryButtonText("开始新任务")
 							setSecondaryButtonText(undefined)
 							setDidClickCancel(false)
 							break
 						case "new_task":
 							setSendingDisabled(isPartial)
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Start New Task with Context")
+							setPrimaryButtonText("带上下文开始新任务")
 							setSecondaryButtonText(undefined)
 							break
 						case "condense":
 							setSendingDisabled(isPartial)
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Condense Conversation")
+							setPrimaryButtonText("总结会话")
 							setSecondaryButtonText(undefined)
 							break
 						case "report_bug":
 							setSendingDisabled(isPartial)
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText("Report GitHub issue")
+							setPrimaryButtonText("报告错误")
 							setSecondaryButtonText(undefined)
 							break
 					}
@@ -153,8 +153,8 @@ export function useButtonState(messages: ClineMessage[], chatState: ChatState) {
 		if (messages.length === 0) {
 			setSendingDisabled(false)
 			setEnableButtons(false)
-			setPrimaryButtonText("Approve")
-			setSecondaryButtonText("Reject")
+			setPrimaryButtonText("批准")
+			setSecondaryButtonText("拒绝")
 		}
 	}, [messages.length, setSendingDisabled, setEnableButtons, setPrimaryButtonText, setSecondaryButtonText])
 }

@@ -38,7 +38,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup }: LiteLlmProviderPr
 				style={{ width: "100%" }}
 				type="url"
 				placeholder={"Default: http://localhost:4000"}>
-				<span style={{ fontWeight: 500 }}>Base URL (optional)</span>
+				<span style={{ fontWeight: 500 }}>Base URL (选填)</span>
 			</DebouncedTextField>
 			<DebouncedTextField
 				initialValue={apiConfiguration?.liteLlmApiKey || ""}
@@ -53,7 +53,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup }: LiteLlmProviderPr
 				onChange={(value) => handleFieldChange("liteLlmModelId", value)}
 				style={{ width: "100%" }}
 				placeholder={"e.g. anthropic/claude-sonnet-4-20250514"}>
-				<span style={{ fontWeight: 500 }}>Model ID</span>
+				<span style={{ fontWeight: 500 }}>模型 ID</span>
 			</DebouncedTextField>
 
 			<div style={{ display: "flex", flexDirection: "column", marginTop: 10, marginBottom: 10 }}>
@@ -67,10 +67,10 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup }: LiteLlmProviderPr
 								handleFieldChange("liteLlmUsePromptCache", isChecked)
 							}}
 							style={{ fontWeight: 500, color: "var(--vscode-charts-green)" }}>
-							Use prompt caching (GA)
+							使用提示词缓存
 						</VSCodeCheckbox>
 						<p style={{ fontSize: "12px", marginTop: 3, color: "var(--vscode-charts-green)" }}>
-							Prompt caching requires a supported provider and model
+							提示缓存需要支持的提供程序和模型
 						</p>
 					</>
 				)}
@@ -84,11 +84,11 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup }: LiteLlmProviderPr
 						marginTop: "5px",
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					Extended thinking is available for models such as Sonnet-4, o3-mini, Deepseek R1, etc. More info on{" "}
+					扩展思维可用于 Sonnet-4、o3-mini、Deepseek R1 等模型。更多信息{" "}
 					<VSCodeLink
 						href="https://docs.litellm.ai/docs/reasoning_content"
 						style={{ display: "inline", fontSize: "inherit" }}>
-						thinking mode configuration
+						思维模式配置
 					</VSCodeLink>
 				</p>
 			</>
@@ -112,7 +112,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup }: LiteLlmProviderPr
 						fontWeight: 700,
 						textTransform: "uppercase",
 					}}>
-					Model Configuration
+					模型配置
 				</span>
 			</div>
 			{modelConfigurationSelected && (
@@ -128,7 +128,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup }: LiteLlmProviderPr
 
 							handleFieldChange("liteLlmModelInfo", modelInfo)
 						}}>
-						Supports Images
+						支持图片
 					</VSCodeCheckbox>
 					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
 						<DebouncedTextField
@@ -146,7 +146,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup }: LiteLlmProviderPr
 
 								handleFieldChange("liteLlmModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Context Window Size</span>
+							<span style={{ fontWeight: 500 }}>输入窗口大小</span>
 						</DebouncedTextField>
 						<DebouncedTextField
 							initialValue={
@@ -163,7 +163,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup }: LiteLlmProviderPr
 
 								handleFieldChange("liteLlmModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Max Output Tokens</span>
+							<span style={{ fontWeight: 500 }}>最大输出 Tokens</span>
 						</DebouncedTextField>
 					</div>
 					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
@@ -186,7 +186,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup }: LiteLlmProviderPr
 
 								handleFieldChange("liteLlmModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Temperature</span>
+							<span style={{ fontWeight: 500 }}>温度</span>
 						</DebouncedTextField>
 					</div>
 				</>
@@ -197,11 +197,10 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup }: LiteLlmProviderPr
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				LiteLLM provides a unified interface to access various LLM providers' models. See their{" "}
+				LiteLLM 提供统一的接口，方便访问各种 LLM 提供商的模型。请参阅他们的{" "}
 				<VSCodeLink href="https://docs.litellm.ai/docs/" style={{ display: "inline", fontSize: "inherit" }}>
-					quickstart guide
+					快速入门指南
 				</VSCodeLink>{" "}
-				for more information.
 			</p>
 
 			{showModelOptions && (

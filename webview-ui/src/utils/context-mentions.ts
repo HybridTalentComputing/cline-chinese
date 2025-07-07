@@ -138,7 +138,7 @@ export function getContextMenuOptions(
 		suggestions.push({
 			type: ContextMenuOptionType.Git,
 			label: "Git Commits",
-			description: "Search repository history",
+			description: "搜索提交历史",
 		})
 	} else if ("git-changes".startsWith(lowerQuery)) {
 		suggestions.push(workingChanges)

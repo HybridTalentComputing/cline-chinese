@@ -90,7 +90,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 				onChange={(value) => handleFieldChange("openAiModelId", value)}
 				style={{ width: "100%", marginBottom: 10 }}
 				placeholder={"Enter Model ID..."}>
-				<span style={{ fontWeight: 500 }}>Model ID</span>
+				<span style={{ fontWeight: 500 }}>模型 ID</span>
 			</DebouncedTextField>
 
 			{/* OpenAI Compatible Custom Headers */}
@@ -99,7 +99,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 				return (
 					<div style={{ marginBottom: 10 }}>
 						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-							<span style={{ fontWeight: 500 }}>Custom Headers</span>
+							<span style={{ fontWeight: 500 }}>自定义头 Headers</span>
 							<VSCodeButton
 								onClick={() => {
 									const currentHeaders = { ...(apiConfiguration?.openAiHeaders || {}) }
@@ -108,7 +108,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 									currentHeaders[newKey] = ""
 									handleFieldChange("openAiHeaders", currentHeaders)
 								}}>
-								Add Header
+								增加头
 							</VSCodeButton>
 						</div>
 						<div>
@@ -146,7 +146,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 											const { [key]: _, ...rest } = apiConfiguration?.openAiHeaders ?? {}
 											handleFieldChange("openAiHeaders", rest)
 										}}>
-										Remove
+										删除
 									</VSCodeButton>
 								</div>
 							))}
@@ -181,7 +181,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 						fontWeight: 700,
 						textTransform: "uppercase",
 					}}>
-					Model Configuration
+					模型配置
 				</span>
 			</div>
 
@@ -197,7 +197,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 							modelInfo.supportsImages = isChecked
 							handleFieldChange("openAiModelInfo", modelInfo)
 						}}>
-						Supports Images
+						支持图片
 					</VSCodeCheckbox>
 
 					<VSCodeCheckbox
@@ -210,7 +210,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 							modelInfo.supportsImages = isChecked
 							handleFieldChange("openAiModelInfo", modelInfo)
 						}}>
-						Supports browser use
+						支持浏览器使用
 					</VSCodeCheckbox>
 
 					<VSCodeCheckbox
@@ -224,7 +224,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 
 							handleFieldChange("openAiModelInfo", modelInfo)
 						}}>
-						Enable R1 messages format
+						启用 R1 消息格式
 					</VSCodeCheckbox>
 
 					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
@@ -242,7 +242,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 								modelInfo.contextWindow = Number(value)
 								handleFieldChange("openAiModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Context Window Size</span>
+							<span style={{ fontWeight: 500 }}>输入窗口大小</span>
 						</DebouncedTextField>
 
 						<DebouncedTextField
@@ -259,7 +259,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 								modelInfo.maxTokens = Number(value)
 								handleFieldChange("openAiModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Max Output Tokens</span>
+							<span style={{ fontWeight: 500 }}>最大输出 Tokens</span>
 						</DebouncedTextField>
 					</div>
 
@@ -278,7 +278,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 								modelInfo.inputPrice = Number(value)
 								handleFieldChange("openAiModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Input Price / 1M tokens</span>
+							<span style={{ fontWeight: 500 }}>输入价格 / 1M tokens</span>
 						</DebouncedTextField>
 
 						<DebouncedTextField
@@ -295,7 +295,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 								modelInfo.outputPrice = Number(value)
 								handleFieldChange("openAiModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Output Price / 1M tokens</span>
+							<span style={{ fontWeight: 500 }}>输出价格 / 1M tokens</span>
 						</DebouncedTextField>
 					</div>
 
@@ -322,7 +322,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 
 								handleFieldChange("openAiModelInfo", modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Temperature</span>
+							<span style={{ fontWeight: 500 }}>温度</span>
 						</DebouncedTextField>
 					</div>
 				</>
@@ -335,8 +335,8 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup }: OpenAICo
 					color: "var(--vscode-descriptionForeground)",
 				}}>
 				<span style={{ color: "var(--vscode-errorForeground)" }}>
-					(<span style={{ fontWeight: 500 }}>Note:</span> Cline uses complex prompts and works best with Claude models.
-					Less capable models may not work as expected.)
+					(<span style={{ fontWeight: 500 }}>注意:</span> Cline 使用复杂的提示，与 Claude
+					模型配合使用效果最佳。性能较差的模型可能无法达到预期效果。)
 				</span>
 			</p>
 

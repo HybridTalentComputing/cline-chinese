@@ -106,13 +106,13 @@ export const ModelInfoView = ({ selectedModelId, modelInfo, isPopup }: ModelInfo
 	// Create elements for input pricing
 	const inputPriceElement = hasTiers ? (
 		<Fragment key="inputPriceTiers">
-			<span style={{ fontWeight: 500 }}>Input price:</span>
+			<span style={{ fontWeight: 500 }}>输入价格:</span>
 			<br />
 			{formatTiers(modelInfo.tiers, "inputPrice")}
 		</Fragment>
 	) : modelInfo.inputPrice !== undefined && modelInfo.inputPrice > 0 ? (
 		<span key="inputPrice">
-			<span style={{ fontWeight: 500 }}>Input price:</span> {formatTokenPrice(modelInfo.inputPrice)}
+			<span style={{ fontWeight: 500 }}>输入价格:</span> {formatTokenPrice(modelInfo.inputPrice)}
 		</span>
 	) : null
 
@@ -122,9 +122,9 @@ export const ModelInfoView = ({ selectedModelId, modelInfo, isPopup }: ModelInfo
 		// Display both standard and thinking budget prices
 		outputPriceElement = (
 			<Fragment key="outputPriceConditional">
-				<span style={{ fontWeight: 500 }}>Output price (Standard):</span> {formatTokenPrice(modelInfo.outputPrice)}
+				<span style={{ fontWeight: 500 }}>输出价格 (标准):</span> {formatTokenPrice(modelInfo.outputPrice)}
 				<br />
-				<span style={{ fontWeight: 500 }}>Output price (Thinking Budget &gt; 0):</span>{" "}
+				<span style={{ fontWeight: 500 }}>输出价格 (思考预算 &gt; 0):</span>{" "}
 				{formatTokenPrice(modelInfo.thinkingConfig.outputPrice)}
 			</Fragment>
 		)
@@ -132,8 +132,8 @@ export const ModelInfoView = ({ selectedModelId, modelInfo, isPopup }: ModelInfo
 		// Display tiered output pricing
 		outputPriceElement = (
 			<Fragment key="outputPriceTiers">
-				<span style={{ fontWeight: 500 }}>Output price:</span>
-				<span style={{ fontStyle: "italic" }}> (based on input tokens)</span>
+				<span style={{ fontWeight: 500 }}>输出价格:</span>
+				<span style={{ fontStyle: "italic" }}> (基于输入 tokens)</span>
 				<br />
 				{formatTiers(modelInfo.tiers, "outputPrice")}
 			</Fragment>
@@ -142,7 +142,7 @@ export const ModelInfoView = ({ selectedModelId, modelInfo, isPopup }: ModelInfo
 		// Display single standard output price
 		outputPriceElement = (
 			<span key="outputPrice">
-				<span style={{ fontWeight: 500 }}>Output price:</span> {formatTokenPrice(modelInfo.outputPrice)}
+				<span style={{ fontWeight: 500 }}>输出价格:</span> {formatTokenPrice(modelInfo.outputPrice)}
 			</span>
 		)
 	}
@@ -161,37 +161,37 @@ export const ModelInfoView = ({ selectedModelId, modelInfo, isPopup }: ModelInfo
 		<ModelInfoSupportsItem
 			key="supportsImages"
 			isSupported={supportsImages(modelInfo)}
-			supportsLabel="Supports images"
-			doesNotSupportLabel="Does not support images"
+			supportsLabel="支持图片"
+			doesNotSupportLabel="不支持图片"
 		/>,
 		<ModelInfoSupportsItem
 			key="supportsBrowserUse"
 			isSupported={supportsBrowserUse(modelInfo)}
-			supportsLabel="Supports browser use"
-			doesNotSupportLabel="Does not support browser use"
+			supportsLabel="支持浏览器操作"
+			doesNotSupportLabel="不支持浏览器操作"
 		/>,
 		!isGemini && (
 			<ModelInfoSupportsItem
 				key="supportsPromptCache"
 				isSupported={supportsPromptCache(modelInfo)}
-				supportsLabel="Supports prompt caching"
-				doesNotSupportLabel="Does not support prompt caching"
+				supportsLabel="支持提示词缓存"
+				doesNotSupportLabel="不支持提示词缓存"
 			/>
 		),
 		modelInfo.maxTokens !== undefined && modelInfo.maxTokens > 0 && (
 			<span key="maxTokens">
-				<span style={{ fontWeight: 500 }}>Max output:</span> {formatTokenLimit(modelInfo.maxTokens)} tokens
+				<span style={{ fontWeight: 500 }}>最大输出:</span> {formatTokenLimit(modelInfo.maxTokens)} tokens
 			</span>
 		),
 		inputPriceElement, // Add the generated input price block
 		modelInfo.supportsPromptCache && modelInfo.cacheWritesPrice && (
 			<span key="cacheWritesPrice">
-				<span style={{ fontWeight: 500 }}>Cache writes price:</span> {formatTokenPrice(modelInfo.cacheWritesPrice || 0)}
+				<span style={{ fontWeight: 500 }}>写缓存价格:</span> {formatTokenPrice(modelInfo.cacheWritesPrice || 0)}
 			</span>
 		),
 		modelInfo.supportsPromptCache && modelInfo.cacheReadsPrice && (
 			<span key="cacheReadsPrice">
-				<span style={{ fontWeight: 500 }}>Cache reads price:</span> {formatTokenPrice(modelInfo.cacheReadsPrice || 0)}
+				<span style={{ fontWeight: 500 }}>读缓存价格:</span> {formatTokenPrice(modelInfo.cacheReadsPrice || 0)}
 			</span>
 		),
 		outputPriceElement, // Add the generated output price block

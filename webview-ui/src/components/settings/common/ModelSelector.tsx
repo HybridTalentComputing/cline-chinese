@@ -53,7 +53,7 @@ export const ModelSelector = ({ models, selectedModelId, onChange, zIndex, label
 				<span style={{ fontWeight: 500 }}>{label}</span>
 			</label>
 			<VSCodeDropdown id="model-id" value={selectedModelId} onChange={onChange} style={{ width: "100%" }}>
-				<VSCodeOption value="">Select a model...</VSCodeOption>
+				<VSCodeOption value="">选择模型...</VSCodeOption>
 				{Object.keys(models).map((modelId) => (
 					<VSCodeOption
 						key={modelId}

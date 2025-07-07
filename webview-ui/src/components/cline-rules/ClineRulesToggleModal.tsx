@@ -197,10 +197,10 @@ const ClineRulesToggleModal: React.FC = () => {
 	return (
 		<div ref={modalRef}>
 			<div ref={buttonRef} className="inline-flex min-w-0 max-w-full">
-				<Tooltip tipText="Manage Cline Rules & Workflows" visible={isVisible ? false : undefined}>
+				<Tooltip tipText="管理 Cline 规则 & 工作流" visible={isVisible ? false : undefined}>
 					<VSCodeButton
 						appearance="icon"
-						aria-label="Cline Rules"
+						aria-label="Cline 规则"
 						onClick={() => setIsVisible(!isVisible)}
 						style={{ padding: "0px 0px", height: "20px" }}>
 						<div className="flex items-center gap-1 text-xs whitespace-nowrap min-w-0 w-full">
@@ -245,10 +245,10 @@ const ClineRulesToggleModal: React.FC = () => {
 								borderBottom: "1px solid var(--vscode-panel-border)",
 							}}>
 							<TabButton isActive={currentView === "rules"} onClick={() => setCurrentView("rules")}>
-								Rules
+								规则
 							</TabButton>
 							<TabButton isActive={currentView === "workflows"} onClick={() => setCurrentView("workflows")}>
-								Workflows
+								工作流
 							</TabButton>
 						</div>
 					</div>
@@ -257,30 +257,30 @@ const ClineRulesToggleModal: React.FC = () => {
 					<div className="text-xs text-[var(--vscode-descriptionForeground)] mb-4">
 						{currentView === "rules" ? (
 							<p>
-								Rules allow you to provide Cline with system-level guidance. Think of them as a persistent way to
-								include context and preferences for your projects or globally for every conversation.{" "}
+								规则允许您为 Cline
+								提供系统级指导。您可以将其视为一种持久的方式，用于包含项目或全局对话的背景和偏好。.{" "}
 								<VSCodeLink
 									href="https://docs.cline.bot/features/cline-rules"
 									style={{ display: "inline" }}
 									className="text-xs">
-									Docs
+									文档
 								</VSCodeLink>
 							</p>
 						) : (
 							<p>
-								Workflows allow you to define a series of steps to guide Cline through a repetitive set of tasks,
-								such as deploying a service or submitting a PR. To invoke a workflow, type{" "}
+								工作流允许您定义一系列步骤来指导 Cline 完成一组重复性任务，例如部署服务或提交
+								PR。要调用工作流，请输入{" "}
 								<span
 									className=" 
 								text-[var(--vscode-foreground)] font-bold">
-									/workflow-name
+									/工作流名
 								</span>{" "}
-								in the chat.{" "}
+								在对话中.{" "}
 								<VSCodeLink
 									href="https://docs.cline.bot/features/slash-commands/workflows"
 									style={{ display: "inline" }}
 									className="text-xs">
-									Docs
+									文档
 								</VSCodeLink>
 							</p>
 						)}
@@ -290,7 +290,7 @@ const ClineRulesToggleModal: React.FC = () => {
 						<>
 							{/* Global Rules Section */}
 							<div className="mb-3">
-								<div className="text-sm font-normal mb-2">Global Rules</div>
+								<div className="text-sm font-normal mb-2">全局规则</div>
 								<RulesToggleList
 									rules={globalRules}
 									toggleRule={(rulePath, enabled) => toggleRule(true, rulePath, enabled)}
@@ -304,7 +304,7 @@ const ClineRulesToggleModal: React.FC = () => {
 
 							{/* Local Rules Section */}
 							<div style={{ marginBottom: -10 }}>
-								<div className="text-sm font-normal mb-2">Workspace Rules</div>
+								<div className="text-sm font-normal mb-2">工作区规则</div>
 								<RulesToggleList
 									rules={localRules}
 									toggleRule={(rulePath, enabled) => toggleRule(false, rulePath, enabled)}
@@ -338,7 +338,7 @@ const ClineRulesToggleModal: React.FC = () => {
 						<>
 							{/* Global Workflows Section */}
 							<div className="mb-3">
-								<div className="text-sm font-normal mb-2">Global Workflows</div>
+								<div className="text-sm font-normal mb-2">全局工作流</div>
 								<RulesToggleList
 									rules={globalWorkflows}
 									toggleRule={(rulePath, enabled) => toggleWorkflow(true, rulePath, enabled)}
@@ -352,7 +352,7 @@ const ClineRulesToggleModal: React.FC = () => {
 
 							{/* Local Workflows Section */}
 							<div style={{ marginBottom: -10 }}>
-								<div className="text-sm font-normal mb-2">Workspace Workflows</div>
+								<div className="text-sm font-normal mb-2">工作区工作流</div>
 								<RulesToggleList
 									rules={localWorkflows}
 									toggleRule={(rulePath, enabled) => toggleWorkflow(false, rulePath, enabled)}

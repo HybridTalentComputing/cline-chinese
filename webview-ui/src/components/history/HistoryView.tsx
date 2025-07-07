@@ -204,17 +204,11 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 
 	const formatDate = useCallback((timestamp: number) => {
 		const date = new Date(timestamp)
-		return date
-			?.toLocaleString("en-US", {
-				month: "long",
-				day: "numeric",
-				hour: "numeric",
-				minute: "2-digit",
-				hour12: true,
-			})
-			.replace(", ", " ")
-			.replace(" at", ",")
-			.toUpperCase()
+		return date?.toLocaleString("zh-CN", {
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit",
+		})
 	}, [])
 
 	const presentableTasks = useMemo(() => filteredTasks, [filteredTasks])
@@ -323,9 +317,9 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							color: "var(--vscode-foreground)",
 							margin: 0,
 						}}>
-						History
+						历史记录
 					</h3>
-					<VSCodeButton onClick={onDone}>Done</VSCodeButton>
+					<VSCodeButton onClick={onDone}>确定</VSCodeButton>
 				</div>
 				<div style={{ padding: "5px 17px 6px 17px" }}>
 					<div
@@ -373,24 +367,24 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							style={{ display: "flex", flexWrap: "wrap" }}
 							value={sortOption}
 							onChange={(e) => setSortOption((e.target as HTMLInputElement).value as SortOption)}>
-							<VSCodeRadio value="newest">Newest</VSCodeRadio>
-							<VSCodeRadio value="oldest">Oldest</VSCodeRadio>
-							<VSCodeRadio value="mostExpensive">Most Expensive</VSCodeRadio>
-							<VSCodeRadio value="mostTokens">Most Tokens</VSCodeRadio>
+							<VSCodeRadio value="newest">最近</VSCodeRadio>
+							<VSCodeRadio value="oldest">最早</VSCodeRadio>
+							<VSCodeRadio value="mostExpensive">最贵</VSCodeRadio>
+							<VSCodeRadio value="mostTokens">Tokens最多</VSCodeRadio>
 							<VSCodeRadio value="mostRelevant" disabled={!searchQuery} style={{ opacity: searchQuery ? 1 : 0.5 }}>
-								Most Relevant
+								最相关
 							</VSCodeRadio>
 							<CustomFilterRadio
 								checked={showCurrentWorkspaceOnly}
 								onChange={() => setShowCurrentWorkspaceOnly(!showCurrentWorkspaceOnly)}
 								icon="workspace"
-								label="Workspace"
+								label="工作区"
 							/>
 							<CustomFilterRadio
 								checked={showFavoritesOnly}
 								onChange={() => setShowFavoritesOnly(!showFavoritesOnly)}
 								icon="star-full"
-								label="Favorites"
+								label="收藏"
 							/>
 						</VSCodeRadioGroup>
 
@@ -399,13 +393,13 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								onClick={() => {
 									handleBatchHistorySelect(true)
 								}}>
-								Select All
+								选择所有
 							</VSCodeButton>
 							<VSCodeButton
 								onClick={() => {
 									handleBatchHistorySelect(false)
 								}}>
-								Select None
+								清空选择
 							</VSCodeButton>
 						</div>
 					</div>
@@ -632,7 +626,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 														fontWeight: 500,
 														color: "var(--vscode-descriptionForeground)",
 													}}>
-													Cache:
+													缓存:
 												</span>
 												<span
 													style={{
@@ -689,7 +683,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 															fontWeight: 500,
 															color: "var(--vscode-descriptionForeground)",
 														}}>
-														API Cost:
+														API 费用:
 													</span>
 													<span
 														style={{
@@ -718,7 +712,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							onClick={() => {
 								handleDeleteSelectedHistoryItems(selectedItems)
 							}}>
-							Delete {selectedItems.length > 1 ? selectedItems.length : ""} Selected
+							删除 {selectedItems.length > 1 ? selectedItems.length : ""} 选择
 							{selectedItemsSize > 0 ? ` (${formatSize(selectedItemsSize)})` : ""}
 						</DangerButton>
 					) : (
@@ -731,7 +725,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 									.catch((error) => console.error("Error deleting task history:", error))
 									.finally(() => setDeleteAllDisabled(false))
 							}}>
-							Delete All History{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
+							删除全部记录{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
 						</DangerButton>
 					)}
 				</div>
@@ -750,7 +744,7 @@ const ExportButton = ({ itemId }: { itemId: string }) => (
 				console.error("Failed to export task:", err),
 			)
 		}}>
-		<div style={{ fontSize: "11px", fontWeight: 500, opacity: 1 }}>EXPORT</div>
+		<div style={{ fontSize: "11px", fontWeight: 500, opacity: 1 }}>导出</div>
 	</VSCodeButton>
 )
 

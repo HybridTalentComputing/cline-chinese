@@ -42,6 +42,10 @@ import {
 	sapAiCoreDefaultModelId,
 	claudeCodeDefaultModelId,
 	claudeCodeModels,
+	shengSuanYunDefaultModelId,
+	shengSuanYunDefaultModelInfo,
+	difyDefaultModelId,
+	difyModels,
 } from "@shared/api"
 
 /**
@@ -181,6 +185,18 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 			return getProviderData(cerebrasModels, cerebrasDefaultModelId)
 		case "sapaicore":
 			return getProviderData(sapAiCoreModels, sapAiCoreDefaultModelId)
+		case "shengsuanyun":
+			return {
+				selectedProvider: provider,
+				selectedModelId: apiConfiguration?.shengSuanYunModelId || shengSuanYunDefaultModelId,
+				selectedModelInfo: apiConfiguration?.shengSuanYunModelInfo || shengSuanYunDefaultModelInfo,
+			}
+		case "dify":
+			return {
+				selectedProvider: provider,
+				selectedModelId: difyDefaultModelId,
+				selectedModelInfo: difyModels[difyDefaultModelId],
+			}
 		default:
 			return getProviderData(anthropicModels, anthropicDefaultModelId)
 	}

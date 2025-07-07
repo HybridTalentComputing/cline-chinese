@@ -15,16 +15,16 @@ const DebugSection = ({ onResetState, renderSectionHeader }: DebugSectionProps) 
 					onClick={() => onResetState()}
 					className="mt-[5px] w-auto"
 					style={{ backgroundColor: "var(--vscode-errorForeground)", color: "black" }}>
-					Reset Workspace State
+					重置工作空间状态
 				</VSCodeButton>
 				<VSCodeButton
 					onClick={() => onResetState(true)}
 					className="mt-[5px] w-auto"
 					style={{ backgroundColor: "var(--vscode-errorForeground)", color: "black" }}>
-					Reset Global State
+					重置全局状态
 				</VSCodeButton>
 				<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
-					This will reset all global state and secret storage in the extension.
+					这将重置扩展中的所有全局状态和密钥。
 				</p>
 			</Section>
 		</div>

@@ -72,7 +72,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ chatState, message
 						marginLeft: isStreaming ? 0 : "6px",
 					}}
 					onClick={() => messageHandlers.handleSecondaryButtonClick(inputValue, selectedImages, selectedFiles)}>
-					{isStreaming ? "Cancel" : secondaryButtonText}
+					{isStreaming ? "取消" : secondaryButtonText}
 				</VSCodeButton>
 			)}
 		</div>

@@ -42,7 +42,7 @@ const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
 				paddingLeft: 4,
 				cursor: "pointer",
 			}}>
-			Balance: {formattedBalance}
+			余额: {formattedBalance}
 		</VSCodeLink>
 	)
 }
@@ -86,7 +86,7 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, uriScheme }: Ope
 						href={getOpenRouterAuthUrl(uriScheme)}
 						style={{ margin: "5px 0 0 0" }}
 						appearance="secondary">
-						Get OpenRouter API Key
+						获取 OpenRouter API Key
 					</VSCodeButtonLink>
 				)}
 				<p
@@ -95,7 +95,7 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, uriScheme }: Ope
 						marginTop: "5px",
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					This key is stored locally and only used to make API requests from this extension.
+					此密钥存储在本地，仅用于从此扩展发出 API 请求。
 				</p>
 			</div>
 
@@ -111,7 +111,7 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, uriScheme }: Ope
 								handleFieldChange("openRouterProviderSorting", "")
 							}
 						}}>
-						Sort underlying provider routing
+						上游供应商排序
 					</VSCodeCheckbox>
 
 					{providerSortingSelected && (
@@ -123,21 +123,21 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, uriScheme }: Ope
 									onChange={(e: any) => {
 										handleFieldChange("openRouterProviderSorting", e.target.value)
 									}}>
-									<VSCodeOption value="">Default</VSCodeOption>
-									<VSCodeOption value="price">Price</VSCodeOption>
-									<VSCodeOption value="throughput">Throughput</VSCodeOption>
-									<VSCodeOption value="latency">Latency</VSCodeOption>
+									<VSCodeOption value="">默认</VSCodeOption>
+									<VSCodeOption value="price">价格</VSCodeOption>
+									<VSCodeOption value="throughput">吞吐量</VSCodeOption>
+									<VSCodeOption value="latency">延时</VSCodeOption>
 								</VSCodeDropdown>
 							</DropdownContainer>
 							<p style={{ fontSize: "12px", marginTop: 3, color: "var(--vscode-descriptionForeground)" }}>
 								{!apiConfiguration?.openRouterProviderSorting &&
-									"Default behavior is to load balance requests across providers (like AWS, Google Vertex, Anthropic), prioritizing price while considering provider uptime"}
+									"默认行为是跨提供商（如 AWS、Google Vertex、Anthropic）对请求进行负载平衡，优先考虑价格，同时考虑提供商的正常运行时间"}
 								{apiConfiguration?.openRouterProviderSorting === "price" &&
-									"Sort providers by price, prioritizing the lowest cost provider"}
+									"按价格对供应商进行排序，优先选择成本最低的供应商"}
 								{apiConfiguration?.openRouterProviderSorting === "throughput" &&
-									"Sort providers by throughput, prioritizing the provider with the highest throughput (may increase cost)"}
+									"按吞吐量对提供商进行排序，优先考虑吞吐量最高的提供商（可能会增加成本）"}
 								{apiConfiguration?.openRouterProviderSorting === "latency" &&
-									"Sort providers by response time, prioritizing the provider with the lowest latency"}
+									"按响应时间对提供商进行排序，优先选择延迟最低的提供商"}
 							</p>
 						</div>
 					)}

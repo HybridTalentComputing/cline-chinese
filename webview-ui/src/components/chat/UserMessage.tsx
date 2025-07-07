@@ -131,7 +131,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ text, images, files, messageT
 								label="Restore All"
 								isPrimary={false}
 								onClick={handleRestoreWorkspace}
-								title="Restore both the chat and workspace files to this checkpoint and send your edited message"
+								title="将聊天和工作区文件恢复到此检查点并发送您编辑的消息"
 							/>
 						)}
 						<RestoreButton
@@ -140,7 +140,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ text, images, files, messageT
 							label="Restore Chat"
 							isPrimary={true}
 							onClick={handleRestoreWorkspace}
-							title="Restore just the chat to this checkpoint and send your edited message"
+							title="仅将聊天恢复到此检查点并发送您编辑的消息"
 						/>
 					</div>
 				</>

@@ -51,25 +51,25 @@ export const VertexProvider = ({ showModelOptions, isPopup }: VertexProviderProp
 				onChange={(value) => handleFieldChange("vertexProjectId", value)}
 				style={{ width: "100%" }}
 				placeholder="Enter Project ID...">
-				<span style={{ fontWeight: 500 }}>Google Cloud Project ID</span>
+				<span style={{ fontWeight: 500 }}>Google Cloud 项目 ID</span>
 			</DebouncedTextField>
 
 			<DropdownContainer zIndex={DROPDOWN_Z_INDEX - 1} className="dropdown-container">
 				<label htmlFor="vertex-region-dropdown">
-					<span style={{ fontWeight: 500 }}>Google Cloud Region</span>
+					<span style={{ fontWeight: 500 }}>Google Cloud 地域</span>
 				</label>
 				<VSCodeDropdown
 					id="vertex-region-dropdown"
 					value={apiConfiguration?.vertexRegion || ""}
 					style={{ width: "100%" }}
 					onChange={(e: any) => handleFieldChange("vertexRegion", e.target.value)}>
-					<VSCodeOption value="">Select a region...</VSCodeOption>
-					<VSCodeOption value="us-east5">us-east5</VSCodeOption>
-					<VSCodeOption value="us-central1">us-central1</VSCodeOption>
-					<VSCodeOption value="europe-west1">europe-west1</VSCodeOption>
-					<VSCodeOption value="europe-west4">europe-west4</VSCodeOption>
-					<VSCodeOption value="asia-southeast1">asia-southeast1</VSCodeOption>
-					<VSCodeOption value="global">global</VSCodeOption>
+					<VSCodeOption value="">选择地域...</VSCodeOption>
+					<VSCodeOption value="us-east5">美东5</VSCodeOption>
+					<VSCodeOption value="us-central1">美中1</VSCodeOption>
+					<VSCodeOption value="europe-west1">西欧1</VSCodeOption>
+					<VSCodeOption value="europe-west4">西欧4</VSCodeOption>
+					<VSCodeOption value="asia-southeast1">东南亚1</VSCodeOption>
+					<VSCodeOption value="global">全球</VSCodeOption>
 				</VSCodeDropdown>
 			</DropdownContainer>
 
@@ -79,16 +79,16 @@ export const VertexProvider = ({ showModelOptions, isPopup }: VertexProviderProp
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				To use Google Cloud Vertex AI, you need to
+				要使用 Google Cloud Vertex AI，您需要
 				<VSCodeLink
 					href="https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude#before_you_begin"
 					style={{ display: "inline", fontSize: "inherit" }}>
-					{"1) create a Google Cloud account › enable the Vertex AI API › enable the desired Claude models,"}
+					{"1)创建 Google Cloud 帐户 › 启用 Vertex AI API › 启用所需的 Claude 模型，"}
 				</VSCodeLink>{" "}
 				<VSCodeLink
 					href="https://cloud.google.com/docs/authentication/provide-credentials-adc#google-idp"
 					style={{ display: "inline", fontSize: "inherit" }}>
-					{"2) install the Google Cloud CLI › configure Application Default Credentials."}
+					{"2)安装 Google Cloud CLI › 配置应用程序默认凭据."}
 				</VSCodeLink>
 			</p>
 

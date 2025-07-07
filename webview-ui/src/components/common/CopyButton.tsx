@@ -80,7 +80,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ textToCopy, onCopy, clas
 					setCopied(true)
 					setTimeout(() => setCopied(false), 1500)
 				})
-				.catch((err) => console.error("Copy failed", err))
+				.catch((err) => console.error("复制失败", err))
 		}
 	}
 
@@ -89,7 +89,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ textToCopy, onCopy, clas
 			appearance="icon"
 			onClick={handleCopy}
 			className={className}
-			aria-label={copied ? "Copied" : ariaLabel || "Copy"}>
+			aria-label={copied ? "已复制" : ariaLabel || "复制"}>
 			<span className={`codicon codicon-${copied ? "check" : "copy"}`}></span>
 		</StyledButton>
 	)

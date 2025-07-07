@@ -31,7 +31,7 @@ export const TogetherProvider = ({ showModelOptions, isPopup }: TogetherProvider
 				onChange={(value) => handleFieldChange("togetherModelId", value)}
 				style={{ width: "100%" }}
 				placeholder={"Enter Model ID..."}>
-				<span style={{ fontWeight: 500 }}>Model ID</span>
+				<span style={{ fontWeight: 500 }}>模型 ID</span>
 			</DebouncedTextField>
 			<p
 				style={{
@@ -40,8 +40,8 @@ export const TogetherProvider = ({ showModelOptions, isPopup }: TogetherProvider
 					color: "var(--vscode-descriptionForeground)",
 				}}>
 				<span style={{ color: "var(--vscode-errorForeground)" }}>
-					(<span style={{ fontWeight: 500 }}>Note:</span> Cline uses complex prompts and works best with Claude models.
-					Less capable models may not work as expected.)
+					(<span style={{ fontWeight: 500 }}>注意:</span> Cline 使用复杂的提示，与 Claude
+					模型配合使用效果最佳。性能较差的模型可能无法达到预期效果。)
 				</span>
 			</p>
 		</div>

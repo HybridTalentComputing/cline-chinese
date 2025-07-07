@@ -25,17 +25,11 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 
 	const formatDate = (timestamp: number) => {
 		const date = new Date(timestamp)
-		return date
-			?.toLocaleString("en-US", {
-				month: "long",
-				day: "numeric",
-				hour: "numeric",
-				minute: "2-digit",
-				hour12: true,
-			})
-			.replace(", ", " ")
-			.replace(" at", ",")
-			.toUpperCase()
+		return date?.toLocaleString("zh-CN", {
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit",
+		})
 	}
 
 	return (
@@ -47,7 +41,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 					className={`codicon codicon-chevron-${isExpanded ? "down" : "right"} scale-90 transition-transform duration-200`}
 				/>
 				<span className="codicon codicon-comment-discussion scale-90" />
-				<span className="font-medium text-xs uppercase tracking-wide">Recent Tasks</span>
+				<span className="font-medium text-xs uppercase tracking-wide">最近的任务</span>
 			</div>
 
 			{isExpanded && (
@@ -81,7 +75,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 											<div
 												className="absolute top-3 right-3 z-20 drop-shadow-sm"
 												style={{ color: "var(--vscode-button-background)" }}>
-												<span className="codicon codicon-star-full" aria-label="Favorited" />
+												<span className="codicon codicon-star-full" aria-label="收藏" />
 											</div>
 										)}
 
@@ -113,7 +107,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 															•
 														</span>
 														<span>
-															Cache: +{formatLargeNumber(item.cacheWrites || 0)} →{" "}
+															缓存: +{formatLargeNumber(item.cacheWrites || 0)} →{" "}
 															{formatLargeNumber(item.cacheReads || 0)}
 														</span>
 													</>
@@ -126,7 +120,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 															}}>
 															•
 														</span>
-														<span>API Cost: ${item.totalCost?.toFixed(4)}</span>
+														<span>API 费用: ${item.totalCost?.toFixed(4)}</span>
 													</>
 												)}
 											</div>
@@ -142,7 +136,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 										fontSize: "var(--vscode-font-size)",
 									}}>
 									<span className="codicon codicon-history scale-90"></span>
-									<span className="font-medium">View all history</span>
+									<span className="font-medium">查看所有历史</span>
 								</button>
 							</div>
 						</>
@@ -155,7 +149,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 								border: "1px solid color-mix(in srgb, var(--vscode-panel-border) 30%, transparent)",
 								backdropFilter: "blur(8px)",
 							}}>
-							No recent tasks
+							最近没有任务
 						</div>
 					)}
 				</div>

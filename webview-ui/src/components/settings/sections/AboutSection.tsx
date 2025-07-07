@@ -13,10 +13,11 @@ const AboutSection = ({ version, renderSectionHeader }: AboutSectionProps) => {
 			<Section>
 				<div className="text-center text-[var(--vscode-descriptionForeground)] text-xs leading-[1.2] px-0 py-0 pr-2 pb-[15px] mt-auto">
 					<p className="break-words m-0 p-0">
-						If you have any questions or feedback, feel free to open an issue at{" "}
+						如果您有任何问题或反馈，请随时在{" "}
 						<VSCodeLink href="https://github.com/cline/cline" className="inline">
 							https://github.com/cline/cline
 						</VSCodeLink>
+						反馈
 					</p>
 					<p className="italic mt-[10px] mb-0 p-0">v{version}</p>
 				</div>
