@@ -17,7 +17,7 @@ export const ShengSuanYunAccountInfoCard = () => {
 							console.error("shengSuanYunLoginClicked Failed to get login URL:", err),
 						)
 					}}>
-					登录胜算云Router
+					登录胜算云
 				</VSCodeButton>
 			) : null}
 		</div>

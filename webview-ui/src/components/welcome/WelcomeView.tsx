@@ -41,14 +41,13 @@ const WelcomeView = memo(() => {
 					<ClineLogoWhite className="size-16" />
 				</div>
 				<p>
-					🎉 Cline Chinese与胜算云Router达成合作啦！官方（Anthropic、GCP、AWS）Claude sonnet 4、Claude Opus
-					4、谷歌GCP/GoogleAIStudio模型，全球模型都可调用，非逆向，支付宝/微信、充值折扣，可发票，可试用，点击此
-					点击此处进行注册：
+					Cline Chinese与胜算云达成合作啦!官方(Anthropic、GCP、AWS)Claude Opus
+					4、谷歌GCP/GoogleAlStudio模型，无需海外账号，RMB直充，一个Key，即可调用全球100+大模型
+					<br />
 					<VSCodeLink
 						onclick={() => setVendor("ssy")}
-						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/ssy"
-						className="inline">
-						胜算云Router
+						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/ssy">
+						&gt;&gt;点击接入胜算云，领取100万tokens算力
 					</VSCodeLink>
 				</p>
 				<p>
@@ -76,14 +75,6 @@ const WelcomeView = memo(() => {
 						使用你自己的 API key
 					</VSCodeButton>
 				)}
-
-				<div className="w-full flex justify-start mt-16">
-					<VSCodeLink
-						onclick={() => setVendor("ssy")}
-						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/ssy">
-						&gt;&gt;点击接入胜算云，领取100万tokens算力
-					</VSCodeLink>
-				</div>
 
 				<div className="mt-4.5">
 					{showApiOptions && (

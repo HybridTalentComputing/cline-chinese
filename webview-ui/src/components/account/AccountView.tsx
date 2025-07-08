@@ -49,7 +49,7 @@ const AccountView = ({ onDone }: AccountViewProps) => {
 							wordWrap: "break-word",
 							maxWidth: "100%",
 						}}>
-						胜算云Router
+						胜算云
 					</VSCodeOption>
 					<VSCodeOption
 						className="text-[var(--vscode-foreground)] m-0"
