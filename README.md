@@ -15,7 +15,7 @@
 
 | ✨ 为什么选择 Cline 中文版？ | 👉 **扫码添加，领取 100 万 Tokens** 👈 |
 |:--|:--:|
-| ✅ **中文界面体验** —— 一贴合中文开发者使用习惯，命令更自然 <br> ✅ **超百款全球模型接入** —— 包括 GPT-4o、Claude 4 sonnet、 Claude 4 opus、Gemini 2.5 pro/flash、DeepSeek 等 <br> ✅ **大模型聚合** —— 一调即价更低，性能稳定不掉线 <br> ✅ **人民币充值直通** —— 无需海外账号，支持微信/支付宝 <br> ✅ **VS Code 插件/原生集成** —— 快速安装，即刻启用 <br> ✅ **注册即送 Tokens** —— 免费 100 万 Tokens  | ![个人企业微信](https://github.com/user-attachments/assets/482850bf-f152-44e8-9845-b043f3d6eeb7) |
+| ✅ **中文界面体验** —— 一贴合中文开发者使用习惯，命令更自然 <br> ✅ **超百款全球模型接入** —— 包括 GPT-4o、Claude 4 sonnet、 Claude 4 opus、Gemini 2.5 pro/flash、DeepSeek 等 <br> ✅ **大模型聚合** —— 一调即价更低，性能稳定不掉线 <br> ✅ **人民币充值直通** —— 无需海外账号，支持微信/支付宝 <br> ✅ **VS Code 插件/原生集成** —— 快速安装，即刻启用 <br> ✅ **注册即送 Tokens** —— 免费 100 万 Tokens  | ![个人企业微信](https://router.shengsuanyun.com/webp/relation-BMfLRnIZ.webp) |
 
 
 
