@@ -59,7 +59,7 @@ APIRouter进群交流<br>（如果无法加群，请加企业微信客服）<br>
 <div align="center" style="display: flex; justify-content: center; gap: 20px;">
 
 企业客服咨询<br>
-  <img src="https://github.com/user-attachments/assets/c180b033-d62c-4dc0-9c2a-a3ad8c70e5a4" alt="企业微信客服" width="250" />
+<img src="https://router.shengsuanyun.com/webp/relation-BMfLRnIZ.webp" alt="企业微信客服" width="250" />
 </div>
 Cline-中文版<br>
 https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan<br>
