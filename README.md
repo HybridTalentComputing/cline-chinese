@@ -7,7 +7,7 @@
 
 <div align="center">
    <p>胜算云Router服务渠道人员/二维码</p>
-  <img src="https://router.shengsuanyun.com/webp/relation-BDyr0A7L.webp" alt="微信群二维码" width="150" />
+  <img src="https://router.shengsuanyun.com/webp/relation-BMfLRnIZ.webp" alt="微信群二维码" width="150" />
 </div>
 
 
