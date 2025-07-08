@@ -11,13 +11,14 @@ const WelcomeView = memo(() => {
 	const { apiConfiguration } = useExtensionState()
 	const [apiErrorMessage, setApiErrorMessage] = useState<string | undefined>(undefined)
 	const [showApiOptions, setShowApiOptions] = useState(false)
-
+	const { setVendor } = useExtensionState()
 	const disableLetsGoButton = apiErrorMessage != null
 
 	const handleLogin = () => {
 		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
 			console.error("Failed to get login URL:", err),
 		)
+		setVendor("cline")
 	}
 
 	const handleSubmit = async () => {
@@ -44,6 +45,7 @@ const WelcomeView = memo(() => {
 					4、谷歌GCP/GoogleAIStudio模型，全球模型都可调用，非逆向，支付宝/微信、充值折扣，可发票，可试用，点击此
 					点击此处进行注册：
 					<VSCodeLink
+						onclick={() => setVendor("ssy")}
 						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/ssy"
 						className="inline">
 						胜算云Router
@@ -74,6 +76,14 @@ const WelcomeView = memo(() => {
 						使用你自己的 API key
 					</VSCodeButton>
 				)}
+
+				<div className="w-full flex justify-start mt-16">
+					<VSCodeLink
+						onclick={() => setVendor("ssy")}
+						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/ssy">
+						&gt;&gt;点击接入胜算云，领取100万tokens算力
+					</VSCodeLink>
+				</div>
 
 				<div className="mt-4.5">
 					{showApiOptions && (
