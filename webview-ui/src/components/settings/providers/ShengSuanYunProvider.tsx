@@ -18,7 +18,7 @@ export const ShengSuanYunProvider = ({ showModelOptions, isPopup }: ShengSuanYun
 				initialValue={apiConfiguration?.shengSuanYunApiKey || ""}
 				onChange={(value) => handleFieldChange("shengSuanYunApiKey", value)}
 				providerName="胜算云"
-				signupUrl="https://router.shengsuanyun.com/"
+				signupUrl="https://www.shengsuanyun.com/login"
 			/>
 			{showModelOptions && <ShengSuanYunModelPicker isPopup={isPopup} />}
 		</div>
