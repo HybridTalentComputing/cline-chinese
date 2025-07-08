@@ -7,8 +7,6 @@ import { useInterval } from "react-use"
 import styled from "styled-components"
 import { OPENROUTER_MODEL_PICKER_Z_INDEX } from "./OpenRouterModelPicker"
 
-import { normalizeApiConfiguration } from "./utils/providerUtils"
-
 import { ClineProvider } from "./providers/ClineProvider"
 import { OpenRouterProvider } from "./providers/OpenRouterProvider"
 import { MistralProvider } from "./providers/MistralProvider"

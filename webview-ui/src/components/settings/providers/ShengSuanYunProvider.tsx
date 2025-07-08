@@ -1,7 +1,5 @@
-import { ApiKeyField } from "../common/ApiKeyField"
+import { ShengSuanYunAccountInfoCard } from "../ShengSuanYunAccountInfoCard"
 import ShengSuanYunModelPicker from "../ShengSuanYunModelPicker"
-import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
-import { useExtensionState } from "@/context/ExtensionStateContext"
 
 interface ShengSuanYunProviderProps {
 	showModelOptions: boolean
@@ -9,17 +7,11 @@ interface ShengSuanYunProviderProps {
 }
 
 export const ShengSuanYunProvider = ({ showModelOptions, isPopup }: ShengSuanYunProviderProps) => {
-	const { apiConfiguration } = useExtensionState()
-	const { handleFieldChange } = useApiConfigurationHandlers()
-
 	return (
 		<div>
-			<ApiKeyField
-				initialValue={apiConfiguration?.shengSuanYunApiKey || ""}
-				onChange={(value) => handleFieldChange("shengSuanYunApiKey", value)}
-				providerName="胜算云"
-				signupUrl="https://www.shengsuanyun.com/login"
-			/>
+			<div style={{ marginBottom: 14, marginTop: 4 }}>
+				<ShengSuanYunAccountInfoCard />
+			</div>
 			{showModelOptions && <ShengSuanYunModelPicker isPopup={isPopup} />}
 		</div>
 	)

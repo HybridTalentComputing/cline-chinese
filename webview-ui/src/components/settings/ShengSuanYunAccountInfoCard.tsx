@@ -1,15 +1,20 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { vscode } from "@/utils/vscode"
-import { AccountServiceClient, WebServiceClient } from "@/services/grpc-client"
-import { EmptyRequest, StringRequest } from "@shared/proto/common"
+import { AccountServiceClient } from "@/services/grpc-client"
+import { EmptyRequest } from "@shared/proto/common"
+import { useShengSuanYunAuth } from "@/context/ShengSuanYunAuthContext"
 
 export const ShengSuanYunAccountInfoCard = () => {
+	const { handleSignOutSSY } = useShengSuanYunAuth()
 	const { apiConfiguration } = useExtensionState()
 	const key = apiConfiguration?.shengSuanYunApiKey || null
 	return (
 		<div className="max-w-[600px]">
-			{!key ? (
+			{key ? (
+				<VSCodeButton appearance="secondary" onClick={() => handleSignOutSSY()}>
+					退出登录
+				</VSCodeButton>
+			) : (
 				<VSCodeButton
 					appearance="primary"
 					onClick={() => {
@@ -19,7 +24,7 @@ export const ShengSuanYunAccountInfoCard = () => {
 					}}>
 					登录胜算云
 				</VSCodeButton>
-			) : null}
+			)}
 		</div>
 	)
 }

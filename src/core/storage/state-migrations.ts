@@ -32,6 +32,8 @@ export async function migrateWorkspaceToGlobalStorage(context: vscode.ExtensionC
 		"togetherModelId",
 		"fireworksModelId",
 		"sapAiCoreModelId",
+		"shengSuanYunModelId",
+		"shengSuanYunModelInfo",
 
 		// Previous mode settings
 		"previousModeApiProvider",
@@ -173,8 +175,7 @@ export async function migrateWelcomeViewCompleted(context: vscode.ExtensionConte
 	try {
 		// Check if welcomeViewCompleted is already set
 		const welcomeViewCompleted = await getGlobalState(context, "welcomeViewCompleted")
-
-		if (welcomeViewCompleted === undefined) {
+		if (!welcomeViewCompleted) {
 			console.log("Migrating welcomeViewCompleted setting...")
 
 			// Get all extension state to check for existing API keys
@@ -207,9 +208,9 @@ export async function migrateWelcomeViewCompleted(context: vscode.ExtensionConte
 						config.xaiApiKey,
 						config.sambanovaApiKey,
 						config.sapAiCoreClientId,
+						config.shengSuanYunApiKey,
 					].some((key) => key !== undefined)
 				: false
-
 			// Set welcomeViewCompleted based on whether user has keys
 			await updateGlobalState(context, "welcomeViewCompleted", hasKey)
 

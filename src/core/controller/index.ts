@@ -117,6 +117,7 @@ export class Controller {
 	// Auth methods
 	async handleSignOutSSY() {
 		try {
+			await storeSecret(this.context, "shengSuanYunApiKey", undefined)
 			await updateGlobalState(this.context, "shengSuanYunToken", undefined)
 			await updateGlobalState(this.context, "userInfo", undefined)
 			await updateGlobalState(this.context, "apiProvider", "shengsuanyun")
@@ -130,7 +131,7 @@ export class Controller {
 		try {
 			await storeSecret(this.context, "clineApiKey", undefined)
 			await updateGlobalState(this.context, "userInfo", undefined)
-			await updateGlobalState(this.context, "apiProvider", "openrouter")
+			await updateGlobalState(this.context, "apiProvider", "shengsuanyun")
 			await this.postStateToWebview()
 			vscode.window.showInformationMessage("Successfully logged out of Cline")
 		} catch (error) {
