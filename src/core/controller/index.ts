@@ -490,6 +490,7 @@ export class Controller {
 
 	async handleAuthCallback(customToken: string, apiKey: string) {
 		try {
+			await updateGlobalState(this.context, "welcomeViewCompleted", true)
 			// Store API key for API calls
 			await storeSecret(this.context, "clineApiKey", apiKey)
 
@@ -686,7 +687,7 @@ export class Controller {
 			console.error("Error exchanging code for API key:", error)
 			throw error
 		}
-
+		await updateGlobalState(this.context, "welcomeViewCompleted", true)
 		const shengsuanyun: ApiProvider = "shengsuanyun"
 		await updateGlobalState(this.context, "apiProvider", shengsuanyun)
 		await updateGlobalState(this.context, "shengSuanYunToken", customToken)

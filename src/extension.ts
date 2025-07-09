@@ -304,10 +304,10 @@ export async function activate(context: vscode.ExtensionContext) {
 				})
 
 				// Validate state parameter
-				if (!(await visibleWebview?.controller.validateAuthState(state))) {
-					vscode.window.showErrorMessage("认证状态无效")
-					return
-				}
+				// if (!(await visibleWebview?.controller.validateAuthState(state))) {
+				// 	vscode.window.showErrorMessage("认证状态无效")
+				// 	return
+				// }
 				if (token && apiKey) {
 					await visibleWebview?.controller.handleAuthCallback(token, apiKey)
 				}

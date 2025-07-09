@@ -285,7 +285,6 @@ export const ExtensionStateContextProvider: React.FC<{
 									? stateData.autoApprovalSettings
 									: prevState.autoApprovalSettings,
 							}
-
 							// Update welcome screen state based on API configuration
 							setShowWelcome(!newState.welcomeViewCompleted)
 							setDidHydrateState(true)
