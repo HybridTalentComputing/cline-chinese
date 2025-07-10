@@ -269,11 +269,11 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					<>
-						该扩展会自动获取胜算云Router上可用的最新模型列表{" "}
+						该扩展会自动获取胜算云上可用的最新模型列表{" "}
 						<VSCodeLink
 							style={{ display: "inline", fontSize: "inherit" }}
 							href="https://router.shengsuanyun.com/model">
-							胜算云Router
+							胜算云
 						</VSCodeLink>
 						如果你不确定使用哪个模型, Cline 可以和{" "}
 						<VSCodeLink

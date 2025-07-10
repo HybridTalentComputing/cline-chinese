@@ -10,6 +10,6 @@ export type PartialChatSettings = Partial<ChatSettings>
 
 export const DEFAULT_CHAT_SETTINGS: ChatSettings = {
 	mode: "act",
-	preferredLanguage: "English",
+	preferredLanguage: "Simplified Chinese - 简体中文",
 	openAIReasoningEffort: "medium",
 }

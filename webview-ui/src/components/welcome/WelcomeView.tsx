@@ -37,13 +37,13 @@ const WelcomeView = memo(() => {
 					<ClineLogoWhite className="size-16" />
 				</div>
 				<p>
-					🎉 Cline Chinese与胜算云Router达成合作啦！官方（Anthropic、GCP、AWS）Claude sonnet 4、Claude Opus
+					🎉 Cline Chinese与胜算云达成合作啦！官方（Anthropic、GCP、AWS）Claude sonnet 4、Claude Opus
 					4、谷歌GCP/GoogleAIStudio模型，全球模型都可调用，非逆向，支付宝/微信、充值折扣，可发票，可试用，点击此
 					点击此处进行注册：
 					<VSCodeLink
 						href="https://router.shengsuanyun.com/auth?from=cline-chinese&callback_url=vscode://HybridTalentComputing.cline-chinese/ssy"
 						className="inline">
-						胜算云Router
+						胜算云
 					</VSCodeLink>
 				</p>
 				<p>

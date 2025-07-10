@@ -338,7 +338,7 @@ const ApiOptions = ({
 						minWidth: 130,
 						position: "relative",
 					}}>
-					<VSCodeOption value="shengsuanyun">胜算云Router</VSCodeOption>
+					<VSCodeOption value="shengsuanyun">胜算云</VSCodeOption>
 					<VSCodeOption value="cline">Cline</VSCodeOption>
 					<VSCodeOption value="openrouter">OpenRouter</VSCodeOption>
 					<VSCodeOption value="anthropic">Anthropic</VSCodeOption>
@@ -2086,7 +2086,7 @@ const ApiOptions = ({
 						<span style={{ fontWeight: 500 }}>API Key</span>
 					</VSCodeTextField>
 					{!apiConfiguration?.shengSuanYunApiKey && (
-						<a href="https://router.shengsuanyun.com/user/keys">获取 API Key</a>
+						<a href="https://console.shengsuanyun.com/user/keys">获取 API Key</a>
 					)}
 				</div>
 			)}

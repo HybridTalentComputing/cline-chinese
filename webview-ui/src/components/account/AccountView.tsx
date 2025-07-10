@@ -49,7 +49,7 @@ const AccountView = ({ onDone }: AccountViewProps) => {
 							wordWrap: "break-word",
 							maxWidth: "100%",
 						}}>
-						胜算云Router
+						胜算云
 					</VSCodeOption>
 					<VSCodeOption
 						className="text-[var(--vscode-foreground)] m-0"
@@ -189,7 +189,7 @@ export const ClineAccountView = ({ vendorCode, user }: ClineAccountViewProps) =>
 								href={
 									vendorCode == "cline"
 										? "https://app.cline.bot/credits"
-										: "https://router.shengsuanyun.com/user/bill"
+										: "https://console.shengsuanyun.com/user/overview"
 								}>
 								个人中心
 							</VSCodeButtonLink>
@@ -244,7 +244,7 @@ export const ClineAccountView = ({ vendorCode, user }: ClineAccountViewProps) =>
 									增加额度
 								</VSCodeButtonLink>
 							) : (
-								<VSCodeButtonLink href="https://router.shengsuanyun.com/user/recharge" className="w-full">
+								<VSCodeButtonLink href="https://console.shengsuanyun.com/user/recharge" className="w-full">
 									充值
 								</VSCodeButtonLink>
 							)}

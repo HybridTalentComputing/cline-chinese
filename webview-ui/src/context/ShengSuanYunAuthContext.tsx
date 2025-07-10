@@ -14,7 +14,7 @@ const ShengSuanYunAuthContext = createContext<ShengSuanYunAuthContextType | unde
 export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [userSSY, setUser] = useState<any | null>(null)
 	const [isInitSSY, setIsInitialized] = useState(false)
-	const { apiConfiguration } = useExtensionState()
+	const { apiConfiguration, hideAccount } = useExtensionState()
 	useEffect(() => {
 		if (apiConfiguration?.shengSuanYunToken) signInWithTokenSSY(apiConfiguration?.shengSuanYunToken)
 	}, [apiConfiguration?.shengSuanYunToken])
@@ -40,6 +40,7 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 			setUser(usi)
 			setIsInitialized(true)
 			console.log("ShengSuanYunAuthProvider onAuthStateChanged user", usi)
+			hideAccount()
 			vscode.postMessage({
 				type: "authStateChanged",
 				userSSY: usi,
