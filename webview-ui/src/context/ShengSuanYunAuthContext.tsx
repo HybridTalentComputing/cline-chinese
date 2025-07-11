@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { useExtensionState } from "./ExtensionStateContext"
 import axios, { AxiosRequestConfig } from "axios"
 import { AccountServiceClient } from "@/services/grpc-client"
-import { AuthStateChanged, AuthStateChangedRequest } from "@shared/proto/account"
+import { AuthStateChangedRequest } from "@shared/proto/account"
 import { EmptyRequest } from "@shared/proto/common"
 
 interface ShengSuanYunAuthContextType {
@@ -43,7 +43,7 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 			setUser(user)
 			setIsInitialized(true)
 			AccountServiceClient.authStateChanged(AuthStateChangedRequest.create({ user }))
-				.then((res: AuthStateChanged) => {
+				.then((res) => {
 					setUserInfo(res.user)
 				})
 				.catch((error) => {

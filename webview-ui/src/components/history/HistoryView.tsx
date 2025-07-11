@@ -750,7 +750,7 @@ const ExportButton = ({ itemId }: { itemId: string }) => (
 				console.error("Failed to export task:", err),
 			)
 		}}>
-		<div style={{ fontSize: "11px", fontWeight: 500, opacity: 1 }}>EXPORT</div>
+		<div style={{ fontSize: "11px", fontWeight: 500, opacity: 1 }}>导出</div>
 	</VSCodeButton>
 )
 

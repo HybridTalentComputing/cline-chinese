@@ -78,66 +78,81 @@ export const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = (
 		<div>
 			{renderSectionHeader("terminal")}
 			<Section>
-				<div id="terminal-settings-section" style={{ marginBottom: 20 }}>
-					<div style={{ marginBottom: 15 }}>
-						<label
-							htmlFor="default-terminal-profile"
-							style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>
+				<div id="terminal-settings-section" className="mb-5">
+					<div className="mb-4">
+						<label htmlFor="default-terminal-profile" className="font-medium block mb-1">
 							默认终端配置文件
 						</label>
 						<VSCodeDropdown
 							id="default-terminal-profile"
 							value={defaultTerminalProfile || "default"}
 							onChange={handleDefaultTerminalProfileChange}
-							style={{ width: "100%" }}>
+							className="w-full">
 							{profilesToShow.map((profile) => (
 								<VSCodeOption key={profile.id} value={profile.id} title={profile.description}>
 									{profile.name}
 								</VSCodeOption>
 							))}
 						</VSCodeDropdown>
-						<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: "5px 0 0 0" }}>
+						<p className="text-xs text-[var(--vscode-descriptionForeground)] mt-1">
 							选择 Cline 将使用的默认终端。“默认”使用您的 VSCode 全局设置。
 						</p>
 					</div>
 
-					<div style={{ marginBottom: 15 }}>
-						<div style={{ marginBottom: 8 }}>
-							<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>Shell 集成超时（秒）</label>
-							<div style={{ display: "flex", alignItems: "center" }}>
+					<div className="mb-4">
+						<div className="mb-2">
+							<label className="font-medium block mb-1">Shell 集成超时（秒）</label>
+							<div className="flex items-center">
 								<VSCodeTextField
-									style={{ width: "100%" }}
+									className="w-full"
 									value={inputValue}
 									placeholder="Enter timeout in seconds"
 									onChange={(event) => handleTimeoutChange(event as Event)}
 									onBlur={handleInputBlur}
 								/>
 							</div>
-							{inputError && (
-								<div style={{ color: "var(--vscode-errorForeground)", fontSize: "12px", marginTop: 5 }}>
-									{inputError}
-								</div>
-							)}
+							{inputError && <div className="text-[var(--vscode-errorForeground)] text-xs mt-1">{inputError}</div>}
 						</div>
-						<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: 0 }}>
+						<p className="text-xs text-[var(--vscode-descriptionForeground)]">
 							设置 Cline 在执行命令前等待 Shell 集成激活的时间。如果遇到终端连接超时，请增加此值。
 						</p>
 					</div>
 
-					<div style={{ marginBottom: 15 }}>
-						<div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+					<div className="mb-4">
+						<div className="flex items-center mb-2">
 							<VSCodeCheckbox
 								checked={terminalReuseEnabled ?? true}
 								onChange={(event) => handleTerminalReuseChange(event as Event)}>
 								实现积极的终端重用
 							</VSCodeCheckbox>
 						</div>
-						<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: 0 }}>
+						<p className="text-xs text-[var(--vscode-descriptionForeground)]">
 							启用后，Cline
 							将重用不在当前工作目录中的现有终端窗口。如果您在执行终端命令后遇到任务锁定问题，请禁用此功能。
 						</p>
 					</div>
 					<TerminalOutputLineLimitSlider />
+					<div className="mt-5 p-3 bg-[var(--vscode-textBlockQuote-background)] rounded border border-[var(--vscode-textBlockQuote-border)]">
+						<p className="text-[13px] m-0">
+							<strong>遇到终端问题?</strong> 查看{" "}
+							<a
+								href="https://docs.cline.bot/troubleshooting/terminal-quick-fixes"
+								className="text-[var(--vscode-textLink-foreground)] underline hover:no-underline"
+								target="_blank"
+								rel="noopener noreferrer">
+								终端快速修复
+							</a>{" "}
+							或{" "}
+							<a
+								href="https://docs.cline.bot/troubleshooting/terminal-integration-guide"
+								className="text-[var(--vscode-textLink-foreground)] underline hover:no-underline"
+								target="_blank"
+								rel="noopener noreferrer">
+								完整的故障排除指南
+							</a>
+							.
+						</p>
+					</div>
 				</div>
 			</Section>
 		</div>

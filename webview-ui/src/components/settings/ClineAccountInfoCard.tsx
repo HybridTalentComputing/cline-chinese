@@ -1,14 +1,14 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { useFirebaseAuth } from "@/context/FirebaseAuthContext"
+import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { EmptyRequest } from "@shared/proto/common"
 
 export const ClineAccountInfoCard = () => {
-	const { user: firebaseUser, handleSignOut } = useFirebaseAuth()
-	const { userInfo, apiConfiguration, navigateToAccount } = useExtensionState()
+	const { clineUser } = useClineAuth()
+	const { apiConfiguration, navigateToAccount } = useExtensionState()
 
-	let user = apiConfiguration?.clineApiKey ? firebaseUser || userInfo : undefined
+	let user = apiConfiguration?.clineAccountId ? clineUser : undefined
 
 	const handleLogin = () => {
 		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
@@ -17,20 +17,19 @@ export const ClineAccountInfoCard = () => {
 	}
 
 	const handleShowAccount = () => {
-		// navigateToAccount()
-		handleSignOut()
+		navigateToAccount()
 	}
 
 	return (
 		<div className="max-w-[600px]">
-			{user?.providerId == "firebase" ? (
+			{user ? (
 				<VSCodeButton appearance="secondary" onClick={handleShowAccount}>
-					退出登录
+					View Billing & Usage
 				</VSCodeButton>
 			) : (
 				<div>
 					<VSCodeButton onClick={handleLogin} className="mt-0">
-						注册 Cline
+						Sign Up with Cline
 					</VSCodeButton>
 				</div>
 			)}

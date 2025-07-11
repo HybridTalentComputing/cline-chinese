@@ -44,19 +44,19 @@ export interface OpenRouterModelPickerProps {
 // Featured models for Cline provider
 const featuredModels = [
 	{
-		id: "google/gemini-2.5-pro",
-		description: "Large 1M context window, great value",
+		id: "anthropic/claude-sonnet-4",
+		description: "Recommended for agentic coding in Cline",
 		label: "Best",
 	},
 	{
-		id: "anthropic/claude-sonnet-4",
-		description: "Recommended for agentic coding in Cline",
+		id: "google/gemini-2.5-pro",
+		description: "Large 1M context window, great value",
 		label: "Trending",
 	},
 	{
-		id: "x-ai/grok-3",
-		description: "Latest flagship model from xAI, free for now!",
-		label: "Free",
+		id: "x-ai/grok-3-beta",
+		description: "Latest flagship model from xAI",
+		label: "Fast & Cheap",
 	},
 ]
 
@@ -64,6 +64,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 	const { apiConfiguration, openRouterModels, refreshOpenRouterModels } = useExtensionState()
 	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.openRouterModelId || openRouterDefaultModelId)
+	const [isSearchInputDirty, setIsSearchInputDirty] = useState(false)
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
 	const dropdownRef = useRef<HTMLDivElement>(null)
@@ -86,6 +87,23 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 	}, [apiConfiguration])
 
 	useMount(refreshOpenRouterModels)
+
+	// Sync external changes only when user isn't actively typing
+	useEffect(() => {
+		if (!isSearchInputDirty) {
+			const currentModelId = apiConfiguration?.openRouterModelId || openRouterDefaultModelId
+			setSearchTerm(currentModelId)
+		}
+	}, [apiConfiguration?.openRouterModelId, isSearchInputDirty])
+
+	// Reset dirty flag after user stops typing (1 second timeout)
+	useEffect(() => {
+		if (!isSearchInputDirty) return
+		const timeout = setTimeout(() => {
+			setIsSearchInputDirty(false)
+		}, 1000)
+		return () => clearTimeout(timeout)
+	}, [searchTerm, isSearchInputDirty])
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -244,6 +262,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 						placeholder="查找模型..."
 						value={searchTerm}
 						onInput={(e) => {
+							setIsSearchInputDirty(true)
 							handleModelChange((e.target as HTMLInputElement)?.value?.toLowerCase())
 							setIsDropdownVisible(true)
 						}}
@@ -327,8 +346,8 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 						如果你不确定使用哪个模型, Cline 使用{" "}
 						<VSCodeLink
 							style={{ display: "inline", fontSize: "inherit" }}
-							onClick={() => handleModelChange("google/gemini-2.5-pro")}>
-							google/gemini-2.5-pro.
+							onClick={() => handleModelChange("anthropic/claude-sonnet-4")}>
+							anthropic/claude-sonnet-4.
 						</VSCodeLink>
 						你也可以尝试使用 "free" 搜索免费模型
 					</>

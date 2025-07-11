@@ -661,9 +661,9 @@ export const ChatRowContent = memo(
 							<div style={headerStyle}>
 								{toolIcon("search")}
 								{tool.operationIsLocatedInWorkspace === false &&
-									toolIcon("sign-out", "yellow", -90, "This is outside of your workspace")}
+									toolIcon("sign-out", "yellow", -90, "在你的工作区之外")}
 								<span style={{ fontWeight: "bold" }}>
-									Cline wants to search this directory for <code>{tool.regex}</code>:
+									Cline 需要搜索目录 <code>{tool.regex}</code>:
 								</span>
 							</div>
 							<CodeAccordian
@@ -683,11 +683,9 @@ export const ChatRowContent = memo(
 									className="codicon codicon-link"
 									style={{ color: normalColor, marginBottom: "-1.5px" }}></span>
 								{tool.operationIsLocatedInWorkspace === false &&
-									toolIcon("sign-out", "yellow", -90, "This URL is external")}
+									toolIcon("sign-out", "yellow", -90, "这是一个外部 URL")}
 								<span style={{ fontWeight: "bold" }}>
-									{message.type === "ask"
-										? "Cline wants to fetch content from this URL:"
-										: "Cline fetched content from this URL:"}
+									{message.type === "ask" ? "Cline 从该 URL 获取内容:" : "Cline 从该 URL 获取到内容:"}
 								</span>
 							</div>
 							<div

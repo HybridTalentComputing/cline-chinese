@@ -23,7 +23,7 @@ import { WebviewProviderType } from "./shared/webview/types"
 import { sendHistoryButtonClickedEvent } from "./core/controller/ui/subscribeToHistoryButtonClicked"
 import { sendAccountButtonClickedEvent } from "./core/controller/ui/subscribeToAccountButtonClicked"
 import {
-	migratePlanActGlobalToWorkspaceStorage,
+	migrateWorkspaceToGlobalStorage,
 	migrateCustomInstructionsToGlobalRules,
 	migrateModeFromWorkspaceStorageToControllerState,
 	migrateWelcomeViewCompleted,
@@ -35,6 +35,7 @@ import * as hostProviders from "@hosts/host-providers"
 import { vscodeHostBridgeClient } from "@/hosts/vscode/client/host-grpc-client"
 import { VscodeWebviewProvider } from "./core/webview/VscodeWebviewProvider"
 import { ExtensionContext } from "vscode"
+import { AuthService } from "./services/auth/AuthService"
 import { writeTextToClipboard, readTextFromClipboard } from "@/utils/env"
 
 /*
@@ -60,9 +61,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	maybeSetupHostProviders(context)
 
-	// Migrate global storage values to workspace storage (one-time cleanup)
-	await migratePlanActGlobalToWorkspaceStorage(context)
-
 	// Migrate custom instructions to global Cline rules (one-time cleanup)
 	await migrateCustomInstructionsToGlobalRules(context)
 
@@ -71,6 +69,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Migrate welcomeViewCompleted setting based on existing API keys (one-time cleanup)
 	await migrateWelcomeViewCompleted(context)
+
+	// Migrate workspace storage values back to global storage (reverting previous migration)
+	await migrateWorkspaceToGlobalStorage(context)
 
 	// Clean up orphaned file context warnings (startup cleanup)
 	await FileContextTracker.cleanupOrphanedWarnings(context)
@@ -293,23 +294,28 @@ export async function activate(context: vscode.ExtensionContext) {
 				break
 			}
 			case "/auth": {
-				const token = query.get("token")
+				const authService = AuthService.getInstance()
+				console.log("Auth callback received:", uri.toString())
+
+				const token = query.get("idToken")
 				const state = query.get("state")
-				const apiKey = query.get("apiKey")
+				const provider = query.get("provider")
 
 				console.log("Auth callback received:", {
 					token: token,
 					state: state,
-					apiKey: apiKey,
+					provider: provider,
 				})
 
 				// Validate state parameter
-				if (!(await visibleWebview?.controller.validateAuthState(state))) {
-					vscode.window.showErrorMessage("认证状态无效")
+				if (!(authService.authNonce === state)) {
+					vscode.window.showErrorMessage("Invalid auth state")
 					return
 				}
-				if (token && apiKey) {
-					await visibleWebview?.controller.handleAuthCallback(token, apiKey)
+
+				if (token) {
+					await visibleWebview?.controller.handleAuthCallback(token, provider)
+					// await authService.handleAuthCallback(token)
 				}
 				break
 			}

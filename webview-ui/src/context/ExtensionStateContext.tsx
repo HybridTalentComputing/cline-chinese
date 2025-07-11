@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
-import { useEvent } from "react-use"
+import "../../../src/shared/webview/types"
 import {
 	StateServiceClient,
 	ModelsServiceClient,
@@ -31,7 +31,7 @@ import {
 } from "../../../src/shared/api"
 import { McpMarketplaceCatalog, McpServer, McpViewTab } from "../../../src/shared/mcp"
 import { convertTextMateToHljs } from "../utils/textMateToHljs"
-import { OpenRouterCompatibleModelInfo } from "@shared/proto/models"
+import { OpenRouterCompatibleModelInfo, ShengSuanYunModelInfo } from "@shared/proto/models"
 import { UserInfo } from "@shared/proto/account"
 
 interface ExtensionStateContextType extends ExtensionState {
@@ -41,7 +41,7 @@ interface ExtensionStateContextType extends ExtensionState {
 	openRouterModels: Record<string, ModelInfo>
 	openAiModels: string[]
 	requestyModels: Record<string, ModelInfo>
-	shengSuanYunModels: Record<string, ModelInfo>
+	shengSuanYunModels: Record<string, ShengSuanYunModelInfo>
 	mcpServers: McpServer[]
 	mcpMarketplaceCatalog: McpMarketplaceCatalog
 	filePaths: string[]
@@ -73,7 +73,7 @@ interface ExtensionStateContextType extends ExtensionState {
 	setChatSettings: (value: ChatSettings) => void
 	setMcpServers: (value: McpServer[]) => void
 	setRequestyModels: (value: Record<string, ModelInfo>) => void
-	setShengSuanYunModels: (value: Record<string, ModelInfo>) => void
+	setShengSuanYunModels: (value: Record<string, ShengSuanYunModelInfo>) => void
 	setGlobalClineRulesToggles: (toggles: Record<string, boolean>) => void
 	setLocalClineRulesToggles: (toggles: Record<string, boolean>) => void
 	setLocalCursorRulesToggles: (toggles: Record<string, boolean>) => void
@@ -223,7 +223,7 @@ export const ExtensionStateContextProvider: React.FC<{
 	const [requestyModels, setRequestyModels] = useState<Record<string, ModelInfo>>({
 		[requestyDefaultModelId]: requestyDefaultModelInfo,
 	})
-	const [shengSuanYunModels, setShengSuanYunModels] = useState<Record<string, ModelInfo>>({
+	const [shengSuanYunModels, setShengSuanYunModels] = useState<Record<string, ShengSuanYunModelInfo>>({
 		[shengSuanYunDefaultModelId]: shengSuanYunDefaultModelInfo,
 	})
 	const [mcpServers, setMcpServers] = useState<McpServer[]>([])
@@ -261,9 +261,8 @@ export const ExtensionStateContextProvider: React.FC<{
 
 	// Subscribe to state updates and UI events using the gRPC streaming API
 	useEffect(() => {
-		// Determine the webview provider type
-		const webviewType =
-			window.WEBVIEW_PROVIDER_TYPE === "sidebar" ? WebviewProviderTypeEnum.SIDEBAR : WebviewProviderTypeEnum.TAB
+		// Use the already defined webview provider type
+		const webviewType = currentProviderType
 
 		// Set up state subscription
 		stateSubscriptionRef.current = StateServiceClient.subscribeToState(EmptyRequest.create({}), {
@@ -749,7 +748,7 @@ export const ExtensionStateContextProvider: React.FC<{
 			})),
 		setMcpServers: (mcpServers: McpServer[]) => setMcpServers(mcpServers),
 		setRequestyModels: (models: Record<string, ModelInfo>) => setRequestyModels(models),
-		setShengSuanYunModels: (models: Record<string, ModelInfo>) => setShengSuanYunModels(models),
+		setShengSuanYunModels: (models: Record<string, ShengSuanYunModelInfo>) => setShengSuanYunModels(models),
 		setMcpMarketplaceCatalog: (catalog: McpMarketplaceCatalog) => setMcpMarketplaceCatalog(catalog),
 		setAvailableTerminalProfiles,
 		setShowMcp,

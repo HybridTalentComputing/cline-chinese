@@ -315,7 +315,7 @@ export interface ModelsApiConfiguration {
   /** From ApiHandlerOptions (excluding onRetryAttempt function) */
   apiModelId?: string | undefined;
   apiKey?: string | undefined;
-  clineApiKey?: string | undefined;
+  clineAccountId?: string | undefined;
   taskId?: string | undefined;
   liteLlmBaseUrl?: string | undefined;
   liteLlmModelId?: string | undefined;
@@ -385,6 +385,7 @@ export interface ModelsApiConfiguration {
   sapAiResourceGroup?: string | undefined;
   sapAiCoreTokenUrl?: string | undefined;
   sapAiCoreBaseUrl?: string | undefined;
+  sapAiCoreModelId?: string | undefined;
   claudeCodePath?: string | undefined;
   shengSuanYunToken?: string | undefined;
   shengSuanYunApiKey?: string | undefined;
@@ -2041,7 +2042,7 @@ function createBaseModelsApiConfiguration(): ModelsApiConfiguration {
   return {
     apiModelId: undefined,
     apiKey: undefined,
-    clineApiKey: undefined,
+    clineAccountId: undefined,
     taskId: undefined,
     liteLlmBaseUrl: undefined,
     liteLlmModelId: undefined,
@@ -2111,6 +2112,7 @@ function createBaseModelsApiConfiguration(): ModelsApiConfiguration {
     sapAiResourceGroup: undefined,
     sapAiCoreTokenUrl: undefined,
     sapAiCoreBaseUrl: undefined,
+    sapAiCoreModelId: undefined,
     claudeCodePath: undefined,
     shengSuanYunToken: undefined,
     shengSuanYunApiKey: undefined,
@@ -2129,8 +2131,8 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     if (message.apiKey !== undefined) {
       writer.uint32(18).string(message.apiKey);
     }
-    if (message.clineApiKey !== undefined) {
-      writer.uint32(26).string(message.clineApiKey);
+    if (message.clineAccountId !== undefined) {
+      writer.uint32(26).string(message.clineAccountId);
     }
     if (message.taskId !== undefined) {
       writer.uint32(34).string(message.taskId);
@@ -2339,26 +2341,29 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     if (message.sapAiCoreBaseUrl !== undefined) {
       writer.uint32(578).string(message.sapAiCoreBaseUrl);
     }
+    if (message.sapAiCoreModelId !== undefined) {
+      writer.uint32(586).string(message.sapAiCoreModelId);
+    }
     if (message.claudeCodePath !== undefined) {
-      writer.uint32(586).string(message.claudeCodePath);
+      writer.uint32(594).string(message.claudeCodePath);
     }
     if (message.shengSuanYunToken !== undefined) {
-      writer.uint32(594).string(message.shengSuanYunToken);
+      writer.uint32(602).string(message.shengSuanYunToken);
     }
     if (message.shengSuanYunApiKey !== undefined) {
-      writer.uint32(602).string(message.shengSuanYunApiKey);
+      writer.uint32(610).string(message.shengSuanYunApiKey);
     }
     if (message.shengSuanYunModelId !== undefined) {
-      writer.uint32(610).string(message.shengSuanYunModelId);
+      writer.uint32(618).string(message.shengSuanYunModelId);
     }
     if (message.shengSuanYunModelInfo !== undefined) {
-      ShengSuanYunModelInfo.encode(message.shengSuanYunModelInfo, writer.uint32(618).fork()).join();
+      ShengSuanYunModelInfo.encode(message.shengSuanYunModelInfo, writer.uint32(626).fork()).join();
     }
     if (message.geminiCliOauthPath !== undefined) {
-      writer.uint32(626).string(message.geminiCliOauthPath);
+      writer.uint32(634).string(message.geminiCliOauthPath);
     }
     if (message.geminiCliProjectId !== undefined) {
-      writer.uint32(634).string(message.geminiCliProjectId);
+      writer.uint32(642).string(message.geminiCliProjectId);
     }
     return writer;
   },
@@ -2391,7 +2396,7 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
             break;
           }
 
-          message.clineApiKey = reader.string();
+          message.clineAccountId = reader.string();
           continue;
         }
         case 4: {
@@ -2954,7 +2959,7 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
             break;
           }
 
-          message.claudeCodePath = reader.string();
+          message.sapAiCoreModelId = reader.string();
           continue;
         }
         case 74: {
@@ -2962,7 +2967,7 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
             break;
           }
 
-          message.shengSuanYunToken = reader.string();
+          message.claudeCodePath = reader.string();
           continue;
         }
         case 75: {
@@ -2970,7 +2975,7 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
             break;
           }
 
-          message.shengSuanYunApiKey = reader.string();
+          message.shengSuanYunToken = reader.string();
           continue;
         }
         case 76: {
@@ -2978,7 +2983,7 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
             break;
           }
 
-          message.shengSuanYunModelId = reader.string();
+          message.shengSuanYunApiKey = reader.string();
           continue;
         }
         case 77: {
@@ -2986,7 +2991,7 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
             break;
           }
 
-          message.shengSuanYunModelInfo = ShengSuanYunModelInfo.decode(reader, reader.uint32());
+          message.shengSuanYunModelId = reader.string();
           continue;
         }
         case 78: {
@@ -2994,11 +2999,19 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
             break;
           }
 
-          message.geminiCliOauthPath = reader.string();
+          message.shengSuanYunModelInfo = ShengSuanYunModelInfo.decode(reader, reader.uint32());
           continue;
         }
         case 79: {
           if (tag !== 634) {
+            break;
+          }
+
+          message.geminiCliOauthPath = reader.string();
+          continue;
+        }
+        case 80: {
+          if (tag !== 642) {
             break;
           }
 
@@ -3018,7 +3031,7 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     return {
       apiModelId: isSet(object.apiModelId) ? globalThis.String(object.apiModelId) : undefined,
       apiKey: isSet(object.apiKey) ? globalThis.String(object.apiKey) : undefined,
-      clineApiKey: isSet(object.clineApiKey) ? globalThis.String(object.clineApiKey) : undefined,
+      clineAccountId: isSet(object.clineAccountId) ? globalThis.String(object.clineAccountId) : undefined,
       taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : undefined,
       liteLlmBaseUrl: isSet(object.liteLlmBaseUrl) ? globalThis.String(object.liteLlmBaseUrl) : undefined,
       liteLlmModelId: isSet(object.liteLlmModelId) ? globalThis.String(object.liteLlmModelId) : undefined,
@@ -3125,6 +3138,7 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
       sapAiResourceGroup: isSet(object.sapAiResourceGroup) ? globalThis.String(object.sapAiResourceGroup) : undefined,
       sapAiCoreTokenUrl: isSet(object.sapAiCoreTokenUrl) ? globalThis.String(object.sapAiCoreTokenUrl) : undefined,
       sapAiCoreBaseUrl: isSet(object.sapAiCoreBaseUrl) ? globalThis.String(object.sapAiCoreBaseUrl) : undefined,
+      sapAiCoreModelId: isSet(object.sapAiCoreModelId) ? globalThis.String(object.sapAiCoreModelId) : undefined,
       claudeCodePath: isSet(object.claudeCodePath) ? globalThis.String(object.claudeCodePath) : undefined,
       shengSuanYunToken: isSet(object.shengSuanYunToken) ? globalThis.String(object.shengSuanYunToken) : undefined,
       shengSuanYunApiKey: isSet(object.shengSuanYunApiKey) ? globalThis.String(object.shengSuanYunApiKey) : undefined,
@@ -3147,8 +3161,8 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     if (message.apiKey !== undefined) {
       obj.apiKey = message.apiKey;
     }
-    if (message.clineApiKey !== undefined) {
-      obj.clineApiKey = message.clineApiKey;
+    if (message.clineAccountId !== undefined) {
+      obj.clineAccountId = message.clineAccountId;
     }
     if (message.taskId !== undefined) {
       obj.taskId = message.taskId;
@@ -3363,6 +3377,9 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     if (message.sapAiCoreBaseUrl !== undefined) {
       obj.sapAiCoreBaseUrl = message.sapAiCoreBaseUrl;
     }
+    if (message.sapAiCoreModelId !== undefined) {
+      obj.sapAiCoreModelId = message.sapAiCoreModelId;
+    }
     if (message.claudeCodePath !== undefined) {
       obj.claudeCodePath = message.claudeCodePath;
     }
@@ -3394,7 +3411,7 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     const message = createBaseModelsApiConfiguration();
     message.apiModelId = object.apiModelId ?? undefined;
     message.apiKey = object.apiKey ?? undefined;
-    message.clineApiKey = object.clineApiKey ?? undefined;
+    message.clineAccountId = object.clineAccountId ?? undefined;
     message.taskId = object.taskId ?? undefined;
     message.liteLlmBaseUrl = object.liteLlmBaseUrl ?? undefined;
     message.liteLlmModelId = object.liteLlmModelId ?? undefined;
@@ -3483,6 +3500,7 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     message.sapAiResourceGroup = object.sapAiResourceGroup ?? undefined;
     message.sapAiCoreTokenUrl = object.sapAiCoreTokenUrl ?? undefined;
     message.sapAiCoreBaseUrl = object.sapAiCoreBaseUrl ?? undefined;
+    message.sapAiCoreModelId = object.sapAiCoreModelId ?? undefined;
     message.claudeCodePath = object.claudeCodePath ?? undefined;
     message.shengSuanYunToken = object.shengSuanYunToken ?? undefined;
     message.shengSuanYunApiKey = object.shengSuanYunApiKey ?? undefined;

@@ -32,14 +32,14 @@ const ActModeHighlight: React.FC = () => {
 					)
 				}
 			}}
-			title={chatSettings.mode === "plan" ? "Click to toggle to Act Mode" : "Already in Act Mode"}
+			title={chatSettings.mode === "plan" ? "点击切换到执行模式" : "已经在执行模式"}
 			className={`text-[var(--vscode-textLink-foreground)] inline-flex items-center gap-1 ${
 				chatSettings.mode === "plan" ? "hover:opacity-90 cursor-pointer" : "cursor-default opacity-60"
 			}`}>
 			<div className="p-1 rounded-[12px] bg-[var(--vscode-editor-background)] flex items-center justify-end w-4 border-[1px] border-[var(--vscode-input-border)]">
 				<div className="rounded-full bg-[var(--vscode-textLink-foreground)] w-2 h-2" />
 			</div>
-			Act Mode (⌘⇧A)
+			执行模式 (⌘⇧A)
 		</span>
 	)
 }

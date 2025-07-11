@@ -138,6 +138,18 @@ export interface McpMarketplaceCatalog {
   items: McpMarketplaceItem[];
 }
 
+export interface McpDownloadResponse {
+  mcpId: string;
+  githubUrl: string;
+  name: string;
+  author: string;
+  description: string;
+  readmeContent: string;
+  llmsInstallationContent: string;
+  requiresApiKey: boolean;
+  error?: string | undefined;
+}
+
 function createBaseToggleMcpServerRequest(): ToggleMcpServerRequest {
   return { metadata: undefined, serverName: "", disabled: false };
 }
@@ -1535,6 +1547,206 @@ export const McpMarketplaceCatalog: MessageFns<McpMarketplaceCatalog> = {
   },
 };
 
+function createBaseMcpDownloadResponse(): McpDownloadResponse {
+  return {
+    mcpId: "",
+    githubUrl: "",
+    name: "",
+    author: "",
+    description: "",
+    readmeContent: "",
+    llmsInstallationContent: "",
+    requiresApiKey: false,
+    error: undefined,
+  };
+}
+
+export const McpDownloadResponse: MessageFns<McpDownloadResponse> = {
+  encode(message: McpDownloadResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.mcpId !== "") {
+      writer.uint32(10).string(message.mcpId);
+    }
+    if (message.githubUrl !== "") {
+      writer.uint32(18).string(message.githubUrl);
+    }
+    if (message.name !== "") {
+      writer.uint32(26).string(message.name);
+    }
+    if (message.author !== "") {
+      writer.uint32(34).string(message.author);
+    }
+    if (message.description !== "") {
+      writer.uint32(42).string(message.description);
+    }
+    if (message.readmeContent !== "") {
+      writer.uint32(50).string(message.readmeContent);
+    }
+    if (message.llmsInstallationContent !== "") {
+      writer.uint32(58).string(message.llmsInstallationContent);
+    }
+    if (message.requiresApiKey !== false) {
+      writer.uint32(64).bool(message.requiresApiKey);
+    }
+    if (message.error !== undefined) {
+      writer.uint32(74).string(message.error);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): McpDownloadResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMcpDownloadResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.mcpId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.githubUrl = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.author = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.readmeContent = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.llmsInstallationContent = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.requiresApiKey = reader.bool();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.error = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): McpDownloadResponse {
+    return {
+      mcpId: isSet(object.mcpId) ? globalThis.String(object.mcpId) : "",
+      githubUrl: isSet(object.githubUrl) ? globalThis.String(object.githubUrl) : "",
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      author: isSet(object.author) ? globalThis.String(object.author) : "",
+      description: isSet(object.description) ? globalThis.String(object.description) : "",
+      readmeContent: isSet(object.readmeContent) ? globalThis.String(object.readmeContent) : "",
+      llmsInstallationContent: isSet(object.llmsInstallationContent)
+        ? globalThis.String(object.llmsInstallationContent)
+        : "",
+      requiresApiKey: isSet(object.requiresApiKey) ? globalThis.Boolean(object.requiresApiKey) : false,
+      error: isSet(object.error) ? globalThis.String(object.error) : undefined,
+    };
+  },
+
+  toJSON(message: McpDownloadResponse): unknown {
+    const obj: any = {};
+    if (message.mcpId !== "") {
+      obj.mcpId = message.mcpId;
+    }
+    if (message.githubUrl !== "") {
+      obj.githubUrl = message.githubUrl;
+    }
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.author !== "") {
+      obj.author = message.author;
+    }
+    if (message.description !== "") {
+      obj.description = message.description;
+    }
+    if (message.readmeContent !== "") {
+      obj.readmeContent = message.readmeContent;
+    }
+    if (message.llmsInstallationContent !== "") {
+      obj.llmsInstallationContent = message.llmsInstallationContent;
+    }
+    if (message.requiresApiKey !== false) {
+      obj.requiresApiKey = message.requiresApiKey;
+    }
+    if (message.error !== undefined) {
+      obj.error = message.error;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<McpDownloadResponse>, I>>(base?: I): McpDownloadResponse {
+    return McpDownloadResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<McpDownloadResponse>, I>>(object: I): McpDownloadResponse {
+    const message = createBaseMcpDownloadResponse();
+    message.mcpId = object.mcpId ?? "";
+    message.githubUrl = object.githubUrl ?? "";
+    message.name = object.name ?? "";
+    message.author = object.author ?? "";
+    message.description = object.description ?? "";
+    message.readmeContent = object.readmeContent ?? "";
+    message.llmsInstallationContent = object.llmsInstallationContent ?? "";
+    message.requiresApiKey = object.requiresApiKey ?? false;
+    message.error = object.error ?? undefined;
+    return message;
+  },
+};
+
 export type McpServiceDefinition = typeof McpServiceDefinition;
 export const McpServiceDefinition = {
   name: "McpService",
@@ -1568,7 +1780,7 @@ export const McpServiceDefinition = {
       name: "downloadMcp",
       requestType: StringRequest,
       requestStream: false,
-      responseType: Empty,
+      responseType: McpDownloadResponse,
       responseStream: false,
       options: {},
     },

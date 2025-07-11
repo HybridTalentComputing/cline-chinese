@@ -13,46 +13,93 @@ export interface AuthStateChangedRequest {
   user?: UserInfo | undefined;
 }
 
-export interface AuthStateChanged {
+export interface AuthState {
   user?: UserInfo | undefined;
 }
 
+/** User's information */
 export interface UserInfo {
+  uid: string;
   displayName?: string | undefined;
   email?: string | undefined;
   photoUrl?: string | undefined;
 }
 
-/** Response containing all user credits data */
+export interface UserOrganization {
+  active: boolean;
+  memberId: string;
+  name: string;
+  organizationId: string;
+  /** ["admin", "member", "owner"] */
+  roles: string[];
+}
+
+export interface UserOrganizationsResponse {
+  organizations: UserOrganization[];
+}
+
+export interface UserOrganizationUpdateRequest {
+  organizationId?: string | undefined;
+}
+
 export interface UserCreditsData {
   balance?: UserCreditsBalance | undefined;
   usageTransactions: UsageTransaction[];
   paymentTransactions: PaymentTransaction[];
 }
 
-/** User's current credit balance */
+export interface GetOrganizationCreditsRequest {
+  organizationId: string;
+}
+
+export interface OrganizationCreditsData {
+  balance?: UserCreditsBalance | undefined;
+  organizationId: string;
+  usageTransactions: OrganizationUsageTransaction[];
+}
+
 export interface UserCreditsBalance {
   currentBalance: number;
 }
 
-/** Usage transaction record */
 export interface UsageTransaction {
-  spentAt: string;
-  creatorId: string;
-  credits: number;
-  modelProvider: string;
-  model: string;
-  promptTokens: number;
+  aiInferenceProviderName: string;
+  aiModelName: string;
+  aiModelTypeName: string;
   completionTokens: number;
+  costUsd: number;
+  createdAt: string;
+  creditsUsed: number;
+  generationId: string;
+  organizationId: string;
+  promptTokens: number;
   totalTokens: number;
+  userId: string;
+  spentAt?: string | undefined;
+  model?: string | undefined;
+  credits?: string | undefined;
 }
 
-/** Payment transaction record */
 export interface PaymentTransaction {
   paidAt: string;
   creatorId: string;
   amountCents: number;
   credits: number;
+}
+
+export interface OrganizationUsageTransaction {
+  aiInferenceProviderName: string;
+  aiModelName: string;
+  aiModelTypeName: string;
+  completionTokens: number;
+  costUsd: number;
+  createdAt: string;
+  creditsUsed: number;
+  generationId: string;
+  organizationId: string;
+  promptTokens: number;
+  totalTokens: number;
+  userId: string;
 }
 
 function createBaseAuthStateChangedRequest(): AuthStateChangedRequest {
@@ -133,22 +180,22 @@ export const AuthStateChangedRequest: MessageFns<AuthStateChangedRequest> = {
   },
 };
 
-function createBaseAuthStateChanged(): AuthStateChanged {
+function createBaseAuthState(): AuthState {
   return { user: undefined };
 }
 
-export const AuthStateChanged: MessageFns<AuthStateChanged> = {
-  encode(message: AuthStateChanged, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const AuthState: MessageFns<AuthState> = {
+  encode(message: AuthState, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.user !== undefined) {
       UserInfo.encode(message.user, writer.uint32(10).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): AuthStateChanged {
+  decode(input: BinaryReader | Uint8Array, length?: number): AuthState {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseAuthStateChanged();
+    const message = createBaseAuthState();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -169,11 +216,11 @@ export const AuthStateChanged: MessageFns<AuthStateChanged> = {
     return message;
   },
 
-  fromJSON(object: any): AuthStateChanged {
+  fromJSON(object: any): AuthState {
     return { user: isSet(object.user) ? UserInfo.fromJSON(object.user) : undefined };
   },
 
-  toJSON(message: AuthStateChanged): unknown {
+  toJSON(message: AuthState): unknown {
     const obj: any = {};
     if (message.user !== undefined) {
       obj.user = UserInfo.toJSON(message.user);
@@ -181,30 +228,33 @@ export const AuthStateChanged: MessageFns<AuthStateChanged> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<AuthStateChanged>, I>>(base?: I): AuthStateChanged {
-    return AuthStateChanged.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<AuthState>, I>>(base?: I): AuthState {
+    return AuthState.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<AuthStateChanged>, I>>(object: I): AuthStateChanged {
-    const message = createBaseAuthStateChanged();
+  fromPartial<I extends Exact<DeepPartial<AuthState>, I>>(object: I): AuthState {
+    const message = createBaseAuthState();
     message.user = (object.user !== undefined && object.user !== null) ? UserInfo.fromPartial(object.user) : undefined;
     return message;
   },
 };
 
 function createBaseUserInfo(): UserInfo {
-  return { displayName: undefined, email: undefined, photoUrl: undefined };
+  return { uid: "", displayName: undefined, email: undefined, photoUrl: undefined };
 }
 
 export const UserInfo: MessageFns<UserInfo> = {
   encode(message: UserInfo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.uid !== "") {
+      writer.uint32(10).string(message.uid);
+    }
     if (message.displayName !== undefined) {
-      writer.uint32(10).string(message.displayName);
+      writer.uint32(18).string(message.displayName);
     }
     if (message.email !== undefined) {
-      writer.uint32(18).string(message.email);
+      writer.uint32(26).string(message.email);
     }
     if (message.photoUrl !== undefined) {
-      writer.uint32(26).string(message.photoUrl);
+      writer.uint32(34).string(message.photoUrl);
     }
     return writer;
   },
@@ -221,7 +271,7 @@ export const UserInfo: MessageFns<UserInfo> = {
             break;
           }
 
-          message.displayName = reader.string();
+          message.uid = reader.string();
           continue;
         }
         case 2: {
@@ -229,11 +279,19 @@ export const UserInfo: MessageFns<UserInfo> = {
             break;
           }
 
-          message.email = reader.string();
+          message.displayName = reader.string();
           continue;
         }
         case 3: {
           if (tag !== 26) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
             break;
           }
 
@@ -251,6 +309,7 @@ export const UserInfo: MessageFns<UserInfo> = {
 
   fromJSON(object: any): UserInfo {
     return {
+      uid: isSet(object.uid) ? globalThis.String(object.uid) : "",
       displayName: isSet(object.displayName) ? globalThis.String(object.displayName) : undefined,
       email: isSet(object.email) ? globalThis.String(object.email) : undefined,
       photoUrl: isSet(object.photoUrl) ? globalThis.String(object.photoUrl) : undefined,
@@ -259,6 +318,9 @@ export const UserInfo: MessageFns<UserInfo> = {
 
   toJSON(message: UserInfo): unknown {
     const obj: any = {};
+    if (message.uid !== "") {
+      obj.uid = message.uid;
+    }
     if (message.displayName !== undefined) {
       obj.displayName = message.displayName;
     }
@@ -276,9 +338,256 @@ export const UserInfo: MessageFns<UserInfo> = {
   },
   fromPartial<I extends Exact<DeepPartial<UserInfo>, I>>(object: I): UserInfo {
     const message = createBaseUserInfo();
+    message.uid = object.uid ?? "";
     message.displayName = object.displayName ?? undefined;
     message.email = object.email ?? undefined;
     message.photoUrl = object.photoUrl ?? undefined;
+    return message;
+  },
+};
+
+function createBaseUserOrganization(): UserOrganization {
+  return { active: false, memberId: "", name: "", organizationId: "", roles: [] };
+}
+
+export const UserOrganization: MessageFns<UserOrganization> = {
+  encode(message: UserOrganization, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.active !== false) {
+      writer.uint32(8).bool(message.active);
+    }
+    if (message.memberId !== "") {
+      writer.uint32(18).string(message.memberId);
+    }
+    if (message.name !== "") {
+      writer.uint32(26).string(message.name);
+    }
+    if (message.organizationId !== "") {
+      writer.uint32(34).string(message.organizationId);
+    }
+    for (const v of message.roles) {
+      writer.uint32(42).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UserOrganization {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUserOrganization();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.active = reader.bool();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.memberId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.organizationId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.roles.push(reader.string());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): UserOrganization {
+    return {
+      active: isSet(object.active) ? globalThis.Boolean(object.active) : false,
+      memberId: isSet(object.memberId) ? globalThis.String(object.memberId) : "",
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      organizationId: isSet(object.organizationId) ? globalThis.String(object.organizationId) : "",
+      roles: globalThis.Array.isArray(object?.roles) ? object.roles.map((e: any) => globalThis.String(e)) : [],
+    };
+  },
+
+  toJSON(message: UserOrganization): unknown {
+    const obj: any = {};
+    if (message.active !== false) {
+      obj.active = message.active;
+    }
+    if (message.memberId !== "") {
+      obj.memberId = message.memberId;
+    }
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.organizationId !== "") {
+      obj.organizationId = message.organizationId;
+    }
+    if (message.roles?.length) {
+      obj.roles = message.roles;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<UserOrganization>, I>>(base?: I): UserOrganization {
+    return UserOrganization.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UserOrganization>, I>>(object: I): UserOrganization {
+    const message = createBaseUserOrganization();
+    message.active = object.active ?? false;
+    message.memberId = object.memberId ?? "";
+    message.name = object.name ?? "";
+    message.organizationId = object.organizationId ?? "";
+    message.roles = object.roles?.map((e) => e) || [];
+    return message;
+  },
+};
+
+function createBaseUserOrganizationsResponse(): UserOrganizationsResponse {
+  return { organizations: [] };
+}
+
+export const UserOrganizationsResponse: MessageFns<UserOrganizationsResponse> = {
+  encode(message: UserOrganizationsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.organizations) {
+      UserOrganization.encode(v!, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UserOrganizationsResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUserOrganizationsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.organizations.push(UserOrganization.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): UserOrganizationsResponse {
+    return {
+      organizations: globalThis.Array.isArray(object?.organizations)
+        ? object.organizations.map((e: any) => UserOrganization.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: UserOrganizationsResponse): unknown {
+    const obj: any = {};
+    if (message.organizations?.length) {
+      obj.organizations = message.organizations.map((e) => UserOrganization.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<UserOrganizationsResponse>, I>>(base?: I): UserOrganizationsResponse {
+    return UserOrganizationsResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UserOrganizationsResponse>, I>>(object: I): UserOrganizationsResponse {
+    const message = createBaseUserOrganizationsResponse();
+    message.organizations = object.organizations?.map((e) => UserOrganization.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseUserOrganizationUpdateRequest(): UserOrganizationUpdateRequest {
+  return { organizationId: undefined };
+}
+
+export const UserOrganizationUpdateRequest: MessageFns<UserOrganizationUpdateRequest> = {
+  encode(message: UserOrganizationUpdateRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.organizationId !== undefined) {
+      writer.uint32(10).string(message.organizationId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UserOrganizationUpdateRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUserOrganizationUpdateRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.organizationId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): UserOrganizationUpdateRequest {
+    return { organizationId: isSet(object.organizationId) ? globalThis.String(object.organizationId) : undefined };
+  },
+
+  toJSON(message: UserOrganizationUpdateRequest): unknown {
+    const obj: any = {};
+    if (message.organizationId !== undefined) {
+      obj.organizationId = message.organizationId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<UserOrganizationUpdateRequest>, I>>(base?: I): UserOrganizationUpdateRequest {
+    return UserOrganizationUpdateRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UserOrganizationUpdateRequest>, I>>(
+    object: I,
+  ): UserOrganizationUpdateRequest {
+    const message = createBaseUserOrganizationUpdateRequest();
+    message.organizationId = object.organizationId ?? undefined;
     return message;
   },
 };
@@ -381,6 +690,162 @@ export const UserCreditsData: MessageFns<UserCreditsData> = {
   },
 };
 
+function createBaseGetOrganizationCreditsRequest(): GetOrganizationCreditsRequest {
+  return { organizationId: "" };
+}
+
+export const GetOrganizationCreditsRequest: MessageFns<GetOrganizationCreditsRequest> = {
+  encode(message: GetOrganizationCreditsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.organizationId !== "") {
+      writer.uint32(10).string(message.organizationId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetOrganizationCreditsRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetOrganizationCreditsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.organizationId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GetOrganizationCreditsRequest {
+    return { organizationId: isSet(object.organizationId) ? globalThis.String(object.organizationId) : "" };
+  },
+
+  toJSON(message: GetOrganizationCreditsRequest): unknown {
+    const obj: any = {};
+    if (message.organizationId !== "") {
+      obj.organizationId = message.organizationId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<GetOrganizationCreditsRequest>, I>>(base?: I): GetOrganizationCreditsRequest {
+    return GetOrganizationCreditsRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GetOrganizationCreditsRequest>, I>>(
+    object: I,
+  ): GetOrganizationCreditsRequest {
+    const message = createBaseGetOrganizationCreditsRequest();
+    message.organizationId = object.organizationId ?? "";
+    return message;
+  },
+};
+
+function createBaseOrganizationCreditsData(): OrganizationCreditsData {
+  return { balance: undefined, organizationId: "", usageTransactions: [] };
+}
+
+export const OrganizationCreditsData: MessageFns<OrganizationCreditsData> = {
+  encode(message: OrganizationCreditsData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.balance !== undefined) {
+      UserCreditsBalance.encode(message.balance, writer.uint32(10).fork()).join();
+    }
+    if (message.organizationId !== "") {
+      writer.uint32(18).string(message.organizationId);
+    }
+    for (const v of message.usageTransactions) {
+      OrganizationUsageTransaction.encode(v!, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OrganizationCreditsData {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOrganizationCreditsData();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.balance = UserCreditsBalance.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.organizationId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.usageTransactions.push(OrganizationUsageTransaction.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OrganizationCreditsData {
+    return {
+      balance: isSet(object.balance) ? UserCreditsBalance.fromJSON(object.balance) : undefined,
+      organizationId: isSet(object.organizationId) ? globalThis.String(object.organizationId) : "",
+      usageTransactions: globalThis.Array.isArray(object?.usageTransactions)
+        ? object.usageTransactions.map((e: any) => OrganizationUsageTransaction.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: OrganizationCreditsData): unknown {
+    const obj: any = {};
+    if (message.balance !== undefined) {
+      obj.balance = UserCreditsBalance.toJSON(message.balance);
+    }
+    if (message.organizationId !== "") {
+      obj.organizationId = message.organizationId;
+    }
+    if (message.usageTransactions?.length) {
+      obj.usageTransactions = message.usageTransactions.map((e) => OrganizationUsageTransaction.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<OrganizationCreditsData>, I>>(base?: I): OrganizationCreditsData {
+    return OrganizationCreditsData.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<OrganizationCreditsData>, I>>(object: I): OrganizationCreditsData {
+    const message = createBaseOrganizationCreditsData();
+    message.balance = (object.balance !== undefined && object.balance !== null)
+      ? UserCreditsBalance.fromPartial(object.balance)
+      : undefined;
+    message.organizationId = object.organizationId ?? "";
+    message.usageTransactions = object.usageTransactions?.map((e) => OrganizationUsageTransaction.fromPartial(e)) || [];
+    return message;
+  },
+};
+
 function createBaseUserCreditsBalance(): UserCreditsBalance {
   return { currentBalance: 0 };
 }
@@ -441,42 +906,70 @@ export const UserCreditsBalance: MessageFns<UserCreditsBalance> = {
 
 function createBaseUsageTransaction(): UsageTransaction {
   return {
-    spentAt: "",
-    creatorId: "",
-    credits: 0,
-    modelProvider: "",
-    model: "",
-    promptTokens: 0,
+    aiInferenceProviderName: "",
+    aiModelName: "",
+    aiModelTypeName: "",
     completionTokens: 0,
+    costUsd: 0,
+    createdAt: "",
+    creditsUsed: 0,
+    generationId: "",
+    organizationId: "",
+    promptTokens: 0,
     totalTokens: 0,
+    userId: "",
+    spentAt: undefined,
+    model: undefined,
+    credits: undefined,
   };
 }
 
 export const UsageTransaction: MessageFns<UsageTransaction> = {
   encode(message: UsageTransaction, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.spentAt !== "") {
-      writer.uint32(10).string(message.spentAt);
+    if (message.aiInferenceProviderName !== "") {
+      writer.uint32(10).string(message.aiInferenceProviderName);
     }
-    if (message.creatorId !== "") {
-      writer.uint32(18).string(message.creatorId);
+    if (message.aiModelName !== "") {
+      writer.uint32(18).string(message.aiModelName);
     }
-    if (message.credits !== 0) {
-      writer.uint32(25).double(message.credits);
-    }
-    if (message.modelProvider !== "") {
-      writer.uint32(34).string(message.modelProvider);
-    }
-    if (message.model !== "") {
-      writer.uint32(42).string(message.model);
-    }
-    if (message.promptTokens !== 0) {
-      writer.uint32(48).int32(message.promptTokens);
+    if (message.aiModelTypeName !== "") {
+      writer.uint32(26).string(message.aiModelTypeName);
     }
     if (message.completionTokens !== 0) {
-      writer.uint32(56).int32(message.completionTokens);
+      writer.uint32(32).int32(message.completionTokens);
+    }
+    if (message.costUsd !== 0) {
+      writer.uint32(41).double(message.costUsd);
+    }
+    if (message.createdAt !== "") {
+      writer.uint32(50).string(message.createdAt);
+    }
+    if (message.creditsUsed !== 0) {
+      writer.uint32(57).double(message.creditsUsed);
+    }
+    if (message.generationId !== "") {
+      writer.uint32(66).string(message.generationId);
+    }
+    if (message.organizationId !== "") {
+      writer.uint32(74).string(message.organizationId);
+    }
+    if (message.promptTokens !== 0) {
+      writer.uint32(80).int32(message.promptTokens);
     }
     if (message.totalTokens !== 0) {
-      writer.uint32(64).int32(message.totalTokens);
+      writer.uint32(88).int32(message.totalTokens);
+    }
+    if (message.userId !== "") {
+      writer.uint32(98).string(message.userId);
+    }
+    if (message.spentAt !== undefined) {
+      writer.uint32(106).string(message.spentAt);
+    }
+    if (message.model !== undefined) {
+      writer.uint32(114).string(message.model);
+    }
+    if (message.credits !== undefined) {
+      writer.uint32(122).string(message.credits);
     }
     return writer;
   },
@@ -493,7 +986,7 @@ export const UsageTransaction: MessageFns<UsageTransaction> = {
             break;
           }
 
-          message.spentAt = reader.string();
+          message.aiInferenceProviderName = reader.string();
           continue;
         }
         case 2: {
@@ -501,55 +994,111 @@ export const UsageTransaction: MessageFns<UsageTransaction> = {
             break;
           }
 
-          message.creatorId = reader.string();
+          message.aiModelName = reader.string();
           continue;
         }
         case 3: {
-          if (tag !== 25) {
+          if (tag !== 26) {
             break;
           }
 
-          message.credits = reader.double();
+          message.aiModelTypeName = reader.string();
           continue;
         }
         case 4: {
-          if (tag !== 34) {
-            break;
-          }
-
-          message.modelProvider = reader.string();
-          continue;
-        }
-        case 5: {
-          if (tag !== 42) {
-            break;
-          }
-
-          message.model = reader.string();
-          continue;
-        }
-        case 6: {
-          if (tag !== 48) {
-            break;
-          }
-
-          message.promptTokens = reader.int32();
-          continue;
-        }
-        case 7: {
-          if (tag !== 56) {
+          if (tag !== 32) {
             break;
           }
 
           message.completionTokens = reader.int32();
           continue;
         }
+        case 5: {
+          if (tag !== 41) {
+            break;
+          }
+
+          message.costUsd = reader.double();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.createdAt = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 57) {
+            break;
+          }
+
+          message.creditsUsed = reader.double();
+          continue;
+        }
         case 8: {
-          if (tag !== 64) {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.generationId = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.organizationId = reader.string();
+          continue;
+        }
+        case 10: {
+          if (tag !== 80) {
+            break;
+          }
+
+          message.promptTokens = reader.int32();
+          continue;
+        }
+        case 11: {
+          if (tag !== 88) {
             break;
           }
 
           message.totalTokens = reader.int32();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.spentAt = reader.string();
+          continue;
+        }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.model = reader.string();
+          continue;
+        }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.credits = reader.string();
           continue;
         }
       }
@@ -563,42 +1112,72 @@ export const UsageTransaction: MessageFns<UsageTransaction> = {
 
   fromJSON(object: any): UsageTransaction {
     return {
-      spentAt: isSet(object.spentAt) ? globalThis.String(object.spentAt) : "",
-      creatorId: isSet(object.creatorId) ? globalThis.String(object.creatorId) : "",
-      credits: isSet(object.credits) ? globalThis.Number(object.credits) : 0,
-      modelProvider: isSet(object.modelProvider) ? globalThis.String(object.modelProvider) : "",
-      model: isSet(object.model) ? globalThis.String(object.model) : "",
-      promptTokens: isSet(object.promptTokens) ? globalThis.Number(object.promptTokens) : 0,
+      aiInferenceProviderName: isSet(object.aiInferenceProviderName)
+        ? globalThis.String(object.aiInferenceProviderName)
+        : "",
+      aiModelName: isSet(object.aiModelName) ? globalThis.String(object.aiModelName) : "",
+      aiModelTypeName: isSet(object.aiModelTypeName) ? globalThis.String(object.aiModelTypeName) : "",
       completionTokens: isSet(object.completionTokens) ? globalThis.Number(object.completionTokens) : 0,
+      costUsd: isSet(object.costUsd) ? globalThis.Number(object.costUsd) : 0,
+      createdAt: isSet(object.createdAt) ? globalThis.String(object.createdAt) : "",
+      creditsUsed: isSet(object.creditsUsed) ? globalThis.Number(object.creditsUsed) : 0,
+      generationId: isSet(object.generationId) ? globalThis.String(object.generationId) : "",
+      organizationId: isSet(object.organizationId) ? globalThis.String(object.organizationId) : "",
+      promptTokens: isSet(object.promptTokens) ? globalThis.Number(object.promptTokens) : 0,
       totalTokens: isSet(object.totalTokens) ? globalThis.Number(object.totalTokens) : 0,
+      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
+      spentAt: isSet(object.spentAt) ? globalThis.String(object.spentAt) : undefined,
+      model: isSet(object.model) ? globalThis.String(object.model) : undefined,
+      credits: isSet(object.credits) ? globalThis.String(object.credits) : undefined,
     };
   },
 
   toJSON(message: UsageTransaction): unknown {
     const obj: any = {};
-    if (message.spentAt !== "") {
-      obj.spentAt = message.spentAt;
+    if (message.aiInferenceProviderName !== "") {
+      obj.aiInferenceProviderName = message.aiInferenceProviderName;
     }
-    if (message.creatorId !== "") {
-      obj.creatorId = message.creatorId;
+    if (message.aiModelName !== "") {
+      obj.aiModelName = message.aiModelName;
     }
-    if (message.credits !== 0) {
-      obj.credits = message.credits;
-    }
-    if (message.modelProvider !== "") {
-      obj.modelProvider = message.modelProvider;
-    }
-    if (message.model !== "") {
-      obj.model = message.model;
-    }
-    if (message.promptTokens !== 0) {
-      obj.promptTokens = Math.round(message.promptTokens);
+    if (message.aiModelTypeName !== "") {
+      obj.aiModelTypeName = message.aiModelTypeName;
     }
     if (message.completionTokens !== 0) {
       obj.completionTokens = Math.round(message.completionTokens);
     }
+    if (message.costUsd !== 0) {
+      obj.costUsd = message.costUsd;
+    }
+    if (message.createdAt !== "") {
+      obj.createdAt = message.createdAt;
+    }
+    if (message.creditsUsed !== 0) {
+      obj.creditsUsed = message.creditsUsed;
+    }
+    if (message.generationId !== "") {
+      obj.generationId = message.generationId;
+    }
+    if (message.organizationId !== "") {
+      obj.organizationId = message.organizationId;
+    }
+    if (message.promptTokens !== 0) {
+      obj.promptTokens = Math.round(message.promptTokens);
+    }
     if (message.totalTokens !== 0) {
       obj.totalTokens = Math.round(message.totalTokens);
+    }
+    if (message.userId !== "") {
+      obj.userId = message.userId;
+    }
+    if (message.spentAt !== undefined) {
+      obj.spentAt = message.spentAt;
+    }
+    if (message.model !== undefined) {
+      obj.model = message.model;
+    }
+    if (message.credits !== undefined) {
+      obj.credits = message.credits;
     }
     return obj;
   },
@@ -608,14 +1187,21 @@ export const UsageTransaction: MessageFns<UsageTransaction> = {
   },
   fromPartial<I extends Exact<DeepPartial<UsageTransaction>, I>>(object: I): UsageTransaction {
     const message = createBaseUsageTransaction();
-    message.spentAt = object.spentAt ?? "";
-    message.creatorId = object.creatorId ?? "";
-    message.credits = object.credits ?? 0;
-    message.modelProvider = object.modelProvider ?? "";
-    message.model = object.model ?? "";
-    message.promptTokens = object.promptTokens ?? 0;
+    message.aiInferenceProviderName = object.aiInferenceProviderName ?? "";
+    message.aiModelName = object.aiModelName ?? "";
+    message.aiModelTypeName = object.aiModelTypeName ?? "";
     message.completionTokens = object.completionTokens ?? 0;
+    message.costUsd = object.costUsd ?? 0;
+    message.createdAt = object.createdAt ?? "";
+    message.creditsUsed = object.creditsUsed ?? 0;
+    message.generationId = object.generationId ?? "";
+    message.organizationId = object.organizationId ?? "";
+    message.promptTokens = object.promptTokens ?? 0;
     message.totalTokens = object.totalTokens ?? 0;
+    message.userId = object.userId ?? "";
+    message.spentAt = object.spentAt ?? undefined;
+    message.model = object.model ?? undefined;
+    message.credits = object.credits ?? undefined;
     return message;
   },
 };
@@ -728,6 +1314,257 @@ export const PaymentTransaction: MessageFns<PaymentTransaction> = {
   },
 };
 
+function createBaseOrganizationUsageTransaction(): OrganizationUsageTransaction {
+  return {
+    aiInferenceProviderName: "",
+    aiModelName: "",
+    aiModelTypeName: "",
+    completionTokens: 0,
+    costUsd: 0,
+    createdAt: "",
+    creditsUsed: 0,
+    generationId: "",
+    organizationId: "",
+    promptTokens: 0,
+    totalTokens: 0,
+    userId: "",
+  };
+}
+
+export const OrganizationUsageTransaction: MessageFns<OrganizationUsageTransaction> = {
+  encode(message: OrganizationUsageTransaction, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.aiInferenceProviderName !== "") {
+      writer.uint32(10).string(message.aiInferenceProviderName);
+    }
+    if (message.aiModelName !== "") {
+      writer.uint32(18).string(message.aiModelName);
+    }
+    if (message.aiModelTypeName !== "") {
+      writer.uint32(26).string(message.aiModelTypeName);
+    }
+    if (message.completionTokens !== 0) {
+      writer.uint32(32).int32(message.completionTokens);
+    }
+    if (message.costUsd !== 0) {
+      writer.uint32(41).double(message.costUsd);
+    }
+    if (message.createdAt !== "") {
+      writer.uint32(50).string(message.createdAt);
+    }
+    if (message.creditsUsed !== 0) {
+      writer.uint32(57).double(message.creditsUsed);
+    }
+    if (message.generationId !== "") {
+      writer.uint32(66).string(message.generationId);
+    }
+    if (message.organizationId !== "") {
+      writer.uint32(74).string(message.organizationId);
+    }
+    if (message.promptTokens !== 0) {
+      writer.uint32(80).int32(message.promptTokens);
+    }
+    if (message.totalTokens !== 0) {
+      writer.uint32(88).int32(message.totalTokens);
+    }
+    if (message.userId !== "") {
+      writer.uint32(98).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OrganizationUsageTransaction {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOrganizationUsageTransaction();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.aiInferenceProviderName = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.aiModelName = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.aiModelTypeName = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.completionTokens = reader.int32();
+          continue;
+        }
+        case 5: {
+          if (tag !== 41) {
+            break;
+          }
+
+          message.costUsd = reader.double();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.createdAt = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 57) {
+            break;
+          }
+
+          message.creditsUsed = reader.double();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.generationId = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.organizationId = reader.string();
+          continue;
+        }
+        case 10: {
+          if (tag !== 80) {
+            break;
+          }
+
+          message.promptTokens = reader.int32();
+          continue;
+        }
+        case 11: {
+          if (tag !== 88) {
+            break;
+          }
+
+          message.totalTokens = reader.int32();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OrganizationUsageTransaction {
+    return {
+      aiInferenceProviderName: isSet(object.aiInferenceProviderName)
+        ? globalThis.String(object.aiInferenceProviderName)
+        : "",
+      aiModelName: isSet(object.aiModelName) ? globalThis.String(object.aiModelName) : "",
+      aiModelTypeName: isSet(object.aiModelTypeName) ? globalThis.String(object.aiModelTypeName) : "",
+      completionTokens: isSet(object.completionTokens) ? globalThis.Number(object.completionTokens) : 0,
+      costUsd: isSet(object.costUsd) ? globalThis.Number(object.costUsd) : 0,
+      createdAt: isSet(object.createdAt) ? globalThis.String(object.createdAt) : "",
+      creditsUsed: isSet(object.creditsUsed) ? globalThis.Number(object.creditsUsed) : 0,
+      generationId: isSet(object.generationId) ? globalThis.String(object.generationId) : "",
+      organizationId: isSet(object.organizationId) ? globalThis.String(object.organizationId) : "",
+      promptTokens: isSet(object.promptTokens) ? globalThis.Number(object.promptTokens) : 0,
+      totalTokens: isSet(object.totalTokens) ? globalThis.Number(object.totalTokens) : 0,
+      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
+    };
+  },
+
+  toJSON(message: OrganizationUsageTransaction): unknown {
+    const obj: any = {};
+    if (message.aiInferenceProviderName !== "") {
+      obj.aiInferenceProviderName = message.aiInferenceProviderName;
+    }
+    if (message.aiModelName !== "") {
+      obj.aiModelName = message.aiModelName;
+    }
+    if (message.aiModelTypeName !== "") {
+      obj.aiModelTypeName = message.aiModelTypeName;
+    }
+    if (message.completionTokens !== 0) {
+      obj.completionTokens = Math.round(message.completionTokens);
+    }
+    if (message.costUsd !== 0) {
+      obj.costUsd = message.costUsd;
+    }
+    if (message.createdAt !== "") {
+      obj.createdAt = message.createdAt;
+    }
+    if (message.creditsUsed !== 0) {
+      obj.creditsUsed = message.creditsUsed;
+    }
+    if (message.generationId !== "") {
+      obj.generationId = message.generationId;
+    }
+    if (message.organizationId !== "") {
+      obj.organizationId = message.organizationId;
+    }
+    if (message.promptTokens !== 0) {
+      obj.promptTokens = Math.round(message.promptTokens);
+    }
+    if (message.totalTokens !== 0) {
+      obj.totalTokens = Math.round(message.totalTokens);
+    }
+    if (message.userId !== "") {
+      obj.userId = message.userId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<OrganizationUsageTransaction>, I>>(base?: I): OrganizationUsageTransaction {
+    return OrganizationUsageTransaction.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<OrganizationUsageTransaction>, I>>(object: I): OrganizationUsageTransaction {
+    const message = createBaseOrganizationUsageTransaction();
+    message.aiInferenceProviderName = object.aiInferenceProviderName ?? "";
+    message.aiModelName = object.aiModelName ?? "";
+    message.aiModelTypeName = object.aiModelTypeName ?? "";
+    message.completionTokens = object.completionTokens ?? 0;
+    message.costUsd = object.costUsd ?? 0;
+    message.createdAt = object.createdAt ?? "";
+    message.creditsUsed = object.creditsUsed ?? 0;
+    message.generationId = object.generationId ?? "";
+    message.organizationId = object.organizationId ?? "";
+    message.promptTokens = object.promptTokens ?? 0;
+    message.totalTokens = object.totalTokens ?? 0;
+    message.userId = object.userId ?? "";
+    return message;
+  },
+};
+
 /** Service for account-related operations */
 export type AccountServiceDefinition = typeof AccountServiceDefinition;
 export const AccountServiceDefinition = {
@@ -759,12 +1596,12 @@ export const AccountServiceDefinition = {
       responseStream: false,
       options: {},
     },
-    /** Subscribe to auth callback events (when authentication tokens are received) */
-    subscribeToAuthCallback: {
-      name: "subscribeToAuthCallback",
+    /** Subscribe to auth status update events (when authentication state changes) */
+    subscribeToAuthStatusUpdate: {
+      name: "subscribeToAuthStatusUpdate",
       requestType: EmptyRequest,
       requestStream: false,
-      responseType: String,
+      responseType: AuthState,
       responseStream: true,
       options: {},
     },
@@ -776,16 +1613,7 @@ export const AccountServiceDefinition = {
       name: "authStateChanged",
       requestType: AuthStateChangedRequest,
       requestStream: false,
-      responseType: AuthStateChanged,
-      responseStream: false,
-      options: {},
-    },
-    /** Fetches all user credits data (balance, usage transactions, payment transactions) */
-    fetchUserCreditsData: {
-      name: "fetchUserCreditsData",
-      requestType: EmptyRequest,
-      requestStream: false,
-      responseType: UserCreditsData,
+      responseType: AuthState,
       responseStream: false,
       options: {},
     },
@@ -819,6 +1647,46 @@ export const AccountServiceDefinition = {
       requestStream: false,
       responseType: String,
       responseStream: true,
+      options: {},
+    },
+    /**
+     * Fetches all user credits data
+     * (balance, usage transactions, payment transactions)
+     */
+    getUserCredits: {
+      name: "getUserCredits",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: UserCreditsData,
+      responseStream: false,
+      options: {},
+    },
+    getOrganizationCredits: {
+      name: "getOrganizationCredits",
+      requestType: GetOrganizationCreditsRequest,
+      requestStream: false,
+      responseType: OrganizationCreditsData,
+      responseStream: false,
+      options: {},
+    },
+    /**
+     * Fetches all user organizations data
+     * Returns a list of UserOrganization objects
+     */
+    getUserOrganizations: {
+      name: "getUserOrganizations",
+      requestType: EmptyRequest,
+      requestStream: false,
+      responseType: UserOrganizationsResponse,
+      responseStream: false,
+      options: {},
+    },
+    setUserOrganization: {
+      name: "setUserOrganization",
+      requestType: UserOrganizationUpdateRequest,
+      requestStream: false,
+      responseType: Empty,
+      responseStream: false,
       options: {},
     },
   },

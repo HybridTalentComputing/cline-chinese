@@ -179,7 +179,7 @@ export interface ApiConfiguration {
     | string
     | undefined;
   /** Provider-specific API keys */
-  clineApiKey?: string | undefined;
+  clineAccountId?: string | undefined;
   openrouterApiKey?: string | undefined;
   anthropicBaseUrl?: string | undefined;
   openaiApiKey?: string | undefined;
@@ -1704,7 +1704,7 @@ function createBaseApiConfiguration(): ApiConfiguration {
     apiModelId: undefined,
     apiKey: undefined,
     apiBaseUrl: undefined,
-    clineApiKey: undefined,
+    clineAccountId: undefined,
     openrouterApiKey: undefined,
     anthropicBaseUrl: undefined,
     openaiApiKey: undefined,
@@ -1798,8 +1798,8 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     if (message.apiBaseUrl !== undefined) {
       writer.uint32(34).string(message.apiBaseUrl);
     }
-    if (message.clineApiKey !== undefined) {
-      writer.uint32(42).string(message.clineApiKey);
+    if (message.clineAccountId !== undefined) {
+      writer.uint32(42).string(message.clineAccountId);
     }
     if (message.openrouterApiKey !== undefined) {
       writer.uint32(50).string(message.openrouterApiKey);
@@ -2076,7 +2076,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.clineApiKey = reader.string();
+          message.clineAccountId = reader.string();
           continue;
         }
         case 6: {
@@ -2702,7 +2702,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
       apiModelId: isSet(object.apiModelId) ? globalThis.String(object.apiModelId) : undefined,
       apiKey: isSet(object.apiKey) ? globalThis.String(object.apiKey) : undefined,
       apiBaseUrl: isSet(object.apiBaseUrl) ? globalThis.String(object.apiBaseUrl) : undefined,
-      clineApiKey: isSet(object.clineApiKey) ? globalThis.String(object.clineApiKey) : undefined,
+      clineAccountId: isSet(object.clineAccountId) ? globalThis.String(object.clineAccountId) : undefined,
       openrouterApiKey: isSet(object.openrouterApiKey) ? globalThis.String(object.openrouterApiKey) : undefined,
       anthropicBaseUrl: isSet(object.anthropicBaseUrl) ? globalThis.String(object.anthropicBaseUrl) : undefined,
       openaiApiKey: isSet(object.openaiApiKey) ? globalThis.String(object.openaiApiKey) : undefined,
@@ -2828,8 +2828,8 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     if (message.apiBaseUrl !== undefined) {
       obj.apiBaseUrl = message.apiBaseUrl;
     }
-    if (message.clineApiKey !== undefined) {
-      obj.clineApiKey = message.clineApiKey;
+    if (message.clineAccountId !== undefined) {
+      obj.clineAccountId = message.clineAccountId;
     }
     if (message.openrouterApiKey !== undefined) {
       obj.openrouterApiKey = message.openrouterApiKey;
@@ -3071,7 +3071,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     message.apiModelId = object.apiModelId ?? undefined;
     message.apiKey = object.apiKey ?? undefined;
     message.apiBaseUrl = object.apiBaseUrl ?? undefined;
-    message.clineApiKey = object.clineApiKey ?? undefined;
+    message.clineAccountId = object.clineAccountId ?? undefined;
     message.openrouterApiKey = object.openrouterApiKey ?? undefined;
     message.anthropicBaseUrl = object.anthropicBaseUrl ?? undefined;
     message.openaiApiKey = object.openaiApiKey ?? undefined;

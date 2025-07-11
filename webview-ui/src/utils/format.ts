@@ -22,9 +22,8 @@ export function formatDollars(cents?: number): string {
 	return (cents / 100).toFixed(2)
 }
 
-export function formatTimestamp(timestamp: string, tz: string = "en-US"): string {
-	const date = new Date(timestamp)
-
+export function formatTimestamp(timestamp: any, tz: string = "en-US"): string {
+	const date = timestamp ? new Date(timestamp) : new Date()
 	const dateFormatter = new Intl.DateTimeFormat(tz, {
 		month: "2-digit",
 		day: "2-digit",
@@ -33,7 +32,6 @@ export function formatTimestamp(timestamp: string, tz: string = "en-US"): string
 		minute: "2-digit",
 		hour12: true,
 	})
-
 	return dateFormatter.format(date)
 }
 

@@ -14,6 +14,7 @@ import {
 	OpenRouterModelInfo,
 	ThinkingConfig,
 	ShengSuanYunModelInfo,
+	PriceTier,
 } from "../../proto/models"
 
 // Convert application ThinkingConfig to proto ThinkingConfig
@@ -30,16 +31,19 @@ function convertThinkingConfigToProto(config: ModelInfo["thinkingConfig"]): Thin
 }
 
 // Convert proto ThinkingConfig to application ThinkingConfig
-function convertProtoToThinkingConfig(config: ThinkingConfig | undefined): ModelInfo["thinkingConfig"] | undefined {
+function convertProtoToThinkingConfig(config: ThinkingConfig | undefined): ThinkingConfig | undefined {
 	if (!config) {
 		return undefined
 	}
 
+	// Explicitly ensure outputPriceTiers is always a non-undefined array
+	const outputPriceTiers: PriceTier[] = Array.isArray(config.outputPriceTiers) ? config.outputPriceTiers : []
+
 	return {
 		maxBudget: config.maxBudget,
 		outputPrice: config.outputPrice,
-		outputPriceTiers: config.outputPriceTiers.length > 0 ? config.outputPriceTiers : undefined,
-	}
+		outputPriceTiers,
+	} as ThinkingConfig
 }
 
 // Convert application ModelInfo to proto OpenRouterModelInfo
@@ -87,7 +91,7 @@ function convertProtoToModelInfo(info: OpenRouterModelInfo | undefined): ModelIn
 }
 
 // Convert application ModelInfo to proto ShengSuanYunModelInfo
-function convertModelInfoToProtoShengSuanYun(info: ModelInfo | undefined): ShengSuanYunModelInfo | undefined {
+function convertModelInfoToProtoShengSuanYun(info: ShengSuanYunModelInfo | undefined): ShengSuanYunModelInfo | undefined {
 	if (!info) {
 		return undefined
 	}
@@ -107,7 +111,7 @@ function convertModelInfoToProtoShengSuanYun(info: ModelInfo | undefined): Sheng
 }
 
 // Convert proto ShengSuanYunModelInfo to application ModelInfo
-function convertProtoToShengSuanYunModelInfo(info: ShengSuanYunModelInfo | undefined): ModelInfo | undefined {
+function convertProtoToShengSuanYunModelInfo(info: ShengSuanYunModelInfo | undefined): ShengSuanYunModelInfo | undefined {
 	if (!info) {
 		return undefined
 	}
@@ -283,7 +287,7 @@ function convertApiProviderToProto(provider: string | undefined): ProtoApiProvid
 		case "shengsuanyun":
 			return ProtoApiProvider.SHENG_SUAN_YUN
 		default:
-			return ProtoApiProvider.ANTHROPIC
+			return ProtoApiProvider.SHENG_SUAN_YUN
 	}
 }
 
@@ -345,7 +349,7 @@ function convertProtoToApiProvider(provider: ProtoApiProvider): ApiProvider {
 		case ProtoApiProvider.SHENG_SUAN_YUN:
 			return "shengsuanyun"
 		default:
-			return "anthropic"
+			return "shengsuanyun"
 	}
 }
 
@@ -354,7 +358,7 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 	return {
 		apiModelId: config.apiModelId,
 		apiKey: config.apiKey,
-		clineApiKey: config.clineApiKey,
+		clineAccountId: config.clineAccountId,
 		taskId: config.taskId,
 		liteLlmBaseUrl: config.liteLlmBaseUrl,
 		liteLlmModelId: config.liteLlmModelId,
@@ -424,6 +428,7 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		sapAiResourceGroup: config.sapAiResourceGroup,
 		sapAiCoreTokenUrl: config.sapAiCoreTokenUrl,
 		sapAiCoreBaseUrl: config.sapAiCoreBaseUrl,
+		sapAiCoreModelId: config.sapAiCoreModelId,
 		claudeCodePath: config.claudeCodePath,
 		shengSuanYunToken: config.shengSuanYunToken,
 		shengSuanYunApiKey: config.shengSuanYunApiKey,
@@ -437,7 +442,7 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 	return {
 		apiModelId: protoConfig.apiModelId,
 		apiKey: protoConfig.apiKey,
-		clineApiKey: protoConfig.clineApiKey,
+		clineAccountId: protoConfig.clineAccountId,
 		taskId: protoConfig.taskId,
 		liteLlmBaseUrl: protoConfig.liteLlmBaseUrl,
 		liteLlmModelId: protoConfig.liteLlmModelId,
@@ -507,6 +512,7 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		sapAiResourceGroup: protoConfig.sapAiResourceGroup,
 		sapAiCoreTokenUrl: protoConfig.sapAiCoreTokenUrl,
 		sapAiCoreBaseUrl: protoConfig.sapAiCoreBaseUrl,
+		sapAiCoreModelId: protoConfig.sapAiCoreModelId,
 		claudeCodePath: protoConfig.claudeCodePath,
 		shengSuanYunToken: protoConfig.shengSuanYunToken,
 		shengSuanYunApiKey: protoConfig.shengSuanYunApiKey,

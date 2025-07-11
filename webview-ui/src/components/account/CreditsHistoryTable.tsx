@@ -8,9 +8,10 @@ interface CreditsHistoryTableProps {
 	isLoading: boolean
 	usageData: UsageTransaction[]
 	paymentsData: PaymentTransaction[]
+	showPayments?: boolean
 }
 
-const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHistoryTableProps) => {
+const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, showPayments }: CreditsHistoryTableProps) => {
 	const [activeTab, setActiveTab] = useState<"usage" | "payments">("usage")
 	return (
 		<div className="flex flex-col flex-grow h-full">
@@ -52,22 +53,16 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 										</VSCodeDataGridRow>
 
 										{usageData &&
-											usageData.map((row, index) => {
-												let model = row.model
-												if (row.modelProvider.length) {
-													model = `${row.modelProvider}/${model}`
-												}
-												return (
-													<VSCodeDataGridRow key={index}>
-														<VSCodeDataGridCell grid-column="1">
-															{formatTimestamp(row.spentAt, "zh-CN")}
-														</VSCodeDataGridCell>
-														<VSCodeDataGridCell grid-column="2">{model}</VSCodeDataGridCell>
-														{/* <VSCodeDataGridCell grid-column="3">{`${row.promptTokens} → ${row.completionTokens}`}</VSCodeDataGridCell> */}
-														<VSCodeDataGridCell grid-column="3">{`$${Number(row.credits || "0").toFixed(7)}`}</VSCodeDataGridCell>
-													</VSCodeDataGridRow>
-												)
-											})}
+											usageData.map((row, index) => (
+												<VSCodeDataGridRow key={index}>
+													<VSCodeDataGridCell grid-column="1">
+														{formatTimestamp(row.spentAt, "zh-CN")}
+													</VSCodeDataGridCell>
+													<VSCodeDataGridCell grid-column="2">{row.model}</VSCodeDataGridCell>
+													{/* <VSCodeDataGridCell grid-column="3">{`${row.promptTokens} → ${row.completionTokens}`}</VSCodeDataGridCell> */}
+													<VSCodeDataGridCell grid-column="3">{`$${Number(row.credits || "0").toFixed(7)}`}</VSCodeDataGridCell>
+												</VSCodeDataGridRow>
+											))}
 									</VSCodeDataGrid>
 								) : (
 									<div className="flex justify-center items-center p-4">
@@ -77,7 +72,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData }: CreditsHist
 							</>
 						)}
 
-						{activeTab === "payments" && (
+						{showPayments && activeTab === "payments" && (
 							<>
 								{paymentsData && paymentsData.length > 0 ? (
 									<VSCodeDataGrid>

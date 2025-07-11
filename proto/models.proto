@@ -1,10 +1,9 @@
 syntax = "proto3";
 
 package cline_shengsuan;
+import "common.proto";
 option java_package = "bot.cline_shengsuan.proto";
 option java_multiple_files = true;
-
-import "common.proto";
 
 // Service for model-related operations
 service ModelsService {
@@ -168,7 +167,7 @@ message ModelsApiConfiguration {
   // From ApiHandlerOptions (excluding onRetryAttempt function)
   optional string api_model_id = 1;
   optional string api_key = 2;
-  optional string cline_api_key = 3;
+  optional string cline_account_id = 3;
   optional string task_id = 4;
   optional string lite_llm_base_url = 5;
   optional string lite_llm_model_id = 6;
@@ -238,13 +237,14 @@ message ModelsApiConfiguration {
   optional string sap_ai_resource_group = 70;
   optional string sap_ai_core_token_url = 71;
   optional string sap_ai_core_base_url = 72;
-  optional string claude_code_path = 73;
-  optional string sheng_suan_yun_token = 74;
-  optional string sheng_suan_yun_api_key = 75;
-  optional string sheng_suan_yun_model_id = 76;
-  optional ShengSuanYunModelInfo sheng_suan_yun_model_info = 77;
-  optional string gemini_cli_oauth_path = 78;
-  optional string gemini_cli_project_id = 79;
+  optional string sap_ai_core_model_id = 73;
+  optional string claude_code_path = 74;
+  optional string sheng_suan_yun_token = 75;
+  optional string sheng_suan_yun_api_key = 76;
+  optional string sheng_suan_yun_model_id = 77;
+  optional ShengSuanYunModelInfo sheng_suan_yun_model_info = 78;
+  optional string gemini_cli_oauth_path = 79;
+  optional string gemini_cli_project_id = 80;
 }
 
 message ShengSuanYunModelInfo {

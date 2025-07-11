@@ -26,7 +26,7 @@ const PreferredLanguageSetting: React.FC = () => {
 			</label>
 			<VSCodeDropdown
 				id="preferred-language-dropdown"
-				currentValue={chatSettings.preferredLanguage || "English"}
+				currentValue={chatSettings.preferredLanguage || "Simplified Chinese - 简体中文"}
 				onChange={(e: any) => {
 					handleLanguageChange(e.target.value)
 				}}

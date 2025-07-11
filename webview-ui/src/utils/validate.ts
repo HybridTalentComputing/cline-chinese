@@ -59,8 +59,8 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 				}
 				break
 			case "cline":
-				if (!apiConfiguration.clineApiKey) {
-					return "您必须提供有效的API密钥或选择其他提供者。"
+				if (!apiConfiguration.clineAccountId) {
+					return "You must provide a valid API key or choose a different provider."
 				}
 				break
 			case "openai":

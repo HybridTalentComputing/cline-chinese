@@ -2,7 +2,7 @@
 	"name": "cline-shengsuan",
 	"displayName": "Cline-中文版",
 	"description": "Cline-中文版是一款在您的IDE中运行的强大自主编程助手，经您许可后可创建/编辑文件、运行命令、使用浏览器等。",
-	"version": "3.18.2",
+	"version": "3.18.8",
 	"icon": "assets/icons/icon.png",
 	"engines": {
 		"vscode": "^1.84.0"

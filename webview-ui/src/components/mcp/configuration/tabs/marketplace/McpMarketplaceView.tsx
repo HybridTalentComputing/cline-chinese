@@ -59,23 +59,8 @@ const McpMarketplaceView = () => {
 	}, [items, searchQuery, selectedCategory, sortBy])
 
 	useEffect(() => {
-		const handleMessage = (event: MessageEvent) => {
-			const message = event.data
-			if (message.type === "mcpDownloadDetails") {
-				if (message.error) {
-					setError(message.error)
-				}
-			}
-		}
-
-		window.addEventListener("message", handleMessage)
-
 		// Fetch marketplace catalog on initial load
 		fetchMarketplace()
-
-		return () => {
-			window.removeEventListener("message", handleMessage)
-		}
 	}, [])
 
 	useEffect(() => {
@@ -288,7 +273,9 @@ const McpMarketplaceView = () => {
 						{searchQuery || selectedCategory ? "未找到匹配的 MCP 服务器" : "在市场上找不到 MCP 服务器"}
 					</div>
 				) : (
-					filteredItems.map((item) => <McpMarketplaceCard key={item.mcpId} item={item} installedServers={mcpServers} />)
+					filteredItems.map((item) => (
+						<McpMarketplaceCard key={item.mcpId} item={item} installedServers={mcpServers} setError={setError} />
+					))
 				)}
 				<McpSubmitCard />
 			</div>
