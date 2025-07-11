@@ -18,7 +18,6 @@
 | ✅ **中文界面体验** —— 一贴合中文开发者使用习惯，命令更自然 <br> ✅ **超百款全球模型接入** —— 包括 GPT-4o、Claude 4 sonnet、 Claude 4 opus、Gemini 2.5 pro/flash、DeepSeek 等 <br> ✅ **大模型聚合** —— 一调即价更低，性能稳定不掉线 <br> ✅ **人民币充值直通** —— 无需海外账号，支持微信/支付宝 <br> ✅ **VS Code 插件/原生集成** —— 快速安装，即刻启用 <br> ✅ **注册即送 Tokens** —— 免费 100 万 Tokens  | ![个人企业微信](https://router.shengsuanyun.com/webp/relation-BMfLRnIZ.webp) |
 
 
-
 ---
 
 ## 🎁 限时福利
@@ -60,7 +59,7 @@ APIRouter进群交流<br>（如果无法加群，请加企业微信客服）<br>
 <div align="center" style="display: flex; justify-content: center; gap: 20px;">
 
 企业客服咨询<br>
-  <img src="https://github.com/user-attachments/assets/c180b033-d62c-4dc0-9c2a-a3ad8c70e5a4" alt="企业微信客服" width="250" />
+<img src="https://router.shengsuanyun.com/webp/relation-BMfLRnIZ.webp" alt="企业微信客服" width="250" />
 </div>
 Cline-中文版<br>
 https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan<br>
