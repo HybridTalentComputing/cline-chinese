@@ -125,6 +125,7 @@ enum ApiProvider {
   SAPAICORE = 24;
   CLAUDE_CODE = 25;
   SHENG_SUAN_YUN = 26;
+  MOONSHOT = 27;
 }
 
 // Model info for OpenAI-compatible models
@@ -245,6 +246,10 @@ message ModelsApiConfiguration {
   optional ShengSuanYunModelInfo sheng_suan_yun_model_info = 78;
   optional string gemini_cli_oauth_path = 79;
   optional string gemini_cli_project_id = 80;
+  optional string aws_authentication = 81;
+  optional string aws_bedrock_api_key = 82;
+  optional string moonshot_api_key = 83;
+  optional string moonshot_api_line = 84;
 }
 
 message ShengSuanYunModelInfo {

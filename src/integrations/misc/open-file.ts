@@ -3,22 +3,33 @@ import * as os from "os"
 import * as vscode from "vscode"
 import { arePathsEqual } from "@utils/path"
 import { getHostBridgeProvider } from "@/hosts/host-providers"
-import { ShowTextDocumentRequest, ShowTextDocumentOptions } from "@/shared/proto/host/window"
+import { ShowTextDocumentRequest, ShowTextDocumentOptions, ShowMessageRequest, ShowMessageType } from "@/shared/proto/host/window"
+import { writeFile } from "@utils/fs"
 
 export async function openImage(dataUri: string) {
 	const matches = dataUri.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/)
 	if (!matches) {
-		vscode.window.showErrorMessage("无效的 URI 格式")
+		getHostBridgeProvider().windowClient.showMessage(
+			ShowMessageRequest.create({
+				type: ShowMessageType.ERROR,
+				message: "无效的 Data URI 格式",
+			}),
+		)
 		return
 	}
 	const [, format, base64Data] = matches
 	const imageBuffer = Buffer.from(base64Data, "base64")
 	const tempFilePath = path.join(os.tmpdir(), `temp_image_${Date.now()}.${format}`)
 	try {
-		await vscode.workspace.fs.writeFile(vscode.Uri.file(tempFilePath), new Uint8Array(imageBuffer))
+		await writeFile(tempFilePath, new Uint8Array(imageBuffer))
 		await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(tempFilePath))
 	} catch (error) {
-		vscode.window.showErrorMessage(`打开图片错误: ${error}`)
+		getHostBridgeProvider().windowClient.showMessage(
+			ShowMessageRequest.create({
+				type: ShowMessageType.ERROR,
+				message: `打开图片错误: ${error}`,
+			}),
+		)
 	}
 }
 
@@ -51,6 +62,11 @@ export async function openFile(absolutePath: string) {
 			}),
 		)
 	} catch (error) {
-		vscode.window.showErrorMessage(`打开文件错误!`)
+		getHostBridgeProvider().windowClient.showMessage(
+			ShowMessageRequest.create({
+				type: ShowMessageType.ERROR,
+				message: `打开文件错误!`,
+			}),
+		)
 	}
 }

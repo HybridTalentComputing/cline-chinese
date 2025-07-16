@@ -56,7 +56,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, showPayments 
 											usageData.map((row, index) => (
 												<VSCodeDataGridRow key={index}>
 													<VSCodeDataGridCell grid-column="1">
-														{formatTimestamp(row.spentAt, "zh-CN")}
+														{formatTimestamp(row.spentAt || "", "zh-CN")}
 													</VSCodeDataGridCell>
 													<VSCodeDataGridCell grid-column="2">{row.model}</VSCodeDataGridCell>
 													{/* <VSCodeDataGridCell grid-column="3">{`${row.promptTokens} → ${row.completionTokens}`}</VSCodeDataGridCell> */}

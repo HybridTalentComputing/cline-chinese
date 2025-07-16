@@ -1,8 +1,7 @@
 import * as vscode from "vscode"
 import { writeTextToClipboard } from "@utils/env"
 import { getHostBridgeProvider } from "@/hosts/host-providers"
-import { ShowTextDocumentRequest } from "@/shared/proto/host/window"
-
+import { ShowMessageType, ShowTextDocumentRequest, ShowMessageRequest } from "@/shared/proto/host/window"
 /**
  * Formats the git diff into a prompt for the AI
  * @param gitDiff The git diff to format
@@ -60,7 +59,12 @@ export function extractCommitMessage(aiResponse: string): string {
  */
 export async function copyCommitMessageToClipboard(message: string): Promise<void> {
 	await writeTextToClipboard(message)
-	vscode.window.showInformationMessage("提交信息复制到剪贴板")
+	getHostBridgeProvider().windowClient.showMessage(
+		ShowMessageRequest.create({
+			type: ShowMessageType.INFORMATION,
+			message: "提交信息复制到剪贴板",
+		}),
+	)
 }
 
 /**
@@ -72,13 +76,19 @@ export async function showCommitMessageOptions(message: string): Promise<void> {
 	const applyAction = "应用到 Git 输入"
 	const editAction = "编辑消息"
 
-	const selectedAction = await vscode.window.showInformationMessage(
-		"生成提交信息",
-		{ modal: false, detail: message },
-		copyAction,
-		applyAction,
-		editAction,
-	)
+	const selectedAction = (
+		await getHostBridgeProvider().windowClient.showMessage(
+			ShowMessageRequest.create({
+				type: ShowMessageType.INFORMATION,
+				message: "生成提交信息",
+				options: {
+					modal: false,
+					detail: message,
+					items: [copyAction, applyAction, editAction],
+				},
+			}),
+		)
+	)?.selectedOption
 
 	// Handle user dismissing the dialog (selectedAction is undefined)
 	if (!selectedAction) {
@@ -110,13 +120,28 @@ async function applyCommitMessageToGitInput(message: string): Promise<void> {
 		if (api && api.repositories.length > 0) {
 			const repo = api.repositories[0]
 			repo.inputBox.value = message
-			vscode.window.showInformationMessage("提交信息应用到 Git 输入")
+			getHostBridgeProvider().windowClient.showMessage(
+				ShowMessageRequest.create({
+					type: ShowMessageType.INFORMATION,
+					message: "提交信息应用到 Git 输入",
+				}),
+			)
 		} else {
-			vscode.window.showErrorMessage("未发现 Git 库")
+			getHostBridgeProvider().windowClient.showMessage(
+				ShowMessageRequest.create({
+					type: ShowMessageType.ERROR,
+					message: "未发现 Git 库",
+				}),
+			)
 			await copyCommitMessageToClipboard(message)
 		}
 	} else {
-		vscode.window.showErrorMessage("Git 扩展未找到")
+		getHostBridgeProvider().windowClient.showMessage(
+			ShowMessageRequest.create({
+				type: ShowMessageType.ERROR,
+				message: "Git 扩展未找到",
+			}),
+		)
 		await copyCommitMessageToClipboard(message)
 	}
 }
@@ -136,5 +161,10 @@ async function editCommitMessage(message: string): Promise<void> {
 			path: document.uri.fsPath,
 		}),
 	)
-	vscode.window.showInformationMessage("编辑提交信息并复制")
+	getHostBridgeProvider().windowClient.showMessage(
+		ShowMessageRequest.create({
+			type: ShowMessageType.INFORMATION,
+			message: "编辑提交信息并复制",
+		}),
+	)
 }

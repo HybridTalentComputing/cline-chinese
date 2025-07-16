@@ -162,7 +162,7 @@ export interface UpdateSettingsRequest {
   shellIntegrationTimeout?: number | undefined;
   terminalReuseEnabled?: boolean | undefined;
   mcpResponsesCollapsed?: boolean | undefined;
-  mcpRichDisplayEnabled?: boolean | undefined;
+  mcpDisplayMode?: string | undefined;
   terminalOutputLineLimit?: number | undefined;
 }
 
@@ -307,7 +307,17 @@ export interface ApiConfiguration {
     | string
     | undefined;
   /** Claude Code specific */
-  claudeCodePath?: string | undefined;
+  claudeCodePath?:
+    | string
+    | undefined;
+  /** Extension fields for Bedrock Api Keys */
+  awsAuthentication?: string | undefined;
+  awsBedrockApiKey?:
+    | string
+    | undefined;
+  /** Moonshot */
+  moonshotApiKey?: string | undefined;
+  moonshotApiLine?: string | undefined;
 }
 
 function createBaseState(): State {
@@ -1439,7 +1449,7 @@ function createBaseUpdateSettingsRequest(): UpdateSettingsRequest {
     shellIntegrationTimeout: undefined,
     terminalReuseEnabled: undefined,
     mcpResponsesCollapsed: undefined,
-    mcpRichDisplayEnabled: undefined,
+    mcpDisplayMode: undefined,
     terminalOutputLineLimit: undefined,
   };
 }
@@ -1476,8 +1486,8 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
     if (message.mcpResponsesCollapsed !== undefined) {
       writer.uint32(80).bool(message.mcpResponsesCollapsed);
     }
-    if (message.mcpRichDisplayEnabled !== undefined) {
-      writer.uint32(88).bool(message.mcpRichDisplayEnabled);
+    if (message.mcpDisplayMode !== undefined) {
+      writer.uint32(90).string(message.mcpDisplayMode);
     }
     if (message.terminalOutputLineLimit !== undefined) {
       writer.uint32(96).int64(message.terminalOutputLineLimit);
@@ -1573,11 +1583,11 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
           continue;
         }
         case 11: {
-          if (tag !== 88) {
+          if (tag !== 90) {
             break;
           }
 
-          message.mcpRichDisplayEnabled = reader.bool();
+          message.mcpDisplayMode = reader.string();
           continue;
         }
         case 12: {
@@ -1621,9 +1631,7 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
       mcpResponsesCollapsed: isSet(object.mcpResponsesCollapsed)
         ? globalThis.Boolean(object.mcpResponsesCollapsed)
         : undefined,
-      mcpRichDisplayEnabled: isSet(object.mcpRichDisplayEnabled)
-        ? globalThis.Boolean(object.mcpRichDisplayEnabled)
-        : undefined,
+      mcpDisplayMode: isSet(object.mcpDisplayMode) ? globalThis.String(object.mcpDisplayMode) : undefined,
       terminalOutputLineLimit: isSet(object.terminalOutputLineLimit)
         ? globalThis.Number(object.terminalOutputLineLimit)
         : undefined,
@@ -1662,8 +1670,8 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
     if (message.mcpResponsesCollapsed !== undefined) {
       obj.mcpResponsesCollapsed = message.mcpResponsesCollapsed;
     }
-    if (message.mcpRichDisplayEnabled !== undefined) {
-      obj.mcpRichDisplayEnabled = message.mcpRichDisplayEnabled;
+    if (message.mcpDisplayMode !== undefined) {
+      obj.mcpDisplayMode = message.mcpDisplayMode;
     }
     if (message.terminalOutputLineLimit !== undefined) {
       obj.terminalOutputLineLimit = Math.round(message.terminalOutputLineLimit);
@@ -1692,7 +1700,7 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
     message.shellIntegrationTimeout = object.shellIntegrationTimeout ?? undefined;
     message.terminalReuseEnabled = object.terminalReuseEnabled ?? undefined;
     message.mcpResponsesCollapsed = object.mcpResponsesCollapsed ?? undefined;
-    message.mcpRichDisplayEnabled = object.mcpRichDisplayEnabled ?? undefined;
+    message.mcpDisplayMode = object.mcpDisplayMode ?? undefined;
     message.terminalOutputLineLimit = object.terminalOutputLineLimit ?? undefined;
     return message;
   },
@@ -1781,6 +1789,10 @@ function createBaseApiConfiguration(): ApiConfiguration {
     sapAiCoreTokenUrl: undefined,
     sapAiResourceGroup: undefined,
     claudeCodePath: undefined,
+    awsAuthentication: undefined,
+    awsBedrockApiKey: undefined,
+    moonshotApiKey: undefined,
+    moonshotApiLine: undefined,
   };
 }
 
@@ -2028,6 +2040,18 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     }
     if (message.claudeCodePath !== undefined) {
       writer.uint32(650).string(message.claudeCodePath);
+    }
+    if (message.awsAuthentication !== undefined) {
+      writer.uint32(658).string(message.awsAuthentication);
+    }
+    if (message.awsBedrockApiKey !== undefined) {
+      writer.uint32(666).string(message.awsBedrockApiKey);
+    }
+    if (message.moonshotApiKey !== undefined) {
+      writer.uint32(674).string(message.moonshotApiKey);
+    }
+    if (message.moonshotApiLine !== undefined) {
+      writer.uint32(682).string(message.moonshotApiLine);
     }
     return writer;
   },
@@ -2687,6 +2711,38 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
           message.claudeCodePath = reader.string();
           continue;
         }
+        case 82: {
+          if (tag !== 658) {
+            break;
+          }
+
+          message.awsAuthentication = reader.string();
+          continue;
+        }
+        case 83: {
+          if (tag !== 666) {
+            break;
+          }
+
+          message.awsBedrockApiKey = reader.string();
+          continue;
+        }
+        case 84: {
+          if (tag !== 674) {
+            break;
+          }
+
+          message.moonshotApiKey = reader.string();
+          continue;
+        }
+        case 85: {
+          if (tag !== 682) {
+            break;
+          }
+
+          message.moonshotApiLine = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2811,6 +2867,10 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
       sapAiCoreTokenUrl: isSet(object.sapAiCoreTokenUrl) ? globalThis.String(object.sapAiCoreTokenUrl) : undefined,
       sapAiResourceGroup: isSet(object.sapAiResourceGroup) ? globalThis.String(object.sapAiResourceGroup) : undefined,
       claudeCodePath: isSet(object.claudeCodePath) ? globalThis.String(object.claudeCodePath) : undefined,
+      awsAuthentication: isSet(object.awsAuthentication) ? globalThis.String(object.awsAuthentication) : undefined,
+      awsBedrockApiKey: isSet(object.awsBedrockApiKey) ? globalThis.String(object.awsBedrockApiKey) : undefined,
+      moonshotApiKey: isSet(object.moonshotApiKey) ? globalThis.String(object.moonshotApiKey) : undefined,
+      moonshotApiLine: isSet(object.moonshotApiLine) ? globalThis.String(object.moonshotApiLine) : undefined,
     };
   },
 
@@ -3059,6 +3119,18 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     if (message.claudeCodePath !== undefined) {
       obj.claudeCodePath = message.claudeCodePath;
     }
+    if (message.awsAuthentication !== undefined) {
+      obj.awsAuthentication = message.awsAuthentication;
+    }
+    if (message.awsBedrockApiKey !== undefined) {
+      obj.awsBedrockApiKey = message.awsBedrockApiKey;
+    }
+    if (message.moonshotApiKey !== undefined) {
+      obj.moonshotApiKey = message.moonshotApiKey;
+    }
+    if (message.moonshotApiLine !== undefined) {
+      obj.moonshotApiLine = message.moonshotApiLine;
+    }
     return obj;
   },
 
@@ -3148,6 +3220,10 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     message.sapAiCoreTokenUrl = object.sapAiCoreTokenUrl ?? undefined;
     message.sapAiResourceGroup = object.sapAiResourceGroup ?? undefined;
     message.claudeCodePath = object.claudeCodePath ?? undefined;
+    message.awsAuthentication = object.awsAuthentication ?? undefined;
+    message.awsBedrockApiKey = object.awsBedrockApiKey ?? undefined;
+    message.moonshotApiKey = object.moonshotApiKey ?? undefined;
+    message.moonshotApiLine = object.moonshotApiLine ?? undefined;
     return message;
   },
 };

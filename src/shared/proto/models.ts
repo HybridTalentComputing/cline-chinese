@@ -37,6 +37,7 @@ export enum ApiProvider {
   SAPAICORE = 24,
   CLAUDE_CODE = 25,
   SHENG_SUAN_YUN = 26,
+  MOONSHOT = 27,
   UNRECOGNIZED = -1,
 }
 
@@ -123,6 +124,9 @@ export function apiProviderFromJSON(object: any): ApiProvider {
     case 26:
     case "SHENG_SUAN_YUN":
       return ApiProvider.SHENG_SUAN_YUN;
+    case 27:
+    case "MOONSHOT":
+      return ApiProvider.MOONSHOT;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -186,6 +190,8 @@ export function apiProviderToJSON(object: ApiProvider): string {
       return "CLAUDE_CODE";
     case ApiProvider.SHENG_SUAN_YUN:
       return "SHENG_SUAN_YUN";
+    case ApiProvider.MOONSHOT:
+      return "MOONSHOT";
     case ApiProvider.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
@@ -393,6 +399,10 @@ export interface ModelsApiConfiguration {
   shengSuanYunModelInfo?: ShengSuanYunModelInfo | undefined;
   geminiCliOauthPath?: string | undefined;
   geminiCliProjectId?: string | undefined;
+  awsAuthentication?: string | undefined;
+  awsBedrockApiKey?: string | undefined;
+  moonshotApiKey?: string | undefined;
+  moonshotApiLine?: string | undefined;
 }
 
 export interface ModelsApiConfiguration_OpenAiHeadersEntry {
@@ -2120,6 +2130,10 @@ function createBaseModelsApiConfiguration(): ModelsApiConfiguration {
     shengSuanYunModelInfo: undefined,
     geminiCliOauthPath: undefined,
     geminiCliProjectId: undefined,
+    awsAuthentication: undefined,
+    awsBedrockApiKey: undefined,
+    moonshotApiKey: undefined,
+    moonshotApiLine: undefined,
   };
 }
 
@@ -2364,6 +2378,18 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     }
     if (message.geminiCliProjectId !== undefined) {
       writer.uint32(642).string(message.geminiCliProjectId);
+    }
+    if (message.awsAuthentication !== undefined) {
+      writer.uint32(650).string(message.awsAuthentication);
+    }
+    if (message.awsBedrockApiKey !== undefined) {
+      writer.uint32(658).string(message.awsBedrockApiKey);
+    }
+    if (message.moonshotApiKey !== undefined) {
+      writer.uint32(666).string(message.moonshotApiKey);
+    }
+    if (message.moonshotApiLine !== undefined) {
+      writer.uint32(674).string(message.moonshotApiLine);
     }
     return writer;
   },
@@ -3018,6 +3044,38 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
           message.geminiCliProjectId = reader.string();
           continue;
         }
+        case 81: {
+          if (tag !== 650) {
+            break;
+          }
+
+          message.awsAuthentication = reader.string();
+          continue;
+        }
+        case 82: {
+          if (tag !== 658) {
+            break;
+          }
+
+          message.awsBedrockApiKey = reader.string();
+          continue;
+        }
+        case 83: {
+          if (tag !== 666) {
+            break;
+          }
+
+          message.moonshotApiKey = reader.string();
+          continue;
+        }
+        case 84: {
+          if (tag !== 674) {
+            break;
+          }
+
+          message.moonshotApiLine = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3150,6 +3208,10 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
         : undefined,
       geminiCliOauthPath: isSet(object.geminiCliOauthPath) ? globalThis.String(object.geminiCliOauthPath) : undefined,
       geminiCliProjectId: isSet(object.geminiCliProjectId) ? globalThis.String(object.geminiCliProjectId) : undefined,
+      awsAuthentication: isSet(object.awsAuthentication) ? globalThis.String(object.awsAuthentication) : undefined,
+      awsBedrockApiKey: isSet(object.awsBedrockApiKey) ? globalThis.String(object.awsBedrockApiKey) : undefined,
+      moonshotApiKey: isSet(object.moonshotApiKey) ? globalThis.String(object.moonshotApiKey) : undefined,
+      moonshotApiLine: isSet(object.moonshotApiLine) ? globalThis.String(object.moonshotApiLine) : undefined,
     };
   },
 
@@ -3401,6 +3463,18 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
     if (message.geminiCliProjectId !== undefined) {
       obj.geminiCliProjectId = message.geminiCliProjectId;
     }
+    if (message.awsAuthentication !== undefined) {
+      obj.awsAuthentication = message.awsAuthentication;
+    }
+    if (message.awsBedrockApiKey !== undefined) {
+      obj.awsBedrockApiKey = message.awsBedrockApiKey;
+    }
+    if (message.moonshotApiKey !== undefined) {
+      obj.moonshotApiKey = message.moonshotApiKey;
+    }
+    if (message.moonshotApiLine !== undefined) {
+      obj.moonshotApiLine = message.moonshotApiLine;
+    }
     return obj;
   },
 
@@ -3511,6 +3585,10 @@ export const ModelsApiConfiguration: MessageFns<ModelsApiConfiguration> = {
         : undefined;
     message.geminiCliOauthPath = object.geminiCliOauthPath ?? undefined;
     message.geminiCliProjectId = object.geminiCliProjectId ?? undefined;
+    message.awsAuthentication = object.awsAuthentication ?? undefined;
+    message.awsBedrockApiKey = object.awsBedrockApiKey ?? undefined;
+    message.moonshotApiKey = object.moonshotApiKey ?? undefined;
+    message.moonshotApiLine = object.moonshotApiLine ?? undefined;
     return message;
   },
 };

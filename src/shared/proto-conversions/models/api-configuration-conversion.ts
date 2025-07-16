@@ -268,6 +268,8 @@ function convertApiProviderToProto(provider: string | undefined): ProtoApiProvid
 			return ProtoApiProvider.CLINE
 		case "litellm":
 			return ProtoApiProvider.LITELLM
+		case "moonshot":
+			return ProtoApiProvider.MOONSHOT
 		case "nebius":
 			return ProtoApiProvider.NEBIUS
 		case "fireworks":
@@ -330,6 +332,8 @@ function convertProtoToApiProvider(provider: ProtoApiProvider): ApiProvider {
 			return "cline"
 		case ProtoApiProvider.LITELLM:
 			return "litellm"
+		case ProtoApiProvider.MOONSHOT:
+			return "moonshot"
 		case ProtoApiProvider.NEBIUS:
 			return "nebius"
 		case ProtoApiProvider.FIREWORKS:
@@ -378,7 +382,9 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		awsUseCrossRegionInference: config.awsUseCrossRegionInference,
 		awsBedrockUsePromptCache: config.awsBedrockUsePromptCache,
 		awsUseProfile: config.awsUseProfile,
+		awsAuthentication: config.awsAuthentication,
 		awsProfile: config.awsProfile,
+		awsBedrockApiKey: config.awsBedrockApiKey,
 		awsBedrockEndpoint: config.awsBedrockEndpoint,
 		awsBedrockCustomSelected: config.awsBedrockCustomSelected,
 		awsBedrockCustomModelBaseId: config.awsBedrockCustomModelBaseId as string | undefined,
@@ -412,6 +418,8 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		azureApiVersion: config.azureApiVersion,
 		vsCodeLmModelSelector: config.vsCodeLmModelSelector,
 		qwenApiLine: config.qwenApiLine,
+		moonshotApiLine: config.moonshotApiLine,
+		moonshotApiKey: config.moonshotApiKey,
 		nebiusApiKey: config.nebiusApiKey,
 		asksageApiUrl: config.asksageApiUrl,
 		asksageApiKey: config.asksageApiKey,
@@ -462,7 +470,9 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		awsUseCrossRegionInference: protoConfig.awsUseCrossRegionInference,
 		awsBedrockUsePromptCache: protoConfig.awsBedrockUsePromptCache,
 		awsUseProfile: protoConfig.awsUseProfile,
+		awsAuthentication: protoConfig.awsAuthentication,
 		awsProfile: protoConfig.awsProfile,
+		awsBedrockApiKey: protoConfig.awsBedrockApiKey,
 		awsBedrockEndpoint: protoConfig.awsBedrockEndpoint,
 		awsBedrockCustomSelected: protoConfig.awsBedrockCustomSelected,
 		awsBedrockCustomModelBaseId: protoConfig.awsBedrockCustomModelBaseId as BedrockModelId | undefined,
@@ -496,6 +506,8 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		azureApiVersion: protoConfig.azureApiVersion,
 		vsCodeLmModelSelector: protoConfig.vsCodeLmModelSelector,
 		qwenApiLine: protoConfig.qwenApiLine,
+		moonshotApiLine: protoConfig.moonshotApiLine,
+		moonshotApiKey: protoConfig.moonshotApiKey,
 		nebiusApiKey: protoConfig.nebiusApiKey,
 		asksageApiUrl: protoConfig.asksageApiUrl,
 		asksageApiKey: protoConfig.asksageApiKey,

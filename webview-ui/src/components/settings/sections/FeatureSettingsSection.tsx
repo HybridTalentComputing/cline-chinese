@@ -4,6 +4,8 @@ import { memo } from "react"
 import { OpenAIReasoningEffort } from "@shared/ChatSettings"
 import { updateSetting } from "../utils/settingsHandlers"
 import { convertChatSettingsToProtoChatSettings } from "@shared/proto-conversions/state/chat-settings-conversion"
+import { McpDisplayMode } from "@shared/McpDisplayMode"
+import McpDisplayModeDropdown from "@/components/mcp/chat-display/McpDisplayModeDropdown"
 import Section from "../Section"
 
 interface FeatureSettingsSectionProps {
@@ -11,7 +13,7 @@ interface FeatureSettingsSectionProps {
 }
 
 const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionProps) => {
-	const { enableCheckpointsSetting, mcpMarketplaceEnabled, mcpRichDisplayEnabled, mcpResponsesCollapsed, chatSettings } =
+	const { enableCheckpointsSetting, mcpMarketplaceEnabled, mcpDisplayMode, mcpResponsesCollapsed, chatSettings } =
 		useExtensionState()
 
 	const handleReasoningEffortChange = (newValue: OpenAIReasoningEffort) => {
@@ -58,16 +60,19 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 						</p>
 					</div>
 					<div style={{ marginTop: 10 }}>
-						<VSCodeCheckbox
-							checked={mcpRichDisplayEnabled}
-							onChange={(e: any) => {
-								const checked = e.target.checked === true
-								updateSetting("mcpRichDisplayEnabled", checked)
-							}}>
-							启用富文本 MCP 显示
-						</VSCodeCheckbox>
-						<p className="text-xs text-[var(--vscode-descriptionForeground)]">
-							为 MCP 回复启用富文本格式。禁用后，回复将以纯文本显示。
+						<label
+							htmlFor="mcp-display-mode-dropdown"
+							className="block text-sm font-medium text-[var(--vscode-foreground)] mb-1">
+							MCP 显示模式
+						</label>
+						<McpDisplayModeDropdown
+							id="mcp-display-mode-dropdown"
+							value={mcpDisplayMode}
+							onChange={(newMode: McpDisplayMode) => updateSetting("mcpDisplayMode", newMode)}
+							className="w-full"
+						/>
+						<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
+							控制怎么显示 MCP 返回: 纯文本, 富文本和链接/图片或 markdown 渲染
 						</p>
 					</div>
 					<div style={{ marginTop: 10 }}>

@@ -10,6 +10,8 @@ import path from "node:path"
 import { v4 as uuidv4 } from "uuid"
 import { Uri } from "vscode"
 import { ExtensionMessage } from "@/shared/ExtensionMessage"
+import { getHostBridgeProvider } from "@/hosts/host-providers"
+import { ShowMessageRequest, ShowMessageType } from "@/shared/proto/host/window"
 
 export abstract class WebviewProvider {
 	public static readonly sideBarId = "ClineShengsuan.SidebarProvider" // used in package.json as the view's id. This value cannot be changed due to how vscode caches views based on their id, and updating the id would break existing instances of the extension.
@@ -260,8 +262,12 @@ export abstract class WebviewProvider {
 		try {
 			await axios.get(`http://${localServerUrl}`)
 		} catch (error) {
-			vscode.window.showErrorMessage(
-				"Cline: 本地 webview 开发服务器未运行，HMR 将无法工作。请在启动扩展程序之前运行“npm run dev:webview”以启用 HMR。使用捆绑资源。",
+			getHostBridgeProvider().windowClient.showMessage(
+				ShowMessageRequest.create({
+					type: ShowMessageType.ERROR,
+					message:
+						"Cline: 本地 webview 开发服务器未运行，HMR 将无法工作。请在启动扩展程序之前运行“npm run dev:webview”以启用 HMR。使用捆绑资源。",
+				}),
 			)
 
 			return this.getHtmlContent()

@@ -37,8 +37,10 @@ export class SSYAccountService {
 				this.authenticatedRequest<any>("/modelrouter/listrecharge?page=1&pageSize=10000"),
 				this.authenticatedRequest<any>("/user/info"),
 			])
-
-			if (!usage || !Array.isArray(usage?.logs) || !rate) {
+			if (!rate || !user) {
+				throw new Error(`获取胜算云账户信息失败！`)
+			}
+			if (!usage || !Array.isArray(usage?.logs)) {
 				usage = []
 			} else {
 				usage = usage.logs.map((it: any) => ({
@@ -51,7 +53,7 @@ export class SSYAccountService {
 				}))
 			}
 
-			if (!payment || !Array.isArray(payment.records) || !rate) {
+			if (!payment || !Array.isArray(payment.records)) {
 				payment = []
 			} else {
 				payment = payment.records.map((it: any) => ({
@@ -63,10 +65,10 @@ export class SSYAccountService {
 			}
 
 			let balance = { currentBalance: 0 }
-			if (user && user.Wallet && user.Wallet.Assets && rate) {
+			if (user.Wallet && user.Wallet.Assets) {
 				balance = { currentBalance: (rate * user.Wallet.Assets) / 10000 }
 			}
-
+			console.log("UserCreditsData", balance, usage, payment)
 			return UserCreditsData.create({
 				balance: balance,
 				usageTransactions: usage,

@@ -2,8 +2,9 @@ import { Controller } from ".."
 import { Empty } from "../../../shared/proto/common"
 import { ResetStateRequest } from "../../../shared/proto/state"
 import { resetGlobalState, resetWorkspaceState } from "../../../core/storage/state"
-import * as vscode from "vscode"
 import { sendChatButtonClickedEvent } from "../ui/subscribeToChatButtonClicked"
+import { ShowMessageRequest, ShowMessageType } from "@/shared/proto/host/window"
+import { getHostBridgeProvider } from "@/hosts/host-providers"
 
 /**
  * Resets the extension state to its defaults
@@ -14,10 +15,20 @@ import { sendChatButtonClickedEvent } from "../ui/subscribeToChatButtonClicked"
 export async function resetState(controller: Controller, request: ResetStateRequest): Promise<Empty> {
 	try {
 		if (request.global) {
-			vscode.window.showInformationMessage("重置全局状态...")
+			getHostBridgeProvider().windowClient.showMessage(
+				ShowMessageRequest.create({
+					type: ShowMessageType.INFORMATION,
+					message: "重置全局状态...",
+				}),
+			)
 			await resetGlobalState(controller.context)
 		} else {
-			vscode.window.showInformationMessage("重置工作区状态...")
+			getHostBridgeProvider().windowClient.showMessage(
+				ShowMessageRequest.create({
+					type: ShowMessageType.INFORMATION,
+					message: "重置工作区状态...",
+				}),
+			)
 			await resetWorkspaceState(controller.context)
 		}
 
@@ -26,7 +37,12 @@ export async function resetState(controller: Controller, request: ResetStateRequ
 			controller.task = undefined
 		}
 
-		vscode.window.showInformationMessage("重置状态")
+		getHostBridgeProvider().windowClient.showMessage(
+			ShowMessageRequest.create({
+				type: ShowMessageType.INFORMATION,
+				message: "重置状态",
+			}),
+		)
 		await controller.postStateToWebview()
 
 		await sendChatButtonClickedEvent(controller.id)
@@ -34,7 +50,12 @@ export async function resetState(controller: Controller, request: ResetStateRequ
 		return Empty.create()
 	} catch (error) {
 		console.error("Error resetting state:", error)
-		vscode.window.showErrorMessage(`重置状态失败: ${error instanceof Error ? error.message : String(error)}`)
+		getHostBridgeProvider().windowClient.showMessage(
+			ShowMessageRequest.create({
+				type: ShowMessageType.ERROR,
+				message: `重置状态失败: ${error instanceof Error ? error.message : String(error)}`,
+			}),
+		)
 		throw error
 	}
 }

@@ -27,14 +27,7 @@ import pWaitFor from "p-wait-for"
 import * as path from "path"
 import * as vscode from "vscode"
 import { ensureMcpServersDirectoryExists, ensureSettingsDirectoryExists, GlobalFileNames } from "../storage/disk"
-import {
-	getAllExtensionState,
-	getGlobalState,
-	getWorkspaceState,
-	storeSecret,
-	updateGlobalState,
-	updateWorkspaceState,
-} from "../storage/state"
+import { getAllExtensionState, getGlobalState, getWorkspaceState, storeSecret, updateGlobalState } from "../storage/state"
 import { Task } from "../task"
 import { handleGrpcRequest, handleGrpcRequestCancel } from "./grpc-handler"
 import { sendStateUpdate } from "./state/subscribeToState"
@@ -43,6 +36,8 @@ import { SSYAccountService } from "../../services/account/SSYAccountService"
 import { sendSSYAuthCallbackEvent } from "./account/subscribeSSYAuthCallback"
 import { sendMcpMarketplaceCatalogEvent } from "./mcp/subscribeToMcpMarketplaceCatalog"
 import { AuthService } from "@/services/auth/AuthService"
+import { ShowMessageRequest, ShowMessageType } from "@/shared/proto/host/window"
+import { getHostBridgeProvider } from "@/hosts/host-providers"
 
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -86,7 +81,7 @@ export class Controller {
 		})
 		this.accountService = ClineAccountService.getInstance()
 		this.authService = AuthService.getInstance(context)
-		this.authService.restoreAuthToken()
+		this.authService.restoreRefreshTokenAndRetrieveAuthInfo()
 
 		// Clean up legacy checkpoints
 		cleanupLegacyCheckpoints(this.context.globalStorageUri.fsPath, this.outputChannel).catch((error) => {
@@ -124,9 +119,19 @@ export class Controller {
 			await updateGlobalState(this.context, "userInfo", undefined)
 			await updateGlobalState(this.context, "apiProvider", "shengsuanyun")
 			await this.postStateToWebview()
-			// vscode.window.showInformationMessage("成功登出 Cline 胜算云")
+			getHostBridgeProvider().windowClient.showMessage(
+				ShowMessageRequest.create({
+					type: ShowMessageType.INFORMATION,
+					message: "成功登出 Cline 胜算云",
+				}),
+			)
 		} catch (error) {
-			vscode.window.showErrorMessage("登出失败")
+			getHostBridgeProvider().windowClient.showMessage(
+				ShowMessageRequest.create({
+					type: ShowMessageType.INFORMATION,
+					message: "登出失败",
+				}),
+			)
 		}
 	}
 
@@ -470,7 +475,6 @@ export class Controller {
 	}
 
 	// Account
-
 	async fetchUserCreditsData() {
 		try {
 			await this.accountServiceSSY?.fetchUserDataRPC()
@@ -478,17 +482,6 @@ export class Controller {
 			console.error("Failed to fetch user credits data:", error)
 		}
 	}
-
-	// Auth
-	public async validateAuthState(state: string | null): Promise<boolean> {
-		const storedNonce = this.authService.authNonce
-		if (!state || state !== storedNonce) {
-			return false
-		}
-		this.authService.resetAuthNonce() // Clear the nonce after validation
-		return true
-	}
-
 	async handleAuthCallback(customToken: string, provider: string | null = null) {
 		try {
 			await this.authService.handleAuthCallback(customToken, provider ? provider : "google")
@@ -512,7 +505,12 @@ export class Controller {
 			await this.postStateToWebview()
 		} catch (error) {
 			console.error("Failed to handle auth callback:", error)
-			vscode.window.showErrorMessage("登录失败")
+			getHostBridgeProvider().windowClient.showMessage(
+				ShowMessageRequest.create({
+					type: ShowMessageType.ERROR,
+					message: "登录失败",
+				}),
+			)
 			// Even on login failure, we preserve any existing tokens
 			// Only clear tokens on explicit logout
 		}
@@ -547,7 +545,12 @@ export class Controller {
 			console.error("Failed to fetch MCP marketplace:", error)
 			if (!silent) {
 				const errorMessage = error instanceof Error ? error.message : "获取 MCP 市场失败"
-				vscode.window.showErrorMessage(errorMessage)
+				getHostBridgeProvider().windowClient.showMessage(
+					ShowMessageRequest.create({
+						type: ShowMessageType.ERROR,
+						message: errorMessage,
+					}),
+				)
 			}
 			return undefined
 		}
@@ -631,7 +634,12 @@ export class Controller {
 		} catch (error) {
 			console.error("Failed to handle cached MCP marketplace:", error)
 			const errorMessage = error instanceof Error ? error.message : "处理 MCP 市场缓存失败"
-			vscode.window.showErrorMessage(errorMessage)
+			getHostBridgeProvider().windowClient.showMessage(
+				ShowMessageRequest.create({
+					type: ShowMessageType.ERROR,
+					message: errorMessage,
+				}),
+			)
 		}
 	}
 
@@ -877,7 +885,7 @@ export class Controller {
 			chatSettings: storedChatSettings,
 			userInfo,
 			mcpMarketplaceEnabled,
-			mcpRichDisplayEnabled,
+			mcpDisplayMode,
 			telemetrySetting,
 			planActSeparateModelsSetting,
 			enableCheckpointsSetting,
@@ -930,7 +938,7 @@ export class Controller {
 			chatSettings,
 			userInfo,
 			mcpMarketplaceEnabled,
-			mcpRichDisplayEnabled,
+			mcpDisplayMode,
 			telemetrySetting,
 			planActSeparateModelsSetting,
 			enableCheckpointsSetting: enableCheckpointsSetting ?? true,
@@ -1030,14 +1038,24 @@ export class Controller {
 			// Check if there's a workspace folder open
 			const cwd = await getCwd()
 			if (!cwd) {
-				vscode.window.showErrorMessage("没有打开工作目录")
+				getHostBridgeProvider().windowClient.showMessage(
+					ShowMessageRequest.create({
+						type: ShowMessageType.ERROR,
+						message: "没有打开工作目录",
+					}),
+				)
 				return
 			}
 
 			// Get the git diff
 			const gitDiff = await getWorkingState(cwd)
 			if (gitDiff === "No changes in working directory") {
-				vscode.window.showInformationMessage("工作区中提交消息没有变化")
+				getHostBridgeProvider().windowClient.showMessage(
+					ShowMessageRequest.create({
+						type: ShowMessageType.INFORMATION,
+						message: "工作区中提交消息没有变化",
+					}),
+				)
 				return
 			}
 
@@ -1104,25 +1122,59 @@ Commit message:`
 								if (api && api.repositories.length > 0) {
 									const repo = api.repositories[0]
 									repo.inputBox.value = commitMessage
-									vscode.window.showInformationMessage("提交消息已生成并应用")
+									const message = "提交消息已生成并应用"
+									getHostBridgeProvider().windowClient.showMessage(
+										ShowMessageRequest.create({
+											type: ShowMessageType.INFORMATION,
+											message,
+										}),
+									)
 								} else {
-									vscode.window.showErrorMessage("未找到 Git 库")
+									const message = "未找到 Git 库"
+									getHostBridgeProvider().windowClient.showMessage(
+										ShowMessageRequest.create({
+											type: ShowMessageType.ERROR,
+											message,
+										}),
+									)
 								}
 							} else {
-								vscode.window.showErrorMessage("未找到 Git 扩展")
+								const message = "未找到 Git 扩展"
+								getHostBridgeProvider().windowClient.showMessage(
+									ShowMessageRequest.create({
+										type: ShowMessageType.ERROR,
+										message,
+									}),
+								)
 							}
 						} else {
-							vscode.window.showErrorMessage("无法生成提交消息")
+							const message = "无法生成提交消息"
+							getHostBridgeProvider().windowClient.showMessage(
+								ShowMessageRequest.create({
+									type: ShowMessageType.ERROR,
+									message,
+								}),
+							)
 						}
 					} catch (innerError) {
 						const innerErrorMessage = innerError instanceof Error ? innerError.message : String(innerError)
-						vscode.window.showErrorMessage(`无法生成提交消息: ${innerErrorMessage}`)
+						getHostBridgeProvider().windowClient.showMessage(
+							ShowMessageRequest.create({
+								type: ShowMessageType.ERROR,
+								message: `无法生成提交消息: ${innerErrorMessage}`,
+							}),
+						)
 					}
 				},
 			)
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
-			vscode.window.showErrorMessage(`无法生成提交消息: ${errorMessage}`)
+			getHostBridgeProvider().windowClient.showMessage(
+				ShowMessageRequest.create({
+					type: ShowMessageType.ERROR,
+					message: `无法生成提交消息: ${errorMessage}`,
+				}),
+			)
 		}
 	}
 }

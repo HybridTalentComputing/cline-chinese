@@ -32,12 +32,14 @@ import {
 import { sendFocusChatInputEvent } from "./core/controller/ui/subscribeToFocusChatInput"
 import { FileContextTracker } from "./core/context/context-tracking/FileContextTracker"
 import * as hostProviders from "@hosts/host-providers"
-import { vscodeHostBridgeClient } from "@/hosts/vscode/client/host-grpc-client"
-import { VscodeWebviewProvider } from "./core/webview/VscodeWebviewProvider"
+import { vscodeHostBridgeClient } from "@/hosts/vscode/hostbridge/client/host-grpc-client"
+import { VscodeWebviewProvider } from "./hosts/vscode/VscodeWebviewProvider"
 import { ExtensionContext } from "vscode"
 import { AuthService } from "./services/auth/AuthService"
 import { writeTextToClipboard, readTextFromClipboard } from "@/utils/env"
-
+import { VscodeDiffViewProvider } from "./hosts/vscode/VscodeDiffViewProvider"
+import { getHostBridgeProvider } from "@hosts/host-providers"
+import { ShowMessageRequest, ShowMessageType } from "./shared/proto/host/window"
 /*
 Built using https://github.com/microsoft/vscode-webview-ui-toolkit
 
@@ -104,7 +106,12 @@ export async function activate(context: vscode.ExtensionContext) {
 				const message = `Cline 更新到 v${currentVersion}`
 				await vscode.commands.executeCommand("ClineShengsuan.SidebarProvider.focus")
 				await new Promise((resolve) => setTimeout(resolve, 200))
-				vscode.window.showInformationMessage(message)
+				getHostBridgeProvider().windowClient.showMessage(
+					ShowMessageRequest.create({
+						type: ShowMessageType.INFORMATION,
+						message,
+					}),
+				)
 				// Record that we've shown the popup for this version.
 				await context.globalState.update("clineLastPopupNotificationVersion", currentVersion)
 			}
@@ -294,24 +301,12 @@ export async function activate(context: vscode.ExtensionContext) {
 				break
 			}
 			case "/auth": {
-				const authService = AuthService.getInstance()
 				console.log("Auth callback received:", uri.toString())
 
 				const token = query.get("idToken")
-				const state = query.get("state")
 				const provider = query.get("provider")
 
-				console.log("Auth callback received:", {
-					token: token,
-					state: state,
-					provider: provider,
-				})
-
-				// Validate state parameter
-				if (!(authService.authNonce === state)) {
-					vscode.window.showErrorMessage("Invalid auth state")
-					return
-				}
+				console.log("Auth callback received:", { provider })
 
 				if (token) {
 					await visibleWebview?.controller.handleAuthCallback(token, provider)
@@ -429,7 +424,12 @@ export async function activate(context: vscode.ExtensionContext) {
 				// Ensure clipboard is restored even if an error occurs
 				await writeTextToClipboard(tempCopyBuffer)
 				console.error("Error getting terminal contents:", error)
-				vscode.window.showErrorMessage("获取终端内容失败")
+				getHostBridgeProvider().windowClient.showMessage(
+					ShowMessageRequest.create({
+						type: ShowMessageType.ERROR,
+						message: "获取终端内容失败",
+					}),
+				)
 			}
 		}),
 	)
@@ -568,7 +568,12 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 			const selectedText = editor.document.getText(range)
 			if (!selectedText.trim()) {
-				vscode.window.showInformationMessage("请选择一些代码来解释。")
+				getHostBridgeProvider().windowClient.showMessage(
+					ShowMessageRequest.create({
+						type: ShowMessageType.INFORMATION,
+						message: "请选择一些代码供解释。",
+					}),
+				)
 				return
 			}
 			const filePath = editor.document.uri.fsPath
@@ -590,7 +595,12 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 			const selectedText = editor.document.getText(range)
 			if (!selectedText.trim()) {
-				vscode.window.showInformationMessage("请选择一些代码来改进。")
+				getHostBridgeProvider().windowClient.showMessage(
+					ShowMessageRequest.create({
+						type: ShowMessageType.INFORMATION,
+						message: "请选择一些代码供改进。",
+					}),
+				)
 				return
 			}
 			const filePath = editor.document.uri.fsPath
@@ -655,7 +665,12 @@ export async function activate(context: vscode.ExtensionContext) {
 				sendFocusChatInputEvent(clientId)
 			} else {
 				console.error("FocusChatInput: Could not find or activate a Cline webview to focus.")
-				vscode.window.showErrorMessage("无法激活 Cline 视图。请尝试从活动栏手动打开。")
+				getHostBridgeProvider().windowClient.showMessage(
+					ShowMessageRequest.create({
+						type: ShowMessageType.ERROR,
+						message: "无法激活 Cline 视图。请尝试从活动栏手动打开。",
+					}),
+				)
 			}
 			telemetryService.captureButtonClick("command_focusChatInput", activeWebviewProvider?.controller.task?.taskId, true)
 		}),
@@ -689,6 +704,14 @@ export async function activate(context: vscode.ExtensionContext) {
 		}),
 	)
 
+	context.subscriptions.push(
+		context.secrets.onDidChange((event) => {
+			if (event.key === "clineAccountId") {
+				AuthService.getInstance(context)?.restoreRefreshTokenAndRetrieveAuthInfo()
+			}
+		}),
+	)
+
 	return createClineAPI(outputChannel, sidebarWebview.controller)
 }
 
@@ -698,7 +721,10 @@ function maybeSetupHostProviders(context: ExtensionContext) {
 		const createWebview = function (type: WebviewProviderType) {
 			return new VscodeWebviewProvider(context, outputChannel, type)
 		}
-		hostProviders.initializeHostProviders(createWebview, vscodeHostBridgeClient)
+		const createDiffView = function () {
+			return new VscodeDiffViewProvider()
+		}
+		hostProviders.initializeHostProviders(createWebview, createDiffView, vscodeHostBridgeClient)
 	}
 }
 

@@ -41,7 +41,7 @@ const WelcomeView = memo(() => {
 				</div>
 				<div className="flex flex-col gap-3">
 					<div className="">
-						Cline中文版，由中国胜算云Router赞助开发，一分钟注册，国内就能调用，Claude / GPT 等全球100个大模型
+						Cline中文版，由中国胜算云赞助开发，一分钟注册，国内就能调用，Claude / GPT 等全球100个大模型
 					</div>
 					<div className="">限时新用户，注册限时赠送 Claude 4 Sonnet 免费额度！</div>
 				</div>
