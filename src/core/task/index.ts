@@ -902,9 +902,9 @@ export class Task {
 	async sayAndCreateMissingParamError(toolName: ToolUseName, paramName: string, relPath?: string) {
 		await this.say(
 			"error",
-			`Cline tried to use ${toolName}${
+			`Cline 尝试使用 ${toolName}${
 				relPath ? ` for '${relPath.toPosix()}'` : ""
-			} without value for required parameter '${paramName}'. Retrying...`,
+			} 但是没有必要的参数 '${paramName}'. 重试...`,
 		)
 		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
 	}
@@ -1995,8 +1995,7 @@ export class Task {
 					CheckpointTracker.create(this.taskId, this.context.globalStorageUri.fsPath, this.enableCheckpoints),
 					{
 						milliseconds: 15_000,
-						message:
-							"Checkpoints taking too long to initialize. Consider re-opening Cline in a project that uses git, or disabling checkpoints.",
+						message: "检查点初始化时间过长。请考虑在使用 Git 的项目中重新打开 Cline，或禁用检查点。",
 					},
 				)
 			} catch (error) {
@@ -2040,7 +2039,7 @@ export class Task {
 		if (clinerulesError === true) {
 			await this.say(
 				"error",
-				"Issue with processing the /newrule command. Double check that, if '.clinerules' already exists, it's a directory and not a file. Otherwise there was an issue referencing this file/directory.",
+				"处理 /newrule 命令时出现问题。请检查，如果“.clinerules”已存在，则它是一个目录而不是文件。否则，引用此文件/目录时出现问题。",
 			)
 		}
 
@@ -2344,16 +2343,13 @@ export class Task {
 				didEndLoop = recDidEndLoop
 			} else {
 				// if there's no assistant_responses, that means we got no text or tool_use content blocks from API which we should assume is an error
-				await this.say(
-					"error",
-					"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
-				)
+				await this.say("error", "意外的 API 响应：语言模型未提供任何辅助消息。这可能表明 API 或模型的输出存在问题。")
 				await this.messageStateHandler.addToApiConversationHistory({
 					role: "assistant",
 					content: [
 						{
 							type: "text",
-							text: "Failure: I did not provide a response.",
+							text: "失败：我没有提供答复。",
 						},
 					],
 				})

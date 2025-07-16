@@ -126,7 +126,6 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 						position: "relative",
 					}}>
 					<VSCodeOption value="shengsuanyun">胜算云</VSCodeOption>
-					<VSCodeOption value="cline">Cline</VSCodeOption>
 					<VSCodeOption value="openrouter">OpenRouter</VSCodeOption>
 					<VSCodeOption value="anthropic">Anthropic</VSCodeOption>
 					<VSCodeOption value="claude-code">Claude Code</VSCodeOption>
