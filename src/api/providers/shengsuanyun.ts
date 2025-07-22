@@ -3,7 +3,7 @@ import axios from "axios"
 import { setTimeout as setTimeoutPromise } from "node:timers/promises"
 import OpenAI from "openai"
 import { ApiHandler } from "../"
-import { ApiHandlerOptions, ModelInfo, shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "../../shared/api"
+import { ModelInfo, shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "../../shared/api"
 import { withRetry } from "../retry"
 import { createShengsuanyunStream } from "../transform/shengsuanyun-stream"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
@@ -11,12 +11,20 @@ import { OpenRouterErrorResponse } from "./types"
 import { calculateApiCostOpenAI } from "../../utils/cost"
 import * as vscode from "vscode"
 
+interface ShengSuanYunHandlerOptions {
+	shengSuanYunApiKey?: string
+	reasoningEffort?: string
+	thinkingBudgetTokens?: number
+	shengSuanYunModelId?: string
+	shengSuanYunModelInfo?: ModelInfo
+}
+
 export class ShengSuanYunHandler implements ApiHandler {
-	private options: ApiHandlerOptions
+	private options: ShengSuanYunHandlerOptions
 	private client: OpenAI
 	lastGenerationId?: string
 
-	constructor(options: ApiHandlerOptions) {
+	constructor(options: ShengSuanYunHandlerOptions) {
 		this.options = options
 		this.client = new OpenAI({
 			baseURL: "https://router.shengsuanyun.com/api/v1",
@@ -39,7 +47,6 @@ export class ShengSuanYunHandler implements ApiHandler {
 			model,
 			this.options.reasoningEffort,
 			this.options.thinkingBudgetTokens,
-			this.options.openRouterProviderSorting,
 		)
 
 		let didOutputUsage: boolean = false

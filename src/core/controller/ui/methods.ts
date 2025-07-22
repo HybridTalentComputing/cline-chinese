@@ -7,6 +7,7 @@ import { getWebviewHtml } from "./getWebviewHtml"
 import { initializeWebview } from "./initializeWebview"
 import { onDidShowAnnouncement } from "./onDidShowAnnouncement"
 import { openUrl } from "./openUrl"
+import { openWalkthrough } from "./openWalkthrough"
 import { scrollToSettings } from "./scrollToSettings"
 import { subscribeToAccountButtonClicked } from "./subscribeToAccountButtonClicked"
 import { subscribeToAddToInput } from "./subscribeToAddToInput"
@@ -42,6 +43,7 @@ export function registerAllMethods(): void {
 	registerMethod("initializeWebview", initializeWebview)
 	registerMethod("onDidShowAnnouncement", onDidShowAnnouncement)
 	registerMethod("openUrl", openUrl)
+	registerMethod("openWalkthrough", openWalkthrough)
 	registerMethod("scrollToSettings", scrollToSettings)
 	registerMethod("subscribeToAccountButtonClicked", subscribeToAccountButtonClicked, { isStreaming: true })
 	registerMethod("subscribeToAddToInput", subscribeToAddToInput, { isStreaming: true })

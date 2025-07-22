@@ -168,55 +168,20 @@ export interface UpdateSettingsRequest {
 
 /** Complete API Configuration message */
 export interface ApiConfiguration {
-  /** Core API fields */
-  apiProvider?: string | undefined;
-  apiModelId?:
-    | string
-    | undefined;
-  /** anthropic */
+  /** Global configuration fields (not mode-specific) */
   apiKey?: string | undefined;
-  apiBaseUrl?:
-    | string
+  clineApiKey?: string | undefined;
+  taskId?: string | undefined;
+  liteLlmBaseUrl?: string | undefined;
+  liteLlmApiKey?: string | undefined;
+  liteLlmUsePromptCache?:
+    | boolean
     | undefined;
-  /** Provider-specific API keys */
-  clineAccountId?: string | undefined;
-  openrouterApiKey?: string | undefined;
+  /** JSON string */
+  openaiHeaders?: string | undefined;
   anthropicBaseUrl?: string | undefined;
-  openaiApiKey?: string | undefined;
-  openaiNativeApiKey?: string | undefined;
-  geminiApiKey?: string | undefined;
-  deepseekApiKey?: string | undefined;
-  requestyApiKey?: string | undefined;
-  togetherApiKey?: string | undefined;
-  fireworksApiKey?: string | undefined;
-  qwenApiKey?: string | undefined;
-  doubaoApiKey?: string | undefined;
-  mistralApiKey?: string | undefined;
-  nebiusApiKey?: string | undefined;
-  asksageApiKey?: string | undefined;
-  xaiApiKey?: string | undefined;
-  sambanovaApiKey?: string | undefined;
-  cerebrasApiKey?:
-    | string
-    | undefined;
-  /** Model IDs */
-  openrouterModelId?: string | undefined;
-  openaiModelId?: string | undefined;
-  anthropicModelId?: string | undefined;
-  bedrockModelId?: string | undefined;
-  vertexModelId?: string | undefined;
-  geminiModelId?: string | undefined;
-  ollamaModelId?: string | undefined;
-  lmStudioModelId?: string | undefined;
-  litellmModelId?: string | undefined;
-  requestyModelId?: string | undefined;
-  togetherModelId?: string | undefined;
-  fireworksModelId?:
-    | string
-    | undefined;
-  /** AWS Bedrock fields */
-  awsBedrockCustomSelected?: boolean | undefined;
-  awsBedrockCustomModelBaseId?: string | undefined;
+  openrouterApiKey?: string | undefined;
+  openrouterProviderSorting?: string | undefined;
   awsAccessKey?: string | undefined;
   awsSecretKey?: string | undefined;
   awsSessionToken?: string | undefined;
@@ -225,99 +190,133 @@ export interface ApiConfiguration {
   awsBedrockUsePromptCache?: boolean | undefined;
   awsUseProfile?: boolean | undefined;
   awsProfile?: string | undefined;
-  awsBedrockEndpoint?:
-    | string
-    | undefined;
-  /** Vertex AI fields */
+  awsBedrockEndpoint?: string | undefined;
+  claudeCodePath?: string | undefined;
   vertexProjectId?: string | undefined;
-  vertexRegion?:
-    | string
-    | undefined;
-  /** Base URLs and endpoints */
+  vertexRegion?: string | undefined;
   openaiBaseUrl?: string | undefined;
+  openaiApiKey?: string | undefined;
   ollamaBaseUrl?: string | undefined;
+  ollamaApiOptionsCtxNum?: string | undefined;
   lmStudioBaseUrl?: string | undefined;
+  geminiApiKey?: string | undefined;
   geminiBaseUrl?: string | undefined;
-  litellmBaseUrl?: string | undefined;
-  asksageApiUrl?:
-    | string
-    | undefined;
-  /** LiteLLM specific fields */
-  litellmApiKey?: string | undefined;
-  litellmUsePromptCache?:
-    | boolean
-    | undefined;
-  /** Model configuration */
-  thinkingBudgetTokens?: number | undefined;
-  reasoningEffort?: string | undefined;
-  requestTimeoutMs?:
-    | number
-    | undefined;
-  /** Fireworks specific */
+  openaiNativeApiKey?: string | undefined;
+  deepSeekApiKey?: string | undefined;
+  requestyApiKey?: string | undefined;
+  togetherApiKey?: string | undefined;
+  fireworksApiKey?: string | undefined;
   fireworksModelMaxCompletionTokens?: number | undefined;
-  fireworksModelMaxTokens?:
-    | number
-    | undefined;
-  /** Azure specific */
-  azureApiVersion?:
+  fireworksModelMaxTokens?: number | undefined;
+  qwenApiKey?: string | undefined;
+  doubaoApiKey?: string | undefined;
+  mistralApiKey?: string | undefined;
+  azureApiVersion?: string | undefined;
+  qwenApiLine?: string | undefined;
+  nebiusApiKey?: string | undefined;
+  asksageApiUrl?: string | undefined;
+  asksageApiKey?: string | undefined;
+  xaiApiKey?: string | undefined;
+  sambanovaApiKey?: string | undefined;
+  cerebrasApiKey?: string | undefined;
+  requestTimeoutMs?: number | undefined;
+  sapAiCoreClientId?: string | undefined;
+  sapAiCoreClientSecret?: string | undefined;
+  sapAiResourceGroup?: string | undefined;
+  sapAiCoreTokenUrl?: string | undefined;
+  sapAiCoreBaseUrl?: string | undefined;
+  moonshotApiKey?: string | undefined;
+  moonshotApiLine?: string | undefined;
+  shengsuanyunApiKey?: string | undefined;
+  shengsuanyunToken?:
     | string
     | undefined;
-  /** Ollama specific */
-  ollamaApiOptionsCtxNum?:
+  /** Plan mode configurations */
+  planModeApiProvider?: string | undefined;
+  planModeApiModelId?: string | undefined;
+  planModeThinkingBudgetTokens?: number | undefined;
+  planModeReasoningEffort?:
     | string
     | undefined;
-  /** Qwen specific */
-  qwenApiLine?:
+  /** JSON string */
+  planModeVscodeLmModelSelector?: string | undefined;
+  planModeAwsBedrockCustomSelected?: boolean | undefined;
+  planModeAwsBedrockCustomModelBaseId?: string | undefined;
+  planModeOpenrouterModelId?:
     | string
     | undefined;
-  /** OpenRouter specific */
-  openrouterProviderSorting?:
+  /** JSON string */
+  planModeOpenrouterModelInfo?: string | undefined;
+  planModeOpenaiModelId?:
     | string
     | undefined;
-  /** VSCode LM (stored as JSON string due to complex type) */
-  vscodeLmModelSelector?:
+  /** JSON string */
+  planModeOpenaiModelInfo?: string | undefined;
+  planModeOllamaModelId?: string | undefined;
+  planModeLmStudioModelId?: string | undefined;
+  planModeLiteLlmModelId?:
     | string
     | undefined;
-  /** Model info objects (stored as JSON strings) */
-  openrouterModelInfo?: string | undefined;
-  openaiModelInfo?: string | undefined;
-  requestyModelInfo?: string | undefined;
-  litellmModelInfo?:
+  /** JSON string */
+  planModeLiteLlmModelInfo?: string | undefined;
+  planModeRequestyModelId?:
     | string
     | undefined;
-  /** OpenAI headers (stored as JSON string) */
-  openaiHeaders?:
+  /** JSON string */
+  planModeRequestyModelInfo?: string | undefined;
+  planModeTogetherModelId?: string | undefined;
+  planModeFireworksModelId?: string | undefined;
+  planModeSapAiCoreModelId?: string | undefined;
+  planModeShengSuanYunModelId?: string | undefined;
+  planModeShengSuanYunModelInfo?:
+    | string
+    | undefined;
+  /** Act mode configurations */
+  actModeApiProvider?: string | undefined;
+  actModeApiModelId?: string | undefined;
+  actModeThinkingBudgetTokens?: number | undefined;
+  actModeReasoningEffort?:
+    | string
+    | undefined;
+  /** JSON string */
+  actModeVscodeLmModelSelector?: string | undefined;
+  actModeAwsBedrockCustomSelected?: boolean | undefined;
+  actModeAwsBedrockCustomModelBaseId?: string | undefined;
+  actModeOpenrouterModelId?:
+    | string
+    | undefined;
+  /** JSON string */
+  actModeOpenrouterModelInfo?: string | undefined;
+  actModeOpenaiModelId?:
+    | string
+    | undefined;
+  /** JSON string */
+  actModeOpenaiModelInfo?: string | undefined;
+  actModeOllamaModelId?: string | undefined;
+  actModeLmStudioModelId?: string | undefined;
+  actModeLiteLlmModelId?:
+    | string
+    | undefined;
+  /** JSON string */
+  actModeLiteLlmModelInfo?: string | undefined;
+  actModeRequestyModelId?:
+    | string
+    | undefined;
+  /** JSON string */
+  actModeRequestyModelInfo?: string | undefined;
+  actModeTogetherModelId?: string | undefined;
+  actModeFireworksModelId?: string | undefined;
+  actModeSapAiCoreModelId?: string | undefined;
+  actModeShengSuanYunModelId?: string | undefined;
+  actModeShengSuanYunModelInfo?:
     | string
     | undefined;
   /** Favorited model IDs */
   favoritedModelIds: string[];
-  /** ShengSuanYun */
-  shengsuanyunApiKey?: string | undefined;
-  shengsuanyunModelId?: string | undefined;
-  shengsuanyunModelInfo?: string | undefined;
-  shengsuanyunToken?:
-    | string
-    | undefined;
-  /** SAP AI Core specific */
-  sapAiCoreClientId?: string | undefined;
-  sapAiCoreClientSecret?: string | undefined;
-  sapAiCoreBaseUrl?: string | undefined;
-  sapAiCoreTokenUrl?: string | undefined;
-  sapAiResourceGroup?:
-    | string
-    | undefined;
-  /** Claude Code specific */
-  claudeCodePath?:
-    | string
-    | undefined;
   /** Extension fields for Bedrock Api Keys */
   awsAuthentication?: string | undefined;
-  awsBedrockApiKey?:
-    | string
-    | undefined;
-  /** Moonshot */
-  moonshotApiKey?: string | undefined;
-  moonshotApiLine?: string | undefined;
+  awsBedrockApiKey?: string | undefined;
+  clineAccountId?: string | undefined;
 }
 
 function createBaseState(): State {
@@ -1708,42 +1707,16 @@ export const UpdateSettingsRequest: MessageFns<UpdateSettingsRequest> = {
 
 function createBaseApiConfiguration(): ApiConfiguration {
   return {
-    apiProvider: undefined,
-    apiModelId: undefined,
     apiKey: undefined,
-    apiBaseUrl: undefined,
-    clineAccountId: undefined,
-    openrouterApiKey: undefined,
+    clineApiKey: undefined,
+    taskId: undefined,
+    liteLlmBaseUrl: undefined,
+    liteLlmApiKey: undefined,
+    liteLlmUsePromptCache: undefined,
+    openaiHeaders: undefined,
     anthropicBaseUrl: undefined,
-    openaiApiKey: undefined,
-    openaiNativeApiKey: undefined,
-    geminiApiKey: undefined,
-    deepseekApiKey: undefined,
-    requestyApiKey: undefined,
-    togetherApiKey: undefined,
-    fireworksApiKey: undefined,
-    qwenApiKey: undefined,
-    doubaoApiKey: undefined,
-    mistralApiKey: undefined,
-    nebiusApiKey: undefined,
-    asksageApiKey: undefined,
-    xaiApiKey: undefined,
-    sambanovaApiKey: undefined,
-    cerebrasApiKey: undefined,
-    openrouterModelId: undefined,
-    openaiModelId: undefined,
-    anthropicModelId: undefined,
-    bedrockModelId: undefined,
-    vertexModelId: undefined,
-    geminiModelId: undefined,
-    ollamaModelId: undefined,
-    lmStudioModelId: undefined,
-    litellmModelId: undefined,
-    requestyModelId: undefined,
-    togetherModelId: undefined,
-    fireworksModelId: undefined,
-    awsBedrockCustomSelected: undefined,
-    awsBedrockCustomModelBaseId: undefined,
+    openrouterApiKey: undefined,
+    openrouterProviderSorting: undefined,
     awsAccessKey: undefined,
     awsSecretKey: undefined,
     awsSessionToken: undefined,
@@ -1753,305 +1726,411 @@ function createBaseApiConfiguration(): ApiConfiguration {
     awsUseProfile: undefined,
     awsProfile: undefined,
     awsBedrockEndpoint: undefined,
+    claudeCodePath: undefined,
     vertexProjectId: undefined,
     vertexRegion: undefined,
     openaiBaseUrl: undefined,
+    openaiApiKey: undefined,
     ollamaBaseUrl: undefined,
+    ollamaApiOptionsCtxNum: undefined,
     lmStudioBaseUrl: undefined,
+    geminiApiKey: undefined,
     geminiBaseUrl: undefined,
-    litellmBaseUrl: undefined,
-    asksageApiUrl: undefined,
-    litellmApiKey: undefined,
-    litellmUsePromptCache: undefined,
-    thinkingBudgetTokens: undefined,
-    reasoningEffort: undefined,
-    requestTimeoutMs: undefined,
+    openaiNativeApiKey: undefined,
+    deepSeekApiKey: undefined,
+    requestyApiKey: undefined,
+    togetherApiKey: undefined,
+    fireworksApiKey: undefined,
     fireworksModelMaxCompletionTokens: undefined,
     fireworksModelMaxTokens: undefined,
+    qwenApiKey: undefined,
+    doubaoApiKey: undefined,
+    mistralApiKey: undefined,
     azureApiVersion: undefined,
-    ollamaApiOptionsCtxNum: undefined,
     qwenApiLine: undefined,
-    openrouterProviderSorting: undefined,
-    vscodeLmModelSelector: undefined,
-    openrouterModelInfo: undefined,
-    openaiModelInfo: undefined,
-    requestyModelInfo: undefined,
-    litellmModelInfo: undefined,
-    openaiHeaders: undefined,
-    favoritedModelIds: [],
-    shengsuanyunApiKey: undefined,
-    shengsuanyunModelId: undefined,
-    shengsuanyunModelInfo: undefined,
-    shengsuanyunToken: undefined,
+    nebiusApiKey: undefined,
+    asksageApiUrl: undefined,
+    asksageApiKey: undefined,
+    xaiApiKey: undefined,
+    sambanovaApiKey: undefined,
+    cerebrasApiKey: undefined,
+    requestTimeoutMs: undefined,
     sapAiCoreClientId: undefined,
     sapAiCoreClientSecret: undefined,
-    sapAiCoreBaseUrl: undefined,
-    sapAiCoreTokenUrl: undefined,
     sapAiResourceGroup: undefined,
-    claudeCodePath: undefined,
-    awsAuthentication: undefined,
-    awsBedrockApiKey: undefined,
+    sapAiCoreTokenUrl: undefined,
+    sapAiCoreBaseUrl: undefined,
     moonshotApiKey: undefined,
     moonshotApiLine: undefined,
+    shengsuanyunApiKey: undefined,
+    shengsuanyunToken: undefined,
+    planModeApiProvider: undefined,
+    planModeApiModelId: undefined,
+    planModeThinkingBudgetTokens: undefined,
+    planModeReasoningEffort: undefined,
+    planModeVscodeLmModelSelector: undefined,
+    planModeAwsBedrockCustomSelected: undefined,
+    planModeAwsBedrockCustomModelBaseId: undefined,
+    planModeOpenrouterModelId: undefined,
+    planModeOpenrouterModelInfo: undefined,
+    planModeOpenaiModelId: undefined,
+    planModeOpenaiModelInfo: undefined,
+    planModeOllamaModelId: undefined,
+    planModeLmStudioModelId: undefined,
+    planModeLiteLlmModelId: undefined,
+    planModeLiteLlmModelInfo: undefined,
+    planModeRequestyModelId: undefined,
+    planModeRequestyModelInfo: undefined,
+    planModeTogetherModelId: undefined,
+    planModeFireworksModelId: undefined,
+    planModeSapAiCoreModelId: undefined,
+    planModeShengSuanYunModelId: undefined,
+    planModeShengSuanYunModelInfo: undefined,
+    actModeApiProvider: undefined,
+    actModeApiModelId: undefined,
+    actModeThinkingBudgetTokens: undefined,
+    actModeReasoningEffort: undefined,
+    actModeVscodeLmModelSelector: undefined,
+    actModeAwsBedrockCustomSelected: undefined,
+    actModeAwsBedrockCustomModelBaseId: undefined,
+    actModeOpenrouterModelId: undefined,
+    actModeOpenrouterModelInfo: undefined,
+    actModeOpenaiModelId: undefined,
+    actModeOpenaiModelInfo: undefined,
+    actModeOllamaModelId: undefined,
+    actModeLmStudioModelId: undefined,
+    actModeLiteLlmModelId: undefined,
+    actModeLiteLlmModelInfo: undefined,
+    actModeRequestyModelId: undefined,
+    actModeRequestyModelInfo: undefined,
+    actModeTogetherModelId: undefined,
+    actModeFireworksModelId: undefined,
+    actModeSapAiCoreModelId: undefined,
+    actModeShengSuanYunModelId: undefined,
+    actModeShengSuanYunModelInfo: undefined,
+    favoritedModelIds: [],
+    awsAuthentication: undefined,
+    awsBedrockApiKey: undefined,
+    clineAccountId: undefined,
   };
 }
 
 export const ApiConfiguration: MessageFns<ApiConfiguration> = {
   encode(message: ApiConfiguration, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.apiProvider !== undefined) {
-      writer.uint32(10).string(message.apiProvider);
-    }
-    if (message.apiModelId !== undefined) {
-      writer.uint32(18).string(message.apiModelId);
-    }
     if (message.apiKey !== undefined) {
-      writer.uint32(26).string(message.apiKey);
+      writer.uint32(10).string(message.apiKey);
     }
-    if (message.apiBaseUrl !== undefined) {
-      writer.uint32(34).string(message.apiBaseUrl);
+    if (message.clineApiKey !== undefined) {
+      writer.uint32(18).string(message.clineApiKey);
     }
-    if (message.clineAccountId !== undefined) {
-      writer.uint32(42).string(message.clineAccountId);
+    if (message.taskId !== undefined) {
+      writer.uint32(26).string(message.taskId);
     }
-    if (message.openrouterApiKey !== undefined) {
-      writer.uint32(50).string(message.openrouterApiKey);
+    if (message.liteLlmBaseUrl !== undefined) {
+      writer.uint32(34).string(message.liteLlmBaseUrl);
     }
-    if (message.anthropicBaseUrl !== undefined) {
-      writer.uint32(58).string(message.anthropicBaseUrl);
+    if (message.liteLlmApiKey !== undefined) {
+      writer.uint32(42).string(message.liteLlmApiKey);
     }
-    if (message.openaiApiKey !== undefined) {
-      writer.uint32(66).string(message.openaiApiKey);
-    }
-    if (message.openaiNativeApiKey !== undefined) {
-      writer.uint32(74).string(message.openaiNativeApiKey);
-    }
-    if (message.geminiApiKey !== undefined) {
-      writer.uint32(82).string(message.geminiApiKey);
-    }
-    if (message.deepseekApiKey !== undefined) {
-      writer.uint32(90).string(message.deepseekApiKey);
-    }
-    if (message.requestyApiKey !== undefined) {
-      writer.uint32(98).string(message.requestyApiKey);
-    }
-    if (message.togetherApiKey !== undefined) {
-      writer.uint32(106).string(message.togetherApiKey);
-    }
-    if (message.fireworksApiKey !== undefined) {
-      writer.uint32(114).string(message.fireworksApiKey);
-    }
-    if (message.qwenApiKey !== undefined) {
-      writer.uint32(122).string(message.qwenApiKey);
-    }
-    if (message.doubaoApiKey !== undefined) {
-      writer.uint32(130).string(message.doubaoApiKey);
-    }
-    if (message.mistralApiKey !== undefined) {
-      writer.uint32(138).string(message.mistralApiKey);
-    }
-    if (message.nebiusApiKey !== undefined) {
-      writer.uint32(146).string(message.nebiusApiKey);
-    }
-    if (message.asksageApiKey !== undefined) {
-      writer.uint32(154).string(message.asksageApiKey);
-    }
-    if (message.xaiApiKey !== undefined) {
-      writer.uint32(162).string(message.xaiApiKey);
-    }
-    if (message.sambanovaApiKey !== undefined) {
-      writer.uint32(170).string(message.sambanovaApiKey);
-    }
-    if (message.cerebrasApiKey !== undefined) {
-      writer.uint32(178).string(message.cerebrasApiKey);
-    }
-    if (message.openrouterModelId !== undefined) {
-      writer.uint32(186).string(message.openrouterModelId);
-    }
-    if (message.openaiModelId !== undefined) {
-      writer.uint32(194).string(message.openaiModelId);
-    }
-    if (message.anthropicModelId !== undefined) {
-      writer.uint32(202).string(message.anthropicModelId);
-    }
-    if (message.bedrockModelId !== undefined) {
-      writer.uint32(210).string(message.bedrockModelId);
-    }
-    if (message.vertexModelId !== undefined) {
-      writer.uint32(218).string(message.vertexModelId);
-    }
-    if (message.geminiModelId !== undefined) {
-      writer.uint32(226).string(message.geminiModelId);
-    }
-    if (message.ollamaModelId !== undefined) {
-      writer.uint32(234).string(message.ollamaModelId);
-    }
-    if (message.lmStudioModelId !== undefined) {
-      writer.uint32(242).string(message.lmStudioModelId);
-    }
-    if (message.litellmModelId !== undefined) {
-      writer.uint32(250).string(message.litellmModelId);
-    }
-    if (message.requestyModelId !== undefined) {
-      writer.uint32(258).string(message.requestyModelId);
-    }
-    if (message.togetherModelId !== undefined) {
-      writer.uint32(266).string(message.togetherModelId);
-    }
-    if (message.fireworksModelId !== undefined) {
-      writer.uint32(274).string(message.fireworksModelId);
-    }
-    if (message.awsBedrockCustomSelected !== undefined) {
-      writer.uint32(280).bool(message.awsBedrockCustomSelected);
-    }
-    if (message.awsBedrockCustomModelBaseId !== undefined) {
-      writer.uint32(290).string(message.awsBedrockCustomModelBaseId);
-    }
-    if (message.awsAccessKey !== undefined) {
-      writer.uint32(298).string(message.awsAccessKey);
-    }
-    if (message.awsSecretKey !== undefined) {
-      writer.uint32(306).string(message.awsSecretKey);
-    }
-    if (message.awsSessionToken !== undefined) {
-      writer.uint32(314).string(message.awsSessionToken);
-    }
-    if (message.awsRegion !== undefined) {
-      writer.uint32(322).string(message.awsRegion);
-    }
-    if (message.awsUseCrossRegionInference !== undefined) {
-      writer.uint32(328).bool(message.awsUseCrossRegionInference);
-    }
-    if (message.awsBedrockUsePromptCache !== undefined) {
-      writer.uint32(336).bool(message.awsBedrockUsePromptCache);
-    }
-    if (message.awsUseProfile !== undefined) {
-      writer.uint32(344).bool(message.awsUseProfile);
-    }
-    if (message.awsProfile !== undefined) {
-      writer.uint32(354).string(message.awsProfile);
-    }
-    if (message.awsBedrockEndpoint !== undefined) {
-      writer.uint32(362).string(message.awsBedrockEndpoint);
-    }
-    if (message.vertexProjectId !== undefined) {
-      writer.uint32(370).string(message.vertexProjectId);
-    }
-    if (message.vertexRegion !== undefined) {
-      writer.uint32(378).string(message.vertexRegion);
-    }
-    if (message.openaiBaseUrl !== undefined) {
-      writer.uint32(386).string(message.openaiBaseUrl);
-    }
-    if (message.ollamaBaseUrl !== undefined) {
-      writer.uint32(394).string(message.ollamaBaseUrl);
-    }
-    if (message.lmStudioBaseUrl !== undefined) {
-      writer.uint32(402).string(message.lmStudioBaseUrl);
-    }
-    if (message.geminiBaseUrl !== undefined) {
-      writer.uint32(410).string(message.geminiBaseUrl);
-    }
-    if (message.litellmBaseUrl !== undefined) {
-      writer.uint32(418).string(message.litellmBaseUrl);
-    }
-    if (message.asksageApiUrl !== undefined) {
-      writer.uint32(426).string(message.asksageApiUrl);
-    }
-    if (message.litellmApiKey !== undefined) {
-      writer.uint32(434).string(message.litellmApiKey);
-    }
-    if (message.litellmUsePromptCache !== undefined) {
-      writer.uint32(440).bool(message.litellmUsePromptCache);
-    }
-    if (message.thinkingBudgetTokens !== undefined) {
-      writer.uint32(448).int64(message.thinkingBudgetTokens);
-    }
-    if (message.reasoningEffort !== undefined) {
-      writer.uint32(458).string(message.reasoningEffort);
-    }
-    if (message.requestTimeoutMs !== undefined) {
-      writer.uint32(464).int64(message.requestTimeoutMs);
-    }
-    if (message.fireworksModelMaxCompletionTokens !== undefined) {
-      writer.uint32(472).int64(message.fireworksModelMaxCompletionTokens);
-    }
-    if (message.fireworksModelMaxTokens !== undefined) {
-      writer.uint32(480).int64(message.fireworksModelMaxTokens);
-    }
-    if (message.azureApiVersion !== undefined) {
-      writer.uint32(490).string(message.azureApiVersion);
-    }
-    if (message.ollamaApiOptionsCtxNum !== undefined) {
-      writer.uint32(498).string(message.ollamaApiOptionsCtxNum);
-    }
-    if (message.qwenApiLine !== undefined) {
-      writer.uint32(506).string(message.qwenApiLine);
-    }
-    if (message.openrouterProviderSorting !== undefined) {
-      writer.uint32(514).string(message.openrouterProviderSorting);
-    }
-    if (message.vscodeLmModelSelector !== undefined) {
-      writer.uint32(522).string(message.vscodeLmModelSelector);
-    }
-    if (message.openrouterModelInfo !== undefined) {
-      writer.uint32(530).string(message.openrouterModelInfo);
-    }
-    if (message.openaiModelInfo !== undefined) {
-      writer.uint32(538).string(message.openaiModelInfo);
-    }
-    if (message.requestyModelInfo !== undefined) {
-      writer.uint32(546).string(message.requestyModelInfo);
-    }
-    if (message.litellmModelInfo !== undefined) {
-      writer.uint32(554).string(message.litellmModelInfo);
+    if (message.liteLlmUsePromptCache !== undefined) {
+      writer.uint32(48).bool(message.liteLlmUsePromptCache);
     }
     if (message.openaiHeaders !== undefined) {
-      writer.uint32(562).string(message.openaiHeaders);
+      writer.uint32(58).string(message.openaiHeaders);
     }
-    for (const v of message.favoritedModelIds) {
-      writer.uint32(570).string(v!);
+    if (message.anthropicBaseUrl !== undefined) {
+      writer.uint32(66).string(message.anthropicBaseUrl);
     }
-    if (message.shengsuanyunApiKey !== undefined) {
-      writer.uint32(578).string(message.shengsuanyunApiKey);
+    if (message.openrouterApiKey !== undefined) {
+      writer.uint32(74).string(message.openrouterApiKey);
     }
-    if (message.shengsuanyunModelId !== undefined) {
-      writer.uint32(586).string(message.shengsuanyunModelId);
+    if (message.openrouterProviderSorting !== undefined) {
+      writer.uint32(82).string(message.openrouterProviderSorting);
     }
-    if (message.shengsuanyunModelInfo !== undefined) {
-      writer.uint32(594).string(message.shengsuanyunModelInfo);
+    if (message.awsAccessKey !== undefined) {
+      writer.uint32(90).string(message.awsAccessKey);
     }
-    if (message.shengsuanyunToken !== undefined) {
-      writer.uint32(602).string(message.shengsuanyunToken);
+    if (message.awsSecretKey !== undefined) {
+      writer.uint32(98).string(message.awsSecretKey);
     }
-    if (message.sapAiCoreClientId !== undefined) {
-      writer.uint32(610).string(message.sapAiCoreClientId);
+    if (message.awsSessionToken !== undefined) {
+      writer.uint32(106).string(message.awsSessionToken);
     }
-    if (message.sapAiCoreClientSecret !== undefined) {
-      writer.uint32(618).string(message.sapAiCoreClientSecret);
+    if (message.awsRegion !== undefined) {
+      writer.uint32(114).string(message.awsRegion);
     }
-    if (message.sapAiCoreBaseUrl !== undefined) {
-      writer.uint32(626).string(message.sapAiCoreBaseUrl);
+    if (message.awsUseCrossRegionInference !== undefined) {
+      writer.uint32(120).bool(message.awsUseCrossRegionInference);
     }
-    if (message.sapAiCoreTokenUrl !== undefined) {
-      writer.uint32(634).string(message.sapAiCoreTokenUrl);
+    if (message.awsBedrockUsePromptCache !== undefined) {
+      writer.uint32(128).bool(message.awsBedrockUsePromptCache);
     }
-    if (message.sapAiResourceGroup !== undefined) {
-      writer.uint32(642).string(message.sapAiResourceGroup);
+    if (message.awsUseProfile !== undefined) {
+      writer.uint32(136).bool(message.awsUseProfile);
+    }
+    if (message.awsProfile !== undefined) {
+      writer.uint32(146).string(message.awsProfile);
+    }
+    if (message.awsBedrockEndpoint !== undefined) {
+      writer.uint32(154).string(message.awsBedrockEndpoint);
     }
     if (message.claudeCodePath !== undefined) {
-      writer.uint32(650).string(message.claudeCodePath);
+      writer.uint32(162).string(message.claudeCodePath);
     }
-    if (message.awsAuthentication !== undefined) {
-      writer.uint32(658).string(message.awsAuthentication);
+    if (message.vertexProjectId !== undefined) {
+      writer.uint32(170).string(message.vertexProjectId);
     }
-    if (message.awsBedrockApiKey !== undefined) {
-      writer.uint32(666).string(message.awsBedrockApiKey);
+    if (message.vertexRegion !== undefined) {
+      writer.uint32(178).string(message.vertexRegion);
+    }
+    if (message.openaiBaseUrl !== undefined) {
+      writer.uint32(186).string(message.openaiBaseUrl);
+    }
+    if (message.openaiApiKey !== undefined) {
+      writer.uint32(194).string(message.openaiApiKey);
+    }
+    if (message.ollamaBaseUrl !== undefined) {
+      writer.uint32(202).string(message.ollamaBaseUrl);
+    }
+    if (message.ollamaApiOptionsCtxNum !== undefined) {
+      writer.uint32(210).string(message.ollamaApiOptionsCtxNum);
+    }
+    if (message.lmStudioBaseUrl !== undefined) {
+      writer.uint32(218).string(message.lmStudioBaseUrl);
+    }
+    if (message.geminiApiKey !== undefined) {
+      writer.uint32(226).string(message.geminiApiKey);
+    }
+    if (message.geminiBaseUrl !== undefined) {
+      writer.uint32(234).string(message.geminiBaseUrl);
+    }
+    if (message.openaiNativeApiKey !== undefined) {
+      writer.uint32(242).string(message.openaiNativeApiKey);
+    }
+    if (message.deepSeekApiKey !== undefined) {
+      writer.uint32(250).string(message.deepSeekApiKey);
+    }
+    if (message.requestyApiKey !== undefined) {
+      writer.uint32(258).string(message.requestyApiKey);
+    }
+    if (message.togetherApiKey !== undefined) {
+      writer.uint32(266).string(message.togetherApiKey);
+    }
+    if (message.fireworksApiKey !== undefined) {
+      writer.uint32(274).string(message.fireworksApiKey);
+    }
+    if (message.fireworksModelMaxCompletionTokens !== undefined) {
+      writer.uint32(280).int64(message.fireworksModelMaxCompletionTokens);
+    }
+    if (message.fireworksModelMaxTokens !== undefined) {
+      writer.uint32(288).int64(message.fireworksModelMaxTokens);
+    }
+    if (message.qwenApiKey !== undefined) {
+      writer.uint32(298).string(message.qwenApiKey);
+    }
+    if (message.doubaoApiKey !== undefined) {
+      writer.uint32(306).string(message.doubaoApiKey);
+    }
+    if (message.mistralApiKey !== undefined) {
+      writer.uint32(314).string(message.mistralApiKey);
+    }
+    if (message.azureApiVersion !== undefined) {
+      writer.uint32(322).string(message.azureApiVersion);
+    }
+    if (message.qwenApiLine !== undefined) {
+      writer.uint32(330).string(message.qwenApiLine);
+    }
+    if (message.nebiusApiKey !== undefined) {
+      writer.uint32(338).string(message.nebiusApiKey);
+    }
+    if (message.asksageApiUrl !== undefined) {
+      writer.uint32(346).string(message.asksageApiUrl);
+    }
+    if (message.asksageApiKey !== undefined) {
+      writer.uint32(354).string(message.asksageApiKey);
+    }
+    if (message.xaiApiKey !== undefined) {
+      writer.uint32(362).string(message.xaiApiKey);
+    }
+    if (message.sambanovaApiKey !== undefined) {
+      writer.uint32(370).string(message.sambanovaApiKey);
+    }
+    if (message.cerebrasApiKey !== undefined) {
+      writer.uint32(378).string(message.cerebrasApiKey);
+    }
+    if (message.requestTimeoutMs !== undefined) {
+      writer.uint32(384).int64(message.requestTimeoutMs);
+    }
+    if (message.sapAiCoreClientId !== undefined) {
+      writer.uint32(394).string(message.sapAiCoreClientId);
+    }
+    if (message.sapAiCoreClientSecret !== undefined) {
+      writer.uint32(402).string(message.sapAiCoreClientSecret);
+    }
+    if (message.sapAiResourceGroup !== undefined) {
+      writer.uint32(410).string(message.sapAiResourceGroup);
+    }
+    if (message.sapAiCoreTokenUrl !== undefined) {
+      writer.uint32(418).string(message.sapAiCoreTokenUrl);
+    }
+    if (message.sapAiCoreBaseUrl !== undefined) {
+      writer.uint32(426).string(message.sapAiCoreBaseUrl);
     }
     if (message.moonshotApiKey !== undefined) {
-      writer.uint32(674).string(message.moonshotApiKey);
+      writer.uint32(434).string(message.moonshotApiKey);
     }
     if (message.moonshotApiLine !== undefined) {
-      writer.uint32(682).string(message.moonshotApiLine);
+      writer.uint32(442).string(message.moonshotApiLine);
+    }
+    if (message.shengsuanyunApiKey !== undefined) {
+      writer.uint32(450).string(message.shengsuanyunApiKey);
+    }
+    if (message.shengsuanyunToken !== undefined) {
+      writer.uint32(458).string(message.shengsuanyunToken);
+    }
+    if (message.planModeApiProvider !== undefined) {
+      writer.uint32(802).string(message.planModeApiProvider);
+    }
+    if (message.planModeApiModelId !== undefined) {
+      writer.uint32(810).string(message.planModeApiModelId);
+    }
+    if (message.planModeThinkingBudgetTokens !== undefined) {
+      writer.uint32(816).int64(message.planModeThinkingBudgetTokens);
+    }
+    if (message.planModeReasoningEffort !== undefined) {
+      writer.uint32(826).string(message.planModeReasoningEffort);
+    }
+    if (message.planModeVscodeLmModelSelector !== undefined) {
+      writer.uint32(834).string(message.planModeVscodeLmModelSelector);
+    }
+    if (message.planModeAwsBedrockCustomSelected !== undefined) {
+      writer.uint32(840).bool(message.planModeAwsBedrockCustomSelected);
+    }
+    if (message.planModeAwsBedrockCustomModelBaseId !== undefined) {
+      writer.uint32(850).string(message.planModeAwsBedrockCustomModelBaseId);
+    }
+    if (message.planModeOpenrouterModelId !== undefined) {
+      writer.uint32(858).string(message.planModeOpenrouterModelId);
+    }
+    if (message.planModeOpenrouterModelInfo !== undefined) {
+      writer.uint32(866).string(message.planModeOpenrouterModelInfo);
+    }
+    if (message.planModeOpenaiModelId !== undefined) {
+      writer.uint32(874).string(message.planModeOpenaiModelId);
+    }
+    if (message.planModeOpenaiModelInfo !== undefined) {
+      writer.uint32(882).string(message.planModeOpenaiModelInfo);
+    }
+    if (message.planModeOllamaModelId !== undefined) {
+      writer.uint32(890).string(message.planModeOllamaModelId);
+    }
+    if (message.planModeLmStudioModelId !== undefined) {
+      writer.uint32(898).string(message.planModeLmStudioModelId);
+    }
+    if (message.planModeLiteLlmModelId !== undefined) {
+      writer.uint32(906).string(message.planModeLiteLlmModelId);
+    }
+    if (message.planModeLiteLlmModelInfo !== undefined) {
+      writer.uint32(914).string(message.planModeLiteLlmModelInfo);
+    }
+    if (message.planModeRequestyModelId !== undefined) {
+      writer.uint32(922).string(message.planModeRequestyModelId);
+    }
+    if (message.planModeRequestyModelInfo !== undefined) {
+      writer.uint32(930).string(message.planModeRequestyModelInfo);
+    }
+    if (message.planModeTogetherModelId !== undefined) {
+      writer.uint32(938).string(message.planModeTogetherModelId);
+    }
+    if (message.planModeFireworksModelId !== undefined) {
+      writer.uint32(946).string(message.planModeFireworksModelId);
+    }
+    if (message.planModeSapAiCoreModelId !== undefined) {
+      writer.uint32(954).string(message.planModeSapAiCoreModelId);
+    }
+    if (message.planModeShengSuanYunModelId !== undefined) {
+      writer.uint32(962).string(message.planModeShengSuanYunModelId);
+    }
+    if (message.planModeShengSuanYunModelInfo !== undefined) {
+      writer.uint32(970).string(message.planModeShengSuanYunModelInfo);
+    }
+    if (message.actModeApiProvider !== undefined) {
+      writer.uint32(1602).string(message.actModeApiProvider);
+    }
+    if (message.actModeApiModelId !== undefined) {
+      writer.uint32(1610).string(message.actModeApiModelId);
+    }
+    if (message.actModeThinkingBudgetTokens !== undefined) {
+      writer.uint32(1616).int64(message.actModeThinkingBudgetTokens);
+    }
+    if (message.actModeReasoningEffort !== undefined) {
+      writer.uint32(1626).string(message.actModeReasoningEffort);
+    }
+    if (message.actModeVscodeLmModelSelector !== undefined) {
+      writer.uint32(1634).string(message.actModeVscodeLmModelSelector);
+    }
+    if (message.actModeAwsBedrockCustomSelected !== undefined) {
+      writer.uint32(1640).bool(message.actModeAwsBedrockCustomSelected);
+    }
+    if (message.actModeAwsBedrockCustomModelBaseId !== undefined) {
+      writer.uint32(1650).string(message.actModeAwsBedrockCustomModelBaseId);
+    }
+    if (message.actModeOpenrouterModelId !== undefined) {
+      writer.uint32(1658).string(message.actModeOpenrouterModelId);
+    }
+    if (message.actModeOpenrouterModelInfo !== undefined) {
+      writer.uint32(1666).string(message.actModeOpenrouterModelInfo);
+    }
+    if (message.actModeOpenaiModelId !== undefined) {
+      writer.uint32(1674).string(message.actModeOpenaiModelId);
+    }
+    if (message.actModeOpenaiModelInfo !== undefined) {
+      writer.uint32(1682).string(message.actModeOpenaiModelInfo);
+    }
+    if (message.actModeOllamaModelId !== undefined) {
+      writer.uint32(1690).string(message.actModeOllamaModelId);
+    }
+    if (message.actModeLmStudioModelId !== undefined) {
+      writer.uint32(1698).string(message.actModeLmStudioModelId);
+    }
+    if (message.actModeLiteLlmModelId !== undefined) {
+      writer.uint32(1706).string(message.actModeLiteLlmModelId);
+    }
+    if (message.actModeLiteLlmModelInfo !== undefined) {
+      writer.uint32(1714).string(message.actModeLiteLlmModelInfo);
+    }
+    if (message.actModeRequestyModelId !== undefined) {
+      writer.uint32(1722).string(message.actModeRequestyModelId);
+    }
+    if (message.actModeRequestyModelInfo !== undefined) {
+      writer.uint32(1730).string(message.actModeRequestyModelInfo);
+    }
+    if (message.actModeTogetherModelId !== undefined) {
+      writer.uint32(1738).string(message.actModeTogetherModelId);
+    }
+    if (message.actModeFireworksModelId !== undefined) {
+      writer.uint32(1746).string(message.actModeFireworksModelId);
+    }
+    if (message.actModeSapAiCoreModelId !== undefined) {
+      writer.uint32(1754).string(message.actModeSapAiCoreModelId);
+    }
+    if (message.actModeShengSuanYunModelId !== undefined) {
+      writer.uint32(1762).string(message.actModeShengSuanYunModelId);
+    }
+    if (message.actModeShengSuanYunModelInfo !== undefined) {
+      writer.uint32(1770).string(message.actModeShengSuanYunModelInfo);
+    }
+    for (const v of message.favoritedModelIds) {
+      writer.uint32(2402).string(v!);
+    }
+    if (message.awsAuthentication !== undefined) {
+      writer.uint32(2410).string(message.awsAuthentication);
+    }
+    if (message.awsBedrockApiKey !== undefined) {
+      writer.uint32(2418).string(message.awsBedrockApiKey);
+    }
+    if (message.clineAccountId !== undefined) {
+      writer.uint32(2426).string(message.clineAccountId);
     }
     return writer;
   },
@@ -2068,7 +2147,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.apiProvider = reader.string();
+          message.apiKey = reader.string();
           continue;
         }
         case 2: {
@@ -2076,7 +2155,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.apiModelId = reader.string();
+          message.clineApiKey = reader.string();
           continue;
         }
         case 3: {
@@ -2084,7 +2163,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.apiKey = reader.string();
+          message.taskId = reader.string();
           continue;
         }
         case 4: {
@@ -2092,7 +2171,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.apiBaseUrl = reader.string();
+          message.liteLlmBaseUrl = reader.string();
           continue;
         }
         case 5: {
@@ -2100,15 +2179,15 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.clineAccountId = reader.string();
+          message.liteLlmApiKey = reader.string();
           continue;
         }
         case 6: {
-          if (tag !== 50) {
+          if (tag !== 48) {
             break;
           }
 
-          message.openrouterApiKey = reader.string();
+          message.liteLlmUsePromptCache = reader.bool();
           continue;
         }
         case 7: {
@@ -2116,7 +2195,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.anthropicBaseUrl = reader.string();
+          message.openaiHeaders = reader.string();
           continue;
         }
         case 8: {
@@ -2124,7 +2203,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.openaiApiKey = reader.string();
+          message.anthropicBaseUrl = reader.string();
           continue;
         }
         case 9: {
@@ -2132,7 +2211,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.openaiNativeApiKey = reader.string();
+          message.openrouterApiKey = reader.string();
           continue;
         }
         case 10: {
@@ -2140,7 +2219,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.geminiApiKey = reader.string();
+          message.openrouterProviderSorting = reader.string();
           continue;
         }
         case 11: {
@@ -2148,7 +2227,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.deepseekApiKey = reader.string();
+          message.awsAccessKey = reader.string();
           continue;
         }
         case 12: {
@@ -2156,7 +2235,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.requestyApiKey = reader.string();
+          message.awsSecretKey = reader.string();
           continue;
         }
         case 13: {
@@ -2164,7 +2243,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.togetherApiKey = reader.string();
+          message.awsSessionToken = reader.string();
           continue;
         }
         case 14: {
@@ -2172,31 +2251,31 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.fireworksApiKey = reader.string();
+          message.awsRegion = reader.string();
           continue;
         }
         case 15: {
-          if (tag !== 122) {
+          if (tag !== 120) {
             break;
           }
 
-          message.qwenApiKey = reader.string();
+          message.awsUseCrossRegionInference = reader.bool();
           continue;
         }
         case 16: {
-          if (tag !== 130) {
+          if (tag !== 128) {
             break;
           }
 
-          message.doubaoApiKey = reader.string();
+          message.awsBedrockUsePromptCache = reader.bool();
           continue;
         }
         case 17: {
-          if (tag !== 138) {
+          if (tag !== 136) {
             break;
           }
 
-          message.mistralApiKey = reader.string();
+          message.awsUseProfile = reader.bool();
           continue;
         }
         case 18: {
@@ -2204,7 +2283,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.nebiusApiKey = reader.string();
+          message.awsProfile = reader.string();
           continue;
         }
         case 19: {
@@ -2212,7 +2291,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.asksageApiKey = reader.string();
+          message.awsBedrockEndpoint = reader.string();
           continue;
         }
         case 20: {
@@ -2220,7 +2299,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.xaiApiKey = reader.string();
+          message.claudeCodePath = reader.string();
           continue;
         }
         case 21: {
@@ -2228,7 +2307,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.sambanovaApiKey = reader.string();
+          message.vertexProjectId = reader.string();
           continue;
         }
         case 22: {
@@ -2236,7 +2315,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.cerebrasApiKey = reader.string();
+          message.vertexRegion = reader.string();
           continue;
         }
         case 23: {
@@ -2244,7 +2323,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.openrouterModelId = reader.string();
+          message.openaiBaseUrl = reader.string();
           continue;
         }
         case 24: {
@@ -2252,7 +2331,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.openaiModelId = reader.string();
+          message.openaiApiKey = reader.string();
           continue;
         }
         case 25: {
@@ -2260,7 +2339,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.anthropicModelId = reader.string();
+          message.ollamaBaseUrl = reader.string();
           continue;
         }
         case 26: {
@@ -2268,7 +2347,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.bedrockModelId = reader.string();
+          message.ollamaApiOptionsCtxNum = reader.string();
           continue;
         }
         case 27: {
@@ -2276,7 +2355,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.vertexModelId = reader.string();
+          message.lmStudioBaseUrl = reader.string();
           continue;
         }
         case 28: {
@@ -2284,7 +2363,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.geminiModelId = reader.string();
+          message.geminiApiKey = reader.string();
           continue;
         }
         case 29: {
@@ -2292,7 +2371,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.ollamaModelId = reader.string();
+          message.geminiBaseUrl = reader.string();
           continue;
         }
         case 30: {
@@ -2300,7 +2379,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.lmStudioModelId = reader.string();
+          message.openaiNativeApiKey = reader.string();
           continue;
         }
         case 31: {
@@ -2308,7 +2387,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.litellmModelId = reader.string();
+          message.deepSeekApiKey = reader.string();
           continue;
         }
         case 32: {
@@ -2316,7 +2395,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.requestyModelId = reader.string();
+          message.requestyApiKey = reader.string();
           continue;
         }
         case 33: {
@@ -2324,7 +2403,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.togetherModelId = reader.string();
+          message.togetherApiKey = reader.string();
           continue;
         }
         case 34: {
@@ -2332,7 +2411,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.fireworksModelId = reader.string();
+          message.fireworksApiKey = reader.string();
           continue;
         }
         case 35: {
@@ -2340,15 +2419,15 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.awsBedrockCustomSelected = reader.bool();
+          message.fireworksModelMaxCompletionTokens = longToNumber(reader.int64());
           continue;
         }
         case 36: {
-          if (tag !== 290) {
+          if (tag !== 288) {
             break;
           }
 
-          message.awsBedrockCustomModelBaseId = reader.string();
+          message.fireworksModelMaxTokens = longToNumber(reader.int64());
           continue;
         }
         case 37: {
@@ -2356,7 +2435,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.awsAccessKey = reader.string();
+          message.qwenApiKey = reader.string();
           continue;
         }
         case 38: {
@@ -2364,7 +2443,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.awsSecretKey = reader.string();
+          message.doubaoApiKey = reader.string();
           continue;
         }
         case 39: {
@@ -2372,7 +2451,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.awsSessionToken = reader.string();
+          message.mistralApiKey = reader.string();
           continue;
         }
         case 40: {
@@ -2380,31 +2459,31 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.awsRegion = reader.string();
+          message.azureApiVersion = reader.string();
           continue;
         }
         case 41: {
-          if (tag !== 328) {
+          if (tag !== 330) {
             break;
           }
 
-          message.awsUseCrossRegionInference = reader.bool();
+          message.qwenApiLine = reader.string();
           continue;
         }
         case 42: {
-          if (tag !== 336) {
+          if (tag !== 338) {
             break;
           }
 
-          message.awsBedrockUsePromptCache = reader.bool();
+          message.nebiusApiKey = reader.string();
           continue;
         }
         case 43: {
-          if (tag !== 344) {
+          if (tag !== 346) {
             break;
           }
 
-          message.awsUseProfile = reader.bool();
+          message.asksageApiUrl = reader.string();
           continue;
         }
         case 44: {
@@ -2412,7 +2491,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.awsProfile = reader.string();
+          message.asksageApiKey = reader.string();
           continue;
         }
         case 45: {
@@ -2420,7 +2499,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.awsBedrockEndpoint = reader.string();
+          message.xaiApiKey = reader.string();
           continue;
         }
         case 46: {
@@ -2428,7 +2507,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.vertexProjectId = reader.string();
+          message.sambanovaApiKey = reader.string();
           continue;
         }
         case 47: {
@@ -2436,15 +2515,15 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.vertexRegion = reader.string();
+          message.cerebrasApiKey = reader.string();
           continue;
         }
         case 48: {
-          if (tag !== 386) {
+          if (tag !== 384) {
             break;
           }
 
-          message.openaiBaseUrl = reader.string();
+          message.requestTimeoutMs = longToNumber(reader.int64());
           continue;
         }
         case 49: {
@@ -2452,7 +2531,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.ollamaBaseUrl = reader.string();
+          message.sapAiCoreClientId = reader.string();
           continue;
         }
         case 50: {
@@ -2460,7 +2539,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.lmStudioBaseUrl = reader.string();
+          message.sapAiCoreClientSecret = reader.string();
           continue;
         }
         case 51: {
@@ -2468,7 +2547,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.geminiBaseUrl = reader.string();
+          message.sapAiResourceGroup = reader.string();
           continue;
         }
         case 52: {
@@ -2476,7 +2555,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.litellmBaseUrl = reader.string();
+          message.sapAiCoreTokenUrl = reader.string();
           continue;
         }
         case 53: {
@@ -2484,7 +2563,7 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.asksageApiUrl = reader.string();
+          message.sapAiCoreBaseUrl = reader.string();
           continue;
         }
         case 54: {
@@ -2492,23 +2571,23 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.litellmApiKey = reader.string();
+          message.moonshotApiKey = reader.string();
           continue;
         }
         case 55: {
-          if (tag !== 440) {
+          if (tag !== 442) {
             break;
           }
 
-          message.litellmUsePromptCache = reader.bool();
+          message.moonshotApiLine = reader.string();
           continue;
         }
         case 56: {
-          if (tag !== 448) {
+          if (tag !== 450) {
             break;
           }
 
-          message.thinkingBudgetTokens = longToNumber(reader.int64());
+          message.shengsuanyunApiKey = reader.string();
           continue;
         }
         case 57: {
@@ -2516,231 +2595,391 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
             break;
           }
 
-          message.reasoningEffort = reader.string();
+          message.shengsuanyunToken = reader.string();
           continue;
         }
-        case 58: {
-          if (tag !== 464) {
+        case 100: {
+          if (tag !== 802) {
             break;
           }
 
-          message.requestTimeoutMs = longToNumber(reader.int64());
+          message.planModeApiProvider = reader.string();
           continue;
         }
-        case 59: {
-          if (tag !== 472) {
+        case 101: {
+          if (tag !== 810) {
             break;
           }
 
-          message.fireworksModelMaxCompletionTokens = longToNumber(reader.int64());
+          message.planModeApiModelId = reader.string();
           continue;
         }
-        case 60: {
-          if (tag !== 480) {
+        case 102: {
+          if (tag !== 816) {
             break;
           }
 
-          message.fireworksModelMaxTokens = longToNumber(reader.int64());
+          message.planModeThinkingBudgetTokens = longToNumber(reader.int64());
           continue;
         }
-        case 61: {
-          if (tag !== 490) {
+        case 103: {
+          if (tag !== 826) {
             break;
           }
 
-          message.azureApiVersion = reader.string();
+          message.planModeReasoningEffort = reader.string();
           continue;
         }
-        case 62: {
-          if (tag !== 498) {
+        case 104: {
+          if (tag !== 834) {
             break;
           }
 
-          message.ollamaApiOptionsCtxNum = reader.string();
+          message.planModeVscodeLmModelSelector = reader.string();
           continue;
         }
-        case 63: {
-          if (tag !== 506) {
+        case 105: {
+          if (tag !== 840) {
             break;
           }
 
-          message.qwenApiLine = reader.string();
+          message.planModeAwsBedrockCustomSelected = reader.bool();
           continue;
         }
-        case 64: {
-          if (tag !== 514) {
+        case 106: {
+          if (tag !== 850) {
             break;
           }
 
-          message.openrouterProviderSorting = reader.string();
+          message.planModeAwsBedrockCustomModelBaseId = reader.string();
           continue;
         }
-        case 65: {
-          if (tag !== 522) {
+        case 107: {
+          if (tag !== 858) {
             break;
           }
 
-          message.vscodeLmModelSelector = reader.string();
+          message.planModeOpenrouterModelId = reader.string();
           continue;
         }
-        case 66: {
-          if (tag !== 530) {
+        case 108: {
+          if (tag !== 866) {
             break;
           }
 
-          message.openrouterModelInfo = reader.string();
+          message.planModeOpenrouterModelInfo = reader.string();
           continue;
         }
-        case 67: {
-          if (tag !== 538) {
+        case 109: {
+          if (tag !== 874) {
             break;
           }
 
-          message.openaiModelInfo = reader.string();
+          message.planModeOpenaiModelId = reader.string();
           continue;
         }
-        case 68: {
-          if (tag !== 546) {
+        case 110: {
+          if (tag !== 882) {
             break;
           }
 
-          message.requestyModelInfo = reader.string();
+          message.planModeOpenaiModelInfo = reader.string();
           continue;
         }
-        case 69: {
-          if (tag !== 554) {
+        case 111: {
+          if (tag !== 890) {
             break;
           }
 
-          message.litellmModelInfo = reader.string();
+          message.planModeOllamaModelId = reader.string();
           continue;
         }
-        case 70: {
-          if (tag !== 562) {
+        case 112: {
+          if (tag !== 898) {
             break;
           }
 
-          message.openaiHeaders = reader.string();
+          message.planModeLmStudioModelId = reader.string();
           continue;
         }
-        case 71: {
-          if (tag !== 570) {
+        case 113: {
+          if (tag !== 906) {
+            break;
+          }
+
+          message.planModeLiteLlmModelId = reader.string();
+          continue;
+        }
+        case 114: {
+          if (tag !== 914) {
+            break;
+          }
+
+          message.planModeLiteLlmModelInfo = reader.string();
+          continue;
+        }
+        case 115: {
+          if (tag !== 922) {
+            break;
+          }
+
+          message.planModeRequestyModelId = reader.string();
+          continue;
+        }
+        case 116: {
+          if (tag !== 930) {
+            break;
+          }
+
+          message.planModeRequestyModelInfo = reader.string();
+          continue;
+        }
+        case 117: {
+          if (tag !== 938) {
+            break;
+          }
+
+          message.planModeTogetherModelId = reader.string();
+          continue;
+        }
+        case 118: {
+          if (tag !== 946) {
+            break;
+          }
+
+          message.planModeFireworksModelId = reader.string();
+          continue;
+        }
+        case 119: {
+          if (tag !== 954) {
+            break;
+          }
+
+          message.planModeSapAiCoreModelId = reader.string();
+          continue;
+        }
+        case 120: {
+          if (tag !== 962) {
+            break;
+          }
+
+          message.planModeShengSuanYunModelId = reader.string();
+          continue;
+        }
+        case 121: {
+          if (tag !== 970) {
+            break;
+          }
+
+          message.planModeShengSuanYunModelInfo = reader.string();
+          continue;
+        }
+        case 200: {
+          if (tag !== 1602) {
+            break;
+          }
+
+          message.actModeApiProvider = reader.string();
+          continue;
+        }
+        case 201: {
+          if (tag !== 1610) {
+            break;
+          }
+
+          message.actModeApiModelId = reader.string();
+          continue;
+        }
+        case 202: {
+          if (tag !== 1616) {
+            break;
+          }
+
+          message.actModeThinkingBudgetTokens = longToNumber(reader.int64());
+          continue;
+        }
+        case 203: {
+          if (tag !== 1626) {
+            break;
+          }
+
+          message.actModeReasoningEffort = reader.string();
+          continue;
+        }
+        case 204: {
+          if (tag !== 1634) {
+            break;
+          }
+
+          message.actModeVscodeLmModelSelector = reader.string();
+          continue;
+        }
+        case 205: {
+          if (tag !== 1640) {
+            break;
+          }
+
+          message.actModeAwsBedrockCustomSelected = reader.bool();
+          continue;
+        }
+        case 206: {
+          if (tag !== 1650) {
+            break;
+          }
+
+          message.actModeAwsBedrockCustomModelBaseId = reader.string();
+          continue;
+        }
+        case 207: {
+          if (tag !== 1658) {
+            break;
+          }
+
+          message.actModeOpenrouterModelId = reader.string();
+          continue;
+        }
+        case 208: {
+          if (tag !== 1666) {
+            break;
+          }
+
+          message.actModeOpenrouterModelInfo = reader.string();
+          continue;
+        }
+        case 209: {
+          if (tag !== 1674) {
+            break;
+          }
+
+          message.actModeOpenaiModelId = reader.string();
+          continue;
+        }
+        case 210: {
+          if (tag !== 1682) {
+            break;
+          }
+
+          message.actModeOpenaiModelInfo = reader.string();
+          continue;
+        }
+        case 211: {
+          if (tag !== 1690) {
+            break;
+          }
+
+          message.actModeOllamaModelId = reader.string();
+          continue;
+        }
+        case 212: {
+          if (tag !== 1698) {
+            break;
+          }
+
+          message.actModeLmStudioModelId = reader.string();
+          continue;
+        }
+        case 213: {
+          if (tag !== 1706) {
+            break;
+          }
+
+          message.actModeLiteLlmModelId = reader.string();
+          continue;
+        }
+        case 214: {
+          if (tag !== 1714) {
+            break;
+          }
+
+          message.actModeLiteLlmModelInfo = reader.string();
+          continue;
+        }
+        case 215: {
+          if (tag !== 1722) {
+            break;
+          }
+
+          message.actModeRequestyModelId = reader.string();
+          continue;
+        }
+        case 216: {
+          if (tag !== 1730) {
+            break;
+          }
+
+          message.actModeRequestyModelInfo = reader.string();
+          continue;
+        }
+        case 217: {
+          if (tag !== 1738) {
+            break;
+          }
+
+          message.actModeTogetherModelId = reader.string();
+          continue;
+        }
+        case 218: {
+          if (tag !== 1746) {
+            break;
+          }
+
+          message.actModeFireworksModelId = reader.string();
+          continue;
+        }
+        case 219: {
+          if (tag !== 1754) {
+            break;
+          }
+
+          message.actModeSapAiCoreModelId = reader.string();
+          continue;
+        }
+        case 220: {
+          if (tag !== 1762) {
+            break;
+          }
+
+          message.actModeShengSuanYunModelId = reader.string();
+          continue;
+        }
+        case 221: {
+          if (tag !== 1770) {
+            break;
+          }
+
+          message.actModeShengSuanYunModelInfo = reader.string();
+          continue;
+        }
+        case 300: {
+          if (tag !== 2402) {
             break;
           }
 
           message.favoritedModelIds.push(reader.string());
           continue;
         }
-        case 72: {
-          if (tag !== 578) {
-            break;
-          }
-
-          message.shengsuanyunApiKey = reader.string();
-          continue;
-        }
-        case 73: {
-          if (tag !== 586) {
-            break;
-          }
-
-          message.shengsuanyunModelId = reader.string();
-          continue;
-        }
-        case 74: {
-          if (tag !== 594) {
-            break;
-          }
-
-          message.shengsuanyunModelInfo = reader.string();
-          continue;
-        }
-        case 75: {
-          if (tag !== 602) {
-            break;
-          }
-
-          message.shengsuanyunToken = reader.string();
-          continue;
-        }
-        case 76: {
-          if (tag !== 610) {
-            break;
-          }
-
-          message.sapAiCoreClientId = reader.string();
-          continue;
-        }
-        case 77: {
-          if (tag !== 618) {
-            break;
-          }
-
-          message.sapAiCoreClientSecret = reader.string();
-          continue;
-        }
-        case 78: {
-          if (tag !== 626) {
-            break;
-          }
-
-          message.sapAiCoreBaseUrl = reader.string();
-          continue;
-        }
-        case 79: {
-          if (tag !== 634) {
-            break;
-          }
-
-          message.sapAiCoreTokenUrl = reader.string();
-          continue;
-        }
-        case 80: {
-          if (tag !== 642) {
-            break;
-          }
-
-          message.sapAiResourceGroup = reader.string();
-          continue;
-        }
-        case 81: {
-          if (tag !== 650) {
-            break;
-          }
-
-          message.claudeCodePath = reader.string();
-          continue;
-        }
-        case 82: {
-          if (tag !== 658) {
+        case 301: {
+          if (tag !== 2410) {
             break;
           }
 
           message.awsAuthentication = reader.string();
           continue;
         }
-        case 83: {
-          if (tag !== 666) {
+        case 302: {
+          if (tag !== 2418) {
             break;
           }
 
           message.awsBedrockApiKey = reader.string();
           continue;
         }
-        case 84: {
-          if (tag !== 674) {
+        case 303: {
+          if (tag !== 2426) {
             break;
           }
 
-          message.moonshotApiKey = reader.string();
-          continue;
-        }
-        case 85: {
-          if (tag !== 682) {
-            break;
-          }
-
-          message.moonshotApiLine = reader.string();
+          message.clineAccountId = reader.string();
           continue;
         }
       }
@@ -2754,45 +2993,19 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
 
   fromJSON(object: any): ApiConfiguration {
     return {
-      apiProvider: isSet(object.apiProvider) ? globalThis.String(object.apiProvider) : undefined,
-      apiModelId: isSet(object.apiModelId) ? globalThis.String(object.apiModelId) : undefined,
       apiKey: isSet(object.apiKey) ? globalThis.String(object.apiKey) : undefined,
-      apiBaseUrl: isSet(object.apiBaseUrl) ? globalThis.String(object.apiBaseUrl) : undefined,
-      clineAccountId: isSet(object.clineAccountId) ? globalThis.String(object.clineAccountId) : undefined,
-      openrouterApiKey: isSet(object.openrouterApiKey) ? globalThis.String(object.openrouterApiKey) : undefined,
-      anthropicBaseUrl: isSet(object.anthropicBaseUrl) ? globalThis.String(object.anthropicBaseUrl) : undefined,
-      openaiApiKey: isSet(object.openaiApiKey) ? globalThis.String(object.openaiApiKey) : undefined,
-      openaiNativeApiKey: isSet(object.openaiNativeApiKey) ? globalThis.String(object.openaiNativeApiKey) : undefined,
-      geminiApiKey: isSet(object.geminiApiKey) ? globalThis.String(object.geminiApiKey) : undefined,
-      deepseekApiKey: isSet(object.deepseekApiKey) ? globalThis.String(object.deepseekApiKey) : undefined,
-      requestyApiKey: isSet(object.requestyApiKey) ? globalThis.String(object.requestyApiKey) : undefined,
-      togetherApiKey: isSet(object.togetherApiKey) ? globalThis.String(object.togetherApiKey) : undefined,
-      fireworksApiKey: isSet(object.fireworksApiKey) ? globalThis.String(object.fireworksApiKey) : undefined,
-      qwenApiKey: isSet(object.qwenApiKey) ? globalThis.String(object.qwenApiKey) : undefined,
-      doubaoApiKey: isSet(object.doubaoApiKey) ? globalThis.String(object.doubaoApiKey) : undefined,
-      mistralApiKey: isSet(object.mistralApiKey) ? globalThis.String(object.mistralApiKey) : undefined,
-      nebiusApiKey: isSet(object.nebiusApiKey) ? globalThis.String(object.nebiusApiKey) : undefined,
-      asksageApiKey: isSet(object.asksageApiKey) ? globalThis.String(object.asksageApiKey) : undefined,
-      xaiApiKey: isSet(object.xaiApiKey) ? globalThis.String(object.xaiApiKey) : undefined,
-      sambanovaApiKey: isSet(object.sambanovaApiKey) ? globalThis.String(object.sambanovaApiKey) : undefined,
-      cerebrasApiKey: isSet(object.cerebrasApiKey) ? globalThis.String(object.cerebrasApiKey) : undefined,
-      openrouterModelId: isSet(object.openrouterModelId) ? globalThis.String(object.openrouterModelId) : undefined,
-      openaiModelId: isSet(object.openaiModelId) ? globalThis.String(object.openaiModelId) : undefined,
-      anthropicModelId: isSet(object.anthropicModelId) ? globalThis.String(object.anthropicModelId) : undefined,
-      bedrockModelId: isSet(object.bedrockModelId) ? globalThis.String(object.bedrockModelId) : undefined,
-      vertexModelId: isSet(object.vertexModelId) ? globalThis.String(object.vertexModelId) : undefined,
-      geminiModelId: isSet(object.geminiModelId) ? globalThis.String(object.geminiModelId) : undefined,
-      ollamaModelId: isSet(object.ollamaModelId) ? globalThis.String(object.ollamaModelId) : undefined,
-      lmStudioModelId: isSet(object.lmStudioModelId) ? globalThis.String(object.lmStudioModelId) : undefined,
-      litellmModelId: isSet(object.litellmModelId) ? globalThis.String(object.litellmModelId) : undefined,
-      requestyModelId: isSet(object.requestyModelId) ? globalThis.String(object.requestyModelId) : undefined,
-      togetherModelId: isSet(object.togetherModelId) ? globalThis.String(object.togetherModelId) : undefined,
-      fireworksModelId: isSet(object.fireworksModelId) ? globalThis.String(object.fireworksModelId) : undefined,
-      awsBedrockCustomSelected: isSet(object.awsBedrockCustomSelected)
-        ? globalThis.Boolean(object.awsBedrockCustomSelected)
+      clineApiKey: isSet(object.clineApiKey) ? globalThis.String(object.clineApiKey) : undefined,
+      taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : undefined,
+      liteLlmBaseUrl: isSet(object.liteLlmBaseUrl) ? globalThis.String(object.liteLlmBaseUrl) : undefined,
+      liteLlmApiKey: isSet(object.liteLlmApiKey) ? globalThis.String(object.liteLlmApiKey) : undefined,
+      liteLlmUsePromptCache: isSet(object.liteLlmUsePromptCache)
+        ? globalThis.Boolean(object.liteLlmUsePromptCache)
         : undefined,
-      awsBedrockCustomModelBaseId: isSet(object.awsBedrockCustomModelBaseId)
-        ? globalThis.String(object.awsBedrockCustomModelBaseId)
+      openaiHeaders: isSet(object.openaiHeaders) ? globalThis.String(object.openaiHeaders) : undefined,
+      anthropicBaseUrl: isSet(object.anthropicBaseUrl) ? globalThis.String(object.anthropicBaseUrl) : undefined,
+      openrouterApiKey: isSet(object.openrouterApiKey) ? globalThis.String(object.openrouterApiKey) : undefined,
+      openrouterProviderSorting: isSet(object.openrouterProviderSorting)
+        ? globalThis.String(object.openrouterProviderSorting)
         : undefined,
       awsAccessKey: isSet(object.awsAccessKey) ? globalThis.String(object.awsAccessKey) : undefined,
       awsSecretKey: isSet(object.awsSecretKey) ? globalThis.String(object.awsSecretKey) : undefined,
@@ -2807,182 +3020,218 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
       awsUseProfile: isSet(object.awsUseProfile) ? globalThis.Boolean(object.awsUseProfile) : undefined,
       awsProfile: isSet(object.awsProfile) ? globalThis.String(object.awsProfile) : undefined,
       awsBedrockEndpoint: isSet(object.awsBedrockEndpoint) ? globalThis.String(object.awsBedrockEndpoint) : undefined,
+      claudeCodePath: isSet(object.claudeCodePath) ? globalThis.String(object.claudeCodePath) : undefined,
       vertexProjectId: isSet(object.vertexProjectId) ? globalThis.String(object.vertexProjectId) : undefined,
       vertexRegion: isSet(object.vertexRegion) ? globalThis.String(object.vertexRegion) : undefined,
       openaiBaseUrl: isSet(object.openaiBaseUrl) ? globalThis.String(object.openaiBaseUrl) : undefined,
+      openaiApiKey: isSet(object.openaiApiKey) ? globalThis.String(object.openaiApiKey) : undefined,
       ollamaBaseUrl: isSet(object.ollamaBaseUrl) ? globalThis.String(object.ollamaBaseUrl) : undefined,
+      ollamaApiOptionsCtxNum: isSet(object.ollamaApiOptionsCtxNum)
+        ? globalThis.String(object.ollamaApiOptionsCtxNum)
+        : undefined,
       lmStudioBaseUrl: isSet(object.lmStudioBaseUrl) ? globalThis.String(object.lmStudioBaseUrl) : undefined,
+      geminiApiKey: isSet(object.geminiApiKey) ? globalThis.String(object.geminiApiKey) : undefined,
       geminiBaseUrl: isSet(object.geminiBaseUrl) ? globalThis.String(object.geminiBaseUrl) : undefined,
-      litellmBaseUrl: isSet(object.litellmBaseUrl) ? globalThis.String(object.litellmBaseUrl) : undefined,
-      asksageApiUrl: isSet(object.asksageApiUrl) ? globalThis.String(object.asksageApiUrl) : undefined,
-      litellmApiKey: isSet(object.litellmApiKey) ? globalThis.String(object.litellmApiKey) : undefined,
-      litellmUsePromptCache: isSet(object.litellmUsePromptCache)
-        ? globalThis.Boolean(object.litellmUsePromptCache)
-        : undefined,
-      thinkingBudgetTokens: isSet(object.thinkingBudgetTokens)
-        ? globalThis.Number(object.thinkingBudgetTokens)
-        : undefined,
-      reasoningEffort: isSet(object.reasoningEffort) ? globalThis.String(object.reasoningEffort) : undefined,
-      requestTimeoutMs: isSet(object.requestTimeoutMs) ? globalThis.Number(object.requestTimeoutMs) : undefined,
+      openaiNativeApiKey: isSet(object.openaiNativeApiKey) ? globalThis.String(object.openaiNativeApiKey) : undefined,
+      deepSeekApiKey: isSet(object.deepSeekApiKey) ? globalThis.String(object.deepSeekApiKey) : undefined,
+      requestyApiKey: isSet(object.requestyApiKey) ? globalThis.String(object.requestyApiKey) : undefined,
+      togetherApiKey: isSet(object.togetherApiKey) ? globalThis.String(object.togetherApiKey) : undefined,
+      fireworksApiKey: isSet(object.fireworksApiKey) ? globalThis.String(object.fireworksApiKey) : undefined,
       fireworksModelMaxCompletionTokens: isSet(object.fireworksModelMaxCompletionTokens)
         ? globalThis.Number(object.fireworksModelMaxCompletionTokens)
         : undefined,
       fireworksModelMaxTokens: isSet(object.fireworksModelMaxTokens)
         ? globalThis.Number(object.fireworksModelMaxTokens)
         : undefined,
+      qwenApiKey: isSet(object.qwenApiKey) ? globalThis.String(object.qwenApiKey) : undefined,
+      doubaoApiKey: isSet(object.doubaoApiKey) ? globalThis.String(object.doubaoApiKey) : undefined,
+      mistralApiKey: isSet(object.mistralApiKey) ? globalThis.String(object.mistralApiKey) : undefined,
       azureApiVersion: isSet(object.azureApiVersion) ? globalThis.String(object.azureApiVersion) : undefined,
-      ollamaApiOptionsCtxNum: isSet(object.ollamaApiOptionsCtxNum)
-        ? globalThis.String(object.ollamaApiOptionsCtxNum)
-        : undefined,
       qwenApiLine: isSet(object.qwenApiLine) ? globalThis.String(object.qwenApiLine) : undefined,
-      openrouterProviderSorting: isSet(object.openrouterProviderSorting)
-        ? globalThis.String(object.openrouterProviderSorting)
-        : undefined,
-      vscodeLmModelSelector: isSet(object.vscodeLmModelSelector)
-        ? globalThis.String(object.vscodeLmModelSelector)
-        : undefined,
-      openrouterModelInfo: isSet(object.openrouterModelInfo)
-        ? globalThis.String(object.openrouterModelInfo)
-        : undefined,
-      openaiModelInfo: isSet(object.openaiModelInfo) ? globalThis.String(object.openaiModelInfo) : undefined,
-      requestyModelInfo: isSet(object.requestyModelInfo) ? globalThis.String(object.requestyModelInfo) : undefined,
-      litellmModelInfo: isSet(object.litellmModelInfo) ? globalThis.String(object.litellmModelInfo) : undefined,
-      openaiHeaders: isSet(object.openaiHeaders) ? globalThis.String(object.openaiHeaders) : undefined,
-      favoritedModelIds: globalThis.Array.isArray(object?.favoritedModelIds)
-        ? object.favoritedModelIds.map((e: any) => globalThis.String(e))
-        : [],
-      shengsuanyunApiKey: isSet(object.shengsuanyunApiKey) ? globalThis.String(object.shengsuanyunApiKey) : undefined,
-      shengsuanyunModelId: isSet(object.shengsuanyunModelId)
-        ? globalThis.String(object.shengsuanyunModelId)
-        : undefined,
-      shengsuanyunModelInfo: isSet(object.shengsuanyunModelInfo)
-        ? globalThis.String(object.shengsuanyunModelInfo)
-        : undefined,
-      shengsuanyunToken: isSet(object.shengsuanyunToken) ? globalThis.String(object.shengsuanyunToken) : undefined,
+      nebiusApiKey: isSet(object.nebiusApiKey) ? globalThis.String(object.nebiusApiKey) : undefined,
+      asksageApiUrl: isSet(object.asksageApiUrl) ? globalThis.String(object.asksageApiUrl) : undefined,
+      asksageApiKey: isSet(object.asksageApiKey) ? globalThis.String(object.asksageApiKey) : undefined,
+      xaiApiKey: isSet(object.xaiApiKey) ? globalThis.String(object.xaiApiKey) : undefined,
+      sambanovaApiKey: isSet(object.sambanovaApiKey) ? globalThis.String(object.sambanovaApiKey) : undefined,
+      cerebrasApiKey: isSet(object.cerebrasApiKey) ? globalThis.String(object.cerebrasApiKey) : undefined,
+      requestTimeoutMs: isSet(object.requestTimeoutMs) ? globalThis.Number(object.requestTimeoutMs) : undefined,
       sapAiCoreClientId: isSet(object.sapAiCoreClientId) ? globalThis.String(object.sapAiCoreClientId) : undefined,
       sapAiCoreClientSecret: isSet(object.sapAiCoreClientSecret)
         ? globalThis.String(object.sapAiCoreClientSecret)
         : undefined,
-      sapAiCoreBaseUrl: isSet(object.sapAiCoreBaseUrl) ? globalThis.String(object.sapAiCoreBaseUrl) : undefined,
-      sapAiCoreTokenUrl: isSet(object.sapAiCoreTokenUrl) ? globalThis.String(object.sapAiCoreTokenUrl) : undefined,
       sapAiResourceGroup: isSet(object.sapAiResourceGroup) ? globalThis.String(object.sapAiResourceGroup) : undefined,
-      claudeCodePath: isSet(object.claudeCodePath) ? globalThis.String(object.claudeCodePath) : undefined,
-      awsAuthentication: isSet(object.awsAuthentication) ? globalThis.String(object.awsAuthentication) : undefined,
-      awsBedrockApiKey: isSet(object.awsBedrockApiKey) ? globalThis.String(object.awsBedrockApiKey) : undefined,
+      sapAiCoreTokenUrl: isSet(object.sapAiCoreTokenUrl) ? globalThis.String(object.sapAiCoreTokenUrl) : undefined,
+      sapAiCoreBaseUrl: isSet(object.sapAiCoreBaseUrl) ? globalThis.String(object.sapAiCoreBaseUrl) : undefined,
       moonshotApiKey: isSet(object.moonshotApiKey) ? globalThis.String(object.moonshotApiKey) : undefined,
       moonshotApiLine: isSet(object.moonshotApiLine) ? globalThis.String(object.moonshotApiLine) : undefined,
+      shengsuanyunApiKey: isSet(object.shengsuanyunApiKey) ? globalThis.String(object.shengsuanyunApiKey) : undefined,
+      shengsuanyunToken: isSet(object.shengsuanyunToken) ? globalThis.String(object.shengsuanyunToken) : undefined,
+      planModeApiProvider: isSet(object.planModeApiProvider)
+        ? globalThis.String(object.planModeApiProvider)
+        : undefined,
+      planModeApiModelId: isSet(object.planModeApiModelId) ? globalThis.String(object.planModeApiModelId) : undefined,
+      planModeThinkingBudgetTokens: isSet(object.planModeThinkingBudgetTokens)
+        ? globalThis.Number(object.planModeThinkingBudgetTokens)
+        : undefined,
+      planModeReasoningEffort: isSet(object.planModeReasoningEffort)
+        ? globalThis.String(object.planModeReasoningEffort)
+        : undefined,
+      planModeVscodeLmModelSelector: isSet(object.planModeVscodeLmModelSelector)
+        ? globalThis.String(object.planModeVscodeLmModelSelector)
+        : undefined,
+      planModeAwsBedrockCustomSelected: isSet(object.planModeAwsBedrockCustomSelected)
+        ? globalThis.Boolean(object.planModeAwsBedrockCustomSelected)
+        : undefined,
+      planModeAwsBedrockCustomModelBaseId: isSet(object.planModeAwsBedrockCustomModelBaseId)
+        ? globalThis.String(object.planModeAwsBedrockCustomModelBaseId)
+        : undefined,
+      planModeOpenrouterModelId: isSet(object.planModeOpenrouterModelId)
+        ? globalThis.String(object.planModeOpenrouterModelId)
+        : undefined,
+      planModeOpenrouterModelInfo: isSet(object.planModeOpenrouterModelInfo)
+        ? globalThis.String(object.planModeOpenrouterModelInfo)
+        : undefined,
+      planModeOpenaiModelId: isSet(object.planModeOpenaiModelId)
+        ? globalThis.String(object.planModeOpenaiModelId)
+        : undefined,
+      planModeOpenaiModelInfo: isSet(object.planModeOpenaiModelInfo)
+        ? globalThis.String(object.planModeOpenaiModelInfo)
+        : undefined,
+      planModeOllamaModelId: isSet(object.planModeOllamaModelId)
+        ? globalThis.String(object.planModeOllamaModelId)
+        : undefined,
+      planModeLmStudioModelId: isSet(object.planModeLmStudioModelId)
+        ? globalThis.String(object.planModeLmStudioModelId)
+        : undefined,
+      planModeLiteLlmModelId: isSet(object.planModeLiteLlmModelId)
+        ? globalThis.String(object.planModeLiteLlmModelId)
+        : undefined,
+      planModeLiteLlmModelInfo: isSet(object.planModeLiteLlmModelInfo)
+        ? globalThis.String(object.planModeLiteLlmModelInfo)
+        : undefined,
+      planModeRequestyModelId: isSet(object.planModeRequestyModelId)
+        ? globalThis.String(object.planModeRequestyModelId)
+        : undefined,
+      planModeRequestyModelInfo: isSet(object.planModeRequestyModelInfo)
+        ? globalThis.String(object.planModeRequestyModelInfo)
+        : undefined,
+      planModeTogetherModelId: isSet(object.planModeTogetherModelId)
+        ? globalThis.String(object.planModeTogetherModelId)
+        : undefined,
+      planModeFireworksModelId: isSet(object.planModeFireworksModelId)
+        ? globalThis.String(object.planModeFireworksModelId)
+        : undefined,
+      planModeSapAiCoreModelId: isSet(object.planModeSapAiCoreModelId)
+        ? globalThis.String(object.planModeSapAiCoreModelId)
+        : undefined,
+      planModeShengSuanYunModelId: isSet(object.planModeShengSuanYunModelId)
+        ? globalThis.String(object.planModeShengSuanYunModelId)
+        : undefined,
+      planModeShengSuanYunModelInfo: isSet(object.planModeShengSuanYunModelInfo)
+        ? globalThis.String(object.planModeShengSuanYunModelInfo)
+        : undefined,
+      actModeApiProvider: isSet(object.actModeApiProvider) ? globalThis.String(object.actModeApiProvider) : undefined,
+      actModeApiModelId: isSet(object.actModeApiModelId) ? globalThis.String(object.actModeApiModelId) : undefined,
+      actModeThinkingBudgetTokens: isSet(object.actModeThinkingBudgetTokens)
+        ? globalThis.Number(object.actModeThinkingBudgetTokens)
+        : undefined,
+      actModeReasoningEffort: isSet(object.actModeReasoningEffort)
+        ? globalThis.String(object.actModeReasoningEffort)
+        : undefined,
+      actModeVscodeLmModelSelector: isSet(object.actModeVscodeLmModelSelector)
+        ? globalThis.String(object.actModeVscodeLmModelSelector)
+        : undefined,
+      actModeAwsBedrockCustomSelected: isSet(object.actModeAwsBedrockCustomSelected)
+        ? globalThis.Boolean(object.actModeAwsBedrockCustomSelected)
+        : undefined,
+      actModeAwsBedrockCustomModelBaseId: isSet(object.actModeAwsBedrockCustomModelBaseId)
+        ? globalThis.String(object.actModeAwsBedrockCustomModelBaseId)
+        : undefined,
+      actModeOpenrouterModelId: isSet(object.actModeOpenrouterModelId)
+        ? globalThis.String(object.actModeOpenrouterModelId)
+        : undefined,
+      actModeOpenrouterModelInfo: isSet(object.actModeOpenrouterModelInfo)
+        ? globalThis.String(object.actModeOpenrouterModelInfo)
+        : undefined,
+      actModeOpenaiModelId: isSet(object.actModeOpenaiModelId)
+        ? globalThis.String(object.actModeOpenaiModelId)
+        : undefined,
+      actModeOpenaiModelInfo: isSet(object.actModeOpenaiModelInfo)
+        ? globalThis.String(object.actModeOpenaiModelInfo)
+        : undefined,
+      actModeOllamaModelId: isSet(object.actModeOllamaModelId)
+        ? globalThis.String(object.actModeOllamaModelId)
+        : undefined,
+      actModeLmStudioModelId: isSet(object.actModeLmStudioModelId)
+        ? globalThis.String(object.actModeLmStudioModelId)
+        : undefined,
+      actModeLiteLlmModelId: isSet(object.actModeLiteLlmModelId)
+        ? globalThis.String(object.actModeLiteLlmModelId)
+        : undefined,
+      actModeLiteLlmModelInfo: isSet(object.actModeLiteLlmModelInfo)
+        ? globalThis.String(object.actModeLiteLlmModelInfo)
+        : undefined,
+      actModeRequestyModelId: isSet(object.actModeRequestyModelId)
+        ? globalThis.String(object.actModeRequestyModelId)
+        : undefined,
+      actModeRequestyModelInfo: isSet(object.actModeRequestyModelInfo)
+        ? globalThis.String(object.actModeRequestyModelInfo)
+        : undefined,
+      actModeTogetherModelId: isSet(object.actModeTogetherModelId)
+        ? globalThis.String(object.actModeTogetherModelId)
+        : undefined,
+      actModeFireworksModelId: isSet(object.actModeFireworksModelId)
+        ? globalThis.String(object.actModeFireworksModelId)
+        : undefined,
+      actModeSapAiCoreModelId: isSet(object.actModeSapAiCoreModelId)
+        ? globalThis.String(object.actModeSapAiCoreModelId)
+        : undefined,
+      actModeShengSuanYunModelId: isSet(object.actModeShengSuanYunModelId)
+        ? globalThis.String(object.actModeShengSuanYunModelId)
+        : undefined,
+      actModeShengSuanYunModelInfo: isSet(object.actModeShengSuanYunModelInfo)
+        ? globalThis.String(object.actModeShengSuanYunModelInfo)
+        : undefined,
+      favoritedModelIds: globalThis.Array.isArray(object?.favoritedModelIds)
+        ? object.favoritedModelIds.map((e: any) => globalThis.String(e))
+        : [],
+      awsAuthentication: isSet(object.awsAuthentication) ? globalThis.String(object.awsAuthentication) : undefined,
+      awsBedrockApiKey: isSet(object.awsBedrockApiKey) ? globalThis.String(object.awsBedrockApiKey) : undefined,
+      clineAccountId: isSet(object.clineAccountId) ? globalThis.String(object.clineAccountId) : undefined,
     };
   },
 
   toJSON(message: ApiConfiguration): unknown {
     const obj: any = {};
-    if (message.apiProvider !== undefined) {
-      obj.apiProvider = message.apiProvider;
-    }
-    if (message.apiModelId !== undefined) {
-      obj.apiModelId = message.apiModelId;
-    }
     if (message.apiKey !== undefined) {
       obj.apiKey = message.apiKey;
     }
-    if (message.apiBaseUrl !== undefined) {
-      obj.apiBaseUrl = message.apiBaseUrl;
+    if (message.clineApiKey !== undefined) {
+      obj.clineApiKey = message.clineApiKey;
     }
-    if (message.clineAccountId !== undefined) {
-      obj.clineAccountId = message.clineAccountId;
+    if (message.taskId !== undefined) {
+      obj.taskId = message.taskId;
     }
-    if (message.openrouterApiKey !== undefined) {
-      obj.openrouterApiKey = message.openrouterApiKey;
+    if (message.liteLlmBaseUrl !== undefined) {
+      obj.liteLlmBaseUrl = message.liteLlmBaseUrl;
+    }
+    if (message.liteLlmApiKey !== undefined) {
+      obj.liteLlmApiKey = message.liteLlmApiKey;
+    }
+    if (message.liteLlmUsePromptCache !== undefined) {
+      obj.liteLlmUsePromptCache = message.liteLlmUsePromptCache;
+    }
+    if (message.openaiHeaders !== undefined) {
+      obj.openaiHeaders = message.openaiHeaders;
     }
     if (message.anthropicBaseUrl !== undefined) {
       obj.anthropicBaseUrl = message.anthropicBaseUrl;
     }
-    if (message.openaiApiKey !== undefined) {
-      obj.openaiApiKey = message.openaiApiKey;
+    if (message.openrouterApiKey !== undefined) {
+      obj.openrouterApiKey = message.openrouterApiKey;
     }
-    if (message.openaiNativeApiKey !== undefined) {
-      obj.openaiNativeApiKey = message.openaiNativeApiKey;
-    }
-    if (message.geminiApiKey !== undefined) {
-      obj.geminiApiKey = message.geminiApiKey;
-    }
-    if (message.deepseekApiKey !== undefined) {
-      obj.deepseekApiKey = message.deepseekApiKey;
-    }
-    if (message.requestyApiKey !== undefined) {
-      obj.requestyApiKey = message.requestyApiKey;
-    }
-    if (message.togetherApiKey !== undefined) {
-      obj.togetherApiKey = message.togetherApiKey;
-    }
-    if (message.fireworksApiKey !== undefined) {
-      obj.fireworksApiKey = message.fireworksApiKey;
-    }
-    if (message.qwenApiKey !== undefined) {
-      obj.qwenApiKey = message.qwenApiKey;
-    }
-    if (message.doubaoApiKey !== undefined) {
-      obj.doubaoApiKey = message.doubaoApiKey;
-    }
-    if (message.mistralApiKey !== undefined) {
-      obj.mistralApiKey = message.mistralApiKey;
-    }
-    if (message.nebiusApiKey !== undefined) {
-      obj.nebiusApiKey = message.nebiusApiKey;
-    }
-    if (message.asksageApiKey !== undefined) {
-      obj.asksageApiKey = message.asksageApiKey;
-    }
-    if (message.xaiApiKey !== undefined) {
-      obj.xaiApiKey = message.xaiApiKey;
-    }
-    if (message.sambanovaApiKey !== undefined) {
-      obj.sambanovaApiKey = message.sambanovaApiKey;
-    }
-    if (message.cerebrasApiKey !== undefined) {
-      obj.cerebrasApiKey = message.cerebrasApiKey;
-    }
-    if (message.openrouterModelId !== undefined) {
-      obj.openrouterModelId = message.openrouterModelId;
-    }
-    if (message.openaiModelId !== undefined) {
-      obj.openaiModelId = message.openaiModelId;
-    }
-    if (message.anthropicModelId !== undefined) {
-      obj.anthropicModelId = message.anthropicModelId;
-    }
-    if (message.bedrockModelId !== undefined) {
-      obj.bedrockModelId = message.bedrockModelId;
-    }
-    if (message.vertexModelId !== undefined) {
-      obj.vertexModelId = message.vertexModelId;
-    }
-    if (message.geminiModelId !== undefined) {
-      obj.geminiModelId = message.geminiModelId;
-    }
-    if (message.ollamaModelId !== undefined) {
-      obj.ollamaModelId = message.ollamaModelId;
-    }
-    if (message.lmStudioModelId !== undefined) {
-      obj.lmStudioModelId = message.lmStudioModelId;
-    }
-    if (message.litellmModelId !== undefined) {
-      obj.litellmModelId = message.litellmModelId;
-    }
-    if (message.requestyModelId !== undefined) {
-      obj.requestyModelId = message.requestyModelId;
-    }
-    if (message.togetherModelId !== undefined) {
-      obj.togetherModelId = message.togetherModelId;
-    }
-    if (message.fireworksModelId !== undefined) {
-      obj.fireworksModelId = message.fireworksModelId;
-    }
-    if (message.awsBedrockCustomSelected !== undefined) {
-      obj.awsBedrockCustomSelected = message.awsBedrockCustomSelected;
-    }
-    if (message.awsBedrockCustomModelBaseId !== undefined) {
-      obj.awsBedrockCustomModelBaseId = message.awsBedrockCustomModelBaseId;
+    if (message.openrouterProviderSorting !== undefined) {
+      obj.openrouterProviderSorting = message.openrouterProviderSorting;
     }
     if (message.awsAccessKey !== undefined) {
       obj.awsAccessKey = message.awsAccessKey;
@@ -3011,6 +3260,9 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     if (message.awsBedrockEndpoint !== undefined) {
       obj.awsBedrockEndpoint = message.awsBedrockEndpoint;
     }
+    if (message.claudeCodePath !== undefined) {
+      obj.claudeCodePath = message.claudeCodePath;
+    }
     if (message.vertexProjectId !== undefined) {
       obj.vertexProjectId = message.vertexProjectId;
     }
@@ -3020,35 +3272,38 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     if (message.openaiBaseUrl !== undefined) {
       obj.openaiBaseUrl = message.openaiBaseUrl;
     }
+    if (message.openaiApiKey !== undefined) {
+      obj.openaiApiKey = message.openaiApiKey;
+    }
     if (message.ollamaBaseUrl !== undefined) {
       obj.ollamaBaseUrl = message.ollamaBaseUrl;
+    }
+    if (message.ollamaApiOptionsCtxNum !== undefined) {
+      obj.ollamaApiOptionsCtxNum = message.ollamaApiOptionsCtxNum;
     }
     if (message.lmStudioBaseUrl !== undefined) {
       obj.lmStudioBaseUrl = message.lmStudioBaseUrl;
     }
+    if (message.geminiApiKey !== undefined) {
+      obj.geminiApiKey = message.geminiApiKey;
+    }
     if (message.geminiBaseUrl !== undefined) {
       obj.geminiBaseUrl = message.geminiBaseUrl;
     }
-    if (message.litellmBaseUrl !== undefined) {
-      obj.litellmBaseUrl = message.litellmBaseUrl;
+    if (message.openaiNativeApiKey !== undefined) {
+      obj.openaiNativeApiKey = message.openaiNativeApiKey;
     }
-    if (message.asksageApiUrl !== undefined) {
-      obj.asksageApiUrl = message.asksageApiUrl;
+    if (message.deepSeekApiKey !== undefined) {
+      obj.deepSeekApiKey = message.deepSeekApiKey;
     }
-    if (message.litellmApiKey !== undefined) {
-      obj.litellmApiKey = message.litellmApiKey;
+    if (message.requestyApiKey !== undefined) {
+      obj.requestyApiKey = message.requestyApiKey;
     }
-    if (message.litellmUsePromptCache !== undefined) {
-      obj.litellmUsePromptCache = message.litellmUsePromptCache;
+    if (message.togetherApiKey !== undefined) {
+      obj.togetherApiKey = message.togetherApiKey;
     }
-    if (message.thinkingBudgetTokens !== undefined) {
-      obj.thinkingBudgetTokens = Math.round(message.thinkingBudgetTokens);
-    }
-    if (message.reasoningEffort !== undefined) {
-      obj.reasoningEffort = message.reasoningEffort;
-    }
-    if (message.requestTimeoutMs !== undefined) {
-      obj.requestTimeoutMs = Math.round(message.requestTimeoutMs);
+    if (message.fireworksApiKey !== undefined) {
+      obj.fireworksApiKey = message.fireworksApiKey;
     }
     if (message.fireworksModelMaxCompletionTokens !== undefined) {
       obj.fireworksModelMaxCompletionTokens = Math.round(message.fireworksModelMaxCompletionTokens);
@@ -3056,50 +3311,41 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     if (message.fireworksModelMaxTokens !== undefined) {
       obj.fireworksModelMaxTokens = Math.round(message.fireworksModelMaxTokens);
     }
+    if (message.qwenApiKey !== undefined) {
+      obj.qwenApiKey = message.qwenApiKey;
+    }
+    if (message.doubaoApiKey !== undefined) {
+      obj.doubaoApiKey = message.doubaoApiKey;
+    }
+    if (message.mistralApiKey !== undefined) {
+      obj.mistralApiKey = message.mistralApiKey;
+    }
     if (message.azureApiVersion !== undefined) {
       obj.azureApiVersion = message.azureApiVersion;
-    }
-    if (message.ollamaApiOptionsCtxNum !== undefined) {
-      obj.ollamaApiOptionsCtxNum = message.ollamaApiOptionsCtxNum;
     }
     if (message.qwenApiLine !== undefined) {
       obj.qwenApiLine = message.qwenApiLine;
     }
-    if (message.openrouterProviderSorting !== undefined) {
-      obj.openrouterProviderSorting = message.openrouterProviderSorting;
+    if (message.nebiusApiKey !== undefined) {
+      obj.nebiusApiKey = message.nebiusApiKey;
     }
-    if (message.vscodeLmModelSelector !== undefined) {
-      obj.vscodeLmModelSelector = message.vscodeLmModelSelector;
+    if (message.asksageApiUrl !== undefined) {
+      obj.asksageApiUrl = message.asksageApiUrl;
     }
-    if (message.openrouterModelInfo !== undefined) {
-      obj.openrouterModelInfo = message.openrouterModelInfo;
+    if (message.asksageApiKey !== undefined) {
+      obj.asksageApiKey = message.asksageApiKey;
     }
-    if (message.openaiModelInfo !== undefined) {
-      obj.openaiModelInfo = message.openaiModelInfo;
+    if (message.xaiApiKey !== undefined) {
+      obj.xaiApiKey = message.xaiApiKey;
     }
-    if (message.requestyModelInfo !== undefined) {
-      obj.requestyModelInfo = message.requestyModelInfo;
+    if (message.sambanovaApiKey !== undefined) {
+      obj.sambanovaApiKey = message.sambanovaApiKey;
     }
-    if (message.litellmModelInfo !== undefined) {
-      obj.litellmModelInfo = message.litellmModelInfo;
+    if (message.cerebrasApiKey !== undefined) {
+      obj.cerebrasApiKey = message.cerebrasApiKey;
     }
-    if (message.openaiHeaders !== undefined) {
-      obj.openaiHeaders = message.openaiHeaders;
-    }
-    if (message.favoritedModelIds?.length) {
-      obj.favoritedModelIds = message.favoritedModelIds;
-    }
-    if (message.shengsuanyunApiKey !== undefined) {
-      obj.shengsuanyunApiKey = message.shengsuanyunApiKey;
-    }
-    if (message.shengsuanyunModelId !== undefined) {
-      obj.shengsuanyunModelId = message.shengsuanyunModelId;
-    }
-    if (message.shengsuanyunModelInfo !== undefined) {
-      obj.shengsuanyunModelInfo = message.shengsuanyunModelInfo;
-    }
-    if (message.shengsuanyunToken !== undefined) {
-      obj.shengsuanyunToken = message.shengsuanyunToken;
+    if (message.requestTimeoutMs !== undefined) {
+      obj.requestTimeoutMs = Math.round(message.requestTimeoutMs);
     }
     if (message.sapAiCoreClientId !== undefined) {
       obj.sapAiCoreClientId = message.sapAiCoreClientId;
@@ -3107,17 +3353,161 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     if (message.sapAiCoreClientSecret !== undefined) {
       obj.sapAiCoreClientSecret = message.sapAiCoreClientSecret;
     }
-    if (message.sapAiCoreBaseUrl !== undefined) {
-      obj.sapAiCoreBaseUrl = message.sapAiCoreBaseUrl;
+    if (message.sapAiResourceGroup !== undefined) {
+      obj.sapAiResourceGroup = message.sapAiResourceGroup;
     }
     if (message.sapAiCoreTokenUrl !== undefined) {
       obj.sapAiCoreTokenUrl = message.sapAiCoreTokenUrl;
     }
-    if (message.sapAiResourceGroup !== undefined) {
-      obj.sapAiResourceGroup = message.sapAiResourceGroup;
+    if (message.sapAiCoreBaseUrl !== undefined) {
+      obj.sapAiCoreBaseUrl = message.sapAiCoreBaseUrl;
     }
-    if (message.claudeCodePath !== undefined) {
-      obj.claudeCodePath = message.claudeCodePath;
+    if (message.moonshotApiKey !== undefined) {
+      obj.moonshotApiKey = message.moonshotApiKey;
+    }
+    if (message.moonshotApiLine !== undefined) {
+      obj.moonshotApiLine = message.moonshotApiLine;
+    }
+    if (message.shengsuanyunApiKey !== undefined) {
+      obj.shengsuanyunApiKey = message.shengsuanyunApiKey;
+    }
+    if (message.shengsuanyunToken !== undefined) {
+      obj.shengsuanyunToken = message.shengsuanyunToken;
+    }
+    if (message.planModeApiProvider !== undefined) {
+      obj.planModeApiProvider = message.planModeApiProvider;
+    }
+    if (message.planModeApiModelId !== undefined) {
+      obj.planModeApiModelId = message.planModeApiModelId;
+    }
+    if (message.planModeThinkingBudgetTokens !== undefined) {
+      obj.planModeThinkingBudgetTokens = Math.round(message.planModeThinkingBudgetTokens);
+    }
+    if (message.planModeReasoningEffort !== undefined) {
+      obj.planModeReasoningEffort = message.planModeReasoningEffort;
+    }
+    if (message.planModeVscodeLmModelSelector !== undefined) {
+      obj.planModeVscodeLmModelSelector = message.planModeVscodeLmModelSelector;
+    }
+    if (message.planModeAwsBedrockCustomSelected !== undefined) {
+      obj.planModeAwsBedrockCustomSelected = message.planModeAwsBedrockCustomSelected;
+    }
+    if (message.planModeAwsBedrockCustomModelBaseId !== undefined) {
+      obj.planModeAwsBedrockCustomModelBaseId = message.planModeAwsBedrockCustomModelBaseId;
+    }
+    if (message.planModeOpenrouterModelId !== undefined) {
+      obj.planModeOpenrouterModelId = message.planModeOpenrouterModelId;
+    }
+    if (message.planModeOpenrouterModelInfo !== undefined) {
+      obj.planModeOpenrouterModelInfo = message.planModeOpenrouterModelInfo;
+    }
+    if (message.planModeOpenaiModelId !== undefined) {
+      obj.planModeOpenaiModelId = message.planModeOpenaiModelId;
+    }
+    if (message.planModeOpenaiModelInfo !== undefined) {
+      obj.planModeOpenaiModelInfo = message.planModeOpenaiModelInfo;
+    }
+    if (message.planModeOllamaModelId !== undefined) {
+      obj.planModeOllamaModelId = message.planModeOllamaModelId;
+    }
+    if (message.planModeLmStudioModelId !== undefined) {
+      obj.planModeLmStudioModelId = message.planModeLmStudioModelId;
+    }
+    if (message.planModeLiteLlmModelId !== undefined) {
+      obj.planModeLiteLlmModelId = message.planModeLiteLlmModelId;
+    }
+    if (message.planModeLiteLlmModelInfo !== undefined) {
+      obj.planModeLiteLlmModelInfo = message.planModeLiteLlmModelInfo;
+    }
+    if (message.planModeRequestyModelId !== undefined) {
+      obj.planModeRequestyModelId = message.planModeRequestyModelId;
+    }
+    if (message.planModeRequestyModelInfo !== undefined) {
+      obj.planModeRequestyModelInfo = message.planModeRequestyModelInfo;
+    }
+    if (message.planModeTogetherModelId !== undefined) {
+      obj.planModeTogetherModelId = message.planModeTogetherModelId;
+    }
+    if (message.planModeFireworksModelId !== undefined) {
+      obj.planModeFireworksModelId = message.planModeFireworksModelId;
+    }
+    if (message.planModeSapAiCoreModelId !== undefined) {
+      obj.planModeSapAiCoreModelId = message.planModeSapAiCoreModelId;
+    }
+    if (message.planModeShengSuanYunModelId !== undefined) {
+      obj.planModeShengSuanYunModelId = message.planModeShengSuanYunModelId;
+    }
+    if (message.planModeShengSuanYunModelInfo !== undefined) {
+      obj.planModeShengSuanYunModelInfo = message.planModeShengSuanYunModelInfo;
+    }
+    if (message.actModeApiProvider !== undefined) {
+      obj.actModeApiProvider = message.actModeApiProvider;
+    }
+    if (message.actModeApiModelId !== undefined) {
+      obj.actModeApiModelId = message.actModeApiModelId;
+    }
+    if (message.actModeThinkingBudgetTokens !== undefined) {
+      obj.actModeThinkingBudgetTokens = Math.round(message.actModeThinkingBudgetTokens);
+    }
+    if (message.actModeReasoningEffort !== undefined) {
+      obj.actModeReasoningEffort = message.actModeReasoningEffort;
+    }
+    if (message.actModeVscodeLmModelSelector !== undefined) {
+      obj.actModeVscodeLmModelSelector = message.actModeVscodeLmModelSelector;
+    }
+    if (message.actModeAwsBedrockCustomSelected !== undefined) {
+      obj.actModeAwsBedrockCustomSelected = message.actModeAwsBedrockCustomSelected;
+    }
+    if (message.actModeAwsBedrockCustomModelBaseId !== undefined) {
+      obj.actModeAwsBedrockCustomModelBaseId = message.actModeAwsBedrockCustomModelBaseId;
+    }
+    if (message.actModeOpenrouterModelId !== undefined) {
+      obj.actModeOpenrouterModelId = message.actModeOpenrouterModelId;
+    }
+    if (message.actModeOpenrouterModelInfo !== undefined) {
+      obj.actModeOpenrouterModelInfo = message.actModeOpenrouterModelInfo;
+    }
+    if (message.actModeOpenaiModelId !== undefined) {
+      obj.actModeOpenaiModelId = message.actModeOpenaiModelId;
+    }
+    if (message.actModeOpenaiModelInfo !== undefined) {
+      obj.actModeOpenaiModelInfo = message.actModeOpenaiModelInfo;
+    }
+    if (message.actModeOllamaModelId !== undefined) {
+      obj.actModeOllamaModelId = message.actModeOllamaModelId;
+    }
+    if (message.actModeLmStudioModelId !== undefined) {
+      obj.actModeLmStudioModelId = message.actModeLmStudioModelId;
+    }
+    if (message.actModeLiteLlmModelId !== undefined) {
+      obj.actModeLiteLlmModelId = message.actModeLiteLlmModelId;
+    }
+    if (message.actModeLiteLlmModelInfo !== undefined) {
+      obj.actModeLiteLlmModelInfo = message.actModeLiteLlmModelInfo;
+    }
+    if (message.actModeRequestyModelId !== undefined) {
+      obj.actModeRequestyModelId = message.actModeRequestyModelId;
+    }
+    if (message.actModeRequestyModelInfo !== undefined) {
+      obj.actModeRequestyModelInfo = message.actModeRequestyModelInfo;
+    }
+    if (message.actModeTogetherModelId !== undefined) {
+      obj.actModeTogetherModelId = message.actModeTogetherModelId;
+    }
+    if (message.actModeFireworksModelId !== undefined) {
+      obj.actModeFireworksModelId = message.actModeFireworksModelId;
+    }
+    if (message.actModeSapAiCoreModelId !== undefined) {
+      obj.actModeSapAiCoreModelId = message.actModeSapAiCoreModelId;
+    }
+    if (message.actModeShengSuanYunModelId !== undefined) {
+      obj.actModeShengSuanYunModelId = message.actModeShengSuanYunModelId;
+    }
+    if (message.actModeShengSuanYunModelInfo !== undefined) {
+      obj.actModeShengSuanYunModelInfo = message.actModeShengSuanYunModelInfo;
+    }
+    if (message.favoritedModelIds?.length) {
+      obj.favoritedModelIds = message.favoritedModelIds;
     }
     if (message.awsAuthentication !== undefined) {
       obj.awsAuthentication = message.awsAuthentication;
@@ -3125,11 +3515,8 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     if (message.awsBedrockApiKey !== undefined) {
       obj.awsBedrockApiKey = message.awsBedrockApiKey;
     }
-    if (message.moonshotApiKey !== undefined) {
-      obj.moonshotApiKey = message.moonshotApiKey;
-    }
-    if (message.moonshotApiLine !== undefined) {
-      obj.moonshotApiLine = message.moonshotApiLine;
+    if (message.clineAccountId !== undefined) {
+      obj.clineAccountId = message.clineAccountId;
     }
     return obj;
   },
@@ -3139,42 +3526,16 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
   },
   fromPartial<I extends Exact<DeepPartial<ApiConfiguration>, I>>(object: I): ApiConfiguration {
     const message = createBaseApiConfiguration();
-    message.apiProvider = object.apiProvider ?? undefined;
-    message.apiModelId = object.apiModelId ?? undefined;
     message.apiKey = object.apiKey ?? undefined;
-    message.apiBaseUrl = object.apiBaseUrl ?? undefined;
-    message.clineAccountId = object.clineAccountId ?? undefined;
-    message.openrouterApiKey = object.openrouterApiKey ?? undefined;
+    message.clineApiKey = object.clineApiKey ?? undefined;
+    message.taskId = object.taskId ?? undefined;
+    message.liteLlmBaseUrl = object.liteLlmBaseUrl ?? undefined;
+    message.liteLlmApiKey = object.liteLlmApiKey ?? undefined;
+    message.liteLlmUsePromptCache = object.liteLlmUsePromptCache ?? undefined;
+    message.openaiHeaders = object.openaiHeaders ?? undefined;
     message.anthropicBaseUrl = object.anthropicBaseUrl ?? undefined;
-    message.openaiApiKey = object.openaiApiKey ?? undefined;
-    message.openaiNativeApiKey = object.openaiNativeApiKey ?? undefined;
-    message.geminiApiKey = object.geminiApiKey ?? undefined;
-    message.deepseekApiKey = object.deepseekApiKey ?? undefined;
-    message.requestyApiKey = object.requestyApiKey ?? undefined;
-    message.togetherApiKey = object.togetherApiKey ?? undefined;
-    message.fireworksApiKey = object.fireworksApiKey ?? undefined;
-    message.qwenApiKey = object.qwenApiKey ?? undefined;
-    message.doubaoApiKey = object.doubaoApiKey ?? undefined;
-    message.mistralApiKey = object.mistralApiKey ?? undefined;
-    message.nebiusApiKey = object.nebiusApiKey ?? undefined;
-    message.asksageApiKey = object.asksageApiKey ?? undefined;
-    message.xaiApiKey = object.xaiApiKey ?? undefined;
-    message.sambanovaApiKey = object.sambanovaApiKey ?? undefined;
-    message.cerebrasApiKey = object.cerebrasApiKey ?? undefined;
-    message.openrouterModelId = object.openrouterModelId ?? undefined;
-    message.openaiModelId = object.openaiModelId ?? undefined;
-    message.anthropicModelId = object.anthropicModelId ?? undefined;
-    message.bedrockModelId = object.bedrockModelId ?? undefined;
-    message.vertexModelId = object.vertexModelId ?? undefined;
-    message.geminiModelId = object.geminiModelId ?? undefined;
-    message.ollamaModelId = object.ollamaModelId ?? undefined;
-    message.lmStudioModelId = object.lmStudioModelId ?? undefined;
-    message.litellmModelId = object.litellmModelId ?? undefined;
-    message.requestyModelId = object.requestyModelId ?? undefined;
-    message.togetherModelId = object.togetherModelId ?? undefined;
-    message.fireworksModelId = object.fireworksModelId ?? undefined;
-    message.awsBedrockCustomSelected = object.awsBedrockCustomSelected ?? undefined;
-    message.awsBedrockCustomModelBaseId = object.awsBedrockCustomModelBaseId ?? undefined;
+    message.openrouterApiKey = object.openrouterApiKey ?? undefined;
+    message.openrouterProviderSorting = object.openrouterProviderSorting ?? undefined;
     message.awsAccessKey = object.awsAccessKey ?? undefined;
     message.awsSecretKey = object.awsSecretKey ?? undefined;
     message.awsSessionToken = object.awsSessionToken ?? undefined;
@@ -3184,46 +3545,92 @@ export const ApiConfiguration: MessageFns<ApiConfiguration> = {
     message.awsUseProfile = object.awsUseProfile ?? undefined;
     message.awsProfile = object.awsProfile ?? undefined;
     message.awsBedrockEndpoint = object.awsBedrockEndpoint ?? undefined;
+    message.claudeCodePath = object.claudeCodePath ?? undefined;
     message.vertexProjectId = object.vertexProjectId ?? undefined;
     message.vertexRegion = object.vertexRegion ?? undefined;
     message.openaiBaseUrl = object.openaiBaseUrl ?? undefined;
+    message.openaiApiKey = object.openaiApiKey ?? undefined;
     message.ollamaBaseUrl = object.ollamaBaseUrl ?? undefined;
+    message.ollamaApiOptionsCtxNum = object.ollamaApiOptionsCtxNum ?? undefined;
     message.lmStudioBaseUrl = object.lmStudioBaseUrl ?? undefined;
+    message.geminiApiKey = object.geminiApiKey ?? undefined;
     message.geminiBaseUrl = object.geminiBaseUrl ?? undefined;
-    message.litellmBaseUrl = object.litellmBaseUrl ?? undefined;
-    message.asksageApiUrl = object.asksageApiUrl ?? undefined;
-    message.litellmApiKey = object.litellmApiKey ?? undefined;
-    message.litellmUsePromptCache = object.litellmUsePromptCache ?? undefined;
-    message.thinkingBudgetTokens = object.thinkingBudgetTokens ?? undefined;
-    message.reasoningEffort = object.reasoningEffort ?? undefined;
-    message.requestTimeoutMs = object.requestTimeoutMs ?? undefined;
+    message.openaiNativeApiKey = object.openaiNativeApiKey ?? undefined;
+    message.deepSeekApiKey = object.deepSeekApiKey ?? undefined;
+    message.requestyApiKey = object.requestyApiKey ?? undefined;
+    message.togetherApiKey = object.togetherApiKey ?? undefined;
+    message.fireworksApiKey = object.fireworksApiKey ?? undefined;
     message.fireworksModelMaxCompletionTokens = object.fireworksModelMaxCompletionTokens ?? undefined;
     message.fireworksModelMaxTokens = object.fireworksModelMaxTokens ?? undefined;
+    message.qwenApiKey = object.qwenApiKey ?? undefined;
+    message.doubaoApiKey = object.doubaoApiKey ?? undefined;
+    message.mistralApiKey = object.mistralApiKey ?? undefined;
     message.azureApiVersion = object.azureApiVersion ?? undefined;
-    message.ollamaApiOptionsCtxNum = object.ollamaApiOptionsCtxNum ?? undefined;
     message.qwenApiLine = object.qwenApiLine ?? undefined;
-    message.openrouterProviderSorting = object.openrouterProviderSorting ?? undefined;
-    message.vscodeLmModelSelector = object.vscodeLmModelSelector ?? undefined;
-    message.openrouterModelInfo = object.openrouterModelInfo ?? undefined;
-    message.openaiModelInfo = object.openaiModelInfo ?? undefined;
-    message.requestyModelInfo = object.requestyModelInfo ?? undefined;
-    message.litellmModelInfo = object.litellmModelInfo ?? undefined;
-    message.openaiHeaders = object.openaiHeaders ?? undefined;
-    message.favoritedModelIds = object.favoritedModelIds?.map((e) => e) || [];
-    message.shengsuanyunApiKey = object.shengsuanyunApiKey ?? undefined;
-    message.shengsuanyunModelId = object.shengsuanyunModelId ?? undefined;
-    message.shengsuanyunModelInfo = object.shengsuanyunModelInfo ?? undefined;
-    message.shengsuanyunToken = object.shengsuanyunToken ?? undefined;
+    message.nebiusApiKey = object.nebiusApiKey ?? undefined;
+    message.asksageApiUrl = object.asksageApiUrl ?? undefined;
+    message.asksageApiKey = object.asksageApiKey ?? undefined;
+    message.xaiApiKey = object.xaiApiKey ?? undefined;
+    message.sambanovaApiKey = object.sambanovaApiKey ?? undefined;
+    message.cerebrasApiKey = object.cerebrasApiKey ?? undefined;
+    message.requestTimeoutMs = object.requestTimeoutMs ?? undefined;
     message.sapAiCoreClientId = object.sapAiCoreClientId ?? undefined;
     message.sapAiCoreClientSecret = object.sapAiCoreClientSecret ?? undefined;
-    message.sapAiCoreBaseUrl = object.sapAiCoreBaseUrl ?? undefined;
-    message.sapAiCoreTokenUrl = object.sapAiCoreTokenUrl ?? undefined;
     message.sapAiResourceGroup = object.sapAiResourceGroup ?? undefined;
-    message.claudeCodePath = object.claudeCodePath ?? undefined;
-    message.awsAuthentication = object.awsAuthentication ?? undefined;
-    message.awsBedrockApiKey = object.awsBedrockApiKey ?? undefined;
+    message.sapAiCoreTokenUrl = object.sapAiCoreTokenUrl ?? undefined;
+    message.sapAiCoreBaseUrl = object.sapAiCoreBaseUrl ?? undefined;
     message.moonshotApiKey = object.moonshotApiKey ?? undefined;
     message.moonshotApiLine = object.moonshotApiLine ?? undefined;
+    message.shengsuanyunApiKey = object.shengsuanyunApiKey ?? undefined;
+    message.shengsuanyunToken = object.shengsuanyunToken ?? undefined;
+    message.planModeApiProvider = object.planModeApiProvider ?? undefined;
+    message.planModeApiModelId = object.planModeApiModelId ?? undefined;
+    message.planModeThinkingBudgetTokens = object.planModeThinkingBudgetTokens ?? undefined;
+    message.planModeReasoningEffort = object.planModeReasoningEffort ?? undefined;
+    message.planModeVscodeLmModelSelector = object.planModeVscodeLmModelSelector ?? undefined;
+    message.planModeAwsBedrockCustomSelected = object.planModeAwsBedrockCustomSelected ?? undefined;
+    message.planModeAwsBedrockCustomModelBaseId = object.planModeAwsBedrockCustomModelBaseId ?? undefined;
+    message.planModeOpenrouterModelId = object.planModeOpenrouterModelId ?? undefined;
+    message.planModeOpenrouterModelInfo = object.planModeOpenrouterModelInfo ?? undefined;
+    message.planModeOpenaiModelId = object.planModeOpenaiModelId ?? undefined;
+    message.planModeOpenaiModelInfo = object.planModeOpenaiModelInfo ?? undefined;
+    message.planModeOllamaModelId = object.planModeOllamaModelId ?? undefined;
+    message.planModeLmStudioModelId = object.planModeLmStudioModelId ?? undefined;
+    message.planModeLiteLlmModelId = object.planModeLiteLlmModelId ?? undefined;
+    message.planModeLiteLlmModelInfo = object.planModeLiteLlmModelInfo ?? undefined;
+    message.planModeRequestyModelId = object.planModeRequestyModelId ?? undefined;
+    message.planModeRequestyModelInfo = object.planModeRequestyModelInfo ?? undefined;
+    message.planModeTogetherModelId = object.planModeTogetherModelId ?? undefined;
+    message.planModeFireworksModelId = object.planModeFireworksModelId ?? undefined;
+    message.planModeSapAiCoreModelId = object.planModeSapAiCoreModelId ?? undefined;
+    message.planModeShengSuanYunModelId = object.planModeShengSuanYunModelId ?? undefined;
+    message.planModeShengSuanYunModelInfo = object.planModeShengSuanYunModelInfo ?? undefined;
+    message.actModeApiProvider = object.actModeApiProvider ?? undefined;
+    message.actModeApiModelId = object.actModeApiModelId ?? undefined;
+    message.actModeThinkingBudgetTokens = object.actModeThinkingBudgetTokens ?? undefined;
+    message.actModeReasoningEffort = object.actModeReasoningEffort ?? undefined;
+    message.actModeVscodeLmModelSelector = object.actModeVscodeLmModelSelector ?? undefined;
+    message.actModeAwsBedrockCustomSelected = object.actModeAwsBedrockCustomSelected ?? undefined;
+    message.actModeAwsBedrockCustomModelBaseId = object.actModeAwsBedrockCustomModelBaseId ?? undefined;
+    message.actModeOpenrouterModelId = object.actModeOpenrouterModelId ?? undefined;
+    message.actModeOpenrouterModelInfo = object.actModeOpenrouterModelInfo ?? undefined;
+    message.actModeOpenaiModelId = object.actModeOpenaiModelId ?? undefined;
+    message.actModeOpenaiModelInfo = object.actModeOpenaiModelInfo ?? undefined;
+    message.actModeOllamaModelId = object.actModeOllamaModelId ?? undefined;
+    message.actModeLmStudioModelId = object.actModeLmStudioModelId ?? undefined;
+    message.actModeLiteLlmModelId = object.actModeLiteLlmModelId ?? undefined;
+    message.actModeLiteLlmModelInfo = object.actModeLiteLlmModelInfo ?? undefined;
+    message.actModeRequestyModelId = object.actModeRequestyModelId ?? undefined;
+    message.actModeRequestyModelInfo = object.actModeRequestyModelInfo ?? undefined;
+    message.actModeTogetherModelId = object.actModeTogetherModelId ?? undefined;
+    message.actModeFireworksModelId = object.actModeFireworksModelId ?? undefined;
+    message.actModeSapAiCoreModelId = object.actModeSapAiCoreModelId ?? undefined;
+    message.actModeShengSuanYunModelId = object.actModeShengSuanYunModelId ?? undefined;
+    message.actModeShengSuanYunModelInfo = object.actModeShengSuanYunModelInfo ?? undefined;
+    message.favoritedModelIds = object.favoritedModelIds?.map((e) => e) || [];
+    message.awsAuthentication = object.awsAuthentication ?? undefined;
+    message.awsBedrockApiKey = object.awsBedrockApiKey ?? undefined;
+    message.clineAccountId = object.clineAccountId ?? undefined;
     return message;
   },
 };

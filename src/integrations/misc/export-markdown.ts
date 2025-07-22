@@ -48,12 +48,10 @@ export async function downloadTask(dateTs: number, conversationHistory: Anthropi
 				}),
 			)
 		} catch (error) {
-			getHostBridgeProvider().windowClient.showMessage(
-				ShowMessageRequest.create({
-					type: ShowMessageType.ERROR,
-					message: `保存 markdown 文件: ${error instanceof Error ? error.message : String(error)}`,
-				}),
-			)
+			getHostBridgeProvider().windowClient.showMessage({
+				type: ShowMessageType.ERROR,
+				message: `保存 markdown 文件: ${error instanceof Error ? error.message : String(error)} 失败`,
+			})
 		}
 	}
 }

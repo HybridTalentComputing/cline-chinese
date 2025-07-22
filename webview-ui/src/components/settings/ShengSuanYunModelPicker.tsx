@@ -10,11 +10,12 @@ import { highlight } from "../history/HistoryView"
 import { ModelInfoView } from "./common/ModelInfoView"
 import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
 import { EmptyRequest, StringRequest } from "@shared/proto/common"
-import { normalizeApiConfiguration } from "./utils/providerUtils"
+import { getModeSpecificFields, normalizeApiConfiguration } from "./utils/providerUtils"
 import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
-
+import { Mode } from "@shared/ChatSettings"
 export interface ShengSuanYunModelPickerProps {
 	isPopup?: boolean
+	currentMode: Mode
 }
 // Star icon for favorites
 const StarIcon = ({ isFavorite, onClick }: { isFavorite: boolean; onClick: (e: React.MouseEvent) => void }) => {
@@ -36,10 +37,11 @@ const StarIcon = ({ isFavorite, onClick }: { isFavorite: boolean; onClick: (e: R
 		</div>
 	)
 }
-const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPopup }) => {
+const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPopup, currentMode }) => {
 	const { apiConfiguration, shengSuanYunModels, setShengSuanYunModels } = useExtensionState()
-	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.shengSuanYunModelId || shengSuanYunDefaultModelId)
-	const { handleFieldsChange } = useApiConfigurationHandlers()
+	const { handleModeFieldsChange } = useApiConfigurationHandlers()
+	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
+	const [searchTerm, setSearchTerm] = useState(modeFields.shengSuanYunModelId || shengSuanYunDefaultModelId)
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
 	const dropdownRef = useRef<HTMLDivElement>(null)
@@ -48,16 +50,24 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 
 	const handleModelChange = (newModelId: string) => {
 		// could be setting invalid model id/undefined info but validation will catch it
-		handleFieldsChange({
-			shengSuanYunModelId: newModelId,
-			shengSuanYunModelInfo: shengSuanYunModels[newModelId],
-		})
+		handleModeFieldsChange(
+			{
+				shengSuanYunModelId: { plan: "planModeShengSuanYunModelId", act: "actModeShengSuanYunModelId" },
+				shengSuanYunModelInfo: { plan: "planModeShengSuanYunModelInfo", act: "actModeShengSuanYunModelInfo" },
+			},
+			{
+				shengSuanYunModelId: newModelId,
+				shengSuanYunModelInfo: shengSuanYunModels[newModelId],
+			},
+			currentMode,
+		)
 		setSearchTerm(newModelId)
 	}
 
 	const { selectedModelId, selectedModelInfo } = useMemo(() => {
-		return normalizeApiConfiguration(apiConfiguration)
-	}, [apiConfiguration])
+		const cfg = normalizeApiConfiguration(apiConfiguration, currentMode)
+		return cfg
+	}, [apiConfiguration, currentMode])
 
 	useMount(() => {
 		ModelsServiceClient.refreshShengSuanYunModels(EmptyRequest.create({}))
@@ -259,7 +269,7 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 
 			{hasInfo ? (
 				<>
-					{showBudgetSlider && <ThinkingBudgetSlider />}
+					{showBudgetSlider && <ThinkingBudgetSlider currentMode={currentMode} />}
 					<ModelInfoView selectedModelId={selectedModelId} modelInfo={selectedModelInfo} isPopup={isPopup} />
 				</>
 			) : (

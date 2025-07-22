@@ -14,6 +14,7 @@ export const GlobalFileNames = {
 	uiMessages: "ui_messages.json",
 	openRouterModels: "openrouter_models.json",
 	mcpSettings: "cline_shengsuan_mcp_settings.json",
+	groqModels: "groq_models.json",
 	clineRules: ".clinerules",
 	workflows: ".clinerules/workflows",
 	cursorRulesDir: ".cursor/rules",

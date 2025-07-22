@@ -4,11 +4,11 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { validateApiConfiguration } from "@/utils/validate"
 import ApiOptions from "@/components/settings/ApiOptions"
 import ClineLogoWhite from "@/assets/ClineLogoWhite"
-import { AccountServiceClient, ModelsServiceClient, StateServiceClient } from "@/services/grpc-client"
+import { AccountServiceClient, StateServiceClient } from "@/services/grpc-client"
 import { EmptyRequest, BooleanRequest } from "@shared/proto/common"
 
 const WelcomeView = memo(() => {
-	const { apiConfiguration } = useExtensionState()
+	const { apiConfiguration, chatSettings } = useExtensionState()
 	const [apiErrorMessage, setApiErrorMessage] = useState<string | undefined>(undefined)
 	const [showApiOptions, setShowApiOptions] = useState(false)
 
@@ -29,8 +29,8 @@ const WelcomeView = memo(() => {
 	}
 
 	useEffect(() => {
-		setApiErrorMessage(validateApiConfiguration(apiConfiguration))
-	}, [apiConfiguration])
+		setApiErrorMessage(validateApiConfiguration(chatSettings.mode, apiConfiguration))
+	}, [apiConfiguration, chatSettings.mode])
 
 	return (
 		<div className="fixed inset-0 p-0 flex flex-col">
@@ -41,13 +41,20 @@ const WelcomeView = memo(() => {
 				</div>
 				<div className="flex flex-col gap-3">
 					<div className="">
-						Cline中文版，由中国胜算云赞助开发，一分钟注册，国内就能调用，Claude / GPT 等全球100个大模型
+						Cline中文汉化版，由中国胜算云赞助开发，方便开发者，国内就能使用包括Claude 4 sonnet、Gemini
+						2.5pro、GPT-4o等全球100+AI大模型
 					</div>
-					<div className="">限时新用户，注册限时赠送 Claude 4 Sonnet 免费额度！</div>
+					<div className="">
+						限时新用户
+						<br />
+						<VSCodeLink href="#" target="_blank" className="text-blue-600 my-3" onClick={handleLogin}>
+							&gt;&gt;点击接入胜算云，领取100万Tokens额度
+						</VSCodeLink>
+					</div>
 				</div>
 
 				<VSCodeButton appearance="primary" onClick={handleLogin} className="w-full mt-1">
-					注册领取 免费额度
+					立即注册
 				</VSCodeButton>
 
 				{!showApiOptions && (
@@ -62,7 +69,7 @@ const WelcomeView = memo(() => {
 				<div className="mt-4.5">
 					{showApiOptions && (
 						<div>
-							<ApiOptions showModelOptions={false} />
+							<ApiOptions showModelOptions={false} currentMode={chatSettings.mode} />
 							<VSCodeButton onClick={handleSubmit} disabled={disableLetsGoButton} className="mt-0.75">
 								开始!
 							</VSCodeButton>

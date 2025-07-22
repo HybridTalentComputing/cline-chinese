@@ -15,20 +15,16 @@ import { getHostBridgeProvider } from "@/hosts/host-providers"
 export async function resetState(controller: Controller, request: ResetStateRequest): Promise<Empty> {
 	try {
 		if (request.global) {
-			getHostBridgeProvider().windowClient.showMessage(
-				ShowMessageRequest.create({
-					type: ShowMessageType.INFORMATION,
-					message: "重置全局状态...",
-				}),
-			)
+			getHostBridgeProvider().windowClient.showMessage({
+				type: ShowMessageType.INFORMATION,
+				message: "重置全局状态...",
+			})
 			await resetGlobalState(controller.context)
 		} else {
-			getHostBridgeProvider().windowClient.showMessage(
-				ShowMessageRequest.create({
-					type: ShowMessageType.INFORMATION,
-					message: "重置工作区状态...",
-				}),
-			)
+			getHostBridgeProvider().windowClient.showMessage({
+				type: ShowMessageType.INFORMATION,
+				message: "重置工作区状态...",
+			})
 			await resetWorkspaceState(controller.context)
 		}
 
@@ -37,12 +33,10 @@ export async function resetState(controller: Controller, request: ResetStateRequ
 			controller.task = undefined
 		}
 
-		getHostBridgeProvider().windowClient.showMessage(
-			ShowMessageRequest.create({
-				type: ShowMessageType.INFORMATION,
-				message: "重置状态",
-			}),
-		)
+		getHostBridgeProvider().windowClient.showMessage({
+			type: ShowMessageType.INFORMATION,
+			message: "重置状态",
+		})
 		await controller.postStateToWebview()
 
 		await sendChatButtonClickedEvent(controller.id)
@@ -50,12 +44,10 @@ export async function resetState(controller: Controller, request: ResetStateRequ
 		return Empty.create()
 	} catch (error) {
 		console.error("Error resetting state:", error)
-		getHostBridgeProvider().windowClient.showMessage(
-			ShowMessageRequest.create({
-				type: ShowMessageType.ERROR,
-				message: `重置状态失败: ${error instanceof Error ? error.message : String(error)}`,
-			}),
-		)
+		getHostBridgeProvider().windowClient.showMessage({
+			type: ShowMessageType.ERROR,
+			message: `重置状态失败: ${error instanceof Error ? error.message : String(error)}`,
+		})
 		throw error
 	}
 }

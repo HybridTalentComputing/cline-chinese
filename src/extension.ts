@@ -6,7 +6,7 @@ import pWaitFor from "p-wait-for"
 import { Logger } from "./services/logging/Logger"
 import { createClineAPI } from "./exports"
 import "./utils/path" // necessary to have access to String.prototype.toPosix
-import { DIFF_VIEW_URI_SCHEME } from "./integrations/editor/DiffViewProvider"
+import { DIFF_VIEW_URI_SCHEME } from "@hosts/vscode/VscodeDiffViewProvider"
 import assert from "node:assert"
 import { posthogClientProvider } from "./services/posthog/PostHogClientProvider"
 import { WebviewProvider } from "./core/webview"
@@ -27,6 +27,7 @@ import {
 	migrateCustomInstructionsToGlobalRules,
 	migrateModeFromWorkspaceStorageToControllerState,
 	migrateWelcomeViewCompleted,
+	migrateLegacyApiConfigurationToModeSpecific,
 } from "./core/storage/state-migrations"
 
 import { sendFocusChatInputEvent } from "./core/controller/ui/subscribeToFocusChatInput"
@@ -75,6 +76,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Migrate workspace storage values back to global storage (reverting previous migration)
 	await migrateWorkspaceToGlobalStorage(context)
 
+	// Migrate legacy API configuration to mode-specific keys (one-time migration)
+	await migrateLegacyApiConfigurationToModeSpecific(context)
+
 	// Clean up orphaned file context warnings (startup cleanup)
 	await FileContextTracker.cleanupOrphanedWarnings(context)
 
@@ -106,12 +110,10 @@ export async function activate(context: vscode.ExtensionContext) {
 				const message = `Cline 更新到 v${currentVersion}`
 				await vscode.commands.executeCommand("ClineShengsuan.SidebarProvider.focus")
 				await new Promise((resolve) => setTimeout(resolve, 200))
-				getHostBridgeProvider().windowClient.showMessage(
-					ShowMessageRequest.create({
-						type: ShowMessageType.INFORMATION,
-						message,
-					}),
-				)
+				getHostBridgeProvider().windowClient.showMessage({
+					type: ShowMessageType.INFORMATION,
+					message,
+				})
 				// Record that we've shown the popup for this version.
 				await context.globalState.update("clineLastPopupNotificationVersion", currentVersion)
 			}
@@ -373,7 +375,7 @@ export async function activate(context: vscode.ExtensionContext) {
 					languageId,
 					Array.isArray(diagnostics) ? diagnostics : undefined,
 				)
-				telemetryService.captureButtonClick("codeAction_addToChat", visibleWebview?.controller.task?.taskId, true)
+				telemetryService.captureButtonClick("codeAction_addToChat", visibleWebview?.controller.task?.taskId)
 			},
 		),
 	)
@@ -424,12 +426,10 @@ export async function activate(context: vscode.ExtensionContext) {
 				// Ensure clipboard is restored even if an error occurs
 				await writeTextToClipboard(tempCopyBuffer)
 				console.error("Error getting terminal contents:", error)
-				getHostBridgeProvider().windowClient.showMessage(
-					ShowMessageRequest.create({
-						type: ShowMessageType.ERROR,
-						message: "获取终端内容失败",
-					}),
-				)
+				getHostBridgeProvider().windowClient.showMessage({
+					type: ShowMessageType.ERROR,
+					message: "获取终端内容失败",
+				})
 			}
 		}),
 	)
@@ -553,7 +553,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				// Send to sidebar provider with diagnostics
 				const visibleWebview = WebviewProvider.getVisibleInstance()
 				await visibleWebview?.controller.fixWithCline(selectedText, filePath, languageId, diagnostics)
-				telemetryService.captureButtonClick("codeAction_fixWithCline", visibleWebview?.controller.task?.taskId, true)
+				telemetryService.captureButtonClick("codeAction_fixWithCline", visibleWebview?.controller.task?.taskId)
 			},
 		),
 	)
@@ -568,12 +568,10 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 			const selectedText = editor.document.getText(range)
 			if (!selectedText.trim()) {
-				getHostBridgeProvider().windowClient.showMessage(
-					ShowMessageRequest.create({
-						type: ShowMessageType.INFORMATION,
-						message: "请选择一些代码供解释。",
-					}),
-				)
+				getHostBridgeProvider().windowClient.showMessage({
+					type: ShowMessageType.INFORMATION,
+					message: "请选择一些代码供解释。",
+				})
 				return
 			}
 			const filePath = editor.document.uri.fsPath
@@ -581,7 +579,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			const fileMention = visibleWebview?.controller.getFileMentionFromPath(filePath) || filePath
 			const prompt = `Explain the following code from ${fileMention}:\n\`\`\`${editor.document.languageId}\n${selectedText}\n\`\`\``
 			await visibleWebview?.controller.initTask(prompt)
-			telemetryService.captureButtonClick("codeAction_explainCode", visibleWebview?.controller.task?.taskId, true)
+			telemetryService.captureButtonClick("codeAction_explainCode", visibleWebview?.controller.task?.taskId)
 		}),
 	)
 
@@ -595,12 +593,10 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 			const selectedText = editor.document.getText(range)
 			if (!selectedText.trim()) {
-				getHostBridgeProvider().windowClient.showMessage(
-					ShowMessageRequest.create({
-						type: ShowMessageType.INFORMATION,
-						message: "请选择一些代码供改进。",
-					}),
-				)
+				getHostBridgeProvider().windowClient.showMessage({
+					type: ShowMessageType.INFORMATION,
+					message: "请选择一些代码供修改。",
+				})
 				return
 			}
 			const filePath = editor.document.uri.fsPath
@@ -608,7 +604,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			const fileMention = visibleWebview?.controller.getFileMentionFromPath(filePath) || filePath
 			const prompt = `Improve the following code from ${fileMention} (e.g., suggest refactorings, optimizations, or better practices):\n\`\`\`${editor.document.languageId}\n${selectedText}\n\`\`\``
 			await visibleWebview?.controller.initTask(prompt)
-			telemetryService.captureButtonClick("codeAction_improveCode", visibleWebview?.controller.task?.taskId, true)
+			telemetryService.captureButtonClick("codeAction_improveCode", visibleWebview?.controller.task?.taskId)
 		}),
 	)
 
@@ -665,14 +661,12 @@ export async function activate(context: vscode.ExtensionContext) {
 				sendFocusChatInputEvent(clientId)
 			} else {
 				console.error("FocusChatInput: Could not find or activate a Cline webview to focus.")
-				getHostBridgeProvider().windowClient.showMessage(
-					ShowMessageRequest.create({
-						type: ShowMessageType.ERROR,
-						message: "无法激活 Cline 视图。请尝试从活动栏手动打开。",
-					}),
-				)
+				getHostBridgeProvider().windowClient.showMessage({
+					type: ShowMessageType.ERROR,
+					message: "无法激活 Cline 视图。请尝试从活动栏手动打开。",
+				})
 			}
-			telemetryService.captureButtonClick("command_focusChatInput", activeWebviewProvider?.controller.task?.taskId, true)
+			telemetryService.captureButtonClick("command_focusChatInput", activeWebviewProvider?.controller.task?.taskId)
 		}),
 	)
 
@@ -680,7 +674,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand("cline.openWalkthrough", async () => {
 			await vscode.commands.executeCommand("workbench.action.openWalkthrough", "saoudrizwan.claude-dev#ClineWalkthrough")
-			telemetryService.captureButtonClick("command_openWalkthrough", undefined, true)
+			telemetryService.captureButtonClick("command_openWalkthrough")
 		}),
 	)
 
@@ -705,9 +699,18 @@ export async function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
-		context.secrets.onDidChange((event) => {
+		context.secrets.onDidChange(async (event) => {
 			if (event.key === "clineAccountId") {
-				AuthService.getInstance(context)?.restoreRefreshTokenAndRetrieveAuthInfo()
+				// Check if the secret was removed (logout) or added/updated (login)
+				const secretValue = await context.secrets.get("clineAccountId")
+				const authService = AuthService.getInstance(context)
+				if (secretValue) {
+					// Secret was added or updated - restore auth info (login from another window)
+					authService?.restoreRefreshTokenAndRetrieveAuthInfo()
+				} else {
+					// Secret was removed - handle logout for all windows
+					authService?.handleDeauth()
+				}
 			}
 		}),
 	)
@@ -728,6 +731,18 @@ function maybeSetupHostProviders(context: ExtensionContext) {
 	}
 }
 
+// This method is called when your extension is deactivated
+export async function deactivate() {
+	// Dispose all webview instances
+	await WebviewProvider.disposeAllInstances()
+
+	// Clean up test mode
+	cleanupTestMode()
+	await posthogClientProvider.shutdown()
+
+	Logger.log("Cline extension deactivated")
+}
+
 // TODO: Find a solution for automatically removing DEV related content from production builds.
 //  This type of code is fine in production to keep. We just will want to remove it from production builds
 //  to bring down built asset sizes.
@@ -736,20 +751,6 @@ function maybeSetupHostProviders(context: ExtensionContext) {
 // since vscode doesn't support hot reload for extensions
 const IS_DEV = process.env.IS_DEV
 const DEV_WORKSPACE_FOLDER = process.env.DEV_WORKSPACE_FOLDER
-
-// This method is called when your extension is deactivated
-export async function deactivate() {
-	// Dispose all webview instances
-	await WebviewProvider.disposeAllInstances()
-
-	await telemetryService.sendCollectedEvents()
-
-	// Clean up test mode
-	cleanupTestMode()
-	await posthogClientProvider.shutdown()
-
-	Logger.log("Cline extension deactivated")
-}
 
 // Set up development mode file watcher
 if (IS_DEV && IS_DEV !== "false") {

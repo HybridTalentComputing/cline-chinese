@@ -262,13 +262,14 @@ export abstract class WebviewProvider {
 		try {
 			await axios.get(`http://${localServerUrl}`)
 		} catch (error) {
-			getHostBridgeProvider().windowClient.showMessage(
-				ShowMessageRequest.create({
+			// Only show the error message if not in development mode.
+			if (!process.env.IS_DEV) {
+				getHostBridgeProvider().windowClient.showMessage({
 					type: ShowMessageType.ERROR,
 					message:
 						"Cline: 本地 webview 开发服务器未运行，HMR 将无法工作。请在启动扩展程序之前运行“npm run dev:webview”以启用 HMR。使用捆绑资源。",
-				}),
-			)
+				})
+			}
 
 			return this.getHtmlContent()
 		}

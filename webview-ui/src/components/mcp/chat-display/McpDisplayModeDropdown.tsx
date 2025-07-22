@@ -19,8 +19,8 @@ const McpDisplayModeDropdown: React.FC<McpDisplayModeDropdownProps> = ({ value, 
 
 	return (
 		<VSCodeDropdown id={id} value={value} onChange={handleChange} onClick={onClick} className={className} style={style}>
-			<VSCodeOption value="plain">Plain Text</VSCodeOption>
-			<VSCodeOption value="rich">Rich Display</VSCodeOption>
+			<VSCodeOption value="plain">纯文本</VSCodeOption>
+			<VSCodeOption value="rich">富文本</VSCodeOption>
 			<VSCodeOption value="markdown">Markdown</VSCodeOption>
 		</VSCodeDropdown>
 	)
