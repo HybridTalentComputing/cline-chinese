@@ -1,0 +1,70 @@
+import VSCodeButtonLink from "@/components/common/VSCodeButtonLink"
+import { TaskServiceClient } from "@/services/grpc-client"
+import { AskResponseRequest } from "@shared/proto/cline/task"
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import React from "react"
+
+interface CreditLimitErrorSSYProps {
+	currentBalance: number
+	totalSpent?: number
+	totalPromotions?: number
+	message: string
+	buyCreditsUrl?: string
+}
+
+const CreditLimitErrorSSY: React.FC<CreditLimitErrorSSYProps> = ({
+	currentBalance = 0,
+	totalSpent = 0,
+	totalPromotions = 0,
+	message = "账户余额不足.",
+	buyCreditsUrl = "https://console.shengsuanyun.com/user/recharge",
+}) => {
+	return (
+		<div className="p-2 border-none rounded-md mb-2 bg-[var(--vscode-textBlockQuote-background)]">
+			<div className="mb-3 font-azeret-mono">
+				<div style={{ color: "var(--vscode-errorForeground)", marginBottom: "8px" }}>{message}</div>
+				<div style={{ marginBottom: "12px" }}>
+					<div style={{ color: "var(--vscode-foreground)" }}>
+						余额: <span style={{ fontWeight: "bold" }}>{currentBalance.toFixed(2)}</span>
+					</div>
+					<div style={{ color: "var(--vscode-foreground)" }}>消费: {totalSpent.toFixed(2)}</div>
+					<div style={{ color: "var(--vscode-foreground)" }}>促销: {totalPromotions.toFixed(2)}</div>
+				</div>
+			</div>
+
+			<VSCodeButtonLink
+				href={buyCreditsUrl}
+				style={{
+					width: "100%",
+					marginBottom: "8px",
+				}}>
+				<span className="codicon codicon-credit-card mr-[6px] text-[14px]" />
+				充值
+			</VSCodeButtonLink>
+
+			<VSCodeButton
+				onClick={async () => {
+					try {
+						await TaskServiceClient.askResponse(
+							AskResponseRequest.create({
+								responseType: "yesButtonClicked",
+								text: "",
+								images: [],
+							}),
+						)
+					} catch (error) {
+						console.error("Error invoking action:", error)
+					}
+				}}
+				appearance="secondary"
+				style={{
+					width: "100%",
+				}}>
+				<span className="codicon codicon-refresh" style={{ fontSize: "14px", marginRight: "6px" }} />
+				重试
+			</VSCodeButton>
+		</div>
+	)
+}
+
+export default CreditLimitErrorSSY

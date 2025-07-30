@@ -2,8 +2,8 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { useExtensionState } from "./ExtensionStateContext"
 import axios, { AxiosRequestConfig } from "axios"
 import { AccountServiceClient } from "@/services/grpc-client"
-import { AuthStateChangedRequest } from "@shared/proto/account"
-import { EmptyRequest } from "@shared/proto/common"
+import { AuthStateChangedRequest } from "@shared/proto/cline/account"
+import { EmptyRequest } from "@shared/proto/cline/common"
 
 interface ShengSuanYunAuthContextType {
 	userSSY: any | null

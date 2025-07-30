@@ -1,6 +1,6 @@
 import type { Controller } from "../index"
-import type { EmptyRequest } from "@shared/proto/common"
-import { UserCreditsData } from "@shared/proto/account"
+import type { EmptyRequest } from "@shared/proto/cline/common"
+import { UserCreditsData } from "@shared/proto/cline/account"
 
 export async function shengSuanYunUserData(controller: Controller, request: EmptyRequest): Promise<UserCreditsData> {
 	try {

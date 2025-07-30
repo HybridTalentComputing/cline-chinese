@@ -1,5 +1,5 @@
 import * as vscode from "vscode"
-import { StringRequest, String } from "@shared/proto/common"
+import { StringRequest, String } from "@shared/proto/cline/common"
 
 /**
  * Joins paths to create a new URI

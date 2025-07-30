@@ -4,7 +4,7 @@ import {
 	ApiConfiguration as ProtoApiConfiguration,
 	ChatSettings as ProtoChatSettings,
 	PlanActMode,
-} from "../../../shared/proto/state"
+} from "@shared/proto/cline/state"
 
 /**
  * Converts domain ApiConfiguration objects to proto ApiConfiguration objects
@@ -142,7 +142,6 @@ export function convertApiConfigurationToProtoApiConfiguration(config: ApiConfig
  * Converts proto ApiConfiguration objects to domain ApiConfiguration objects
  */
 export function convertProtoApiConfigurationToApiConfiguration(protoConfig: ProtoApiConfiguration): ApiConfiguration {
-	// eslint-disable-next-line eslint-rules/no-protobuf-object-literals
 	const config: ApiConfiguration = {
 		// Global configuration fields (not mode-specific)
 		apiKey: protoConfig.apiKey,
@@ -314,7 +313,6 @@ export function convertChatSettingsToProtoChatSettings(chatSettings: ChatSetting
  * Converts proto ChatSettings objects to domain ChatSettings objects
  */
 export function convertProtoChatSettingsToChatSettings(protoChatSettings: ProtoChatSettings): ChatSettings {
-	// eslint-disable-next-line eslint-rules/no-protobuf-object-literals
 	return {
 		mode: protoChatSettings.mode === PlanActMode.PLAN ? "plan" : "act",
 		preferredLanguage: protoChatSettings.preferredLanguage,

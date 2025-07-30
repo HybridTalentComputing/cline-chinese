@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from "axios"
-import { UserCreditsData } from "@shared/proto/account"
+import { UserCreditsData } from "@shared/proto/cline/account"
 
 export class SSYAccountService {
 	private readonly baseUrl = "https://api.shengsuanyun.com"

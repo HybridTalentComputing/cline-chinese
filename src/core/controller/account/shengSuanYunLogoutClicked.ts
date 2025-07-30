@@ -1,5 +1,4 @@
-import { Empty } from "../../../shared/proto/common"
-import type { EmptyRequest } from "../../../shared/proto/common"
+import { Empty, EmptyRequest } from "@shared/proto/cline/common"
 import type { Controller } from "../index"
 
 export async function shengSuanYunLogoutClicked(controller: Controller, _request: EmptyRequest): Promise<Empty> {

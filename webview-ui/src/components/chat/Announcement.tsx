@@ -30,7 +30,9 @@ const linkContainerStyle: CSSProperties = { margin: "0" }
 const linkStyle: CSSProperties = { display: "inline" }
 
 /*
-You must update the latestAnnouncementId in ClineProvider for new announcements to show to users. This new id will be compared with what's in state for the 'last announcement shown', and if it's different then the announcement will render. As soon as an announcement is shown, the id will be updated in state. This ensures that announcements are not shown more than once, even if the user doesn't close it themselves.
+Announcements are automatically shown when the major.minor version changes (for ex 3.19.x → 3.20.x or 4.0.x). 
+The latestAnnouncementId is now automatically generated from the extension's package.json version. 
+Patch releases (3.19.1 → 3.19.2) will not trigger new announcements.
 */
 const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 	const minorVersion = version.split(".").slice(0, 2).join(".") // 2.0.0 -> 2.0
@@ -40,7 +42,7 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 				<span className="codicon codicon-close"></span>
 			</VSCodeButton>
 			<h3 style={h3TitleStyle}>
-				🎉{"  "}New in v{minorVersion}
+				🎉{"  "} 更新 v{minorVersion}
 			</h3>
 			<ul style={ulStyle}>
 				<li>
@@ -60,6 +62,23 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 				</li>
 				<li>
 					<b>改进的差异编辑:</b>改进了差别编辑功能，使前沿模型的差别编辑失败率创下新低。
+					<b>Cerebras API 支持:</b> 通过更新模型选择（仅限 Qwen 和 Llama 3.3 70B）增强了性能，并将 Qwen 3 32B
+					的上下文窗口从 16K 令牌增加到 64K token。
+				</li>
+				<li>
+					<b>Claude Code for Windows:</b> 改进了系统提示处理，以修复 E2BIG
+					错误并改进了错误消息，并提供常见设置问题的指导。
+				</li>
+				<li>
+					<b>Hugging Face API 支持:</b> 添加为新的 API 提供商，支持其推理 API 模型。
+				</li>
+				<li>
+					<b>Moonshot 中国特供API支持:</b>增加了为 Moonshot 提供商选择中国终端的功能，并添加了 Moonshot AI
+					作为新提供商。
+				</li>
+				<li>
+					<b>增强稳定性:</b> 强大的检查点超时处理，修复了 MCP 服务器在禁用时启动的问题，并改进了跨多个 VSCode
+					窗口的身份验证同步。
 				</li>
 			</ul>
 			<Accordion isCompact className="pl-0">
@@ -75,7 +94,25 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 					}}>
 					<ul style={ulStyle}>
 						<li>
-							<b>Claude 4 模型：</b> 现已支持 Anthropic 和 Vertex 供应商下的 Claude Sonnet 4 和 Claude Opus 4 模型。
+							<b>Claude 4 优化:</b> Cline 现已针对 Claude 4
+							系列模型进行了优化，从而提升了性能、可靠性并增加了新功能。
+						</li>
+						<li>
+							<b>Gemini CLI 支持:</b> 添加了新的 Gemini CLI 提供程序，允许您使用本地 Gemini CLI 身份验证免费访问
+							Gemini 模型。
+						</li>
+						<li>
+							<b>网页获取工具:</b> Gemini 2.5 Pro 和 Claude 4 模型现已支持 WebFetch 工具，允许 Cline
+							直接在对话中检索和汇总网页内容。
+						</li>
+						<li>
+							<b>自我认识:</b>在使用前沿模型时，Cline 对自己的能力和功能集有着清晰的认识。
+						</li>
+						<li>
+							<b>改进了差异编辑:</b> 改进了差速器编辑功能，使 Frontier 车型的差速器编辑失败率创下新低。
+						</li>
+						<li>
+							<b>Claude 4 模型:</b> 现支持 Anthropic 和 Vertex 提供商的 Anthropic Claude Sonnet 4 和 Claude Opus 4。
 						</li>
 						<li>
 							<b>全新设置页面：</b> 设置页面经过重新设计，现在分为多个标签页，便于导航，界面更清晰。

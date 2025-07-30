@@ -4,11 +4,11 @@ import { getAvailableTerminalProfiles as getTerminalProfilesFromShell } from "..
 
 export async function getAvailableTerminalProfiles(
 	controller: Controller,
-	request: proto.cline_shengsuan.EmptyRequest,
-): Promise<proto.cline_shengsuan.TerminalProfiles> {
+	request: proto.cline.EmptyRequest,
+): Promise<proto.cline.TerminalProfiles> {
 	const profiles = getTerminalProfilesFromShell()
 
-	return proto.cline_shengsuan.TerminalProfiles.create({
+	return proto.cline.TerminalProfiles.create({
 		profiles: profiles.map((profile) => ({
 			id: profile.id,
 			name: profile.name,

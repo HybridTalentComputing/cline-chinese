@@ -93,7 +93,7 @@ export class GitOperations {
 		const addFilesResult = await this.addCheckpointFiles(git)
 		if (!addFilesResult.success) {
 			console.error("Failed to add at least one file(s) to checkpoints shadow git")
-			throw new Error("Failed to add at least one file(s) to checkpoints shadow git")
+			throw new Error("无法将至少一个文件添加到检查点影子 git")
 		}
 
 		// Initial commit only on first repo creation

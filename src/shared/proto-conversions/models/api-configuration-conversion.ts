@@ -14,8 +14,7 @@ import {
 	OpenRouterModelInfo,
 	ThinkingConfig,
 	ShengSuanYunModelInfo,
-	PriceTier,
-} from "../../proto/models"
+} from "@shared/proto/cline/models"
 
 // Convert application ThinkingConfig to proto ThinkingConfig
 function convertThinkingConfigToProto(config: ModelInfo["thinkingConfig"]): ThinkingConfig | undefined {
@@ -36,13 +35,10 @@ function convertProtoToThinkingConfig(config: ThinkingConfig | undefined): Think
 		return undefined
 	}
 
-	// Explicitly ensure outputPriceTiers is always a non-undefined array
-	const outputPriceTiers: PriceTier[] = Array.isArray(config.outputPriceTiers) ? config.outputPriceTiers : []
-
 	return {
 		maxBudget: config.maxBudget,
 		outputPrice: config.outputPrice,
-		outputPriceTiers,
+		outputPriceTiers: config.outputPriceTiers || [], // Provide empty array if undefined
 	} as ThinkingConfig
 }
 

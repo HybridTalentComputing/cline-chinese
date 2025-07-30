@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import * as fs from "fs/promises"
+import { writeFileWithMkdirs } from "./file-utils.mjs"
 import * as path from "path"
 import chalk from "chalk"
 import { loadServicesFromProtoDescriptor, getFqn } from "./proto-utils.mjs"
@@ -15,14 +15,14 @@ const VSCODE_CLIENT_FILE = path.resolve("src/generated/hosts/vscode/hostbridge-g
 /**
  * Main function to generate the host bridge client
  */
-async function main() {
+export async function main() {
 	const { hostServices } = await loadServicesFromProtoDescriptor()
 	// console.log(chalk.green("Loaded host services from proto descriptor."),JSON.stringify(Object.keys(hostServices), null, 2))
 	await generateTypesFile(hostServices)
 	await generateExternalClientFile(hostServices)
 	await generateVscodeClientFile(hostServices)
 
-	console.log(`Generated host bridge client files at:`)
+	console.log(`Generated Host Bridge client files at:`)
 	console.log(`- ${TYPES_FILE}`)
 	console.log(`- ${EXTERNAL_CLIENT_FILE}`)
 	console.log(`- ${VSCODE_CLIENT_FILE}`)
@@ -45,8 +45,7 @@ import { StreamingCallbacks } from "@hosts/host-provider-types"
 ${clientInterfaces.join("\n\n")}
 `
 	// Write output file
-	await fs.mkdir(path.dirname(TYPES_FILE), { recursive: true })
-	await fs.writeFile(TYPES_FILE, content)
+	await writeFileWithMkdirs(TYPES_FILE, content)
 }
 
 /**
@@ -107,8 +106,7 @@ ${imports.join("\n")}
 ${clientImplementations.join("\n\n")}
 `
 	// Write output file
-	await fs.mkdir(path.dirname(EXTERNAL_CLIENT_FILE), { recursive: true })
-	await fs.writeFile(EXTERNAL_CLIENT_FILE, content)
+	await writeFileWithMkdirs(EXTERNAL_CLIENT_FILE, content)
 }
 
 /**
@@ -211,8 +209,7 @@ ${handlerMap.join("\n")}
 `
 
 	// Write output file
-	await fs.mkdir(path.dirname(VSCODE_CLIENT_FILE), { recursive: true })
-	await fs.writeFile(VSCODE_CLIENT_FILE, content)
+	await writeFileWithMkdirs(VSCODE_CLIENT_FILE, content)
 }
 
 function generateVscodeClientImplementation(serviceName, serviceDefinition) {
@@ -237,8 +234,10 @@ const ${name}ServiceRegistry = createServiceRegistry("${name}")
 ${methods}`
 }
 
-// Run the main function
-main().catch((error) => {
-	console.error(chalk.red("Error:"), error)
-	process.exit(1)
-})
+// Only run main if this script is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+	main().catch((error) => {
+		console.error(chalk.red("Error:"), error)
+		process.exit(1)
+	})
+}

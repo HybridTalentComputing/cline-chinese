@@ -27,7 +27,7 @@ import {
 	COMPLETION_RESULT_CHANGES_FLAG,
 } from "@shared/ExtensionMessage"
 import { COMMAND_OUTPUT_STRING, COMMAND_REQ_APP_STRING } from "@shared/combineCommandSequences"
-import { Int64Request, StringRequest } from "@shared/proto/common"
+import { Int64Request, StringRequest } from "@shared/proto/cline/common"
 
 import CodeAccordian, { cleanPathPrefix } from "../common/CodeAccordian"
 import { CheckpointControls } from "../common/CheckpointControls"
@@ -409,7 +409,7 @@ export const ChatRowContent = memo(
 							<div style={headerStyle}>
 								{toolIcon("edit")}
 								{tool.operationIsLocatedInWorkspace === false &&
-									toolIcon("sign-out", "yellow", -90, "This file is outside of your workspace")}
+									toolIcon("sign-out", "yellow", -90, "该文件不在您的工作区内")}
 								<span style={{ fontWeight: "bold" }}>Cline 需要编辑这个文件:</span>
 							</div>
 							<CodeAccordian
@@ -427,7 +427,7 @@ export const ChatRowContent = memo(
 							<div style={headerStyle}>
 								{toolIcon("new-file")}
 								{tool.operationIsLocatedInWorkspace === false &&
-									toolIcon("sign-out", "yellow", -90, "This file is outside of your workspace")}
+									toolIcon("sign-out", "yellow", -90, "该文件不在您的工作区内")}
 								<span style={{ fontWeight: "bold" }}>Cline 需要创建这个文件:</span>
 							</div>
 							<CodeAccordian
@@ -545,11 +545,11 @@ export const ChatRowContent = memo(
 							<div style={headerStyle}>
 								{toolIcon("file-code")}
 								{tool.operationIsLocatedInWorkspace === false &&
-									toolIcon("sign-out", "yellow", -90, "This file is outside of your workspace")}
+									toolIcon("sign-out", "yellow", -90, "该文件不在您的工作区内")}
 								<span style={{ fontWeight: "bold" }}>
 									{message.type === "ask"
-										? "Cline wants to view source code definition names used in this directory:"
-										: "Cline viewed source code definition names used in this directory:"}
+										? "Cline 想要查看此目录中使用的源代码定义名称:"
+										: "Cline 查看了此目录中使用的源代码定义名称:"}
 								</span>
 							</div>
 							<CodeAccordian
@@ -786,7 +786,7 @@ export const ChatRowContent = memo(
 												fontSize: "12px",
 												textTransform: "uppercase",
 											}}>
-											Arguments
+											参数
 										</div>
 										<CodeAccordian
 											code={useMcpServer.arguments}
@@ -1230,7 +1230,7 @@ export const ChatRowContent = memo(
 														cursor: seeNewChangesDisabled ? "wait" : "pointer",
 													}}
 												/>
-												See new changes
+												查看新变化
 											</SuccessButton>
 										</div>
 									)}
@@ -1299,9 +1299,7 @@ export const ChatRowContent = memo(
 											color: normalColor,
 											marginBottom: "-1.5px",
 										}}></span>
-									<span style={{ color: normalColor, fontWeight: "bold" }}>
-										Cline wants to start a new task:
-									</span>
+									<span style={{ color: normalColor, fontWeight: "bold" }}>Cline 需要开始一个新任务:</span>
 								</div>
 								<NewTaskPreview context={message.text || ""} />
 							</>
@@ -1316,9 +1314,7 @@ export const ChatRowContent = memo(
 											color: normalColor,
 											marginBottom: "-1.5px",
 										}}></span>
-									<span style={{ color: normalColor, fontWeight: "bold" }}>
-										Cline wants to condense your conversation:
-									</span>
+									<span style={{ color: normalColor, fontWeight: "bold" }}>Cline 总结会话:</span>
 								</div>
 								<NewTaskPreview context={message.text || ""} />
 							</>
@@ -1333,9 +1329,7 @@ export const ChatRowContent = memo(
 											color: normalColor,
 											marginBottom: "-1.5px",
 										}}></span>
-									<span style={{ color: normalColor, fontWeight: "bold" }}>
-										Cline wants to create a Github issue:
-									</span>
+									<span style={{ color: normalColor, fontWeight: "bold" }}>Cline 需要新建 Github issue:</span>
 								</div>
 								<ReportBugPreview data={message.text || ""} />
 							</>

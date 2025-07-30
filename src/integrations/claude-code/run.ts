@@ -92,15 +92,13 @@ export async function* runClaudeCode(options: ClaudeCodeOptions): AsyncGenerator
 		const { exitCode } = await cProcess
 		if (exitCode !== null && exitCode !== 0) {
 			const errorOutput = processState.error?.message || processState.stderrLogs?.trim()
-			throw new Error(
-				`Claude Code process exited with code ${exitCode}.${errorOutput ? ` Error output: ${errorOutput}` : ""}`,
-			)
+			throw new Error(`Claude Code 进程退出代码 ${exitCode}.${errorOutput ? ` 返回错误: ${errorOutput}` : ""}`)
 		}
 	} catch (err) {
 		console.error(`Error during Claude Code execution:`, err)
 
 		if (processState.stderrLogs.includes("unknown option '--system-prompt-file'")) {
-			throw new Error(`The Claude Code executable is outdated. Please update it to the latest version.`, {
+			throw new Error(`Claude Code 可执行文件已过时。请将其更新至最新版本.`, {
 				cause: err,
 			})
 		}
@@ -108,17 +106,16 @@ export async function* runClaudeCode(options: ClaudeCodeOptions): AsyncGenerator
 		if (err instanceof Error) {
 			if (err.message.includes("ENOENT")) {
 				throw new Error(
-					`Failed to find the Claude Code executable.
-Make sure it's installed and available in your PATH or properly set in your provider settings.`,
+					`找不到 Claude 代码可执行文件。请确保它已安装并位于您的 PATH 中，或者已在您的提供程序设置中正确设置。`,
 					{ cause: err },
 				)
 			}
 
 			if (err.message.includes("E2BIG")) {
 				throw new Error(
-					`Executing Claude Code failed due to a long system prompt. The maximum argument length is 131072 bytes. 
-Rules and workflows contribute to a longer system prompt, consider disabling some of them temporarily to reduce the length.
-Anthropic is aware of this issue and is considering a fix: https://github.com/anthropics/claude-code/issues/3411.
+					`由于系统提示过长，执行 Claude Code 执行失败。参数最大长度为 131072 字节。
+规则和工作流程会导致系统提示过长，请考虑暂时禁用部分规则和工作流程以缩短提示长度。
+Anthropic 已意识到此问题，正在考虑修复。: https://github.com/anthropics/claude-code/issues/3411.
 `,
 					{ cause: err },
 				)
@@ -126,9 +123,9 @@ Anthropic is aware of this issue and is considering a fix: https://github.com/an
 
 			if (err.message.includes("ENAMETOOLONG")) {
 				throw new Error(
-					`Executing Claude Code failed due to a long system prompt. Windows has a limit of 8191 characters, which makes the integration with Cline not work properly.
-Please check our docs on how to integrate Claude Code with Cline on Windows: https://docs.cline.bot/provider-config/claude-code#windows-setup.
-Anthropic is aware of this issue and is considering a fix: https://github.com/anthropics/claude-code/issues/3411.
+					`由于系统提示过长，执行 Claude Code 失败。Windows 系统字符数限制为 8191 个字符，这导致与 Cline 的集成无法正常工作。
+请查看我们的文档，了解如何在 Windows 上将 Claude Code 与 Cline 集成：https://docs.cline.bot/provider-config/claude-code#windows-setup。
+Anthropic 已意识到此问题，并正在考虑修复。: https://github.com/anthropics/claude-code/issues/3411.
 `,
 					{ cause: err },
 				)
@@ -182,6 +179,9 @@ const CLAUDE_CODE_TIMEOUT = 600000 // 10 minutes
 // https://github.com/sindresorhus/execa/blob/main/docs/api.md#optionsmaxbuffer
 const BUFFER_SIZE = 20_000_000 // 20 MB
 
+// This is the limit imposed by the CLI
+const CLAUDE_CODE_MAX_OUTPUT_TOKENS = "32000"
+
 function runProcess(
 	{ systemPrompt, messages, path, modelId, thinkingBudgetTokens, shouldUseFile }: ClaudeCodeOptions,
 	cwd: string,
@@ -210,8 +210,7 @@ function runProcess(
 	const env: NodeJS.ProcessEnv = {
 		...process.env,
 		// Respect the user's environment variables but set defaults.
-		// The default is 32000. However, I've gotten larger responses.
-		CLAUDE_CODE_MAX_OUTPUT_TOKENS: process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS || "64000",
+		CLAUDE_CODE_MAX_OUTPUT_TOKENS: process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS || CLAUDE_CODE_MAX_OUTPUT_TOKENS,
 		// Disable telemetry, auto-updater and error reporting.
 		CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC || "1",
 		DISABLE_NON_ESSENTIAL_MODEL_CALLS: process.env.DISABLE_NON_ESSENTIAL_MODEL_CALLS || "1",

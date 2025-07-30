@@ -2,13 +2,13 @@ import { Controller } from "../index"
 import * as proto from "@/shared/proto"
 import { updateGlobalState } from "../../storage/state"
 import { TerminalInfo } from "@/integrations/terminal/TerminalRegistry"
-import { getHostBridgeProvider } from "@/hosts/host-providers"
+import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageRequest, ShowMessageType } from "@/shared/proto/host/window"
 
 export async function updateDefaultTerminalProfile(
 	controller: Controller,
-	request: proto.cline_shengsuan.StringRequest,
-): Promise<proto.cline_shengsuan.TerminalProfileUpdateResponse> {
+	request: proto.cline.StringRequest,
+): Promise<proto.cline.TerminalProfileUpdateResponse> {
 	const profileId = request.value
 
 	// Update the terminal profile in the state
@@ -27,7 +27,7 @@ export async function updateDefaultTerminalProfile(
 		// Show information message if terminals were closed
 		if (closedCount > 0) {
 			const message = `Closed ${closedCount} ${closedCount === 1 ? "terminal" : "terminals"} with different profile.`
-			getHostBridgeProvider().windowClient.showMessage({
+			HostProvider.window.showMessage({
 				type: ShowMessageType.INFORMATION,
 				message,
 			})
@@ -38,7 +38,7 @@ export async function updateDefaultTerminalProfile(
 			const message =
 				`${busyTerminals.length} busy ${busyTerminals.length === 1 ? "terminal has" : "terminals have"} a different profile. ` +
 				`Close ${busyTerminals.length === 1 ? "it" : "them"} to use the new profile for all commands.`
-			getHostBridgeProvider().windowClient.showMessage({
+			HostProvider.window.showMessage({
 				type: ShowMessageType.WARNING,
 				message,
 			})
@@ -48,7 +48,7 @@ export async function updateDefaultTerminalProfile(
 	// Broadcast state update to all webviews
 	await controller.postStateToWebview()
 
-	return proto.cline_shengsuan.TerminalProfileUpdateResponse.create({
+	return proto.cline.TerminalProfileUpdateResponse.create({
 		closedCount,
 		busyTerminalsCount: busyTerminals.length,
 		hasBusyTerminals: busyTerminals.length > 0,

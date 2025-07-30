@@ -1,14 +1,13 @@
 import { Controller } from "../index"
-import { EmptyRequest } from "../../../shared/proto/common"
-import { String as ProtoString } from "../../../shared/proto/common"
-import { StreamingResponseHandler, getRequestRegistry } from "../grpc-handler"
+import { EmptyRequest, String as ProtoString } from "@shared/proto/cline/common"
+import { type StreamingResponseHandler, getRequestRegistry } from "../grpc-handler"
 
-const activeAuthCallbackSubscriptions = new Set<StreamingResponseHandler>()
+const activeAuthCallbackSubscriptions = new Set<StreamingResponseHandler<any>>()
 
 export async function subscribeSSYAuthCallback(
 	controller: Controller,
 	request: EmptyRequest,
-	responseStream: StreamingResponseHandler,
+	responseStream: StreamingResponseHandler<any>,
 	requestId?: string,
 ): Promise<void> {
 	// Add this subscription to the active subscriptions

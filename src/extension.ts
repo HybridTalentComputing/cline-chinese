@@ -10,7 +10,6 @@ import { DIFF_VIEW_URI_SCHEME } from "@hosts/vscode/VscodeDiffViewProvider"
 import assert from "node:assert"
 import { posthogClientProvider } from "./services/posthog/PostHogClientProvider"
 import { WebviewProvider } from "./core/webview"
-import { Controller } from "./core/controller"
 import { sendMcpButtonClickedEvent } from "./core/controller/ui/subscribeToMcpButtonClicked"
 import { sendChatButtonClickedEvent } from "./core/controller/ui/subscribeToChatButtonClicked"
 import { ErrorService } from "./services/error/ErrorService"
@@ -18,7 +17,7 @@ import { initializeTestMode, cleanupTestMode } from "./services/test/TestMode"
 import { telemetryService } from "./services/posthog/telemetry/TelemetryService"
 import { sendSettingsButtonClickedEvent } from "./core/controller/ui/subscribeToSettingsButtonClicked"
 import { v4 as uuidv4 } from "uuid"
-import { WebviewProviderType as WebviewProviderTypeEnum } from "@shared/proto/ui"
+import { WebviewProviderType as WebviewProviderTypeEnum } from "@shared/proto/cline/ui"
 import { WebviewProviderType } from "./shared/webview/types"
 import { sendHistoryButtonClickedEvent } from "./core/controller/ui/subscribeToHistoryButtonClicked"
 import { sendAccountButtonClickedEvent } from "./core/controller/ui/subscribeToAccountButtonClicked"
@@ -32,15 +31,15 @@ import {
 
 import { sendFocusChatInputEvent } from "./core/controller/ui/subscribeToFocusChatInput"
 import { FileContextTracker } from "./core/context/context-tracking/FileContextTracker"
-import * as hostProviders from "@hosts/host-providers"
 import { vscodeHostBridgeClient } from "@/hosts/vscode/hostbridge/client/host-grpc-client"
 import { VscodeWebviewProvider } from "./hosts/vscode/VscodeWebviewProvider"
 import { ExtensionContext } from "vscode"
 import { AuthService } from "./services/auth/AuthService"
 import { writeTextToClipboard, readTextFromClipboard } from "@/utils/env"
 import { VscodeDiffViewProvider } from "./hosts/vscode/VscodeDiffViewProvider"
-import { getHostBridgeProvider } from "@hosts/host-providers"
-import { ShowMessageRequest, ShowMessageType } from "./shared/proto/host/window"
+import { HostProvider } from "@/hosts/host-provider"
+import { ShowMessageType } from "./shared/proto/host/window"
+import { GitCommitGenerator } from "./integrations/git/commit-message-generator"
 /*
 Built using https://github.com/microsoft/vscode-webview-ui-toolkit
 
@@ -85,7 +84,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Version checking for autoupdate notification
 	const currentVersion = context.extension.packageJSON.version
 	const previousVersion = context.globalState.get<string>("clineVersion")
-	const sidebarWebview = hostProviders.createWebviewProvider(WebviewProviderType.SIDEBAR)
+	const sidebarWebview = HostProvider.get().createWebviewProvider(WebviewProviderType.SIDEBAR)
 
 	const testModeWatchers = await initializeTestMode(sidebarWebview)
 	// Initialize test mode and add disposables to context
@@ -102,20 +101,20 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Perform post-update actions if necessary
 	try {
 		if (!previousVersion || currentVersion !== previousVersion) {
-			Logger.log(`Cline 版本更新: ${previousVersion} -> ${currentVersion}. 第一次运行.`)
-			const lastShownPopupNotificationVersion = context.globalState.get<string>("clineLastPopupNotificationVersion")
+			Logger.log(`Cline version changed: ${previousVersion} -> ${currentVersion}. First run or update detected.`)
 
-			if (currentVersion !== lastShownPopupNotificationVersion && previousVersion) {
-				// Show VS Code popup notification as this version hasn't been notified yet without doing it for fresh installs
-				const message = `Cline 更新到 v${currentVersion}`
+			// Use the same condition as announcements: focus when there's a new announcement to show
+			const lastShownAnnouncementId = context.globalState.get<string>("lastShownAnnouncementId")
+			const latestAnnouncementId = context.extension?.packageJSON?.version?.split(".").slice(0, 2).join(".") ?? ""
+
+			if (lastShownAnnouncementId !== latestAnnouncementId) {
+				// Focus Cline when there's a new announcement to show (major/minor updates or fresh installs)
+				const message = previousVersion
+					? `Cline has been updated to v${currentVersion}`
+					: `Welcome to Cline v${currentVersion}`
 				await vscode.commands.executeCommand("ClineShengsuan.SidebarProvider.focus")
 				await new Promise((resolve) => setTimeout(resolve, 200))
-				getHostBridgeProvider().windowClient.showMessage({
-					type: ShowMessageType.INFORMATION,
-					message,
-				})
-				// Record that we've shown the popup for this version.
-				await context.globalState.update("clineLastPopupNotificationVersion", currentVersion)
+				HostProvider.window.showMessage({ type: ShowMessageType.INFORMATION, message })
 			}
 			// Always update the main version tracker for the next launch.
 			await context.globalState.update("clineVersion", currentVersion)
@@ -192,7 +191,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		Logger.log("Opening openclineShengsuanInNewTab in new tab")
 		// (this example uses webviewProvider activation event which is necessary to deserialize cached webview, but since we use retainContextWhenHidden, we don't need to use that event)
 		// https://github.com/microsoft/vscode-extension-samples/blob/main/webview-sample/src/extension.ts
-		const tabWebview = hostProviders.createWebviewProvider(WebviewProviderType.TAB)
+		const tabWebview = HostProvider.get().createWebviewProvider(WebviewProviderType.TAB)
 		//const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined
 		const lastCol = Math.max(...vscode.window.visibleTextEditors.map((editor) => editor.viewColumn || 0))
 
@@ -426,7 +425,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				// Ensure clipboard is restored even if an error occurs
 				await writeTextToClipboard(tempCopyBuffer)
 				console.error("Error getting terminal contents:", error)
-				getHostBridgeProvider().windowClient.showMessage({
+				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
 					message: "获取终端内容失败",
 				})
@@ -568,7 +567,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 			const selectedText = editor.document.getText(range)
 			if (!selectedText.trim()) {
-				getHostBridgeProvider().windowClient.showMessage({
+				HostProvider.window.showMessage({
 					type: ShowMessageType.INFORMATION,
 					message: "请选择一些代码供解释。",
 				})
@@ -593,7 +592,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 			const selectedText = editor.document.getText(range)
 			if (!selectedText.trim()) {
-				getHostBridgeProvider().windowClient.showMessage({
+				HostProvider.window.showMessage({
 					type: ShowMessageType.INFORMATION,
 					message: "请选择一些代码供修改。",
 				})
@@ -661,7 +660,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				sendFocusChatInputEvent(clientId)
 			} else {
 				console.error("FocusChatInput: Could not find or activate a Cline webview to focus.")
-				getHostBridgeProvider().windowClient.showMessage({
+				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
 					message: "无法激活 Cline 视图。请尝试从活动栏手动打开。",
 				})
@@ -680,21 +679,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Register the generateGitCommitMessage command handler
 	context.subscriptions.push(
-		vscode.commands.registerCommand("ClineShengsuan.generateGitCommitMessage", async () => {
-			// Get the controller from any instance, without activating the view
-			const controller = WebviewProvider.getAllInstances()[0]?.controller
-
-			if (controller) {
-				// Call the controller method to generate commit message
-				await controller.generateGitCommitMessage()
-			} else {
-				// Create a temporary controller just for this operation
-				const outputChannel = vscode.window.createOutputChannel("Cline Commit Generator")
-				const tempController = new Controller(context, outputChannel, () => Promise.resolve(true), uuidv4())
-
-				await tempController.generateGitCommitMessage()
-				outputChannel.dispose()
-			}
+		vscode.commands.registerCommand("ClineShengsuan.generateGitCommitMessage", async (scm) => {
+			await GitCommitGenerator?.generate?.(context, scm)
+		}),
+		vscode.commands.registerCommand("ClineShengsuan.abortGitCommitMessage", () => {
+			GitCommitGenerator?.abort?.()
 		}),
 	)
 
@@ -719,7 +708,7 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 function maybeSetupHostProviders(context: ExtensionContext) {
-	if (!hostProviders.isSetup) {
+	if (!HostProvider.isInitialized()) {
 		console.log("Setting up vscode host providers...")
 		const createWebview = function (type: WebviewProviderType) {
 			return new VscodeWebviewProvider(context, outputChannel, type)
@@ -727,7 +716,7 @@ function maybeSetupHostProviders(context: ExtensionContext) {
 		const createDiffView = function () {
 			return new VscodeDiffViewProvider()
 		}
-		hostProviders.initializeHostProviders(createWebview, createDiffView, vscodeHostBridgeClient)
+		HostProvider.initialize(createWebview, createDiffView, vscodeHostBridgeClient)
 	}
 }
 

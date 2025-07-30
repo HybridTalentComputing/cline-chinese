@@ -1,21 +1,21 @@
 syntax = "proto3";
 
 package host;
-option java_package = "bot.cline_shengsuan.host.proto";
+option java_package = "bot.cline.host.proto";
 option java_multiple_files = true;
 
-import "common.proto";
+import "cline/common.proto";
 
 // UriService provides methods for working with URIs in the IDE
 service UriService {
   // Create a new file URI from a file path
-  rpc file(cline_shengsuan.StringRequest) returns (Uri);
+  rpc file(cline.StringRequest) returns (Uri);
   
   // Join a URI with additional path segments
   rpc joinPath(JoinPathRequest) returns (Uri);
   
   // Parse a string URI into a Uri object
-  rpc parse(cline_shengsuan.StringRequest) returns (Uri);
+  rpc parse(cline.StringRequest) returns (Uri);
 }
 
 // Uri represents a URI in the IDE
@@ -30,7 +30,7 @@ message Uri {
 
 // Request for joining path segments to a URI
 message JoinPathRequest {
-  cline_shengsuan.Metadata metadata = 1;
+  cline.Metadata metadata = 1;
   Uri base = 2;
   repeated string path_segments = 3;
 }

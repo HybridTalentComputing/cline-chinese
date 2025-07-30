@@ -1,9 +1,12 @@
+import { clineEnvConfig } from "@/config"
+import { HostProvider } from "@/hosts/host-provider"
+import { AuthService } from "@/services/auth/AuthService"
 import { telemetryService } from "@/services/posthog/telemetry/TelemetryService"
+import { ShowMessageType } from "@/shared/proto/host/window"
 import { getCwd, getDesktopDir } from "@/utils/path"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { buildApiHandler } from "@api/index"
 import { cleanupLegacyCheckpoints } from "@integrations/checkpoints/CheckpointMigration"
-import { extractCommitMessage } from "@integrations/git/commit-message-generator"
 import { downloadTask } from "@integrations/misc/export-markdown"
 import WorkspaceTracker from "@integrations/workspace/WorkspaceTracker"
 import { ClineAccountService } from "@services/account/ClineAccountService"
@@ -19,7 +22,6 @@ import { TelemetrySetting } from "@shared/TelemetrySetting"
 import { UserInfo } from "@shared/UserInfo"
 import { WebviewMessage } from "@shared/WebviewMessage"
 import { fileExistsAtPath } from "@utils/fs"
-import { getWorkingState } from "@utils/git"
 import axios from "axios"
 import fs from "fs/promises"
 import { setTimeout as setTimeoutPromise } from "node:timers/promises"
@@ -30,15 +32,11 @@ import { ensureMcpServersDirectoryExists, ensureSettingsDirectoryExists, GlobalF
 import { getAllExtensionState, getGlobalState, getWorkspaceState, storeSecret, updateGlobalState } from "../storage/state"
 import { Task } from "../task"
 import { handleGrpcRequest, handleGrpcRequestCancel } from "./grpc-handler"
+import { sendMcpMarketplaceCatalogEvent } from "./mcp/subscribeToMcpMarketplaceCatalog"
 import { sendStateUpdate } from "./state/subscribeToState"
 import { sendAddToInputEvent } from "./ui/subscribeToAddToInput"
 import { SSYAccountService } from "../../services/account/SSYAccountService"
 import { sendSSYAuthCallbackEvent } from "./account/subscribeSSYAuthCallback"
-import { sendMcpMarketplaceCatalogEvent } from "./mcp/subscribeToMcpMarketplaceCatalog"
-import { AuthService } from "@/services/auth/AuthService"
-import { ShowMessageRequest, ShowMessageType } from "@/shared/proto/host/window"
-import { getHostBridgeProvider } from "@/hosts/host-providers"
-import { clineEnvConfig } from "@/config"
 
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -58,7 +56,9 @@ export class Controller {
 	accountService: ClineAccountService
 	accountServiceSSY: SSYAccountService
 	authService: AuthService
-	latestAnnouncementId = "june-25-2025_16:11:00" // update to some unique identifier when we add a new announcement
+	get latestAnnouncementId(): string {
+		return this.context.extension?.packageJSON?.version?.split(".").slice(0, 2).join(".") ?? ""
+	}
 
 	constructor(
 		readonly context: vscode.ExtensionContext,
@@ -124,12 +124,12 @@ export class Controller {
 				updateGlobalState(this.context, "actModeApiProvider", "shengsuanyun"),
 			])
 			await this.postStateToWebview()
-			getHostBridgeProvider().windowClient.showMessage({
+			HostProvider.window.showMessage({
 				type: ShowMessageType.INFORMATION,
 				message: "成功登出 Cline 胜算云",
 			})
 		} catch (error) {
-			getHostBridgeProvider().windowClient.showMessage({
+			HostProvider.window.showMessage({
 				type: ShowMessageType.INFORMATION,
 				message: "登出失败",
 			})
@@ -265,7 +265,7 @@ export class Controller {
 		// Update API handler with new mode (buildApiHandler now selects provider based on mode)
 		if (this.task) {
 			const { apiConfiguration } = await getAllExtensionState(this.context)
-			this.task.api = buildApiHandler(apiConfiguration, chatSettings.mode)
+			this.task.api = buildApiHandler({ ...apiConfiguration, taskId: this.task.taskId }, chatSettings.mode)
 		}
 
 		// Save only non-mode properties to global storage
@@ -368,13 +368,13 @@ export class Controller {
 			await updateGlobalState(this.context, "welcomeViewCompleted", true)
 
 			if (this.task) {
-				this.task.api = buildApiHandler(updatedConfig, currentMode)
+				this.task.api = buildApiHandler({ ...updatedConfig, taskId: this.task.taskId }, currentMode)
 			}
 
 			await this.postStateToWebview()
 		} catch (error) {
 			console.error("Failed to handle auth callback:", error)
-			getHostBridgeProvider().windowClient.showMessage({
+			HostProvider.window.showMessage({
 				type: ShowMessageType.ERROR,
 				message: "F登录失败",
 			})
@@ -412,7 +412,7 @@ export class Controller {
 			console.error("Failed to fetch MCP marketplace:", error)
 			if (!silent) {
 				const errorMessage = error instanceof Error ? error.message : "获取 MCP 市场失败"
-				getHostBridgeProvider().windowClient.showMessage({
+				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
 					message: errorMessage,
 				})
@@ -499,7 +499,7 @@ export class Controller {
 		} catch (error) {
 			console.error("Failed to handle cached MCP marketplace:", error)
 			const errorMessage = error instanceof Error ? error.message : "处理 MCP 市场缓存失败"
-			getHostBridgeProvider().windowClient.showMessage({
+			HostProvider.window.showMessage({
 				type: ShowMessageType.ERROR,
 				message: errorMessage,
 			})
@@ -536,6 +536,7 @@ export class Controller {
 			const updatedConfig = {
 				...apiConfiguration,
 				openRouterApiKey: apiKey,
+				taskId: this.task.taskId,
 			}
 			this.task.api = buildApiHandler(updatedConfig, currentMode)
 		}
@@ -906,135 +907,5 @@ export class Controller {
 
 	// secrets
 
-	// Git commit message generation
-
-	async generateGitCommitMessage() {
-		try {
-			// Check if there's a workspace folder open
-			const cwd = await getCwd()
-			if (!cwd) {
-				getHostBridgeProvider().windowClient.showMessage({
-					type: ShowMessageType.ERROR,
-					message: "没有打开工作目录",
-				})
-				return
-			}
-
-			// Get the git diff
-			const gitDiff = await getWorkingState(cwd)
-			if (gitDiff === "No changes in working directory") {
-				getHostBridgeProvider().windowClient.showMessage({
-					type: ShowMessageType.INFORMATION,
-					message: "工作区中提交消息没有变化",
-				})
-				return
-			}
-
-			// Show a progress notification
-			await vscode.window.withProgress(
-				{
-					location: vscode.ProgressLocation.Notification,
-					title: "Generating commit message...",
-					cancellable: false,
-				},
-				async (progress, token) => {
-					try {
-						// Format the git diff into a prompt
-						const prompt = `Based on the following git diff, generate a concise and descriptive commit message:
-
-${gitDiff.length > 5000 ? gitDiff.substring(0, 5000) + "\n\n[Diff truncated due to size]" : gitDiff}
-
-The commit message should:
-1. Start with a short summary (50-72 characters)
-2. Use the imperative mood (e.g., "Add feature" not "Added feature")
-3. Describe what was changed and why
-4. Be clear and descriptive
-
-Commit message:`
-
-						// Get the current API configuration
-						const { apiConfiguration } = await getAllExtensionState(this.context)
-						const currentMode = await this.getCurrentMode()
-
-						// Build the API handler
-						const apiHandler = buildApiHandler(apiConfiguration, currentMode)
-
-						// Create a system prompt
-						const systemPrompt =
-							"You are a helpful assistant that generates concise and descriptive git commit messages based on git diffs."
-
-						// Create a message for the API
-						const messages = [
-							{
-								role: "user" as const,
-								content: prompt,
-							},
-						]
-
-						// Call the API directly
-						const stream = apiHandler.createMessage(systemPrompt, messages)
-
-						// Collect the response
-						let response = ""
-						for await (const chunk of stream) {
-							if (chunk.type === "text") {
-								response += chunk.text
-							}
-						}
-
-						// Extract the commit message
-						const commitMessage = extractCommitMessage(response)
-
-						// Apply the commit message to the Git input box
-						if (commitMessage) {
-							// Get the Git extension API
-							const gitExtension = vscode.extensions.getExtension("vscode.git")?.exports
-							if (gitExtension) {
-								const api = gitExtension.getAPI(1)
-								if (api && api.repositories.length > 0) {
-									const repo = api.repositories[0]
-									repo.inputBox.value = commitMessage
-									const message = "提交消息已生成并应用"
-									getHostBridgeProvider().windowClient.showMessage({
-										type: ShowMessageType.INFORMATION,
-										message,
-									})
-								} else {
-									const message = "未找到 Git 库"
-									getHostBridgeProvider().windowClient.showMessage({
-										type: ShowMessageType.ERROR,
-										message,
-									})
-								}
-							} else {
-								const message = "未找到 Git 扩展"
-								getHostBridgeProvider().windowClient.showMessage({
-									type: ShowMessageType.ERROR,
-									message,
-								})
-							}
-						} else {
-							const message = "无法生成提交消息"
-							getHostBridgeProvider().windowClient.showMessage({
-								type: ShowMessageType.ERROR,
-								message,
-							})
-						}
-					} catch (innerError) {
-						const innerErrorMessage = innerError instanceof Error ? innerError.message : String(innerError)
-						getHostBridgeProvider().windowClient.showMessage({
-							type: ShowMessageType.ERROR,
-							message: `无法生成提交消息: ${innerErrorMessage}`,
-						})
-					}
-				},
-			)
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			getHostBridgeProvider().windowClient.showMessage({
-				type: ShowMessageType.ERROR,
-				message: `无法生成提交消息: ${errorMessage}`,
-			})
-		}
-	}
+	// dev
 }
