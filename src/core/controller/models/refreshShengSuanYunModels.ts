@@ -35,7 +35,7 @@ export async function refreshShengSuanYunModels(
 				const modelInfo: Partial<ShengSuanYunModelInfo> = {
 					maxTokens: model.max_tokens || undefined,
 					contextWindow: model.context_window,
-					supportsImages: model.architecture?.input?.includes("image"),
+					supportsImages: model.architecture?.input?.toLowerCase().includes("image"),
 					supportsPromptCache: model.supports_prompt_cache,
 					inputPrice: parsePrice(model.pricing?.prompt),
 					outputPrice: parsePrice(model.pricing?.completion),
