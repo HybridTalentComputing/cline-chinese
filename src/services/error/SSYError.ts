@@ -6,6 +6,9 @@ export enum SSYErrorType {
 	Network = "network",
 	RateLimit = "rateLimit",
 	Balance = "balance",
+	QuotaExceeded = "quotaExceeded",
+	TpmLimitExceeded = "tpmLimitExceeded",
+	RpmLimitExceeded = "rpmLimitExceeded",
 }
 
 interface ErrorDetails {
@@ -126,6 +129,7 @@ export class SSYError extends Error {
 	 * This is useful for determining how to handle the error in the UI or logic.
 	 */
 	static getErrorType(err: SSYError): SSYErrorType | undefined {
+		console.log("SSYError.getErrorType()", err._error, "--------------------", SSYErrorType)
 		const { code, status, details } = err._error
 
 		// Check balance error first (most specific)
@@ -136,6 +140,19 @@ export class SSYError extends Error {
 		// Check auth errors
 		if (code === "ERR_BAD_REQUEST" || status === 401) {
 			return SSYErrorType.Auth
+		}
+
+		// Check quota exceeded errors
+		if (code === "quota_exceeded") {
+			return SSYErrorType.QuotaExceeded
+		}
+
+		if (code === "tpm_limit_exceeded") {
+			return SSYErrorType.TpmLimitExceeded
+		}
+
+		if (code === "rpm_limit_exceeded") {
+			return SSYErrorType.RpmLimitExceeded
 		}
 
 		// Check for auth message (only if message exists)

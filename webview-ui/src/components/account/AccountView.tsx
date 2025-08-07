@@ -335,7 +335,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 }
 
 export const SSYAccountView = () => {
-	const { userSSY: ssyUser, handleSignOutSSY } = useShengSuanYunAuth()
+	const { userSSY: ssyUser } = useShengSuanYunAuth()
 	const { userInfo, apiConfiguration } = useExtensionState()
 	let user = apiConfiguration?.shengSuanYunToken ? ssyUser || userInfo : undefined
 
@@ -344,6 +344,7 @@ export const SSYAccountView = () => {
 	const [usageData, setUsageData] = useState<UsageTransaction[]>([])
 	const [paymentsData, setPaymentsData] = useState<PaymentTransaction[]>([])
 
+	console.log("SSYAccountView user:", user)
 	// Fetch all account data when component mounts using gRPC
 	useEffect(() => {
 		if (user) {
@@ -362,18 +363,6 @@ export const SSYAccountView = () => {
 		}
 	}, [user])
 
-	const handleLogin = () => {
-		AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create()).catch((err) =>
-			console.error("Failed to get login URL:", err),
-		)
-	}
-
-	const handleLogout = () => {
-		AccountServiceClient.shengSuanYunLogoutClicked(EmptyRequest.create()).catch((err) =>
-			console.error("Failed to logout:", err),
-		)
-		handleSignOutSSY()
-	}
 	return (
 		<div className="h-full flex flex-col">
 			{user ? (
@@ -411,7 +400,15 @@ export const SSYAccountView = () => {
 								个人中心
 							</VSCodeButtonLink>
 						</div>
-						<VSCodeButton appearance="secondary" onClick={handleLogout} className="w-full min-[225px]:w-1/2">
+
+						<VSCodeButton
+							appearance="secondary"
+							className="w-full min-[225px]:w-1/2"
+							onClick={() => {
+								AccountServiceClient.shengSuanYunLogoutClicked(EmptyRequest.create()).catch((err) =>
+									console.error("Failed to logout:", err),
+								)
+							}}>
 							退出登录
 						</VSCodeButton>
 					</div>
@@ -466,7 +463,13 @@ export const SSYAccountView = () => {
 				<div className="flex flex-col items-center pr-3">
 					<ClineLogoWhite className="size-16 mb-4" />
 					<p style={{}}>注册帐户访问最新模型，进群联系客服，获得100万Tokens免费额度，以及更多即将推出的功能。</p>
-					<VSCodeButton onClick={handleLogin} className="w-full mb-4">
+					<VSCodeButton
+						className="w-full mb-4"
+						onClick={() =>
+							AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create()).catch((err) =>
+								console.error("Failed to get login URL:", err),
+							)
+						}>
 						注册 Cline 胜算云
 					</VSCodeButton>
 					<p className="text-[var(--vscode-descriptionForeground)] text-xs text-center m-0">

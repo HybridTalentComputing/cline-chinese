@@ -32,6 +32,8 @@ export type ApiProvider =
 	| "sapaicore"
 	| "groq"
 	| "huggingface"
+	| "huawei-cloud-maas"
+	| "baseten"
 
 export interface ApiHandlerOptions {
 	// Global configuration (not mode-specific)
@@ -88,6 +90,7 @@ export interface ApiHandlerOptions {
 	sambanovaApiKey?: string
 	cerebrasApiKey?: string
 	groqApiKey?: string
+	basetenApiKey?: string
 	requestTimeoutMs?: number
 	shengSuanYunApiKey?: string
 	shengSuanYunToken?: string
@@ -96,6 +99,7 @@ export interface ApiHandlerOptions {
 	sapAiResourceGroup?: string
 	sapAiCoreTokenUrl?: string
 	sapAiCoreBaseUrl?: string
+	huaweiCloudMaasApiKey?: string
 	onRetryAttempt?: (attempt: number, maxRetries: number, delay: number, error: any) => void
 	// Plan mode configurations
 	planModeApiModelId?: string
@@ -119,11 +123,15 @@ export interface ApiHandlerOptions {
 	planModeSapAiCoreModelId?: string
 	planModeGroqModelId?: string
 	planModeGroqModelInfo?: ModelInfo
+	planModeBasetenModelId?: string
+	planModeBasetenModelInfo?: ModelInfo
 	planModeHuggingFaceModelId?: string
 	planModeHuggingFaceModelInfo?: ModelInfo
 	planModeShengSuanYunModelId?: string
 	planModeShengSuanYunModelInfo?: ShengSuanYunModelInfo
 
+	planModeHuaweiCloudMaasModelId?: string
+	planModeHuaweiCloudMaasModelInfo?: ModelInfo
 	// Act mode configurations
 
 	actModeApiModelId?: string
@@ -147,10 +155,14 @@ export interface ApiHandlerOptions {
 	actModeSapAiCoreModelId?: string
 	actModeGroqModelId?: string
 	actModeGroqModelInfo?: ModelInfo
+	actModeBasetenModelId?: string
+	actModeBasetenModelInfo?: ModelInfo
 	actModeHuggingFaceModelId?: string
 	actModeHuggingFaceModelInfo?: ModelInfo
 	actModeShengSuanYunModelId?: string
 	actModeShengSuanYunModelInfo?: ShengSuanYunModelInfo
+	actModeHuaweiCloudMaasModelId?: string
+	actModeHuaweiCloudMaasModelInfo?: ModelInfo
 }
 
 export type ApiConfiguration = ApiHandlerOptions & {
@@ -211,6 +223,16 @@ export const anthropicModels = {
 		outputPrice: 15.0,
 		cacheWritesPrice: 3.75,
 		cacheReadsPrice: 0.3,
+	},
+	"claude-opus-4-1-20250805": {
+		maxTokens: 8192,
+		contextWindow: 200_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 15.0,
+		outputPrice: 75.0,
+		cacheWritesPrice: 18.75,
+		cacheReadsPrice: 1.5,
 	},
 	"claude-opus-4-20250514": {
 		maxTokens: 8192,
@@ -285,6 +307,11 @@ export const claudeCodeModels = {
 		supportsImages: false,
 		supportsPromptCache: false,
 	},
+	"claude-opus-4-1-20250805": {
+		...anthropicModels["claude-opus-4-1-20250805"],
+		supportsImages: false,
+		supportsPromptCache: false,
+	},
 	"claude-opus-4-20250514": {
 		...anthropicModels["claude-opus-4-20250514"],
 		supportsImages: false,
@@ -323,6 +350,16 @@ export const bedrockModels = {
 		cacheReadsPrice: 0.3,
 	},
 	"anthropic.claude-opus-4-20250514-v1:0": {
+		maxTokens: 8192,
+		contextWindow: 200_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 15.0,
+		outputPrice: 75.0,
+		cacheWritesPrice: 18.75,
+		cacheReadsPrice: 1.5,
+	},
+	"anthropic.claude-opus-4-1-20250805-v1:0": {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
@@ -479,6 +516,16 @@ export const vertexModels = {
 		outputPrice: 15.0,
 		cacheWritesPrice: 3.75,
 		cacheReadsPrice: 0.3,
+	},
+	"claude-opus-4-1@20250805": {
+		maxTokens: 8192,
+		contextWindow: 200_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 15.0,
+		outputPrice: 75.0,
+		cacheWritesPrice: 18.75,
+		cacheReadsPrice: 1.5,
 	},
 	"claude-opus-4@20250514": {
 		maxTokens: 8192,
@@ -1120,6 +1167,26 @@ export const deepSeekModels = {
 export type HuggingFaceModelId = keyof typeof huggingFaceModels
 export const huggingFaceDefaultModelId: HuggingFaceModelId = "moonshotai/Kimi-K2-Instruct"
 export const huggingFaceModels = {
+	"openai/gpt-oss-120b": {
+		maxTokens: 32766,
+		contextWindow: 131_072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+		description:
+			"Large open-weight reasoning model for high-end desktops and data centers, built for complex coding, math, and general AI tasks.",
+	},
+	"openai/gpt-oss-20b": {
+		maxTokens: 32766,
+		contextWindow: 131_072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+		description:
+			"Medium open-weight reasoning model that runs on most desktops, balancing strong reasoning with broad accessibility.",
+	},
 	"moonshotai/Kimi-K2-Instruct": {
 		maxTokens: 131_072,
 		contextWindow: 131_072,
@@ -2483,8 +2550,46 @@ export const sambanovaModels = {
 // Cerebras
 // https://inference-docs.cerebras.ai/api-reference/models
 export type CerebrasModelId = keyof typeof cerebrasModels
-export const cerebrasDefaultModelId: CerebrasModelId = "qwen-3-32b"
+export const cerebrasDefaultModelId: CerebrasModelId = "qwen-3-coder-480b-free"
 export const cerebrasModels = {
+	"gpt-oss-120b": {
+		maxTokens: 65536,
+		contextWindow: 128000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+		description: "Intelligent general purpose model with 3,000 tokens/s",
+	},
+	"qwen-3-coder-480b-free": {
+		maxTokens: 40000,
+		contextWindow: 64000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+		description:
+			"SOTA coding model with ~2000 tokens/s ($0 free tier)\n\n• Use this if you don't have a Cerebras subscription\n• 64K context window\n• Rate limits: 150K TPM, 1M TPH/TPD, 10 RPM, 100 RPH/RPD\n\nUpgrade for higher limits: [https://cloud.cerebras.ai/?utm=cline](https://cloud.cerebras.ai/?utm=cline)",
+	},
+	"qwen-3-coder-480b": {
+		maxTokens: 40000,
+		contextWindow: 128000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+		description:
+			"SOTA coding model with ~2000 tokens/s ($50/$250 paid tiers)\n\n• Use this if you have a Cerebras subscription\n• 131K context window with higher rate limits",
+	},
+	"qwen-3-235b-a22b-instruct-2507": {
+		maxTokens: 64000,
+		contextWindow: 64000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+		description: "Intelligent model with ~1400 tokens/s",
+	},
 	"llama-3.3-70b": {
 		maxTokens: 64000,
 		contextWindow: 64000,
@@ -2503,9 +2608,9 @@ export const cerebrasModels = {
 		outputPrice: 0,
 		description: "SOTA coding performance with ~2500 tokens/s",
 	},
-	"qwen-3-235b-a22b": {
-		maxTokens: 40000,
-		contextWindow: 40000,
+	"qwen-3-235b-a22b-thinking-2507": {
+		maxTokens: 32000,
+		contextWindow: 65000,
 		supportsImages: false,
 		supportsPromptCache: false,
 		inputPrice: 0,
@@ -2518,8 +2623,28 @@ export const cerebrasModels = {
 // https://console.groq.com/docs/models
 // https://groq.com/pricing/
 export type GroqModelId = keyof typeof groqModels
-export const groqDefaultModelId: GroqModelId = "moonshotai/kimi-k2-instruct"
+export const groqDefaultModelId: GroqModelId = "openai/gpt-oss-120b"
 export const groqModels = {
+	"openai/gpt-oss-120b": {
+		maxTokens: 32766, // Model fails if you try to use more than 32K tokens
+		contextWindow: 131_072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.15,
+		outputPrice: 0.75,
+		description:
+			"A state-of-the-art 120B open-weight Mixture-of-Experts language model optimized for strong reasoning, tool use, and efficient deployment on large GPUs",
+	},
+	"openai/gpt-oss-20b": {
+		maxTokens: 32766, // Model fails if you try to use more than 32K tokens
+		contextWindow: 131_072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.1,
+		outputPrice: 0.5,
+		description:
+			"A compact 20B open-weight Mixture-of-Experts language model designed for strong reasoning and tool use, ideal for edge devices and local inference.",
+	},
 	// Compound Beta Models - Hybrid architectures optimized for tool use
 	"compound-beta": {
 		maxTokens: 8192,
@@ -2800,3 +2925,162 @@ export const moonshotModels = {
 } as const satisfies Record<string, ModelInfo>
 export type MoonshotModelId = keyof typeof moonshotModels
 export const moonshotDefaultModelId = "kimi-k2-0711-preview" satisfies MoonshotModelId
+
+// Huawei Cloud MaaS
+export type HuaweiCloudMaasModelId = keyof typeof huaweiCloudMaasModels
+export const huaweiCloudMaasDefaultModelId: HuaweiCloudMaasModelId = "DeepSeek-V3"
+export const huaweiCloudMaasModels = {
+	"DeepSeek-V3": {
+		maxTokens: 16_384,
+		contextWindow: 64_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.27,
+		outputPrice: 1.1,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+	},
+	"DeepSeek-R1": {
+		maxTokens: 16_384,
+		contextWindow: 64_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.55,
+		outputPrice: 2.2,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		thinkingConfig: {
+			maxBudget: 8192,
+			outputPrice: 2.2,
+		},
+	},
+	"deepseek-r1-250528": {
+		maxTokens: 16_384,
+		contextWindow: 64_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.55,
+		outputPrice: 2.2,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		thinkingConfig: {
+			maxBudget: 8192,
+			outputPrice: 2.2,
+		},
+	},
+	"qwen3-235b-a22b": {
+		maxTokens: 8_192,
+		contextWindow: 32_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.27,
+		outputPrice: 1.1,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		thinkingConfig: {
+			maxBudget: 4096,
+			outputPrice: 1.1,
+		},
+	},
+	"qwen3-32b": {
+		maxTokens: 8_192,
+		contextWindow: 32_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.27,
+		outputPrice: 1.1,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		thinkingConfig: {
+			maxBudget: 4096,
+			outputPrice: 1.1,
+		},
+	},
+} as const satisfies Record<string, ModelInfo>
+
+// Baseten
+// https://baseten.co/products/model-apis/
+export const basetenModels = {
+	"deepseek-ai/DeepSeek-R1-0528": {
+		maxTokens: 131072,
+		contextWindow: 163840,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 2.55,
+		outputPrice: 5.95,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		description:
+			"DeepSeek R1 0528 - A state-of-the-art 671B-parameter MoE LLM with o1-style reasoning licensed for commercial use.",
+	},
+	"deepseek-ai/DeepSeek-V3-0324": {
+		maxTokens: 131072,
+		contextWindow: 163840,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.77,
+		outputPrice: 0.77,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		description: "DeepSeek V3 0324 - A state-of-the-art 671B-parameter MoE LLM licensed for commercial use.",
+	},
+	"meta-llama/Llama-4-Maverick-17B-128E-Instruct": {
+		maxTokens: 8192,
+		contextWindow: 131072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.19,
+		outputPrice: 0.72,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		description: "Meta's Llama 4 Maverick - A SOTA mixture-of-experts multi-modal LLM with 400 billion total parameters.",
+	},
+	"meta-llama/Llama-4-Scout-17B-16E-Instruct": {
+		maxTokens: 8192,
+		contextWindow: 131072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.13,
+		outputPrice: 0.5,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		description: "Meta's Llama 4 Scout - A SOTA mixture-of-experts multi-modal LLM with 109 billion total parameters.",
+	},
+	"moonshotai/Kimi-K2-Instruct": {
+		maxTokens: 131072,
+		contextWindow: 131072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.6,
+		outputPrice: 2.5,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		description: "Moonshot AI's Kimi K2 - The world's first 1 trillion parameter open source model.",
+	},
+	"Qwen/Qwen3-235B-A22B-Instruct-2507": {
+		maxTokens: 163800,
+		contextWindow: 163800,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.22,
+		outputPrice: 0.8,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		description:
+			"Qwen3-235B-A22B-Instruct-2507 is a multilingual, instruction-tuned mixture-of-experts language model based on the Qwen3-235B architecture, with 22B active parameters per forward pass.",
+	},
+	"Qwen/Qwen3-Coder-480B-A35B-Instruct": {
+		maxTokens: 163800,
+		contextWindow: 163800,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 1.7,
+		outputPrice: 1.7,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		description:
+			"Qwen3-Coder-480B-A35B-Instruct is a 480B parameter, instruction-tuned, agentic coding model that excels at function calling, tool use, and long-context reasoning over repositories.",
+	},
+} as const satisfies Record<string, ModelInfo>
+export type BasetenModelId = keyof typeof basetenModels
+export const basetenDefaultModelId = "moonshotai/Kimi-K2-Instruct" satisfies BasetenModelId

@@ -1,4 +1,5 @@
 import VSCodeButtonLink from "@/components/common/VSCodeButtonLink"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import { TaskServiceClient } from "@/services/grpc-client"
 import { AskResponseRequest } from "@shared/proto/cline/task"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
@@ -19,6 +20,11 @@ const CreditLimitErrorSSY: React.FC<CreditLimitErrorSSYProps> = ({
 	message = "账户余额不足.",
 	buyCreditsUrl = "https://console.shengsuanyun.com/user/recharge",
 }) => {
+	const { uriScheme } = useExtensionState()
+	const callbackUrl = `${uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan`
+	const fullPurchaseUrl = new URL(buyCreditsUrl)
+	fullPurchaseUrl.searchParams.set("callback_url", callbackUrl)
+
 	return (
 		<div className="p-2 border-none rounded-md mb-2 bg-[var(--vscode-textBlockQuote-background)]">
 			<div className="mb-3 font-azeret-mono">
@@ -33,7 +39,7 @@ const CreditLimitErrorSSY: React.FC<CreditLimitErrorSSYProps> = ({
 			</div>
 
 			<VSCodeButtonLink
-				href={buyCreditsUrl}
+				href={fullPurchaseUrl.toString()}
 				style={{
 					width: "100%",
 					marginBottom: "8px",

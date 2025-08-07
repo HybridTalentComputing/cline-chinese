@@ -21,11 +21,14 @@ export class SSYAccountService {
 				...config.headers,
 			},
 		}
-		const response: any = await axios.get(`${this.baseUrl}${endpoint}`, reqConfig)
-		if (!response.data || !response.data.data) {
+		const url = `${this.baseUrl}${endpoint}`
+		console.log("SSYAccountService.authenticatedRequest():", url, reqConfig)
+		const res: any = await axios.get(url, reqConfig)
+		console.log(res.data)
+		if (!res.data || !res.data.data) {
 			throw new Error(`Invalid response from ${endpoint} API`)
 		}
-		return response.data.data
+		return res.data.data
 	}
 
 	async fetchUserDataRPC(): Promise<UserCreditsData> {

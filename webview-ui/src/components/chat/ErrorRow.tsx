@@ -1,9 +1,10 @@
 import { memo } from "react"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { ClineMessage } from "@shared/ExtensionMessage"
-import { ClineError, ClineErrorType } from "../../../../src/services/error/ClineError"
+import { SSYError, SSYErrorType } from "../../../../src/services/error/SSYError"
 import CreditLimitError from "@/components/chat/CreditLimitError"
-import { handleSignIn, useClineAuth } from "@/context/ClineAuthContext"
+import { handleSignInSSY, useShengSuanYunAuth } from "@/context/ShengSuanYunAuthContext"
+import CreditLimitErrorSSY from "./CreditLimitErrorSSY"
 
 const errorColor = "var(--vscode-errorForeground)"
 
@@ -15,7 +16,7 @@ interface ErrorRowProps {
 }
 
 const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStreamingFailedMessage }: ErrorRowProps) => {
-	const { clineUser } = useClineAuth()
+	const { userSSY: ssyUser } = useShengSuanYunAuth()
 
 	const renderErrorContent = () => {
 		switch (errorType) {
@@ -24,16 +25,18 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 			case "auto_approval_max_req_reached":
 				// Handle API request errors with special error parsing
 				if (apiRequestFailedMessage || apiReqStreamingFailedMessage) {
-					const clineError = ClineError.parse(apiRequestFailedMessage || apiReqStreamingFailedMessage)
-					const clineErrorMessage = clineError?.message
-					const requestId = clineError?._error?.request_id
-					const isClineProvider = clineError?.providerId === "cline"
+					const ssyError = SSYError.parse(apiRequestFailedMessage || apiReqStreamingFailedMessage)
+					const ssyErrorMessage = ssyError?.message
+					const requestId = ssyError?._error?.request_id
+					const isSSYProvider = ssyError?.providerId === "shengsuanyun"
 
-					if (clineError) {
-						if (clineError.isErrorType(ClineErrorType.Balance)) {
-							const errorDetails = clineError._error?.details
+					console.log("ErrorRow() ---------", ssyError?._error?.details)
+
+					if (ssyError) {
+						if (ssyError.isErrorType(SSYErrorType.Balance)) {
+							const errorDetails = ssyError._error?.details
 							return (
-								<CreditLimitError
+								<CreditLimitErrorSSY
 									currentBalance={errorDetails?.current_balance}
 									totalSpent={errorDetails?.total_spent}
 									totalPromotions={errorDetails?.total_promotions}
@@ -44,21 +47,85 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 						}
 					}
 
-					if (clineError?.isErrorType(ClineErrorType.RateLimit)) {
+					if (ssyError?.isErrorType(SSYErrorType.RateLimit)) {
 						return (
 							<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
-								{clineErrorMessage}
-								{requestId && <div>Request ID: {requestId}</div>}
+								{ssyErrorMessage}
+								{requestId && <div>请求 ID: {requestId}</div>}
 							</p>
+						)
+					}
+
+					if (ssyError?.isErrorType(SSYErrorType.QuotaExceeded)) {
+						return (
+							<>
+								<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
+									{ssyErrorMessage}
+									{requestId && <div>请求 ID: {requestId}</div>}
+								</p>
+								<p>
+									点击这里，在编辑 API Key 对话框中
+									<a href="https://console.shengsuanyun.com/user/keys" className="underline text-inherit">
+										配置 API Key 配额
+									</a>
+								</p>
+							</>
+						)
+					}
+
+					if (ssyError?.isErrorType(SSYErrorType.TpmLimitExceeded)) {
+						return (
+							<>
+								<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
+									{ssyErrorMessage}
+									{requestId && <div>请求 ID: {requestId}</div>}
+								</p>
+								<p>
+									<a href="https://console.shengsuanyun.com/user/keys" className="underline text-inherit">
+										在编辑 API Key 对话框中配置 API Key TPM
+									</a>
+								</p>
+								或
+								<p>
+									<a
+										href="https://docs.router.shengsuanyun.com/6893249m0#1-tpm-tokens-per-minute-%E9%99%90%E5%88%B6%E8%B6%85%E5%87%BA"
+										className="underline text-inherit">
+										了解更多关于TPM (Tokens Per Minute) 限制超出错误的说明
+									</a>
+								</p>
+							</>
+						)
+					}
+					if (ssyError?.isErrorType(SSYErrorType.RpmLimitExceeded)) {
+						return (
+							<>
+								<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
+									{ssyErrorMessage}
+									{requestId && <div>请求 ID: {requestId}</div>}
+								</p>
+								<p>
+									<a href="https://console.shengsuanyun.com/user/keys" className="underline text-inherit">
+										在编辑 API Key 对话框中配置 API Key RPM
+									</a>
+									或
+								</p>
+								<p>
+									<a
+										href="https://docs.router.shengsuanyun.com/6893249m0#2-rpm-requests-per-minute-%E9%99%90%E5%88%B6%E8%B6%85%E5%87%BA"
+										className="underline text-inherit">
+										了解更多关于RPM (Requests Per Minute) 限制超出错误的说明
+									</a>
+								</p>
+							</>
 						)
 					}
 
 					// Default error display
 					return (
 						<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
-							{clineErrorMessage}
-							{requestId && <div>Request ID: {requestId}</div>}
-							{clineErrorMessage?.toLowerCase()?.includes("powershell") && (
+							{ssyErrorMessage}
+							{requestId && <div>请求 ID: {requestId}</div>}
+							{ssyErrorMessage?.toLowerCase()?.includes("powershell") && (
 								<>
 									<br />
 									<br />
@@ -71,18 +138,18 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 									.
 								</>
 							)}
-							{clineError?.isErrorType(ClineErrorType.Auth) && (
+							{ssyError?.isErrorType(SSYErrorType.Auth) && (
 								<>
 									<br />
 									<br />
 									{/* The user is signed in or not using cline provider */}
-									{clineUser && !isClineProvider ? (
+									{ssyUser && !isSSYProvider ? (
 										<span className="mb-4 text-[var(--vscode-descriptionForeground)]">
 											(点击下方的“重试”)
 										</span>
 									) : (
-										<VSCodeButton onClick={handleSignIn} className="w-full mb-4">
-											登录 Cline
+										<VSCodeButton onClick={handleSignInSSY} className="w-full mb-4">
+											登录 Cline 胜算云
 										</VSCodeButton>
 									)}
 								</>

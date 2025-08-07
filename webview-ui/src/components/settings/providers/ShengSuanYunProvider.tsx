@@ -2,7 +2,7 @@ import { ApiKeyField } from "../common/ApiKeyField"
 import ShengSuanYunModelPicker from "../ShengSuanYunModelPicker"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { Mode } from "@shared/ChatSettings"
+import { Mode } from "@shared/storage/types"
 interface ShengSuanYunProviderProps {
 	showModelOptions: boolean
 	isPopup?: boolean

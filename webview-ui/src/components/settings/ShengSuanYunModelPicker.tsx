@@ -12,7 +12,7 @@ import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
 import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
 import { getModeSpecificFields, normalizeApiConfiguration } from "./utils/providerUtils"
 import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
-import { Mode } from "@shared/ChatSettings"
+import { Mode } from "@shared/storage/types"
 export interface ShengSuanYunModelPickerProps {
 	isPopup?: boolean
 	currentMode: Mode

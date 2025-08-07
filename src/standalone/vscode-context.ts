@@ -5,9 +5,8 @@ import path, { join } from "path"
 import type { Extension, ExtensionContext } from "vscode"
 import { ExtensionKind, ExtensionMode } from "vscode"
 import { log } from "./utils"
-import { outputChannel, postMessage } from "./vscode-context-stubs"
-import { EventEmitter } from "./vscode-context-utils"
-import { EnvironmentVariableCollection, MementoStore, readJson, SecretStore } from "./vscode-context-utils"
+import { postMessage } from "./vscode-context-stubs"
+import { EnvironmentVariableCollection, EventEmitter, MementoStore, readJson, SecretStore } from "./vscode-context-utils"
 import type { LanguageModelAccessInformation } from "vscode"
 
 const VERSION = getPackageVersion()
@@ -76,4 +75,4 @@ function getPackageVersion(): string {
 
 console.log("Finished loading vscode context...")
 
-export { extensionContext, outputChannel, postMessage }
+export { extensionContext, postMessage }

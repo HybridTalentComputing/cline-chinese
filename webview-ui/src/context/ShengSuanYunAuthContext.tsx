@@ -89,6 +89,16 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 	)
 }
 
+export const handleSignInSSY = async () => {
+	try {
+		AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create()).catch((err) =>
+			console.error("Failed to get login URL:", err),
+		)
+	} catch (error) {
+		console.error("Error signing in:", error)
+		throw error
+	}
+}
 export const useShengSuanYunAuth = () => {
 	const context = useContext(ShengSuanYunAuthContext)
 	if (context === undefined) {
