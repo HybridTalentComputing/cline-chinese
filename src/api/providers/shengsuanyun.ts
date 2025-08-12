@@ -10,6 +10,7 @@ import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { OpenRouterErrorResponse } from "./types"
 import { calculateApiCostOpenAI } from "../../utils/cost"
 import * as vscode from "vscode"
+import { createOpenRouterStream } from "../transform/openrouter-stream"
 
 interface ShengSuanYunHandlerOptions {
 	shengSuanYunApiKey?: string
@@ -40,7 +41,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		this.lastGenerationId = undefined
 		const model = this.getModel()
-		const stream = await createShengsuanyunStream(
+		const stream = await createOpenRouterStream(
 			this.client,
 			systemPrompt,
 			messages,

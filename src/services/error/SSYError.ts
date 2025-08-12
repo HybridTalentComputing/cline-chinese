@@ -133,7 +133,13 @@ export class SSYError extends Error {
 		const { code, status, details } = err._error
 
 		// Check balance error first (most specific)
-		if (code === "insufficient_credits" && typeof details?.current_balance === "number") {
+		if (code === "insufficient_quota" && typeof details?.message.includes("用户余额不足")) {
+			err._error.details = {
+				balance: 0,
+				bill: 0,
+				message: "账户余额不足，请充值！",
+				buyCreditsUrl: "https://console.shengsuanyun.com/user/recharge",
+			}
 			return SSYErrorType.Balance
 		}
 

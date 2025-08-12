@@ -7,16 +7,14 @@ import React from "react"
 
 interface CreditLimitErrorSSYProps {
 	currentBalance: number
-	totalSpent?: number
-	totalPromotions?: number
+	bill?: number
 	message: string
 	buyCreditsUrl?: string
 }
 
 const CreditLimitErrorSSY: React.FC<CreditLimitErrorSSYProps> = ({
 	currentBalance = 0,
-	totalSpent = 0,
-	totalPromotions = 0,
+	bill = 0,
 	message = "账户余额不足.",
 	buyCreditsUrl = "https://console.shengsuanyun.com/user/recharge",
 }) => {
@@ -33,8 +31,7 @@ const CreditLimitErrorSSY: React.FC<CreditLimitErrorSSYProps> = ({
 					<div style={{ color: "var(--vscode-foreground)" }}>
 						余额: <span style={{ fontWeight: "bold" }}>{currentBalance.toFixed(2)}</span>
 					</div>
-					<div style={{ color: "var(--vscode-foreground)" }}>消费: {totalSpent.toFixed(2)}</div>
-					<div style={{ color: "var(--vscode-foreground)" }}>促销: {totalPromotions.toFixed(2)}</div>
+					<div style={{ color: "var(--vscode-foreground)" }}>待处理账单: {bill.toFixed(2)}</div>
 				</div>
 			</div>
 

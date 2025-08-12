@@ -37,9 +37,8 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 							const errorDetails = ssyError._error?.details
 							return (
 								<CreditLimitErrorSSY
-									currentBalance={errorDetails?.current_balance}
-									totalSpent={errorDetails?.total_spent}
-									totalPromotions={errorDetails?.total_promotions}
+									currentBalance={errorDetails?.balance}
+									bill={errorDetails?.bill}
 									message={errorDetails?.message}
 									buyCreditsUrl={errorDetails?.buy_credits_url}
 								/>
