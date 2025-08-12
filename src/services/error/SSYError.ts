@@ -129,7 +129,6 @@ export class SSYError extends Error {
 	 * This is useful for determining how to handle the error in the UI or logic.
 	 */
 	static getErrorType(err: SSYError): SSYErrorType | undefined {
-		console.log("SSYError.getErrorType()", err._error, "--------------------", SSYErrorType)
 		const { code, status, details } = err._error
 
 		// Check balance error first (most specific)

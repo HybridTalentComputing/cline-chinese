@@ -29,9 +29,6 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 					const ssyErrorMessage = ssyError?.message
 					const requestId = ssyError?._error?.request_id
 					const isSSYProvider = ssyError?.providerId === "shengsuanyun"
-
-					console.log("ErrorRow() ---------", ssyError?._error?.details)
-
 					if (ssyError) {
 						if (ssyError.isErrorType(SSYErrorType.Balance)) {
 							const errorDetails = ssyError._error?.details
