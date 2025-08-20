@@ -1,4 +1,4 @@
-# 🚀 Cline 中文版插件（Cline-Chinese）111
+# 🚀 Cline 中文版插件（Cline-Chinese）
 
 <p align="center">
 
