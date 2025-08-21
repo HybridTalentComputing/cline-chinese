@@ -37,7 +37,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 									currentBalance={errorDetails?.balance}
 									bill={errorDetails?.bill}
 									message={errorDetails?.message}
-									buyCreditsUrl={errorDetails?.buy_credits_url}
+									// buyCreditsUrl={errorDetails?.buy_credits_url}
 								/>
 							)
 						}

@@ -39,7 +39,7 @@ export interface ApiHandlerOptions {
 	// Global configuration (not mode-specific)
 	apiKey?: string // anthropic
 	clineAccountId?: string
-	taskId?: string // Used to identify the task in API requests
+	ulid?: string // Used to identify the task in API requests
 	liteLlmBaseUrl?: string
 	liteLlmApiKey?: string
 	liteLlmUsePromptCache?: boolean
@@ -64,6 +64,7 @@ export interface ApiHandlerOptions {
 	openAiBaseUrl?: string
 	openAiApiKey?: string
 	ollamaBaseUrl?: string
+	ollamaApiKey?: string
 	ollamaApiOptionsCtxNum?: string
 	lmStudioBaseUrl?: string
 	geminiApiKey?: string
@@ -71,6 +72,7 @@ export interface ApiHandlerOptions {
 	openAiNativeApiKey?: string
 	deepSeekApiKey?: string
 	requestyApiKey?: string
+	requestyBaseUrl?: string
 	togetherApiKey?: string
 	fireworksApiKey?: string
 	fireworksModelMaxCompletionTokens?: number
@@ -208,11 +210,40 @@ export interface OpenAiCompatibleModelInfo extends ModelInfo {
 	isR1FormatRequired?: boolean
 }
 
+export const CLAUDE_SONNET_4_1M_SUFFIX = ":1m"
+export const CLAUDE_SONNET_4_1M_TIERS = [
+	{
+		contextWindow: 200000,
+		inputPrice: 3.0,
+		outputPrice: 15,
+		cacheWritesPrice: 3.75,
+		cacheReadsPrice: 0.3,
+	},
+	{
+		contextWindow: Number.MAX_SAFE_INTEGER, // storing infinity in vs storage is not possible, it converts to 'null', which causes crash in webview ModelInfoView
+		inputPrice: 6,
+		outputPrice: 22.5,
+		cacheWritesPrice: 7.5,
+		cacheReadsPrice: 0.6,
+	},
+]
+
 // Anthropic
 // https://docs.anthropic.com/en/docs/about-claude/models // prices updated 2025-01-02
 export type AnthropicModelId = keyof typeof anthropicModels
 export const anthropicDefaultModelId: AnthropicModelId = "claude-sonnet-4-20250514"
 export const anthropicModels = {
+	"claude-sonnet-4-20250514:1m": {
+		maxTokens: 8192,
+		contextWindow: 1_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 3.0,
+		outputPrice: 15.0,
+		cacheWritesPrice: 3.75,
+		cacheReadsPrice: 0.3,
+		tiers: CLAUDE_SONNET_4_1M_TIERS,
+	},
 	"claude-sonnet-4-20250514": {
 		maxTokens: 8192,
 		contextWindow: 200_000,
@@ -339,6 +370,17 @@ export const claudeCodeModels = {
 export type BedrockModelId = keyof typeof bedrockModels
 export const bedrockDefaultModelId: BedrockModelId = "anthropic.claude-sonnet-4-20250514-v1:0"
 export const bedrockModels = {
+	"anthropic.claude-sonnet-4-20250514-v1:0:1m": {
+		maxTokens: 8192,
+		contextWindow: 1_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 3.0,
+		outputPrice: 15.0,
+		cacheWritesPrice: 3.75,
+		cacheReadsPrice: 0.3,
+		tiers: CLAUDE_SONNET_4_1M_TIERS,
+	},
 	"anthropic.claude-sonnet-4-20250514-v1:0": {
 		maxTokens: 8192,
 		contextWindow: 200_000,
@@ -488,11 +530,11 @@ export const bedrockModels = {
 // OpenRouter
 // https://openrouter.ai/models?order=newest&supported_parameters=tools
 export const openRouterDefaultModelId = "anthropic/claude-sonnet-4" // will always exist in openRouterModels
+export const openRouterClaudeSonnet41mModelId = `anthropic/claude-sonnet-4${CLAUDE_SONNET_4_1M_SUFFIX}`
 export const openRouterDefaultModelInfo: ModelInfo = {
 	maxTokens: 8192,
 	contextWindow: 200_000,
 	supportsImages: true,
-
 	supportsPromptCache: true,
 	inputPrice: 3.0,
 	outputPrice: 15.0,
@@ -1010,8 +1052,53 @@ export const geminiModels = {
 // OpenAI Native
 // https://openai.com/api/pricing/
 export type OpenAiNativeModelId = keyof typeof openAiNativeModels
-export const openAiNativeDefaultModelId: OpenAiNativeModelId = "gpt-4.1"
+export const openAiNativeDefaultModelId: OpenAiNativeModelId = "gpt-5-2025-08-07"
 export const openAiNativeModels = {
+	"gpt-5-2025-08-07": {
+		maxTokens: 8_192, // 128000 breaks context window truncation
+		contextWindow: 272000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 1.25,
+		outputPrice: 10.0,
+		cacheReadsPrice: 0.125,
+	},
+	"gpt-5-mini-2025-08-07": {
+		maxTokens: 8_192,
+		contextWindow: 272000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.25,
+		outputPrice: 2.0,
+		cacheReadsPrice: 0.025,
+	},
+	"gpt-5-nano-2025-08-07": {
+		maxTokens: 8_192,
+		contextWindow: 272000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.05,
+		outputPrice: 0.4,
+		cacheReadsPrice: 0.005,
+	},
+	"gpt-5-chat-latest": {
+		maxTokens: 8_192,
+		contextWindow: 400000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 1.25,
+		outputPrice: 10,
+		cacheReadsPrice: 0.125,
+	},
+	"nectarine-alpha-new-reasoning-effort-2025-07-25": {
+		maxTokens: 8_192,
+		contextWindow: 256000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0,
+		outputPrice: 0,
+		cacheReadsPrice: 0,
+	},
 	o3: {
 		maxTokens: 100_000,
 		contextWindow: 200_000,
@@ -1119,14 +1206,6 @@ export const openAiNativeModels = {
 		supportsPromptCache: false,
 		inputPrice: 5,
 		outputPrice: 15,
-	},
-	"gpt-4.5-preview": {
-		maxTokens: 16_384,
-		contextWindow: 128_000,
-		supportsImages: true,
-		supportsPromptCache: true,
-		inputPrice: 75,
-		outputPrice: 150,
 	},
 } as const satisfies Record<string, ModelInfo>
 
@@ -2768,21 +2847,21 @@ export const sapAiCoreModels = {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		description: sapAiCoreModelDescription,
 	},
 	"anthropic--claude-4-opus": {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		description: sapAiCoreModelDescription,
 	},
 	"anthropic--claude-3.7-sonnet": {
 		maxTokens: 64_000,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		description: sapAiCoreModelDescription,
 	},
 	"anthropic--claude-3.5-sonnet": {
@@ -2818,6 +2897,9 @@ export const sapAiCoreModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsPromptCache: true,
+		thinkingConfig: {
+			maxBudget: 32767,
+		},
 		description: sapAiCoreModelDescription,
 	},
 	"gemini-2.5-flash": {
@@ -2865,6 +2947,27 @@ export const sapAiCoreModels = {
 		supportsPromptCache: true,
 		description: sapAiCoreModelDescription,
 	},
+	"gpt-5": {
+		maxTokens: 128_000,
+		contextWindow: 272_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		description: sapAiCoreModelDescription,
+	},
+	"gpt-5-nano": {
+		maxTokens: 128_000,
+		contextWindow: 272_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		description: sapAiCoreModelDescription,
+	},
+	"gpt-5-mini": {
+		maxTokens: 128_000,
+		contextWindow: 272_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		description: sapAiCoreModelDescription,
+	},
 	o1: {
 		maxTokens: 4096,
 		contextWindow: 200_000,
@@ -2899,15 +3002,23 @@ export const sapAiCoreModels = {
 // https://platform.moonshot.ai/docs/pricing/chat
 export const moonshotModels = {
 	"kimi-k2-0711-preview": {
-		maxTokens: 131_072,
+		maxTokens: 32_000,
 		contextWindow: 131_072,
 		supportsImages: false,
 		supportsPromptCache: false,
 		inputPrice: 0.6,
 		outputPrice: 2.5,
 	},
+	"kimi-k2-turbo-preview": {
+		maxTokens: 32_000,
+		contextWindow: 131_072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 2.4,
+		outputPrice: 10,
+	},
 	"moonshot-v1-128k-vision-preview": {
-		maxTokens: 131_072,
+		maxTokens: 32_000,
 		contextWindow: 131_072,
 		supportsImages: true,
 		supportsPromptCache: false,
@@ -2915,7 +3026,7 @@ export const moonshotModels = {
 		outputPrice: 5,
 	},
 	"kimi-thinking-preview": {
-		maxTokens: 131_072,
+		maxTokens: 32_000,
 		contextWindow: 131_072,
 		supportsImages: false,
 		supportsPromptCache: false,

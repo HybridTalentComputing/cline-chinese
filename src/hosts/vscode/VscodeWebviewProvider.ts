@@ -4,9 +4,11 @@ import { WebviewProvider } from "@core/webview"
 import { getTheme } from "@integrations/theme/getTheme"
 import type { Uri } from "vscode"
 import * as vscode from "vscode"
+import { HostProvider } from "@/hosts/host-provider"
 import type { ExtensionMessage } from "@/shared/ExtensionMessage"
 import type { WebviewProviderType } from "@/shared/webview/types"
-import { HostProvider } from "@/hosts/host-provider"
+import { WebviewMessage } from "@/shared/WebviewMessage"
+import { handleGrpcRequest, handleGrpcRequestCancel } from "@/core/controller/grpc-handler"
 
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -14,6 +16,11 @@ https://github.com/KumarVariable/vscode-extension-sidebar-html/blob/master/src/c
 */
 
 export class VscodeWebviewProvider extends WebviewProvider implements vscode.WebviewViewProvider {
+	// Used in package.json as the view's id. This value cannot be changed due to how vscode caches
+	// views based on their id, and updating the id would break existing instances of the extension.
+	public static readonly SIDEBAR_ID = "ClineShengsuan.SidebarProvider"
+	public static readonly TAB_PANEL_ID = "ClineShengsuan.TabPanelProvider"
+
 	private webview?: vscode.WebviewView | vscode.WebviewPanel
 	private disposables: vscode.Disposable[] = []
 
@@ -27,23 +34,36 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 		}
 		return this.webview.webview.asWebviewUri(uri)
 	}
+
 	override getCspSource() {
 		if (!this.webview) {
 			throw new Error("Webview not initialized")
 		}
 		return this.webview.webview.cspSource
 	}
-	override postMessageToWebview(message: ExtensionMessage) {
-		return this.webview?.webview.postMessage(message)
+
+	protected isActive() {
+		if (this.webview && this.webview.viewType === VscodeWebviewProvider.TAB_PANEL_ID && "active" in this.webview) {
+			return this.webview.active === true
+		}
+		return false
 	}
+
 	override isVisible() {
 		return this.webview?.visible || false
 	}
-	override getWebview() {
+
+	public getWebview(): vscode.WebviewView | vscode.WebviewPanel | undefined {
 		return this.webview
 	}
 
-	override async resolveWebviewView(webviewView: vscode.WebviewView | vscode.WebviewPanel) {
+	/**
+	 * Initializes and sets up the webview when it's first created.
+	 *
+	 * @param webviewView - The webview view or panel instance to be resolved
+	 * @returns A promise that resolves when the webview has been fully initialized
+	 */
+	public async resolveWebviewView(webviewView: vscode.WebviewView | vscode.WebviewPanel): Promise<void> {
 		this.webview = webviewView
 
 		webviewView.webview.options = {
@@ -72,6 +92,7 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 			webviewView.onDidChangeViewState(
 				async (e) => {
 					if (e?.webviewPanel?.visible && e.webviewPanel?.active) {
+						WebviewProvider.setLastActiveControllerId(this.controller.id)
 						//  Only send the event if the webview is active (focused)
 						await sendDidBecomeVisibleEvent(this.controller.id)
 					}
@@ -84,6 +105,7 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 			webviewView.onDidChangeVisibility(
 				async () => {
 					if (this.webview?.visible) {
+						WebviewProvider.setLastActiveControllerId(this.controller.id)
 						await sendDidBecomeVisibleEvent(this.controller.id)
 					}
 				},
@@ -96,6 +118,9 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 		// This happens when the user closes the view or when the view is closed programmatically
 		webviewView.onDidDispose(
 			async () => {
+				if (WebviewProvider.getLastActiveControllerId() === this.controller.id) {
+					WebviewProvider.setLastActiveControllerId(null)
+				}
 				await this.dispose()
 			},
 			null,
@@ -156,11 +181,49 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 	private setWebviewMessageListener(webview: vscode.Webview) {
 		webview.onDidReceiveMessage(
 			(message) => {
-				this.controller.handleWebviewMessage(message)
+				this.handleWebviewMessage(message)
 			},
 			null,
 			this.disposables,
 		)
+	}
+
+	/**
+	 * Sets up an event listener to listen for messages passed from the webview context and
+	 * executes code based on the message that is received.
+	 *
+	 * @param webview A reference to the extension webview
+	 */
+	async handleWebviewMessage(message: WebviewMessage) {
+		const postMessageToWebview = (response: ExtensionMessage) => this.postMessageToWebview(response)
+
+		switch (message.type) {
+			case "grpc_request": {
+				if (message.grpc_request) {
+					await handleGrpcRequest(this.controller, postMessageToWebview, message.grpc_request)
+				}
+				break
+			}
+			case "grpc_request_cancel": {
+				if (message.grpc_request_cancel) {
+					await handleGrpcRequestCancel(postMessageToWebview, message.grpc_request_cancel)
+				}
+				break
+			}
+			default: {
+				console.error("Received unhandled WebviewMessage type:", JSON.stringify(message))
+			}
+		}
+	}
+
+	/**
+	 * Sends a message from the extension to the webview.
+	 *
+	 * @param message - The message to send to the webview
+	 * @returns A thenable that resolves to a boolean indicating success, or undefined if the webview is not available
+	 */
+	private async postMessageToWebview(message: ExtensionMessage): Promise<boolean | undefined> {
+		return this.webview?.webview.postMessage(message)
 	}
 
 	override async dispose() {

@@ -40,6 +40,8 @@ service AccountService {
   rpc getUserOrganizations(EmptyRequest) returns (UserOrganizationsResponse);
 
   rpc setUserOrganization(UserOrganizationUpdateRequest) returns (Empty);
+
+  rpc openrouterAuthClicked(EmptyRequest) returns (Empty);
 }
 
 message AuthStateChangedRequest {

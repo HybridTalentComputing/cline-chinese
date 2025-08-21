@@ -82,7 +82,7 @@ export function validateApiConfiguration(currentMode: Mode, apiConfiguration?: A
 				}
 				break
 			case "requesty":
-				if (!apiConfiguration.requestyApiKey || !requestyModelId) {
+				if (!apiConfiguration.requestyApiKey) {
 					return "您必须提供一个有效的 API密钥"
 				}
 				break

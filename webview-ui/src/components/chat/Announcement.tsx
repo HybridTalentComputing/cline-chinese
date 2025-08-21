@@ -44,43 +44,13 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 			<h3 style={h3TitleStyle}>
 				🎉{"  "} 更新 v{minorVersion}
 			</h3>
-			<ul style={ulStyle}>
-				<li>
-					<b>针对 Claude 4 进行了优化:</b>Cline 现已针对 Claude 4
-					系列模型进行了优化，从而提升了性能、可靠性并增加了新功能。
-				</li>
-				<li>
-					<b>Gemini CLI 提供商:</b> 添加了新的 Gemini CLI 提供程序，允许您使用本地 Gemini CLI 身份验证免费访问 Gemini
-					模型。
-				</li>
-				<li>
-					<b>网页抓取工具:</b> Gemini 2.5 Pro 和 Claude 4 型号现已支持 WebFetch 工具，允许 Cline
-					直接在对话中检索和汇总网页内容。
-				</li>
-				<li>
-					<b>自我认识:</b>在使用前沿模型时，Cline 对自己的能力和特性集有清晰的认识。
-				</li>
-				<li>
-					<b>改进的差异编辑:</b>改进了差别编辑功能，使前沿模型的差别编辑失败率创下新低。
-					<b>Cerebras API 支持:</b> 通过更新模型选择（仅限 Qwen 和 Llama 3.3 70B）增强了性能，并将 Qwen 3 32B
-					的上下文窗口从 16K 令牌增加到 64K token。
-				</li>
-				<li>
-					<b>Claude Code for Windows:</b> 改进了系统提示处理，以修复 E2BIG
-					错误并改进了错误消息，并提供常见设置问题的指导。
-				</li>
-				<li>
-					<b>Hugging Face API 支持:</b> 添加为新的 API 提供商，支持其推理 API 模型。
-				</li>
-				<li>
-					<b>Moonshot 中国特供API支持:</b>增加了为 Moonshot 提供商选择中国终端的功能，并添加了 Moonshot AI
-					作为新提供商。
-				</li>
-				<li>
-					<b>增强稳定性:</b> 强大的检查点超时处理，修复了 MCP 服务器在禁用时启动的问题，并改进了跨多个 VSCode
-					窗口的身份验证同步。
-				</li>
-			</ul>
+			<b>1M 上下文窗口:</b> Claude Sonnet 4 现已支持 100
+			万个令牌上下文窗口，以处理更大的代码库和更复杂的任务。Cline/OpenRouter 用户可立即访问，Anthropic 用户需要 Tier 4
+			权限，而 Bedrock 用户必须位于受支持的区域。选择{" "}
+			<code>
+				claude-sonnet-4<b>:1m</b>
+			</code>{" "}
+			针对 1M 上下文使用模型，或者针对 200K 使用原始模型。
 			<Accordion isCompact className="pl-0">
 				<AccordionItem
 					key="1"

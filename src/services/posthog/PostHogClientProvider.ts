@@ -7,7 +7,8 @@ import { ErrorService } from "../error/ErrorService"
 import { FeatureFlagsService } from "./feature-flags/FeatureFlagsService"
 import { TelemetryService } from "./telemetry/TelemetryService"
 
-const ENV_ID = vscode?.env?.machineId ?? process?.env?.UUID ?? uuidv4()
+// Prefer host-provided UUID when running via HostBridge; fall back to VS Code's machineId, then a random UUID
+const ENV_ID = process?.env?.UUID ?? vscode?.env?.machineId ?? uuidv4()
 
 interface TelemetrySettings {
 	cline: boolean
@@ -41,7 +42,6 @@ export class PostHogClientProvider {
 		// Initialize PostHog client
 		this.client = new PostHog(posthogConfig.apiKey, {
 			host: posthogConfig.host,
-			enableExceptionAutocapture: true,
 		})
 
 		vscode.env.onDidChangeTelemetryEnabled((isTelemetryEnabled) => {

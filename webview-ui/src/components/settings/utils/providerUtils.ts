@@ -568,10 +568,3 @@ export async function syncModeConfigurations(
 	// Make the atomic update
 	await handleFieldsChange(updates)
 }
-
-/**
- * Gets the OpenRouter authentication URL
- */
-export function getOpenRouterAuthUrl(uriScheme?: string) {
-	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan/openrouter`
-}
