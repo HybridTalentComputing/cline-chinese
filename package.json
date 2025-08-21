@@ -1,7 +1,7 @@
 {
 	"name": "cline-shengsuan",
-	"displayName": "Cline-中文版",
-	"description": "Cline-中文版是一款在您的IDE中运行的强大自主编程助手，经您许可后可创建/编辑文件、运行命令、使用浏览器等。",
+	"displayName": "Cline中文版（Vibe Coding、Claude 4、GPT-5、JetBrains、Qwen通义千问、OpenRouter、通义灵码IDE、Lingma、ChatGPT、Copilot、Cursor AI Agent智能体、Java、Python、代码聊天、助手、补全、生成器、Mode、上下文、编码编程助手）",
+	"description": "Cline中文汉化版，由胜算云进行汉化，打造国内版的openrouter，让中国开发者更方便进行 AI 编程",
 	"version": "3.24.0",
 	"icon": "assets/icons/icon.png",
 	"engines": {
