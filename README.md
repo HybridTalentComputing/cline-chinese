@@ -1,4 +1,4 @@
-# 🚀 Cline 中文版插件（Cline-Chinese）
+# Cline中文版（Vibe Coding、Claude 4、GPT-5、JetBrains、Qwen通义千问、OpenRouter、通义灵码IDE、Lingma、ChatGPT、Copilot、Cursor AI  Agent智能体、Java、Python、代码聊天、助手、补全、生成器、Mode、上下文、编码编程助手）
 
 <p align="center">
 
@@ -8,127 +8,99 @@
  
 
 
-由 **胜算云平台** 基于原版 Cline 插件优化开发，专为中国开发者打造的 **AI 编程汉化助手插件**。  
-无需繁琐设置，即可在 VS Code 中轻松接入全球主流大模型，享受流畅的中文交互体验。
+Cline中文汉化版，由**胜算云**进行汉化，**长三角国家技术创新中心**专项扶持，打造**中国版OpenRouter**，让中国开发者更方便进行 AI 编程。
 
 ---
 
-| ✨ 为什么选择 Cline 中文版？ | 👉 **扫码添加，领取 100 万 Tokens** 👈 |
+| ✨ **Cline中文版增加功能** | 👉 **扫码添加，领取 100 万 Tokens** 👈 |
 |:--|:--:|
-| ✅ **中文界面体验** —— 一贴合中文开发者使用习惯，命令更自然 <br> ✅ **超百款全球模型接入** —— 包括 GPT-4o、Claude 4 sonnet、 Claude 4 opus、Gemini 2.5 pro/flash、DeepSeek 等 <br> ✅ **大模型聚合** —— 一调即价更低，性能稳定不掉线 <br> ✅ **人民币充值直通** —— 无需海外账号，支持微信/支付宝 <br> ✅ **VS Code 插件/原生集成** —— 快速安装，即刻启用 <br> ✅ **注册即送 Tokens** —— 免费 100 万 Tokens  | ![个人企业微信](https://router.shengsuanyun.com/webp/relation-BMfLRnIZ.webp) |
-
+|✅**国内充值** —— 支持微信/支付宝付款，按使用量计费<br> <br> ✅ **大模型调用** ——支持国内使用Claude Sonnet 4、GPT-5、Qwen3、Deepseek、GLM-4.5等100+全球AI编程大模型。 <br><br> ✅ **企业级稳定路由** —— 接入亚马逊云，谷歌云，火山引擎服务器，延迟低至1.27S，稳定率99%+，TPM高达100万，RPM高达250 <br> <br>✅ **VS Code 插件/原生集成** —— 快速安装，即刻启用 <br>  | ![个人企业微信](https://router.shengsuanyun.com/webp/relation-BMfLRnIZ.webp) |
 
 ---
 
 ## 🎁 限时福利
 
-> 🧧 注册即送 **100 万 Tokens** 免费额度  
-> 扫码领取专属福利，立即开启 AI 编程时代！
+> 🧧 注册限时领取 **100 万 Tokens** 算力额度  
 
-👉 **注册链接**：[https://www.shengsuanyun.com/login](https://www.shengsuanyun.com/login)
 
----
-
-## 📦 快速开始（Quick Start）
-
-1. 安装 VS Code 插件市场中的「Cline 中文版」
-2. 打开设置粘贴你的 API 密钥（无需魔法）
-3. 选择模型，一键开始 AI 编程体验！
+👉 **注册链接**：[https://www.shengsuanyun.com/](https://www.shengsuanyun.com/?from=CH_R39YE8W1)
 
 ---
 
-## 📮 联系我们
+## 📦 Cline功能介绍：
 
-如果你在使用过程中有任何问题，欢迎通过胜算云官方渠道反馈或加入社群交流。
-
+1. AI 聊天助手（Chat Assistant）
+- 在侧边栏提供一个 AI 聊天界面。
+- 可以向 AI 提问技术问题、解释代码逻辑、翻译术语，或进行日常对话。
+- 非常适合开发者在编程中遇到卡点时快速寻求建议。
 ---
-
-由 ❤️ 胜算云出品 · 助力中文开发者无障碍用好全球大模型
-
-## ✨进群交流
-### 进群福利
-- **注册新用户并且进群赠送10元(添加群主好友)**
-- **我们的专业客服及时为您答疑解惑**
-- **开发票**
-<div align="center" style="display: flex; justify-content: center; gap: 20px;">
-
-APIRouter进群交流<br>（如果无法加群，请加企业微信客服）<br>
-  <img src="https://github.com/user-attachments/assets/41e6dc76-07c9-4dbf-ac35-d2494ebc9a41" alt="APIRouter企业微信群" width="250" /> 
-</div>
-
-<div align="center" style="display: flex; justify-content: center; gap: 20px;">
-
-企业客服咨询<br>
-<img src="https://router.shengsuanyun.com/webp/relation-BMfLRnIZ.webp" alt="企业微信客服" width="250" />
-</div>
-Cline-中文版<br>
-https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan<br>
-Kilo SSY Code Agent<br>
-https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.kilo-ssy<br>
-Roo Code Chinese SSY<br>
-https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.roo-vibecoding<br>
-以上三种插件，可以直接在供应商中选择折扣模型<br>
-详情点击[胜算云](https://www.shengsuanyun.com/)<br>
-
-## 项目地址<br>
-国际<br>
-Github: https://github.com/SSYCloud/cline-chinese-ssy <br>
-中国大陆<br>
-Gitcode:https://gitcode.com/shengsuan-cloud/cline-chinese-ssy<br>
-Gitee:  https://gitee.com/shengsuan-cloud/cline-chinese-ssy<br>
-
-欢迎大家star，fork，提出issue，贡献代码，一起完善这个项目。（联系作者）<br>
-
-## 文档地址(包括使用方法，MCP知识，常见问题解答等)<br>
-https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs/<br>
+💡 2. 代码片段辅助（Inline Chat）
+- 在代码中选中一段内容，右键点击即可让 AI 进行解释、翻译、改写或优化。
+- 编辑器内直接生成替换代码，提高代码质量与开发效率。
+---
+⚡ 3. 快速命令生成（Terminal Assistant）
+- 支持用户用自然语言描述操作需求，AI 自动生成对应的终端命令（如 shell、bash 命令）。
+- 对于不熟悉命令行的开发者尤其有用。
+---
+📂 4. 多文件支持
+- 支持向 AI 上传多个文件，进行上下文理解或分析。
+- 适用于代码审查、文档生成、项目理解等使用场景。
+---
+🧩 5. 自定义模型调用（API Key 配置）
+- 支持用户自定义接入任意 API 服务（如 OpenAI、Anthropic 等），不强依赖官方服务。
+- 可以根据自己的账号配置调用不同模型，用于不同任务。
 ## 功能展示<br>
 
 <video width="100%" controls src="https://github.com/user-attachments/assets/f3b49926-ce1f-45a1-9ef6-a735b2f1e268"></video><br>
-
 
 > 演示视频使用 免费 LLM Coding 大模型API DeepSeek V3 0324 模型，展示了 Cline 中文版的主要功能和使用效果，视频没有加速，推理速度快到飞起。<br>
 > 本项目推荐使用[胜算云](https://router.shengsuanyun.com/)的LLM API进行智能编码推理，中国大陆地区可以免魔法访问世界范围内的最全的人工智能API，超低价格外，同时可以开发票，以及免费的云部署项目，让您的
 AI项目全面得到落地使用。<br>
 中国大陆地区针对DeepSeek官方不提供以下服务，我们则完全支持：<br>
-- 对外进行项目合作，提供私有化部署及相关支持服务；<br>
-- 开放文件上传及联网搜索 API 接口；<br>
+> - 对外进行项目合作，提供私有化部署及相关支持服务；<br>
+> - 开放文件上传及联网搜索 API 接口；<br>
+---
+| 厂商 / 团队 |模型名称  |
+| --- | --- |
+| OpenAI | GPT（ChatGPT） |
+|Anthropic|Claude|
+|Google DeepMind|Gemini|
+Meta AI	|LLaMA
+Mistral AI|Mistral、Mixtral
+Cohere |Command R
+xAI（Elon Musk）|Grok
+Perplexity AI|Perplexity LLM（集成多模型 + 自研）
+Amazon Titan|Titan Text
+AI21 Labs|Jurassic
+Aleph Alpha（德国）|Luminous
+Reka AI	|Reka Core
+---
+## 项目地址
+国际
+Github: https://github.com/SSYCloud/cline-chinese-ssy <br>
+中国大陆<br>
+Gitcode:https://gitcode.com/shengsuan-cloud/cline-chinese-ssy<br>
+Gitee:  https://gitee.com/shengsuan-cloud/cline-chinese-ssy<br>
+---
+## 文档地址(包括使用方法，MCP知识，常见问题解答等)<br>
+https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs/<br>
+---
+## 其他支持插件
 
-## 安装使用<br>
-Cline-中文版已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下载体验。<br>
-<a href="https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.cline-shengsuan" target="_blank"><strong>在 VS Marketplace 下载</strong></a>
-## 简介
+Kilo SSY Code Agent<br>
+https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.kilo-ssy<br>
 
-这个项目是基于 [Cline](https://github.com/cline/cline) 的汉化版本。旨在优化由于英文 prompt 导致 Cline 在中文输入下+大模型表现不佳的问题, 并提供更符合中文用户习惯的UI界面和功能。目前已测试[DeepSeek-R1/DeepSeek-V3](https://api-docs.deepseek.com/zh-cn/news/news250325)工作良好，同时，[胜算云](https://router.shengsuanyun.com/)提供多种免费/收费模型API<br>
+Roo Code Chinese SSY<br>
+https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.roo-vibecoding<br>
 
-日常使用Cline-中文版等编程助手时发现使用某些模型推理速度较慢（如deepseek-R1, Claude-3.5-Sonnet），这个项目优先尝试在中文输入下，对轻量化LLM进行实验，优化上下文prompt, 以提升推理长度，以增加推理输入项目代码或者数据长度。<br>
-
-
-## 背景
-
-Cline 中文版 开发初衷<br>
-我们推出 Cline 中文版，旨在为国内开发者提供更便捷、高效的 AI 接入体验。在并行 Cline 主线功能开发的同时，「胜算云」特别开放独家专属模型折扣，全面支持国内用户免魔法接入，实现真正的即用即连。<br>
-
-「胜算云」致力于成为国内 AI 开发者首选工具，让每一个创意都能高效落地，真正实现 开发有胜算，落地有保障。<br>
-
+---
 ## 欢迎关注我的自媒体账号
 
 欢迎关注我的自媒体账号，获取更多AI开发和技术分享：
 
 - 知乎：[胜算云](https://zhihu.com/people/shengsuanyunrouter)
 - B站： [胜算云](https://space.bilibili.com/3546885937695051)
-
-## 版本说明
-
-### 2025.04.28（ver.3.13.3）
-
-🔸同步cline官方最新版本<br>
-🔸重构胜算云供应商模型列表获取方式<br>
-🔸优化Deepseek系列模型Cache<br>
-🔸优化任务显示，增加Cache Token<br>
-🔸增加谷歌 与胜算云供应商 与OpenRouter供应商的 Gemini 模型的 Caching Tokens<br>
-
-
-
+- B站：[扎马步的阑尾猫](https://space.bilibili.com/3546790324341546?spm_id_from=333.40164.0.0)
 
 ## 加入社群
 
@@ -157,12 +129,8 @@ Cline 中文版 开发初衷<br>
 </div>
 
 Discord 频道：[SSYRouter API](https://discord.gg/frBHkRKB4x) <br>
-## 赞赏支持
 
-如果您觉得这个项目对您有帮助，欢迎赞赏支持，您的支持是我持续开发的动力 ☕<br>
-
-
-
+---
 
 ## 免责声明
 
