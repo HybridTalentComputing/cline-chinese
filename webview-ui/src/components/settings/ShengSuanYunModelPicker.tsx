@@ -65,8 +65,7 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 	}
 
 	const { selectedModelId, selectedModelInfo } = useMemo(() => {
-		const cfg = normalizeApiConfiguration(apiConfiguration, currentMode)
-		return cfg
+		return normalizeApiConfiguration(apiConfiguration, currentMode)
 	}, [apiConfiguration, currentMode])
 
 	useMount(() => {

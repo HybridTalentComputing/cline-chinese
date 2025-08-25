@@ -185,8 +185,8 @@ message ApiConfiguration {
   optional string sap_ai_core_base_url = 54;
   optional string moonshot_api_key = 55;
   optional string moonshot_api_line = 56;
-    optional string shengsuanyun_api_key = 57;
-  optional string shengsuanyun_token = 58;
+  optional string sheng_suan_yun_api_key = 57;
+  optional string sheng_suan_yun_token = 58;
   optional string huawei_cloud_maas_api_key = 59;
   optional string ollama_api_key = 60;
   

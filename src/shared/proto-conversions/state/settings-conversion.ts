@@ -130,8 +130,8 @@ export function convertApiConfigurationToProtoApiConfiguration(config: ApiConfig
 		favoritedModelIds: config.favoritedModelIds || [],
 
 		// ShengSuanYun specific fields
-		shengsuanyunApiKey: config.shengSuanYunApiKey,
-		shengsuanyunToken: config.shengSuanYunToken,
+		shengSuanYunApiKey: config.shengSuanYunApiKey,
+		shengSuanYunToken: config.shengSuanYunToken,
 	})
 }
 
@@ -245,8 +245,8 @@ export function convertProtoApiConfigurationToApiConfiguration(protoConfig: Prot
 		favoritedModelIds: protoConfig.favoritedModelIds || [],
 
 		// ShengSuanYun specific fields
-		shengSuanYunApiKey: protoConfig.shengsuanyunApiKey,
-		shengSuanYunToken: protoConfig.shengsuanyunToken,
+		shengSuanYunApiKey: protoConfig.shengSuanYunApiKey,
+		shengSuanYunToken: protoConfig.shengSuanYunToken,
 	}
 
 	// Handle complex JSON objects

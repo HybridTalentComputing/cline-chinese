@@ -957,7 +957,7 @@ export class CacheService {
 			sapAiCoreClientId: this.secretsCache["sapAiCoreClientId"],
 			sapAiCoreClientSecret: this.secretsCache["sapAiCoreClientSecret"],
 			huggingFaceApiKey: this.secretsCache["huggingFaceApiKey"],
-			shengSuanYunApiKey: this.secretsCache["sambanovaApiKey"],
+			shengSuanYunApiKey: this.secretsCache["shengSuanYunApiKey"],
 			huaweiCloudMaasApiKey: this.secretsCache["huaweiCloudMaasApiKey"],
 
 			// Global state

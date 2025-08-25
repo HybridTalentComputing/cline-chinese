@@ -509,43 +509,61 @@ export class Controller {
 
 	// shengsuanyun Auth
 	async handleShengSuanYunCallback(code: string) {
-		let apiKey: string
-		let customToken: string
 		try {
-			const response = await axios.post("https://api.shengsuanyun.com/auth/keys", {
-				code: code,
-				callback_url: `vscode://shengsuan-cloud.cline-shengsuan/ssy`,
-			})
-			if (response.data && response.data.data && response.data.data.api_key) {
-				apiKey = response.data.data.api_key
-				customToken = response.data.data.jwt_token
-				await sendSSYAuthCallbackEvent(customToken)
-			} else {
-				throw new Error("Invalid response from handleShengSuanYunCallback()", { cause: response })
+			let shengSuanYunApiKey: string
+			let shengSuanYunToken: string
+			try {
+				const response = await axios.post("https://api.shengsuanyun.com/auth/keys", {
+					code: code,
+					callback_url: `vscode://shengsuan-cloud.cline-shengsuan/ssy`,
+				})
+				if (response.data && response.data.data && response.data.data.api_key) {
+					shengSuanYunApiKey = response.data.data.api_key
+					shengSuanYunToken = response.data.data.jwt_token
+					await sendSSYAuthCallbackEvent(shengSuanYunToken)
+				} else {
+					throw new Error("Invalid response from handleShengSuanYunCallback()", { cause: response })
+				}
+			} catch (error) {
+				console.error("Error exchanging code for API key:", error)
+				throw error
 			}
+
+			// await this.accountServiceSSY.handleAuthCallback(customToken, provider ? provider : "google")
+			const shengsuanyun: ApiProvider = "shengsuanyun"
+			const planActSeparateModelsSetting = this.cacheService.getGlobalStateKey("planActSeparateModelsSetting")
+			const currentMode = await this.getCurrentMode()
+			const currentApiConfiguration = this.cacheService.getApiConfiguration()
+
+			const updatedConfig = {
+				...currentApiConfiguration,
+				shengSuanYunApiKey,
+				shengSuanYunToken,
+			}
+
+			if (planActSeparateModelsSetting) {
+				if (currentMode === "plan") {
+					updatedConfig.planModeApiProvider = shengsuanyun
+				} else {
+					updatedConfig.actModeApiProvider = shengsuanyun
+				}
+			} else {
+				updatedConfig.planModeApiProvider = shengsuanyun
+				updatedConfig.actModeApiProvider = shengsuanyun
+			}
+			this.cacheService.setApiConfiguration(updatedConfig)
+			this.cacheService.setGlobalState("welcomeViewCompleted", true)
+			if (this.task) {
+				this.task.api = buildApiHandler({ ...updatedConfig, ulid: this.task.ulid }, currentMode)
+			}
+			await this.postStateToWebview()
 		} catch (error) {
-			console.error("Error exchanging code for API key:", error)
-			throw error
+			console.error("Failed to handle auth callback:", error)
+			HostProvider.window.showMessage({
+				type: ShowMessageType.ERROR,
+				message: "F登录失败",
+			})
 		}
-
-		const shengsuanyun: ApiProvider = "shengsuanyun"
-		const currentMode = await this.getCurrentMode()
-
-		const currentApiConfiguration = this.cacheService.getApiConfiguration()
-		const updatedConfig = {
-			...currentApiConfiguration,
-			planModeApiProvider: shengsuanyun,
-			actModeApiProvider: shengsuanyun,
-			shengSuanYunApiKey: apiKey,
-			shengSuanYunToken: customToken,
-		}
-		this.cacheService.setApiConfiguration(updatedConfig)
-		this.cacheService.setGlobalState("welcomeViewCompleted", true)
-		await this.postStateToWebview()
-		if (this.task) {
-			this.task.api = buildApiHandler({ ...updatedConfig, ulid: this.task.ulid }, currentMode)
-		}
-		// await this.postMessageToWebview({ type: "action", action: "settingsButtonClicked" }) // bad ux if user is on welcome
 	}
 
 	private async ensureCacheDirectoryExists(): Promise<string> {

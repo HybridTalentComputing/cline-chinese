@@ -114,10 +114,10 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								const checked = e.target.checked === true
 								updateSetting("strictPlanModeEnabled", checked)
 							}}>
-							Enable strict plan mode
+							启用严格计划模式
 						</VSCodeCheckbox>
 						<p className="text-xs text-[var(--vscode-descriptionForeground)]">
-							Enforces strict tool use while in plan mode, preventing file edits.
+							在计划模式下强制严格使用工具，防止文件编辑。
 						</p>
 					</div>
 					{focusChainFeatureFlagEnabled && (
@@ -128,11 +128,10 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 									const checked = e.target.checked === true
 									updateSetting("focusChainSettings", { ...focusChainSettings, enabled: checked })
 								}}>
-								Enable Focus Chain
+								启用焦点链
 							</VSCodeCheckbox>
 							<p className="text-xs text-[var(--vscode-descriptionForeground)]">
-								Enables enhanced task progress tracking and automatic focus chain list management throughout
-								tasks.
+								增强任务进度跟踪，并在整个任务过程中实现焦点链列表的自动管理。
 							</p>
 						</div>
 					)}
@@ -141,7 +140,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							<label
 								htmlFor="focus-chain-remind-interval"
 								className="block text-sm font-medium text-[var(--vscode-foreground)] mb-1">
-								Focus Chain Reminder Interval
+								焦点链提醒间隔
 							</label>
 							<VSCodeTextField
 								id="focus-chain-remind-interval"
@@ -158,8 +157,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								className="w-20"
 							/>
 							<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
-								Interval (in messages) to remind Cline about it's focus chain checklist (1-100). Lower values
-								provide more frequent reminders.
+								提醒 Cline 焦点链检查清单 (1-100) 的间隔（以消息为单位）。值越低，提醒频率越高。
 							</p>
 						</div>
 					)}

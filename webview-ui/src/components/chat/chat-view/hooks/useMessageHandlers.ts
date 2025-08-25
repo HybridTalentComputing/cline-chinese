@@ -225,31 +225,31 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 			let actionType: ButtonActionType
 
 			switch (action) {
-				case "Approve":
-				case "Save":
-				case "Run Command":
-				case "Retry":
-				case "Switch to Act Mode":
+				case "批准":
+				case "保存":
+				case "执行命令":
+				case "重试":
+				case "切换到执行模式":
 					actionType = "approve"
 					break
-				case "Reject":
+				case "拒绝":
 					actionType = "reject"
 					break
-				case "Proceed":
-				case "Proceed Anyways":
-				case "Proceed While Running":
-				case "Resume Task":
+				case "继续":
+				case "无论如何继续":
+				case "执行时继续":
+				case "重启任务":
 					actionType = "proceed"
 					break
-				case "Start New Task":
-				case "Start New Task with Context":
+				case "开始新任务":
+				case "在当前上下文开始新任务":
 					actionType = "new_task"
 					break
-				case "Cancel":
+				case "取消":
 					actionType = "cancel"
 					break
-				case "Condense Conversation":
-				case "Report GitHub issue":
+				case "精简对话":
+				case "通过GitHub报告问题":
 					actionType = "utility"
 					break
 				default:
