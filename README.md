@@ -14,7 +14,7 @@ Cline中文汉化版，由**胜算云**进行汉化，**长三角国家技术创
 
 | ✨ **Cline中文版增加功能** | 👉 **扫码添加，领取 100 万 Tokens** 👈 |
 |:--|:--:|
-|✅**国内充值** —— 支持微信/支付宝付款，按使用量计费<br> <br> ✅ **大模型调用** ——支持国内使用Claude Sonnet 4、GPT-5、Qwen3、Deepseek、GLM-4.5等100+全球AI编程大模型。 <br><br> ✅ **企业级稳定路由** —— 接入亚马逊云，谷歌云，火山引擎服务器，延迟低至1.27S，稳定率99%+，TPM高达100万，RPM高达250 <br> <br>✅ **VS Code 插件/原生集成** —— 快速安装，即刻启用 <br>  | ![个人企业微信](https://router.shengsuanyun.com/webp/relation-BMfLRnIZ.webp) |
+|✅**国内充值** —— 支持微信/支付宝付款，按使用量计费<br> <br> ✅ **大模型调用** ——支持国内使用Claude Sonnet 4、GPT-5、Qwen3、Deepseek、GLM-4.5等100+全球AI编程大模型。 <br><br> ✅ **企业级稳定路由** —— 接入亚马逊云，谷歌云，火山引擎服务器，延迟低至1.27S，稳定率99%+，TPM高达100万，RPM高达250 <br> <br>✅ **VS Code 插件/原生集成** —— 快速安装，即刻启用 <br>  | ![个人企业微信](https://www.shengsuanyun.com/relation.webp) |
 
 ---
 

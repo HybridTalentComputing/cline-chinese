@@ -20,11 +20,7 @@ const AboutSection = ({ version, renderSectionHeader }: AboutSectionProps) => {
 						反馈或使用微信联系客服。
 					</p>
 					<div className="w-full flex flex-col justify-center items-center">
-						<img
-							className="w-30 h-30"
-							src="https://www.shengsuanyun.com/webp/relation-BMfLRnIZ.webp"
-							alt="customer service"
-						/>
+						<img className="w-30 h-30" src="https://www.shengsuanyun.com/relation.webp" alt="customer service" />
 					</div>
 					<p className="italic mt-[10px] mb-0 p-0">v{version}</p>
 				</div>
