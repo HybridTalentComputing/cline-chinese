@@ -71,7 +71,6 @@ export class DifyHandler implements ApiHandler {
 	private conversationId: string | null = null
 
 	constructor(options: ApiHandlerOptions) {
-		this.options = options
 		this.apiKey = options.difyApiKey || ""
 		this.baseUrl = options.difyBaseUrl || ""
 
@@ -647,6 +646,5 @@ export class DifyHandler implements ApiHandler {
 	 */
 	resetConversation(): void {
 		this.conversationId = null
-		this.currentTaskId = null
 	}
 }

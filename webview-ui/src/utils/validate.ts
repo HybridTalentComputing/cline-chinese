@@ -4,15 +4,8 @@ import { getModeSpecificFields } from "@/components/settings/utils/providerUtils
 
 export function validateApiConfiguration(currentMode: Mode, apiConfiguration?: ApiConfiguration): string | undefined {
 	if (apiConfiguration) {
-		const {
-			apiProvider,
-			openAiModelId,
-			requestyModelId,
-			togetherModelId,
-			ollamaModelId,
-			lmStudioModelId,
-			vsCodeLmModelSelector,
-		} = getModeSpecificFields(apiConfiguration, currentMode)
+		const { apiProvider, openAiModelId, togetherModelId, ollamaModelId, lmStudioModelId, vsCodeLmModelSelector } =
+			getModeSpecificFields(apiConfiguration, currentMode)
 
 		const tips = "您必须提供有效的API密钥或选择其他提供者。"
 		switch (apiProvider) {

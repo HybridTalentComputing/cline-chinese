@@ -82,8 +82,7 @@ export class VertexHandler implements ApiHandler {
 			(modelId.includes("3-7") || modelId.includes("sonnet-4") || modelId.includes("opus-4")) &&
 			budget_tokens !== 0
 		)
-		let stream
-
+		let stream: any
 		switch (modelId) {
 			case "claude-sonnet-4@20250514":
 			case "claude-opus-4-1@20250805":

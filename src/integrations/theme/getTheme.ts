@@ -31,7 +31,7 @@ function parseThemeString(themeString: string | undefined): any {
 }
 
 export async function getTheme() {
-	let currentTheme
+	let currentTheme: any
 	const colorTheme = vscode.workspace.getConfiguration("workbench").get<string>("colorTheme") || "Default Dark Modern"
 
 	try {

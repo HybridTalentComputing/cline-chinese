@@ -6,6 +6,7 @@ import { ApiStream } from "../../core/api/transform/stream"
 export class DifyHandler implements ApiHandler {
 	private baseUrl: string
 	private apiKey: string
+	private options: ApiHandlerOptions
 	private conversationId: string | null = null
 
 	constructor(options: ApiHandlerOptions) {
