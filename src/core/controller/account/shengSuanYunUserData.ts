@@ -1,8 +1,8 @@
-import type { Controller } from "../index"
-import type { EmptyRequest } from "@shared/proto/cline/common"
 import { UserCreditsData } from "@shared/proto/cline/account"
+import type { EmptyRequest } from "@shared/proto/cline/common"
+import type { Controller } from "../index"
 
-export async function shengSuanYunUserData(controller: Controller, request: EmptyRequest): Promise<UserCreditsData> {
+export async function shengSuanYunUserData(controller: Controller, _request: EmptyRequest): Promise<UserCreditsData> {
 	try {
 		if (!controller.accountServiceSSY) {
 			throw new Error("Account service not available")

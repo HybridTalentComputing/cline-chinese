@@ -6,7 +6,6 @@ import {
 } from "./core/storage/state-migrations"
 import { WebviewProvider } from "./core/webview"
 import { Logger } from "./services/logging/Logger"
-import { PostHogClientProvider } from "./services/posthog/PostHogClientProvider"
 import { EmptyRequest } from "./shared/proto/cline/common"
 import { WebviewProviderType } from "./shared/webview/types"
 import "./utils/path" // necessary to have access to String.prototype.toPosix
@@ -34,7 +33,7 @@ export async function initialize(context: vscode.ExtensionContext): Promise<Webv
 			// PostHogProvider will fall back to uuid
 		}
 	}
-	PostHogClientProvider.getInstance(distinctId)
+	// PostHogClientProvider.getInstance(distinctId)
 
 	// Migrate custom instructions to global Cline rules (one-time cleanup)
 	await migrateCustomInstructionsToGlobalRules(context)
@@ -75,7 +74,7 @@ async function showVersionUpdateAnnouncement(context: vscode.ExtensionContext) {
 				const message = previousVersion
 					? `Cline has been updated to v${currentVersion}`
 					: `Welcome to Cline v${currentVersion}`
-				await vscode.commands.executeCommand("ClineShengsuan.SidebarProvider.focus")
+				await HostProvider.workspace.openClineSidebarPanel({})
 				await new Promise((resolve) => setTimeout(resolve, 200))
 				HostProvider.window.showMessage({
 					type: ShowMessageType.INFORMATION,
@@ -95,7 +94,7 @@ async function showVersionUpdateAnnouncement(context: vscode.ExtensionContext) {
  * Performs cleanup when Cline is deactivated that is common to all platforms.
  */
 export async function tearDown(): Promise<void> {
-	PostHogClientProvider.getInstance().dispose()
+	// PostHogClientProvider.getInstance().dispose()
 
 	// Dispose all webview instances
 	await WebviewProvider.disposeAllInstances()

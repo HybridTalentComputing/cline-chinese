@@ -1,11 +1,12 @@
 import { nebiusModels } from "@shared/api"
+import { Mode } from "@shared/storage/types"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
-import { ModelSelector } from "../common/ModelSelector"
 import { ModelInfoView } from "../common/ModelInfoView"
+import { ModelSelector } from "../common/ModelSelector"
 import { normalizeApiConfiguration } from "../utils/providerUtils"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { Mode } from "@shared/storage/types"
+
 /**
  * Props for the NebiusProvider component
  */
@@ -27,18 +28,18 @@ export const NebiusProvider = ({ showModelOptions, isPopup, currentMode }: Nebiu
 	return (
 		<div>
 			<ApiKeyField
+				helpText="此密钥存储在本地，仅用于从此扩展发出 API 请求。"
 				initialValue={apiConfiguration?.nebiusApiKey || ""}
 				onChange={(value) => handleFieldChange("nebiusApiKey", value)}
 				providerName="Nebius"
 				signupUrl="https://studio.nebius.com/settings/api-keys"
-				helpText="此密钥存储在本地，仅用于从此扩展发出 API 请求。. (注意：Cline 使用复杂的提示，并且与 Claude 模型配合使用效果最佳。性能较差的模型可能无法达到预期效果。)"
 			/>
 
 			{showModelOptions && (
 				<>
 					<ModelSelector
+						label="模型"
 						models={nebiusModels}
-						selectedModelId={selectedModelId}
 						onChange={(e: any) =>
 							handleModeFieldChange(
 								{ plan: "planModeApiModelId", act: "actModeApiModelId" },
@@ -46,10 +47,10 @@ export const NebiusProvider = ({ showModelOptions, isPopup, currentMode }: Nebiu
 								currentMode,
 							)
 						}
-						label="Model"
+						selectedModelId={selectedModelId}
 					/>
 
-					<ModelInfoView selectedModelId={selectedModelId} modelInfo={selectedModelInfo} isPopup={isPopup} />
+					<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
 				</>
 			)}
 		</div>

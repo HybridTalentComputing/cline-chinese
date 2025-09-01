@@ -1,11 +1,11 @@
+import { EmptyRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
-import { EmptyRequest } from "@shared/proto/cline/common"
 
 export const ShengSuanYunAccountInfoCard = () => {
 	const { apiConfiguration, navigateToAccount } = useExtensionState()
-	let key = apiConfiguration?.shengSuanYunApiKey || false
+	const key = apiConfiguration?.shengSuanYunApiKey || false
 	return (
 		<div className="max-w-[600px]">
 			{key ? (

@@ -134,28 +134,28 @@ const TabNavbar = ({ onPlusClick, onHistoryClick, onSettingsClick }: TabNavbarPr
 				<VSCodeButton
 					appearance="icon"
 					onClick={onPlusClick}
-					style={buttonStyle}
 					onMouseEnter={(e) => showTooltip("新对话", e, "center")}
 					onMouseLeave={hideTooltip}
-					onMouseMove={(e) => showTooltip("新对话", e, "center")}>
+					onMouseMove={(e) => showTooltip("新对话", e, "center")}
+					style={buttonStyle}>
 					<span className="codicon codicon-add"></span>
 				</VSCodeButton>
 				<VSCodeButton
 					appearance="icon"
 					onClick={onHistoryClick}
-					style={buttonStyle}
 					onMouseEnter={(e) => showTooltip("历史记录", e, "center")}
 					onMouseLeave={hideTooltip}
-					onMouseMove={(e) => showTooltip("历史记录", e, "center")}>
+					onMouseMove={(e) => showTooltip("历史记录", e, "center")}
+					style={buttonStyle}>
 					<span className="codicon codicon-history"></span>
 				</VSCodeButton>
 				<VSCodeButton
 					appearance="icon"
 					onClick={onSettingsClick}
-					style={lastButtonStyle}
 					onMouseEnter={(e) => showTooltip("设置", e, "right")}
 					onMouseLeave={hideTooltip}
-					onMouseMove={(e) => showTooltip("设置", e, "right")}>
+					onMouseMove={(e) => showTooltip("设置", e, "right")}
+					style={lastButtonStyle}>
 					<span className="codicon codicon-settings-gear"></span>
 				</VSCodeButton>
 			</div>

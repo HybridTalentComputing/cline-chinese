@@ -1,15 +1,14 @@
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { geminiModels, ModelInfo } from "@shared/api"
 import { Fragment, useState } from "react"
-import { ModelInfo, geminiModels } from "@shared/api"
 import { ModelDescriptionMarkdown } from "../OpenRouterModelPicker"
 import {
 	formatPrice,
-	hasThinkingBudget,
-	supportsImages,
-	supportsBrowserUse,
-	supportsPromptCache,
-	formatTokenPrice,
 	formatTokenLimit,
+	formatTokenPrice,
+	hasThinkingBudget,
+	supportsBrowserUse,
+	supportsImages,
+	supportsPromptCache,
 } from "../utils/pricingUtils"
 
 /**
@@ -28,10 +27,12 @@ const formatTiers = (
 			const prevLimit = index > 0 ? arr[index - 1].contextWindow : 0
 			const price = tier[priceType]
 
-			if (price === undefined) return null
+			if (price === undefined) {
+				return null
+			}
 
 			return (
-				<span style={{ paddingLeft: "15px" }} key={index}>
+				<span key={index} style={{ paddingLeft: "15px" }}>
 					{formatPrice(price)}/million tokens (
 					{tier.contextWindow === Number.POSITIVE_INFINITY || tier.contextWindow >= Number.MAX_SAFE_INTEGER ? (
 						<span>
@@ -151,31 +152,31 @@ export const ModelInfoView = ({ selectedModelId, modelInfo, isPopup }: ModelInfo
 	const infoItems = [
 		modelInfo.description && (
 			<ModelDescriptionMarkdown
+				isExpanded={isDescriptionExpanded}
+				isPopup={isPopup}
 				key="description"
 				markdown={modelInfo.description}
-				isExpanded={isDescriptionExpanded}
 				setIsExpanded={setIsDescriptionExpanded}
-				isPopup={isPopup}
 			/>
 		),
 		<ModelInfoSupportsItem
-			key="supportsImages"
-			isSupported={supportsImages(modelInfo)}
-			supportsLabel="支持图片"
 			doesNotSupportLabel="不支持图片"
+			isSupported={supportsImages(modelInfo)}
+			key="supportsImages"
+			supportsLabel="支持图片"
 		/>,
 		<ModelInfoSupportsItem
-			key="supportsBrowserUse"
-			isSupported={supportsBrowserUse(modelInfo)}
-			supportsLabel="支持浏览器使用"
 			doesNotSupportLabel="不支持浏览器使用"
+			isSupported={supportsBrowserUse(modelInfo)}
+			key="supportsBrowserUse"
+			supportsLabel="支持浏览器使用"
 		/>,
 		!isGemini && (
 			<ModelInfoSupportsItem
-				key="supportsPromptCache"
-				isSupported={supportsPromptCache(modelInfo)}
-				supportsLabel="支持提示词缓存"
 				doesNotSupportLabel="不支持提示词缓存"
+				isSupported={supportsPromptCache(modelInfo)}
+				key="supportsPromptCache"
+				supportsLabel="支持提示词缓存"
 			/>
 		),
 		modelInfo.contextWindow !== undefined && modelInfo.contextWindow > 0 && (

@@ -1,9 +1,9 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
-import { useExtensionState } from "./ExtensionStateContext"
-import axios, { AxiosRequestConfig } from "axios"
-import { AccountServiceClient } from "@/services/grpc-client"
 import { AuthStateChangedRequest } from "@shared/proto/cline/account"
 import { EmptyRequest } from "@shared/proto/cline/common"
+import axios, { AxiosRequestConfig } from "axios"
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
+import { AccountServiceClient } from "@/services/grpc-client"
+import { useExtensionState } from "./ExtensionStateContext"
 
 interface ShengSuanYunAuthContextType {
 	userSSY: any | null
@@ -19,7 +19,9 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 	const { apiConfiguration, setUserInfo } = useExtensionState()
 
 	useEffect(() => {
-		if (apiConfiguration?.shengSuanYunToken) signInWithTokenSSY(apiConfiguration?.shengSuanYunToken)
+		if (apiConfiguration?.shengSuanYunToken) {
+			signInWithTokenSSY(apiConfiguration?.shengSuanYunToken)
+		}
 	}, [apiConfiguration?.shengSuanYunToken])
 
 	const signInWithTokenSSY = async (token: string) => {
@@ -32,7 +34,7 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 			}
 			const uri = "https://api.shengsuanyun.com/user/info"
 			const res = await axios.get(uri, reqConfig)
-			if (!res.data || !res.data.data || res.data.code != 0) {
+			if (!res.data || !res.data.data || res.data.code !== 0) {
 				throw new Error(`Invalid response from ${uri} API`)
 			}
 			const user: any = {

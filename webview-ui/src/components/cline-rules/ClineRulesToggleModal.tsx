@@ -1,8 +1,3 @@
-import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import Tooltip from "@/components/common/Tooltip"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { FileServiceClient } from "@/services/grpc-client"
-import { vscode } from "@/utils/vscode"
 import { EmptyRequest } from "@shared/proto/cline/common"
 import {
 	ClineRulesToggles,
@@ -16,6 +11,10 @@ import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useRef, useState } from "react"
 import { useClickAway, useWindowSize } from "react-use"
 import styled from "styled-components"
+import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
+import Tooltip from "@/components/common/Tooltip"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { FileServiceClient } from "@/services/grpc-client"
 import RulesToggleList from "./RulesToggleList"
 
 const ClineRulesToggleModal: React.FC = () => {
@@ -196,7 +195,7 @@ const ClineRulesToggleModal: React.FC = () => {
 
 	return (
 		<div ref={modalRef}>
-			<div ref={buttonRef} className="inline-flex min-w-0 max-w-full">
+			<div className="inline-flex min-w-0 max-w-full" ref={buttonRef}>
 				<Tooltip tipText="管理 Cline 规则和工作流" visible={isVisible ? false : undefined}>
 					<VSCodeButton
 						appearance="icon"
@@ -260,9 +259,9 @@ const ClineRulesToggleModal: React.FC = () => {
 								规则允许您向 Cline
 								提供系统级的指导。将它们视为一种持久的方式，以便在您的项目或每次对话中包含上下文和偏好。{" "}
 								<VSCodeLink
+									className="text-xs"
 									href="https://docs.cline.bot/features/cline-rules"
-									style={{ display: "inline" }}
-									className="text-xs">
+									style={{ display: "inline" }}>
 									文档
 								</VSCodeLink>
 							</p>
@@ -276,9 +275,9 @@ const ClineRulesToggleModal: React.FC = () => {
 								</span>{" "}
 								对话窗口.{" "}
 								<VSCodeLink
+									className="text-xs"
 									href="https://docs.cline.bot/features/slash-commands/workflows"
-									style={{ display: "inline" }}
-									className="text-xs">
+									style={{ display: "inline" }}>
 									文档
 								</VSCodeLink>
 							</p>
@@ -291,13 +290,13 @@ const ClineRulesToggleModal: React.FC = () => {
 							<div className="mb-3">
 								<div className="text-sm font-normal mb-2">全局规则</div>
 								<RulesToggleList
-									rules={globalRules}
-									toggleRule={(rulePath, enabled) => toggleRule(true, rulePath, enabled)}
-									listGap="small"
 									isGlobal={true}
+									listGap="small"
+									rules={globalRules}
 									ruleType={"cline"}
 									showNewRule={true}
 									showNoRules={false}
+									toggleRule={(rulePath, enabled) => toggleRule(true, rulePath, enabled)}
 								/>
 							</div>
 
@@ -305,31 +304,31 @@ const ClineRulesToggleModal: React.FC = () => {
 							<div style={{ marginBottom: -10 }}>
 								<div className="text-sm font-normal mb-2">工作区规则</div>
 								<RulesToggleList
-									rules={localRules}
-									toggleRule={(rulePath, enabled) => toggleRule(false, rulePath, enabled)}
-									listGap="small"
 									isGlobal={false}
+									listGap="small"
+									rules={localRules}
 									ruleType={"cline"}
 									showNewRule={false}
 									showNoRules={false}
+									toggleRule={(rulePath, enabled) => toggleRule(false, rulePath, enabled)}
 								/>
 								<RulesToggleList
-									rules={cursorRules}
-									toggleRule={toggleCursorRule}
-									listGap="small"
 									isGlobal={false}
+									listGap="small"
+									rules={cursorRules}
 									ruleType={"cursor"}
 									showNewRule={false}
 									showNoRules={false}
+									toggleRule={toggleCursorRule}
 								/>
 								<RulesToggleList
-									rules={windsurfRules}
-									toggleRule={toggleWindsurfRule}
-									listGap="small"
 									isGlobal={false}
+									listGap="small"
+									rules={windsurfRules}
 									ruleType={"windsurf"}
 									showNewRule={true}
 									showNoRules={false}
+									toggleRule={toggleWindsurfRule}
 								/>
 							</div>
 						</>
@@ -339,13 +338,13 @@ const ClineRulesToggleModal: React.FC = () => {
 							<div className="mb-3">
 								<div className="text-sm font-normal mb-2">全局工作流</div>
 								<RulesToggleList
-									rules={globalWorkflows}
-									toggleRule={(rulePath, enabled) => toggleWorkflow(true, rulePath, enabled)}
-									listGap="small"
 									isGlobal={true}
+									listGap="small"
+									rules={globalWorkflows}
 									ruleType={"workflow"}
 									showNewRule={true}
 									showNoRules={false}
+									toggleRule={(rulePath, enabled) => toggleWorkflow(true, rulePath, enabled)}
 								/>
 							</div>
 
@@ -353,13 +352,13 @@ const ClineRulesToggleModal: React.FC = () => {
 							<div style={{ marginBottom: -10 }}>
 								<div className="text-sm font-normal mb-2">项目工作流</div>
 								<RulesToggleList
-									rules={localWorkflows}
-									toggleRule={(rulePath, enabled) => toggleWorkflow(false, rulePath, enabled)}
-									listGap="small"
 									isGlobal={false}
+									listGap="small"
+									rules={localWorkflows}
 									ruleType={"workflow"}
 									showNewRule={true}
 									showNoRules={false}
+									toggleRule={(rulePath, enabled) => toggleWorkflow(false, rulePath, enabled)}
 								/>
 							</div>
 						</>

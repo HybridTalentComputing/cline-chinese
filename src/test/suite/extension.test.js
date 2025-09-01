@@ -43,7 +43,7 @@ describe("Extension Tests", function () {
 		await new Promise((resolve) => setTimeout(resolve, 1000))
 
 		// Get all views
-		const views = vscode.window.visibleTextEditors
+		const _views = vscode.window.visibleTextEditors
 		// Just verify the command executed without error
 		// The actual view verification is handled in the TypeScript tests
 	})

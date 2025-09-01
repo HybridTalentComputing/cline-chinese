@@ -55,6 +55,7 @@ async function processStream(
 	messages: Anthropic.Messages.MessageParam[],
 ): Promise<StreamResult> {
 	const startTime = Date.now()
+	console.log("--------processStream----------", messages)
 	const stream = handler.createMessage(systemPrompt, messages)
 
 	let assistantMessage = ""

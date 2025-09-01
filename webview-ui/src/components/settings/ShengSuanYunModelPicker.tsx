@@ -1,18 +1,18 @@
+import { shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "@shared/api"
+import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
+import { Mode } from "@shared/storage/types"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
-import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
+import React, { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
 import { useMount } from "react-use"
 import styled from "styled-components"
-import { shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "@shared/api"
-import { useExtensionState } from "../../context/ExtensionStateContext"
 import { ModelsServiceClient, StateServiceClient } from "@/services/grpc-client"
+import { useExtensionState } from "../../context/ExtensionStateContext"
 import { highlight } from "../history/HistoryView"
 import { ModelInfoView } from "./common/ModelInfoView"
 import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
-import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
 import { getModeSpecificFields, normalizeApiConfiguration } from "./utils/providerUtils"
 import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
-import { Mode } from "@shared/storage/types"
 export interface ShengSuanYunModelPickerProps {
 	isPopup?: boolean
 	currentMode: Mode
@@ -116,7 +116,7 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 	}, [searchableItems])
 
 	const modelSearchResults = useMemo(() => {
-		let results: { id: string; html: string }[] = searchTerm
+		const results: { id: string; html: string }[] = searchTerm
 			? highlight(fuse.search(searchTerm), "model-item-highlight")
 			: searchableItems
 		// results.sort((a, b) => a.id.localeCompare(b.id)) NOTE: sorting like this causes ids in objects to be reordered and mismatched
@@ -124,7 +124,9 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 	}, [searchableItems, searchTerm, fuse])
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-		if (!isDropdownVisible) return
+		if (!isDropdownVisible) {
+			return
+		}
 
 		switch (event.key) {
 			case "ArrowDown":
@@ -201,23 +203,23 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField
 						id="model-search"
-						placeholder="搜索模型..."
-						value={searchTerm}
+						onFocus={() => setIsDropdownVisible(true)}
 						onInput={(e) => {
 							handleModelChange((e.target as HTMLInputElement)?.value?.toLowerCase())
 							setIsDropdownVisible(true)
 						}}
-						onFocus={() => setIsDropdownVisible(true)}
 						onKeyDown={handleKeyDown}
+						placeholder="搜索模型..."
 						style={{
 							width: "100%",
 							zIndex: REQUESTY_MODEL_PICKER_Z_INDEX,
 							position: "relative",
-						}}>
+						}}
+						value={searchTerm}>
 						{searchTerm && (
 							<div
-								className="input-icon-button codicon codicon-close"
 								aria-label="清除"
+								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									handleModelChange("")
 									setIsDropdownVisible(true)
@@ -238,14 +240,14 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 								const isFavorite = (apiConfiguration?.favoritedModelIds || []).includes(item.id)
 								return (
 									<DropdownItem
-										key={item.id}
-										ref={(el) => (itemRefs.current[index] = el)}
 										isSelected={index === selectedIndex}
-										onMouseEnter={() => setSelectedIndex(index)}
+										key={item.id}
 										onClick={() => {
 											handleModelChange(item.id)
 											setIsDropdownVisible(false)
-										}}>
+										}}
+										onMouseEnter={() => setSelectedIndex(index)}
+										ref={(el) => (itemRefs.current[index] = el)}>
 										<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
 											<span dangerouslySetInnerHTML={{ __html: item.html }} />
 											<StarIcon
@@ -269,7 +271,7 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 			{hasInfo ? (
 				<>
 					{showBudgetSlider && <ThinkingBudgetSlider currentMode={currentMode} />}
-					<ModelInfoView selectedModelId={selectedModelId} modelInfo={selectedModelInfo} isPopup={isPopup} />
+					<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
 				</>
 			) : (
 				<p
@@ -278,21 +280,17 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 						marginTop: 0,
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					<>
-						该扩展会自动获取胜算云上可用的最新模型列表{" "}
-						<VSCodeLink
-							style={{ display: "inline", fontSize: "inherit" }}
-							href="https://router.shengsuanyun.com/model">
-							胜算云
-						</VSCodeLink>
-						如果你不确定使用哪个模型, Cline 可以和{" "}
-						<VSCodeLink
-							style={{ display: "inline", fontSize: "inherit" }}
-							onClick={() => handleModelChange("anthropic/claude-sonnet-4")}>
-							anthropic/claude-sonnet-4
-						</VSCodeLink>
-						很好的工作
-					</>
+					该扩展会自动获取胜算云上可用的最新模型列表{" "}
+					<VSCodeLink href="https://router.shengsuanyun.com/model" style={{ display: "inline", fontSize: "inherit" }}>
+						胜算云
+					</VSCodeLink>
+					如果你不确定使用哪个模型, Cline 可以和{" "}
+					<VSCodeLink
+						onClick={() => handleModelChange("anthropic/claude-sonnet-4")}
+						style={{ display: "inline", fontSize: "inherit" }}>
+						anthropic/claude-sonnet-4
+					</VSCodeLink>
+					很好的工作
 				</p>
 			)}
 		</div>
@@ -339,7 +337,7 @@ const DropdownItem = styled.div<{ isSelected: boolean }>`
 
 // Markdown
 
-const StyledMarkdown = styled.div`
+const _StyledMarkdown = styled.div`
 	font-family:
 		var(--vscode-font-family),
 		system-ui,

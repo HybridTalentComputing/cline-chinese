@@ -19,6 +19,8 @@ service ModelsService {
   rpc refreshHuggingFaceModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
   // Refreshes and returns OpenAI models
   rpc refreshOpenAiModels(OpenAiModelsRequest) returns (StringArray);
+  // Refreshes and returns Vercel AI Gateway models
+  rpc refreshVercelAiGatewayModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
   // Refreshes and returns Requesty models
   rpc refreshRequestyModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
   // Refreshes and returns ShengSuanYun models
@@ -31,6 +33,8 @@ service ModelsService {
   rpc refreshGroqModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
   // Refreshes and returns Baseten models
   rpc refreshBasetenModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
+  // Fetches available models from SAP AI Core
+  rpc getSapAiCoreModels(SapAiCoreModelsRequest) returns (SapAiCoreModelsResponse);
 }
 
 // List of VS Code LM models
@@ -48,20 +52,20 @@ message LanguageModelChatSelector {
 
 // Price tier for tiered pricing models
 message PriceTier {
-  int32 token_limit = 1;  // Upper limit (inclusive) of input tokens for this price
+  int64 token_limit = 1;  // Upper limit (inclusive) of input tokens for this price
   double price = 2;       // Price per million tokens for this tier
 }
 
 // Thinking configuration for models that support thinking/reasoning
 message ThinkingConfig {
-  optional int32 max_budget = 1;                    // Max allowed thinking budget tokens
+  optional int64 max_budget = 1;                    // Max allowed thinking budget tokens
   optional double output_price = 2;                 // Output price per million tokens when budget > 0
   repeated PriceTier output_price_tiers = 3;        // Optional: Tiered output price when budget > 0
 }
 
 // Model tier for tiered pricing structures
 message ModelTier {
-  int32 context_window = 1;
+  int64 context_window = 1;
   optional double input_price = 2;
   optional double output_price = 3;
   optional double cache_writes_price = 4;
@@ -70,8 +74,8 @@ message ModelTier {
 
 // For OpenRouterCompatibleModelInfo structure in OpenRouterModels
 message OpenRouterModelInfo {
-  optional int32 max_tokens = 1;
-  optional int32 context_window = 2;
+  optional int64 max_tokens = 1;
+  optional int64 context_window = 2;
   optional bool supports_images = 3;
   bool supports_prompt_cache = 4;
   optional double input_price = 5;
@@ -94,6 +98,22 @@ message OpenAiModelsRequest {
   Metadata metadata = 1;
   string base_url = 2;
   string api_key = 3;
+}
+
+// Request for fetching SAP AI Core models
+message SapAiCoreModelsRequest {
+  Metadata metadata = 1;
+  string client_id = 2;
+  string client_secret = 3;
+  string base_url = 4;
+  string token_url = 5;
+  string resource_group = 6;
+}
+
+// Response for SAP AI Core models with orchestration availability
+message SapAiCoreModelsResponse {
+  repeated string model_names = 1;
+  bool orchestration_available = 2;
 }
 
 // Request for updating API configuration
@@ -136,12 +156,16 @@ enum ApiProvider {
   HUGGINGFACE = 29;
   HUAWEI_CLOUD_MAAS = 31;
   BASETEN = 32;
+  ZAI = 33;
+  VERCEL_AI_GATEWAY = 34;
+  QWEN_CODE = 35;
+  DIFY = 36;
 }
 
 // Model info for OpenAI-compatible models
 message OpenAiCompatibleModelInfo {
-  optional int32 max_tokens = 1;
-  optional int32 context_window = 2;
+  optional int64 max_tokens = 1;
+  optional int64 context_window = 2;
   optional bool supports_images = 3;
   bool supports_prompt_cache = 4;
   optional double input_price = 5;
@@ -158,8 +182,8 @@ message OpenAiCompatibleModelInfo {
 
 // Model info for LiteLLM models
 message LiteLLMModelInfo {
-  optional int32 max_tokens = 1;
-  optional int32 context_window = 2;
+  optional int64 max_tokens = 1;
+  optional int64 context_window = 2;
   optional bool supports_images = 3;
   bool supports_prompt_cache = 4;
   optional double input_price = 5;
@@ -211,8 +235,8 @@ message ModelsApiConfiguration {
   optional string requesty_base_url = 33;
   optional string together_api_key = 34;
   optional string fireworks_api_key = 35;
-  optional int32 fireworks_model_max_completion_tokens = 36;
-  optional int32 fireworks_model_max_tokens = 37;
+  optional int64 fireworks_model_max_completion_tokens = 36;
+  optional int64 fireworks_model_max_tokens = 37;
   optional string qwen_api_key = 38;
   optional string doubao_api_key = 39;
   optional string mistral_api_key = 40;
@@ -224,7 +248,7 @@ message ModelsApiConfiguration {
   optional string xai_api_key = 46;
   optional string sambanova_api_key = 47;
   optional string cerebras_api_key = 48;
-  optional int32 request_timeout_ms = 49;
+  optional int64 request_timeout_ms = 49;
   optional string sap_ai_core_client_id = 50;
   optional string sap_ai_core_client_secret = 51;
   optional string sap_ai_resource_group = 52;
@@ -242,11 +266,19 @@ message ModelsApiConfiguration {
   optional string huawei_cloud_maas_api_key = 64;
   optional string baseten_api_key = 65;
   optional string ollama_api_key = 66;
+  optional bool sap_ai_core_use_orchestration_mode = 67;
+  optional string zai_api_key = 68;
+  optional string zai_api_line = 69;
+  optional string lm_studio_max_tokens = 70;
+  optional string vercel_ai_gateway_api_key = 71;
+  optional string qwen_code_oauth_path = 72;
+  optional string dify_api_key = 73;
+  optional string dify_base_url = 74;
 
   // Plan mode configurations
   optional ApiProvider plan_mode_api_provider = 100;
   optional string plan_mode_api_model_id = 101;
-  optional int32 plan_mode_thinking_budget_tokens = 102;
+  optional int64 plan_mode_thinking_budget_tokens = 102;
   optional string plan_mode_reasoning_effort = 103;
   optional LanguageModelChatSelector plan_mode_vs_code_lm_model_selector = 104;
   optional bool plan_mode_aws_bedrock_custom_selected = 105;
@@ -274,11 +306,13 @@ message ModelsApiConfiguration {
   optional OpenRouterModelInfo plan_mode_huawei_cloud_maas_model_info = 127; 
   optional string plan_mode_baseten_model_id = 128;
   optional OpenRouterModelInfo plan_mode_baseten_model_info = 129;
+  optional string plan_mode_vercel_ai_gateway_model_id = 130;
+  optional OpenRouterModelInfo plan_mode_vercel_ai_gateway_model_info = 131;
 
   // Act mode configurations
   optional ApiProvider act_mode_api_provider = 200;
   optional string act_mode_api_model_id = 201;
-  optional int32 act_mode_thinking_budget_tokens = 202;
+  optional int64 act_mode_thinking_budget_tokens = 202;
   optional string act_mode_reasoning_effort = 203;
   optional LanguageModelChatSelector act_mode_vs_code_lm_model_selector = 204;
   optional bool act_mode_aws_bedrock_custom_selected = 205;
@@ -306,6 +340,8 @@ message ModelsApiConfiguration {
   optional OpenRouterModelInfo act_mode_huawei_cloud_maas_model_info = 227;
   optional string act_mode_baseten_model_id = 228;
   optional OpenRouterModelInfo act_mode_baseten_model_info = 229;
+  optional string act_mode_vercel_ai_gateway_model_id = 230;
+  optional OpenRouterModelInfo act_mode_vercel_ai_gateway_model_info = 231;
 
   repeated string favorited_model_ids = 300;
 }

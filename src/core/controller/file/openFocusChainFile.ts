@@ -1,8 +1,8 @@
-import { Controller } from ".."
 import { openFile as openFileIntegration } from "@integrations/misc/open-file"
+// import { telemetryService } from "../../../services/posthog/PostHogClientProvider"
 import { Empty, StringRequest } from "../../../shared/proto/cline/common"
 import { ensureFocusChainFile, extractFocusChainListFromText } from "../../task/focus-chain/file-utils"
-import { telemetryService } from "../../../services/posthog/PostHogClientProvider"
+import { Controller } from ".."
 
 /**
  * Opens or creates a focus chain checklist markdown file for editing
@@ -33,7 +33,7 @@ export async function openFocusChainFile(controller: Controller, request: String
 	}
 
 	const focusChainFilePath = await ensureFocusChainFile(controller.context, taskId, initialFocusChainContent)
-	telemetryService.captureFocusChainListOpened(taskId)
+	// telemetryService.captureFocusChainListOpened(taskId)
 	await openFileIntegration(focusChainFilePath)
 
 	return Empty.create()

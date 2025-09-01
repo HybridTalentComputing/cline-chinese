@@ -1,8 +1,8 @@
-import * as vscode from "vscode"
-import { ensureRulesDirectoryExists } from "./disk"
 import fs from "fs/promises"
 import path from "path"
-import { readStateFromDisk } from "./utils/state-helpers"
+import * as vscode from "vscode"
+import { ensureRulesDirectoryExists } from "./disk"
+import { StateManager } from "./StateManager"
 
 export async function migrateWorkspaceToGlobalStorage(context: vscode.ExtensionContext) {
 	// Keys to migrate from workspace storage back to global storage
@@ -110,7 +110,7 @@ export async function migrateCustomInstructionsToGlobalRules(context: vscode.Ext
 				let existingContent = ""
 				try {
 					existingContent = await fs.readFile(migrationFilePath, "utf8")
-				} catch (readError) {
+				} catch (_readError) {
 					// File doesn't exist, which is fine
 				}
 
@@ -532,8 +532,9 @@ export async function migrateWelcomeViewCompleted(context: vscode.ExtensionConte
 			console.log("Migrating welcomeViewCompleted setting...")
 
 			// Get all extension state to check for existing API keys
-			const extensionState = await readStateFromDisk(context)
-			const config = extensionState.apiConfiguration
+			const stateManager = new StateManager(context)
+			await stateManager.initialize()
+			const config = stateManager.getApiConfiguration()
 
 			// This is the original logic used for checking is the welcome view should be shown
 			// It was located in the ExtensionStateContextProvider
@@ -566,6 +567,7 @@ export async function migrateWelcomeViewCompleted(context: vscode.ExtensionConte
 						config.sambanovaApiKey,
 						config.sapAiCoreClientId,
 						config.shengSuanYunApiKey,
+						config.difyApiKey,
 					].some((key) => key !== undefined)
 				: false
 

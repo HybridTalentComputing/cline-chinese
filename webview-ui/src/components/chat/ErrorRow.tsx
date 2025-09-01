@@ -1,12 +1,11 @@
-import { memo } from "react"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { ClineMessage } from "@shared/ExtensionMessage"
-import { SSYError, SSYErrorType } from "../../../../src/services/error/SSYError"
-import CreditLimitError from "@/components/chat/CreditLimitError"
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { memo } from "react"
 import { handleSignInSSY, useShengSuanYunAuth } from "@/context/ShengSuanYunAuthContext"
+import { SSYError, SSYErrorType } from "../../../../src/services/error/SSYError"
 import CreditLimitErrorSSY from "./CreditLimitErrorSSY"
 
-const errorColor = "var(--vscode-errorForeground)"
+const _errorColor = "var(--vscode-errorForeground)"
 
 interface ErrorRowProps {
 	message: ClineMessage
@@ -34,8 +33,8 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 							const errorDetails = ssyError._error?.details
 							return (
 								<CreditLimitErrorSSY
-									currentBalance={errorDetails?.balance}
 									bill={errorDetails?.bill}
+									currentBalance={errorDetails?.balance}
 									message={errorDetails?.message}
 									// buyCreditsUrl={errorDetails?.buy_credits_url}
 								/>
@@ -61,7 +60,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 								</p>
 								<p>
 									点击这里，在编辑 API Key 对话框中
-									<a href="https://console.shengsuanyun.com/user/keys" className="underline text-inherit">
+									<a className="underline text-inherit" href="https://console.shengsuanyun.com/user/keys">
 										配置 API Key 配额
 									</a>
 								</p>
@@ -77,15 +76,15 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 									{requestId && <div>请求 ID: {requestId}</div>}
 								</p>
 								<p>
-									<a href="https://console.shengsuanyun.com/user/keys" className="underline text-inherit">
+									<a className="underline text-inherit" href="https://console.shengsuanyun.com/user/keys">
 										在编辑 API Key 对话框中配置 API Key TPM
 									</a>
 								</p>
 								或
 								<p>
 									<a
-										href="https://docs.router.shengsuanyun.com/6893249m0#1-tpm-tokens-per-minute-%E9%99%90%E5%88%B6%E8%B6%85%E5%87%BA"
-										className="underline text-inherit">
+										className="underline text-inherit"
+										href="https://docs.router.shengsuanyun.com/6893249m0#1-tpm-tokens-per-minute-%E9%99%90%E5%88%B6%E8%B6%85%E5%87%BA">
 										了解更多关于TPM (Tokens Per Minute) 限制超出错误的说明
 									</a>
 								</p>
@@ -100,15 +99,15 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 									{requestId && <div>请求 ID: {requestId}</div>}
 								</p>
 								<p>
-									<a href="https://console.shengsuanyun.com/user/keys" className="underline text-inherit">
+									<a className="underline text-inherit" href="https://console.shengsuanyun.com/user/keys">
 										在编辑 API Key 对话框中配置 API Key RPM
 									</a>
 									或
 								</p>
 								<p>
 									<a
-										href="https://docs.router.shengsuanyun.com/6893249m0#2-rpm-requests-per-minute-%E9%99%90%E5%88%B6%E8%B6%85%E5%87%BA"
-										className="underline text-inherit">
+										className="underline text-inherit"
+										href="https://docs.router.shengsuanyun.com/6893249m0#2-rpm-requests-per-minute-%E9%99%90%E5%88%B6%E8%B6%85%E5%87%BA">
 										了解更多关于RPM (Requests Per Minute) 限制超出错误的说明
 									</a>
 								</p>
@@ -127,8 +126,8 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 									<br />
 									看起来您遇到了 Windows PowerShell 问题，请参阅此{" "}
 									<a
-										href="https://github.com/cline/cline/wiki/TroubleShooting-%E2%80%90-%22PowerShell-is-not-recognized-as-an-internal-or-external-command%22"
-										className="underline text-inherit">
+										className="underline text-inherit"
+										href="https://github.com/cline/cline/wiki/TroubleShooting-%E2%80%90-%22PowerShell-is-not-recognized-as-an-internal-or-external-command%22">
 										故障排除指南
 									</a>
 									.
@@ -144,7 +143,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 											(点击下方的“重试”)
 										</span>
 									) : (
-										<VSCodeButton onClick={handleSignInSSY} className="w-full mb-4">
+										<VSCodeButton className="w-full mb-4" onClick={handleSignInSSY}>
 											登录 Cline 胜算云
 										</VSCodeButton>
 									)}

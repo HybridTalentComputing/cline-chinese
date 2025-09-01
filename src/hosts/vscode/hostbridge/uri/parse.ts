@@ -1,5 +1,5 @@
+import { String, StringRequest } from "@shared/proto/cline/common"
 import * as vscode from "vscode"
-import { StringRequest, String } from "@shared/proto/cline/common"
 
 /**
  * Parses a URI string

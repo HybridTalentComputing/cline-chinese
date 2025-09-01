@@ -1,12 +1,11 @@
-import { URI } from "vscode-uri"
-import os from "os"
 import { mkdirSync, readFileSync } from "fs"
+import os from "os"
 import path, { join } from "path"
-import type { Extension, ExtensionContext } from "vscode"
+import type { Extension, ExtensionContext, LanguageModelAccessInformation } from "vscode"
 import { ExtensionKind, ExtensionMode } from "vscode"
+import { URI } from "vscode-uri"
 import { log } from "./utils"
 import { EnvironmentVariableCollection, EventEmitter, MementoStore, readJson, SecretStore } from "./vscode-context-utils"
-import type { LanguageModelAccessInformation } from "vscode"
 
 const VERSION = getPackageVersion()
 log("Running standalone cline ", VERSION)

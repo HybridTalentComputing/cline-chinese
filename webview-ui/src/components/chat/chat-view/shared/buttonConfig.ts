@@ -111,18 +111,18 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 	followup: {
 		sendingDisabled: false,
 		enableButtons: false,
-		primaryText: "批准",
-		secondaryText: "拒绝",
-		primaryAction: "new_task",
+		primaryText: undefined,
+		secondaryText: undefined,
+		primaryAction: undefined,
 		secondaryAction: undefined,
 	},
 	plan_mode_respond: {
 		sendingDisabled: false,
 		enableButtons: false,
-		primaryText: "批准",
-		secondaryText: "拒绝",
-		primaryAction: "approve",
-		secondaryAction: "reject",
+		primaryText: undefined,
+		secondaryText: undefined,
+		primaryAction: undefined,
+		secondaryAction: undefined,
 	},
 
 	// Task lifecycle states

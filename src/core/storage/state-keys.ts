@@ -1,178 +1,22 @@
 import { ApiProvider, BedrockModelId, ModelInfo } from "@shared/api"
+import { FocusChainSettings } from "@shared/FocusChainSettings"
 import { LanguageModelChatSelector } from "vscode"
+import { AutoApprovalSettings } from "@/shared/AutoApprovalSettings"
+import { BrowserSettings } from "@/shared/BrowserSettings"
 import { ClineRulesToggles } from "@/shared/cline-rules"
+import { HistoryItem } from "@/shared/HistoryItem"
 import { McpDisplayMode } from "@/shared/McpDisplayMode"
+import { McpMarketplaceCatalog } from "@/shared/mcp"
+import { ShengSuanYunModelInfo } from "@/shared/proto/index.cline"
+import { Mode, OpenaiReasoningEffort } from "@/shared/storage/types"
 import { TelemetrySetting } from "@/shared/TelemetrySetting"
 import { UserInfo } from "@/shared/UserInfo"
-import { BrowserSettings } from "@/shared/BrowserSettings"
-import { HistoryItem } from "@/shared/HistoryItem"
-import { AutoApprovalSettings } from "@/shared/AutoApprovalSettings"
-import { Mode, OpenaiReasoningEffort } from "@/shared/storage/types"
-import { McpMarketplaceCatalog } from "@/shared/mcp"
-import { FocusChainSettings } from "@shared/FocusChainSettings"
-import { ShengSuanYunModelInfo } from "@/generated/nice-grpc/cline/models"
 
-export type SecretKey =
-	| "apiKey"
-	| "clineAccountId"
-	| "openRouterApiKey"
-	| "awsAccessKey"
-	| "awsSecretKey"
-	| "awsSessionToken"
-	| "awsBedrockApiKey"
-	| "openAiApiKey"
-	| "ollamaApiKey"
-	| "geminiApiKey"
-	| "openAiNativeApiKey"
-	| "deepSeekApiKey"
-	| "requestyApiKey"
-	| "togetherApiKey"
-	| "fireworksApiKey"
-	| "qwenApiKey"
-	| "doubaoApiKey"
-	| "mistralApiKey"
-	| "liteLlmApiKey"
-	| "authNonce"
-	| "asksageApiKey"
-	| "xaiApiKey"
-	| "moonshotApiKey"
-	| "huggingFaceApiKey"
-	| "nebiusApiKey"
-	| "sambanovaApiKey"
-	| "shengSuanYunApiKey"
-	| "cerebrasApiKey"
-	| "sapAiCoreClientId"
-	| "sapAiCoreClientSecret"
-	| "groqApiKey"
-	| "huaweiCloudMaasApiKey"
-	| "basetenApiKey"
+export type SecretKey = keyof Secrets
 
-export type GlobalStateKey =
-	| "awsRegion"
-	| "awsUseCrossRegionInference"
-	| "awsBedrockUsePromptCache"
-	| "awsBedrockEndpoint"
-	| "awsProfile"
-	| "awsBedrockApiKey"
-	| "awsAuthentication"
-	| "awsUseProfile"
-	| "vertexProjectId"
-	| "vertexRegion"
-	| "lastShownAnnouncementId"
-	| "taskHistory"
-	| "requestyBaseUrl"
-	| "openAiBaseUrl"
-	| "openAiHeaders"
-	| "ollamaBaseUrl"
-	| "ollamaApiOptionsCtxNum"
-	| "lmStudioBaseUrl"
-	| "anthropicBaseUrl"
-	| "geminiBaseUrl"
-	| "azureApiVersion"
-	| "openRouterProviderSorting"
-	| "autoApprovalSettings"
-	| "globalClineRulesToggles"
-	| "globalWorkflowToggles"
-	| "browserSettings"
-	| "userInfo"
-	| "liteLlmBaseUrl"
-	| "liteLlmUsePromptCache"
-	| "fireworksModelMaxCompletionTokens"
-	| "fireworksModelMaxTokens"
-	| "qwenApiLine"
-	| "moonshotApiLine"
-	| "mcpMarketplaceCatalog"
-	| "telemetrySetting"
-	| "asksageApiUrl"
-	| "planActSeparateModelsSetting"
-	| "enableCheckpointsSetting"
-	| "mcpMarketplaceEnabled"
-	| "favoritedModelIds"
-	| "requestTimeoutMs"
-	| "shellIntegrationTimeout"
-	| "mcpResponsesCollapsed"
-	| "terminalReuseEnabled"
-	| "defaultTerminalProfile"
-	| "isNewUser"
-	| "shengSuanYunToken"
-	| "welcomeViewCompleted"
-	| "terminalOutputLineLimit"
-	| "mcpDisplayMode"
-	| "sapAiCoreTokenUrl"
-	| "sapAiCoreBaseUrl"
-	| "sapAiResourceGroup"
-	| "claudeCodePath"
-	| "strictPlanModeEnabled"
-	| "focusChainSettings"
-	| "focusChainFeatureFlagEnabled"
-	// Settings around plan/act and ephemeral model configuration
-	| "preferredLanguage"
-	| "openaiReasoningEffort"
-	| "mode"
-	// Plan mode configurations
-	| "planModeApiProvider"
-	| "planModeApiModelId"
-	| "planModeThinkingBudgetTokens"
-	| "planModeReasoningEffort"
-	| "planModeVsCodeLmModelSelector"
-	| "planModeAwsBedrockCustomSelected"
-	| "planModeAwsBedrockCustomModelBaseId"
-	| "planModeOpenRouterModelId"
-	| "planModeOpenRouterModelInfo"
-	| "planModeOpenAiModelId"
-	| "planModeOpenAiModelInfo"
-	| "planModeOllamaModelId"
-	| "planModeLmStudioModelId"
-	| "planModeLiteLlmModelId"
-	| "planModeLiteLlmModelInfo"
-	| "planModeRequestyModelId"
-	| "planModeRequestyModelInfo"
-	| "planModeTogetherModelId"
-	| "planModeFireworksModelId"
-	| "planModeSapAiCoreModelId"
-	| "planModeGroqModelId"
-	| "planModeGroqModelInfo"
-	| "planModeBasetenModelId"
-	| "planModeBasetenModelInfo"
-	| "planModeHuggingFaceModelId"
-	| "planModeHuggingFaceModelInfo"
-	| "planModeShengSuanYunModelId"
-	| "planModeShengSuanYunModelInfo"
-	| "planModeHuaweiCloudMaasModelId"
-	| "planModeHuaweiCloudMaasModelInfo"
-	// Act mode configurations
-	| "actModeApiProvider"
-	| "actModeApiModelId"
-	| "actModeThinkingBudgetTokens"
-	| "actModeReasoningEffort"
-	| "actModeVsCodeLmModelSelector"
-	| "actModeAwsBedrockCustomSelected"
-	| "actModeAwsBedrockCustomModelBaseId"
-	| "actModeOpenRouterModelId"
-	| "actModeOpenRouterModelInfo"
-	| "actModeOpenAiModelId"
-	| "actModeOpenAiModelInfo"
-	| "actModeOllamaModelId"
-	| "actModeLmStudioModelId"
-	| "actModeLiteLlmModelId"
-	| "actModeLiteLlmModelInfo"
-	| "actModeRequestyModelId"
-	| "actModeRequestyModelInfo"
-	| "actModeTogetherModelId"
-	| "actModeFireworksModelId"
-	| "actModeSapAiCoreModelId"
-	| "actModeGroqModelId"
-	| "actModeGroqModelInfo"
-	| "actModeBasetenModelId"
-	| "actModeBasetenModelInfo"
-	| "actModeHuggingFaceModelId"
-	| "actModeHuggingFaceModelInfo"
-	| "actModeShengSuanYunModelId"
-	| "actModeShengSuanYunModelInfo"
-	| "actModeHuaweiCloudMaasModelId"
-	| "actModeHuaweiCloudMaasModelInfo"
+export type GlobalStateKey = keyof GlobalState
 
-export type LocalStateKey = "localClineRulesToggles" | "localCursorRulesToggles" | "localWindsurfRulesToggles" | "workflowToggles"
+export type LocalStateKey = keyof LocalState
 
 export interface GlobalState {
 	shengSuanYunToken: string | undefined
@@ -181,7 +25,6 @@ export interface GlobalState {
 	awsBedrockUsePromptCache: boolean | undefined
 	awsBedrockEndpoint: string | undefined
 	awsProfile: string | undefined
-	awsBedrockApiKey: string | undefined
 	awsAuthentication: string | undefined
 	awsUseProfile: boolean | undefined
 	vertexProjectId: string | undefined
@@ -194,6 +37,7 @@ export interface GlobalState {
 	ollamaBaseUrl: string | undefined
 	ollamaApiOptionsCtxNum: string | undefined
 	lmStudioBaseUrl: string | undefined
+	lmStudioMaxTokens: string | undefined
 	anthropicBaseUrl: string | undefined
 	geminiBaseUrl: string | undefined
 	azureApiVersion: string | undefined
@@ -209,6 +53,7 @@ export interface GlobalState {
 	fireworksModelMaxTokens: number | undefined
 	qwenApiLine: string | undefined
 	moonshotApiLine: string | undefined
+	zaiApiLine: string | undefined
 	mcpMarketplaceCatalog: McpMarketplaceCatalog | undefined
 	telemetrySetting: TelemetrySetting
 	asksageApiUrl: string | undefined
@@ -228,13 +73,19 @@ export interface GlobalState {
 	sapAiCoreTokenUrl: string | undefined
 	sapAiCoreBaseUrl: string | undefined
 	sapAiResourceGroup: string | undefined
+	sapAiCoreUseOrchestrationMode: boolean | undefined
 	claudeCodePath: string | undefined
+	qwenCodeOauthPath: string | undefined
 	strictPlanModeEnabled: boolean
+	useAutoCondense: boolean
 	preferredLanguage: string
 	openaiReasoningEffort: OpenaiReasoningEffort
 	mode: Mode
 	focusChainSettings: FocusChainSettings
 	focusChainFeatureFlagEnabled: boolean
+	customPrompt: "compact" | undefined
+	difyBaseUrl: string | undefined
+
 	// Plan mode configurations
 	planModeApiProvider: ApiProvider
 	planModeApiModelId: string | undefined
@@ -297,6 +148,10 @@ export interface GlobalState {
 	actModeShengSuanYunModelInfo: ShengSuanYunModelInfo | undefined
 	actModeHuaweiCloudMaasModelId: string | undefined
 	actModeHuaweiCloudMaasModelInfo: ModelInfo | undefined
+	planModeVercelAiGatewayModelId: string | undefined
+	planModeVercelAiGatewayModelInfo: ModelInfo | undefined
+	actModeVercelAiGatewayModelId: string | undefined
+	actModeVercelAiGatewayModelInfo: ModelInfo | undefined
 }
 
 export interface Secrets {
@@ -323,6 +178,7 @@ export interface Secrets {
 	asksageApiKey: string | undefined
 	xaiApiKey: string | undefined
 	moonshotApiKey: string | undefined
+	zaiApiKey: string | undefined
 	huggingFaceApiKey: string | undefined
 	nebiusApiKey: string | undefined
 	sambanovaApiKey: string | undefined
@@ -333,6 +189,8 @@ export interface Secrets {
 	huaweiCloudMaasApiKey: string | undefined
 	basetenApiKey: string | undefined
 	shengSuanYunApiKey: string | undefined
+	vercelAiGatewayApiKey: string | undefined
+	difyApiKey: string | undefined
 }
 
 export interface LocalState {

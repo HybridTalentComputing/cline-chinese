@@ -1,8 +1,9 @@
+import { Mode } from "@shared/storage/types"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import ShengSuanYunModelPicker from "../ShengSuanYunModelPicker"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { Mode } from "@shared/storage/types"
+
 interface ShengSuanYunProviderProps {
 	showModelOptions: boolean
 	isPopup?: boolean
@@ -21,7 +22,7 @@ export const ShengSuanYunProvider = ({ showModelOptions, isPopup, currentMode }:
 				providerName="胜算云"
 				signupUrl="https://console.shengsuanyun.com/user/keys"
 			/>
-			{showModelOptions && <ShengSuanYunModelPicker isPopup={isPopup} currentMode={currentMode} />}
+			{showModelOptions && <ShengSuanYunModelPicker currentMode={currentMode} isPopup={isPopup} />}
 		</div>
 	)
 }

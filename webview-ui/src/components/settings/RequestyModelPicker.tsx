@@ -1,20 +1,20 @@
+import { requestyDefaultModelId, requestyDefaultModelInfo } from "@shared/api"
 import { EmptyRequest } from "@shared/proto/cline/common"
+import { Mode } from "@shared/storage/types"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
 import { useRemark } from "react-remark"
 import { useMount } from "react-use"
 import styled from "styled-components"
-import { requestyDefaultModelId, requestyDefaultModelInfo } from "@shared/api"
 import { useExtensionState } from "../../context/ExtensionStateContext"
 import { ModelsServiceClient } from "../../services/grpc-client"
 import { CODE_BLOCK_BG_COLOR } from "../common/CodeBlock"
 import { highlight } from "../history/HistoryView"
 import { ModelInfoView } from "./common/ModelInfoView"
-import { getModeSpecificFields, normalizeApiConfiguration } from "./utils/providerUtils"
 import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
+import { getModeSpecificFields, normalizeApiConfiguration } from "./utils/providerUtils"
 import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
-import { Mode } from "@shared/storage/types"
 
 export interface RequestyModelPickerProps {
 	isPopup?: boolean
@@ -103,7 +103,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, curr
 	}, [searchableItems])
 
 	const modelSearchResults = useMemo(() => {
-		let results: { id: string; html: string }[] = searchTerm
+		const results: { id: string; html: string }[] = searchTerm
 			? highlight(fuse.search(searchTerm), "model-item-highlight")
 			: searchableItems
 		// results.sort((a, b) => a.id.localeCompare(b.id)) NOTE: sorting like this causes ids in objects to be reordered and mismatched
@@ -111,7 +111,9 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, curr
 	}, [searchableItems, searchTerm, fuse])
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-		if (!isDropdownVisible) return
+		if (!isDropdownVisible) {
+			return
+		}
 
 		switch (event.key) {
 			case "ArrowDown":
@@ -182,23 +184,23 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, curr
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField
 						id="model-search"
-						placeholder="选择模型..."
-						value={searchTerm}
+						onFocus={() => setIsDropdownVisible(true)}
 						onInput={(e) => {
 							handleModelChange((e.target as HTMLInputElement)?.value?.toLowerCase())
 							setIsDropdownVisible(true)
 						}}
-						onFocus={() => setIsDropdownVisible(true)}
 						onKeyDown={handleKeyDown}
+						placeholder="选择模型..."
 						style={{
 							width: "100%",
 							zIndex: REQUESTY_MODEL_PICKER_Z_INDEX,
 							position: "relative",
-						}}>
+						}}
+						value={searchTerm}>
 						{searchTerm && (
 							<div
-								className="input-icon-button codicon codicon-close"
 								aria-label="清除"
+								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									handleModelChange("")
 									setIsDropdownVisible(true)
@@ -217,17 +219,17 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, curr
 						<DropdownList ref={dropdownListRef}>
 							{modelSearchResults.map((item, index) => (
 								<DropdownItem
-									key={item.id}
-									ref={(el) => (itemRefs.current[index] = el)}
+									dangerouslySetInnerHTML={{
+										__html: item.html,
+									}}
 									isSelected={index === selectedIndex}
-									onMouseEnter={() => setSelectedIndex(index)}
+									key={item.id}
 									onClick={() => {
 										handleModelChange(item.id)
 										setIsDropdownVisible(false)
 									}}
-									dangerouslySetInnerHTML={{
-										__html: item.html,
-									}}
+									onMouseEnter={() => setSelectedIndex(index)}
+									ref={(el) => (itemRefs.current[index] = el)}
 								/>
 							))}
 						</DropdownList>
@@ -238,7 +240,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, curr
 			{hasInfo ? (
 				<>
 					{showBudgetSlider && <ThinkingBudgetSlider currentMode={currentMode} />}
-					<ModelInfoView selectedModelId={selectedModelId} modelInfo={selectedModelInfo} isPopup={isPopup} />
+					<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
 				</>
 			) : (
 				<p
@@ -247,19 +249,17 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, curr
 						marginTop: 0,
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					<>
-						插件会自动获取最新模型列表{" "}
-						<VSCodeLink style={{ display: "inline", fontSize: "inherit" }} href="https://app.requesty.ai/router/list">
-							Requesty.
-						</VSCodeLink>
-						如果你不确定选择那个模型, Cline 能很好的和{" "}
-						<VSCodeLink
-							style={{ display: "inline", fontSize: "inherit" }}
-							onClick={() => handleModelChange("anthropic/claude-3-7-sonnet-latest")}>
-							anthropic/claude-3-7-sonnet-latest.
-						</VSCodeLink>
-						工作。
-					</>
+					插件会自动获取最新模型列表{" "}
+					<VSCodeLink href="https://app.requesty.ai/router/list" style={{ display: "inline", fontSize: "inherit" }}>
+						Requesty.
+					</VSCodeLink>
+					如果你不确定选择那个模型, Cline 能很好的和{" "}
+					<VSCodeLink
+						onClick={() => handleModelChange("anthropic/claude-3-7-sonnet-latest")}
+						style={{ display: "inline", fontSize: "inherit" }}>
+						anthropic/claude-3-7-sonnet-latest.
+					</VSCodeLink>
+					工作。
 				</p>
 			)}
 		</div>
@@ -427,6 +427,7 @@ export const ModelDescriptionMarkdown = memo(
 								}}
 							/>
 							<VSCodeLink
+								onClick={() => setIsExpanded(true)}
 								style={{
 									// cursor: "pointer",
 									// color: "var(--vscode-textLink-foreground)",
@@ -434,8 +435,7 @@ export const ModelDescriptionMarkdown = memo(
 									paddingRight: 0,
 									paddingLeft: 3,
 									backgroundColor: isPopup ? CODE_BLOCK_BG_COLOR : "var(--vscode-sideBar-background)",
-								}}
-								onClick={() => setIsExpanded(true)}>
+								}}>
 								更多
 							</VSCodeLink>
 						</div>

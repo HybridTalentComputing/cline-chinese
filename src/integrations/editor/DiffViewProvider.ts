@@ -1,14 +1,15 @@
-import * as path from "path"
-import * as fs from "fs/promises"
+import { formatResponse } from "@core/prompts/responses"
 import { createDirectoriesForFile } from "@utils/fs"
 import { getCwd } from "@utils/path"
-import { formatResponse } from "@core/prompts/responses"
 import * as diff from "diff"
-import { detectEncoding } from "../misc/extract-text"
+import * as fs from "fs/promises"
 import * as iconv from "iconv-lite"
+import * as path from "path"
 import { HostProvider } from "@/hosts/host-provider"
-import { DiagnosticSeverity, FileDiagnostics } from "@/shared/proto/index.cline"
 import { diagnosticsToProblemsString, getNewDiagnostics } from "@/integrations/diagnostics"
+import { DiagnosticSeverity, FileDiagnostics } from "@/shared/proto/index.cline"
+import { detectEncoding } from "../misc/extract-text"
+import { openFile } from "../misc/open-file"
 
 export abstract class DiffViewProvider {
 	editType?: "create" | "modify"
@@ -261,13 +262,7 @@ export abstract class DiffViewProvider {
 		// get text after save in case there is any auto-formatting done by the editor
 		const postSaveContent = (await this.getDocumentText()) || ""
 
-		await HostProvider.window.showTextDocument({
-			path: this.absolutePath,
-			options: {
-				preview: false,
-				preserveFocus: true,
-			},
-		})
+		await openFile(this.absolutePath, true)
 		await this.closeAllDiffViews()
 
 		const newProblems = await this.getNewDiagnosticProblems()
@@ -321,12 +316,17 @@ export abstract class DiffViewProvider {
 			await this.saveDocument()
 			await this.closeAllDiffViews()
 			await fs.rm(this.absolutePath, { force: true })
+			console.log(`File ${this.absolutePath} has been deleted.`)
+
 			// Remove only the directories we created, in reverse order
 			for (let i = this.createdDirs.length - 1; i >= 0; i--) {
-				await fs.rmdir(this.createdDirs[i])
-				console.log(`Directory ${this.createdDirs[i]} has been deleted.`)
+				try {
+					await fs.rmdir(this.createdDirs[i])
+					console.log(`Directory ${this.createdDirs[i]} has been deleted.`)
+				} catch (error) {
+					console.log(`Could not delete directory ${this.createdDirs[i]}`, error)
+				}
 			}
-			console.log(`File ${this.absolutePath} has been deleted.`)
 		} else {
 			// revert document
 			// Apply the edit and save, since contents shouldn't have changed this won't show in local history unless of
@@ -338,13 +338,7 @@ export abstract class DiffViewProvider {
 			await this.saveDocument()
 			console.log(`File ${this.absolutePath} has been reverted to its original content.`)
 			if (this.documentWasOpen) {
-				await HostProvider.window.showTextDocument({
-					path: this.absolutePath,
-					options: {
-						preview: false,
-						preserveFocus: true,
-					},
-				})
+				openFile(this.absolutePath, true)
 			}
 			await this.closeAllDiffViews()
 		}

@@ -1,17 +1,17 @@
-import React, { memo, useEffect, useRef, useState } from "react"
+import { StringRequest } from "@shared/proto/cline/common"
+import { PlanActMode, TogglePlanActModeRequest } from "@shared/proto/cline/state"
 import type { ComponentProps } from "react"
+import React, { memo, useEffect, useRef } from "react"
 import { useRemark } from "react-remark"
 import rehypeHighlight, { Options } from "rehype-highlight"
 import styled from "styled-components"
-import { visit } from "unist-util-visit"
 import type { Node } from "unist"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import CodeBlock, { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
+import { visit } from "unist-util-visit"
+import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import MermaidBlock from "@/components/common/MermaidBlock"
-import { WithCopyButton } from "./CopyButton"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient, StateServiceClient } from "@/services/grpc-client"
-import { PlanActMode, TogglePlanActModeRequest } from "@shared/proto/cline/state"
-import { StringRequest, BooleanResponse } from "@shared/proto/cline/common"
+import { WithCopyButton } from "./CopyButton"
 
 // Styled component for Act Mode text with more specific styling
 const ActModeHighlight: React.FC = () => {
@@ -19,6 +19,9 @@ const ActModeHighlight: React.FC = () => {
 
 	return (
 		<span
+			className={`text-[var(--vscode-textLink-foreground)] inline-flex items-center gap-1 ${
+				mode === "plan" ? "hover:opacity-90 cursor-pointer" : "cursor-default opacity-60"
+			}`}
 			onClick={() => {
 				// Only toggle to Act mode if we're currently in Plan mode
 				if (mode === "plan") {
@@ -29,10 +32,7 @@ const ActModeHighlight: React.FC = () => {
 					)
 				}
 			}}
-			title={mode === "plan" ? "点击切换到执行模式" : "已经在执行模式"}
-			className={`text-[var(--vscode-textLink-foreground)] inline-flex items-center gap-1 ${
-				mode === "plan" ? "hover:opacity-90 cursor-pointer" : "cursor-default opacity-60"
-			}`}>
+			title={mode === "plan" ? "点击切换到执行模式" : "已经在执行模式"}>
 			<div className="p-1 rounded-[12px] bg-[var(--vscode-editor-background)] flex items-center justify-end w-4 border-[1px] border-[var(--vscode-input-border)]">
 				<div className="rounded-full bg-[var(--vscode-textLink-foreground)] w-2 h-2" />
 			</div>
@@ -59,13 +59,17 @@ const remarkUrlToLink = () => {
 		visit(tree, "text", (node: any, index, parent) => {
 			const urlRegex = /https?:\/\/[^\s<>)"]+/g
 			const matches = node.value.match(urlRegex)
-			if (!matches) return
+			if (!matches) {
+				return
+			}
 
 			const parts = node.value.split(urlRegex)
 			const children: any[] = []
 
 			parts.forEach((part: string, i: number) => {
-				if (part) children.push({ type: "text", value: part })
+				if (part) {
+					children.push({ type: "text", value: part })
+				}
 				if (matches[i]) {
 					children.push({
 						type: "link",
@@ -96,19 +100,25 @@ const remarkHighlightActMode = () => {
 			// Added negative lookahead to avoid matching if already followed by the shortcut
 			const actModeRegex = /\bto\s+Act\s+Mode\b(?!\s*\(⌘⇧A\))/i
 
-			if (!node.value.match(actModeRegex)) return
+			if (!node.value.match(actModeRegex)) {
+				return
+			}
 
 			// Split the text by the matches
 			const parts = node.value.split(actModeRegex)
 			const matches = node.value.match(actModeRegex)
 
-			if (!matches || parts.length <= 1) return
+			if (!matches || parts.length <= 1) {
+				return
+			}
 
 			const children: any[] = []
 
 			parts.forEach((part: string, i: number) => {
 				// Add the text before the match
-				if (part) children.push({ type: "text", value: part })
+				if (part) {
+					children.push({ type: "text", value: part })
+				}
 
 				// Add the match, but only make "Act Mode" bold (not the "to" part)
 				if (matches[i]) {
@@ -156,22 +166,32 @@ const remarkPreventBoldFilenames = () => {
 	return (tree: any) => {
 		visit(tree, "strong", (node: any, index: number | undefined, parent: any) => {
 			// Only process if there's a next node (potential file extension)
-			if (!parent || typeof index === "undefined" || index === parent.children.length - 1) return
+			if (!parent || typeof index === "undefined" || index === parent.children.length - 1) {
+				return
+			}
 
 			const nextNode = parent.children[index + 1]
 
 			// Check if next node is text and starts with . followed by extension
-			if (nextNode.type !== "text" || !nextNode.value.match(/^\.[a-zA-Z0-9]+/)) return
+			if (nextNode.type !== "text" || !nextNode.value.match(/^\.[a-zA-Z0-9]+/)) {
+				return
+			}
 
 			// If the strong node has multiple children, something weird is happening
-			if (node.children?.length !== 1) return
+			if (node.children?.length !== 1) {
+				return
+			}
 
 			// Get the text content from inside the strong node
 			const strongContent = node.children?.[0]?.value
-			if (!strongContent || typeof strongContent !== "string") return
+			if (!strongContent || typeof strongContent !== "string") {
+				return
+			}
 
 			// Validate that the strong content is a valid filename
-			if (!strongContent.match(/^[a-zA-Z0-9_-]+$/)) return
+			if (!strongContent.match(/^[a-zA-Z0-9_-]+$/)) {
+				return
+			}
 
 			// Combine into a single text node
 			const newNode = {
@@ -275,28 +295,7 @@ const StyledMarkdown = styled.div`
 	}
 `
 
-const StyledPre = styled.pre<{ theme: any }>`
-	& .hljs {
-		color: var(--vscode-editor-foreground, #fff);
-	}
-
-	${(props) =>
-		Object.keys(props.theme)
-			.map((key, index) => {
-				return `
-      & ${key} {
-        color: ${props.theme[key]};
-      }
-    `
-			})
-			.join("")}
-`
-
-const PreWithCopyButton = ({
-	children,
-	theme,
-	...preProps
-}: { theme: Record<string, string> } & React.HTMLAttributes<HTMLPreElement>) => {
+const PreWithCopyButton = ({ children, ...preProps }: React.HTMLAttributes<HTMLPreElement>) => {
 	const preRef = useRef<HTMLPreElement>(null)
 
 	const handleCopy = () => {
@@ -304,19 +303,19 @@ const PreWithCopyButton = ({
 			const codeElement = preRef.current.querySelector("code")
 			const textToCopy = codeElement ? codeElement.textContent : preRef.current.textContent
 
-			if (!textToCopy) return
+			if (!textToCopy) {
+				return
+			}
 			return textToCopy
 		}
 		return null
 	}
 
-	const styledPreProps = theme ? { ...preProps, theme } : preProps
-
 	return (
-		<WithCopyButton onCopy={handleCopy} position="top-right" ariaLabel="Copy code">
-			<StyledPre {...styledPreProps} ref={preRef}>
+		<WithCopyButton ariaLabel="Copy code" onCopy={handleCopy} position="top-right">
+			<pre {...preProps} ref={preRef}>
 				{children}
-			</StyledPre>
+			</pre>
 		</WithCopyButton>
 	)
 }
@@ -328,7 +327,7 @@ const PreWithCopyButton = ({
 const remarkFilePathDetection = () => {
 	return async (tree: Node) => {
 		const fileNameRegex = /^(?!\/)[\w\-./]+(?<!\/)$/
-		const inlineCodeNodes: any[] = []
+		const _inlineCodeNodes: any[] = []
 		const filePathPromises: Promise<void>[] = []
 
 		// Collect all inline code nodes that might be file paths
@@ -355,8 +354,6 @@ const remarkFilePathDetection = () => {
 }
 
 const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
-	const { theme } = useExtensionState()
-
 	const [reactContent, setMarkdown] = useRemark({
 		remarkPlugins: [
 			remarkPreventBoldFilenames,
@@ -390,11 +387,7 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 							return child
 						}
 					}
-					return (
-						<PreWithCopyButton {...preProps} theme={theme || {}}>
-							{children}
-						</PreWithCopyButton>
-					)
+					return <PreWithCopyButton {...preProps}>{children}</PreWithCopyButton>
 				},
 				code: (props: ComponentProps<"code"> & { [key: string]: any }) => {
 					const className = props.className || ""
@@ -412,10 +405,10 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 							<>
 								<code {...props} />
 								<button
-									type="button"
 									className="codicon codicon-link-external bg-transparent border-0 appearance-none p-0 ml-0.5 leading-none align-middle opacity-70 hover:opacity-100 transition-opacity text-[1em] relative top-[1px] text-[var(--vscode-textPreformat-foreground)] translate-y-[-2px]"
 									onClick={() => FileServiceClient.openFileRelativePath({ value: filePath })}
 									title={`Open ${filePath} in editor`}
+									type="button"
 								/>
 							</>
 						)
@@ -428,9 +421,12 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 					// Handle both string children and array of children cases
 					const childrenText = React.Children.toArray(props.children)
 						.map((child) => {
-							if (typeof child === "string") return child
-							if (typeof child === "object" && "props" in child && child.props.children)
+							if (typeof child === "string") {
+								return child
+							}
+							if (typeof child === "object" && "props" in child && child.props.children) {
 								return String(child.props.children)
+							}
 							return ""
 						})
 						.join("")
@@ -450,7 +446,7 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 
 	useEffect(() => {
 		setMarkdown(markdown || "")
-	}, [markdown, setMarkdown, theme])
+	}, [markdown, setMarkdown])
 
 	return (
 		<div>

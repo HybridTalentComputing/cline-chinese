@@ -1,11 +1,11 @@
-import { Controller } from ".."
+import { GlobalFileNames } from "@core/storage/disk"
 import { EmptyRequest } from "@shared/proto/cline/common"
 import { OpenRouterCompatibleModelInfo, ShengSuanYunModelInfo } from "@shared/proto/cline/models"
-import axios from "axios"
-import path from "path"
-import fs from "fs/promises"
 import { fileExistsAtPath } from "@utils/fs"
-import { GlobalFileNames } from "@core/storage/disk"
+import axios from "axios"
+import fs from "fs/promises"
+import path from "path"
+import { Controller } from ".."
 
 /**
  * Refreshes the ShengSuanYun models and returns the updated model list
@@ -16,7 +16,7 @@ import { GlobalFileNames } from "@core/storage/disk"
 
 export async function refreshShengSuanYunModels(
 	controller: Controller,
-	request: EmptyRequest,
+	_request: EmptyRequest,
 ): Promise<OpenRouterCompatibleModelInfo> {
 	const shengSuanYunModelsFilePath = path.join(await ensureCacheDirectoryExists(controller), GlobalFileNames.shengSuanYunModels)
 

@@ -124,6 +124,8 @@ message UpdateSettingsRequest {
   optional OpenaiReasoningEffort openai_reasoning_effort = 15;
   optional bool strict_plan_mode_enabled = 16;
   optional FocusChainSettings focus_chain_settings = 17;
+  optional bool use_auto_condense = 18;
+  optional string custom_prompt = 19;
 }
 
 // Complete API Configuration message
@@ -189,6 +191,13 @@ message ApiConfiguration {
   optional string sheng_suan_yun_token = 58;
   optional string huawei_cloud_maas_api_key = 59;
   optional string ollama_api_key = 60;
+  optional string zai_api_key = 61;
+  optional string zai_api_line = 62;
+  optional string lm_studio_max_tokens = 63;
+  optional string vercel_ai_gateway_api_key = 64;
+  optional string qwen_code_oauth_path = 65;
+  optional string dify_api_key = 66;
+  optional string dify_base_url = 67;
   
   // Plan mode configurations
   optional string plan_mode_api_provider = 100;
@@ -215,6 +224,8 @@ message ApiConfiguration {
   optional string plan_mode_sheng_suan_yun_model_info = 121;
   optional string plan_mode_huawei_cloud_maas_model_id = 122;
   optional string plan_mode_huawei_cloud_maas_model_info = 123;
+  optional string plan_mode_vercel_ai_gateway_model_id = 124;
+  optional string plan_mode_vercel_ai_gateway_model_info = 125;
   
   // Act mode configurations
   optional string act_mode_api_provider = 200;
@@ -241,6 +252,8 @@ message ApiConfiguration {
   optional string act_mode_sheng_suan_yun_model_info = 221;
   optional string act_mode_huawei_cloud_maas_model_id = 222;
   optional string act_mode_huawei_cloud_maas_model_info = 223;
+  optional string act_mode_vercel_ai_gateway_model_id = 224;
+  optional string act_mode_vercel_ai_gateway_model_info = 225;
   
   // Favorited model IDs
   repeated string favorited_model_ids = 300;

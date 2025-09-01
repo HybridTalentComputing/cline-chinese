@@ -12,17 +12,15 @@ import {
 import deepEqual from "fast-deep-equal"
 import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { useInterval } from "react-use"
+import ClineLogoWhite from "@/assets/ClineLogoWhite"
 import { type ClineUser, handleSignOut } from "@/context/ClineAuthContext"
-import { AccountServiceClient } from "@/services/grpc-client"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useShengSuanYunAuth } from "@/context/ShengSuanYunAuthContext"
+import { AccountServiceClient } from "@/services/grpc-client"
 import VSCodeButtonLink from "../common/VSCodeButtonLink"
-import { AccountWelcomeView } from "./AccountWelcomeView"
 import { CreditBalance } from "./CreditBalance"
 import CreditsHistoryTable from "./CreditsHistoryTable"
 import { convertProtoUsageTransactions, getClineUris, getMainRole } from "./helpers"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import ClineLogoWhite from "@/assets/ClineLogoWhite"
-import { StyledCreditDisplay } from "./StyledCreditDisplay"
 import { StyledCreditDisplaySSY } from "./StyledCreditDisplaySSY"
 
 type AccountViewProps = {
@@ -127,7 +125,9 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 	const fetchCreditBalance = useCallback(
 		async (id: string, skipCache = false) => {
 			try {
-				if (isLoading) return // Prevent multiple concurrent fetches
+				if (isLoading) {
+					return // Prevent multiple concurrent fetches
+				}
 
 				// Load cached data immediately if available (unless skipping cache)
 				if (!skipCache && loadCachedData(id)) {
@@ -165,7 +165,9 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 	const handleOrganizationChange = useCallback(
 		async (event: any) => {
 			const target = event.target as HTMLSelectElement
-			if (!target) return
+			if (!target) {
+				return
+			}
 
 			const newValue = target.value
 			if (newValue !== dropdownValue) {
@@ -276,11 +278,11 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 
 							<div className="flex gap-2 items-center mt-1">
 								<VSCodeDropdown
+									className="w-full"
 									currentValue={dropdownValue}
-									onChange={handleOrganizationChange}
 									disabled={isLoading}
-									className="w-full">
-									<VSCodeOption value={uid} key="personal">
+									onChange={handleOrganizationChange}>
+									<VSCodeOption key="personal" value={uid}>
 										Personal
 									</VSCodeOption>
 									{userOrganizations?.map((org: UserOrganization) => (
@@ -300,11 +302,11 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				</div>
 				<div className="w-full flex gap-2 flex-col min-[225px]:flex-row">
 					<div className="w-full min-[225px]:w-1/2">
-						<VSCodeButtonLink href={getClineUris(clineUrl, "dashboard").href} appearance="primary" className="w-full">
+						<VSCodeButtonLink appearance="primary" className="w-full" href={getClineUris(clineUrl, "dashboard").href}>
 							Dashboard
 						</VSCodeButtonLink>
 					</div>
-					<VSCodeButton appearance="secondary" onClick={() => handleSignOut()} className="w-full min-[225px]:w-1/2">
+					<VSCodeButton appearance="secondary" className="w-full min-[225px]:w-1/2" onClick={() => handleSignOut()}>
 						Log out
 					</VSCodeButton>
 				</div>
@@ -312,11 +314,11 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				<VSCodeDivider className="w-full my-6" />
 
 				<CreditBalance
-					isLoading={isLoading}
 					balance={balance}
-					fetchCreditBalance={() => fetchCreditBalance(dropdownValue)}
-					lastFetchTime={lastFetchTime}
 					creditUrl={getClineUris(clineUrl, "credits", dropdownValue === uid ? "account" : "organization")}
+					fetchCreditBalance={() => fetchCreditBalance(dropdownValue)}
+					isLoading={isLoading}
+					lastFetchTime={lastFetchTime}
 				/>
 
 				<VSCodeDivider className="mt-6 mb-3 w-full" />
@@ -324,9 +326,9 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				<div className="flex-grow flex flex-col min-h-0 pb-[0px]">
 					<CreditsHistoryTable
 						isLoading={isLoading}
-						usageData={usageData}
 						paymentsData={paymentsData}
 						showPayments={dropdownValue === uid}
+						usageData={usageData}
 					/>
 				</div>
 			</div>
@@ -337,7 +339,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 export const SSYAccountView = () => {
 	const { userSSY: ssyUser } = useShengSuanYunAuth()
 	const { userInfo, apiConfiguration } = useExtensionState()
-	let user = apiConfiguration?.shengSuanYunToken ? ssyUser || userInfo : undefined
+	const user = apiConfiguration?.shengSuanYunToken ? ssyUser || userInfo : undefined
 
 	const [balance, setBalance] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
@@ -370,7 +372,7 @@ export const SSYAccountView = () => {
 					<div className="flex flex-col w-full">
 						<div className="flex items-center mb-6 flex-wrap gap-y-4">
 							{user.photoURL ? (
-								<img src={user.photoURL} alt="Profile" className="size-16 rounded-full mr-4" />
+								<img alt="Profile" className="size-16 rounded-full mr-4" src={user.photoURL} />
 							) : (
 								<div className="size-16 rounded-full bg-[var(--vscode-button-background)] flex items-center justify-center text-2xl text-[var(--vscode-button-foreground)] mr-4">
 									{user.displayName?.[0] || user.email?.[0] || "?"}
@@ -394,9 +396,9 @@ export const SSYAccountView = () => {
 					<div className="w-full flex gap-2 flex-col min-[225px]:flex-row">
 						<div className="w-full min-[225px]:w-1/2">
 							<VSCodeButtonLink
-								href="https://console.shengsuanyun.com/user/overview"
 								appearance="primary"
-								className="w-full">
+								className="w-full"
+								href="https://console.shengsuanyun.com/user/overview">
 								个人中心
 							</VSCodeButtonLink>
 						</div>
@@ -447,7 +449,7 @@ export const SSYAccountView = () => {
 						</div>
 
 						<div className="w-full">
-							<VSCodeButtonLink href="https://console.shengsuanyun.com/user/recharge" className="w-full">
+							<VSCodeButtonLink className="w-full" href="https://console.shengsuanyun.com/user/recharge">
 								充值
 							</VSCodeButtonLink>
 						</div>
@@ -456,7 +458,7 @@ export const SSYAccountView = () => {
 					<VSCodeDivider className="mt-6 mb-3 w-full" />
 
 					<div className="flex-grow flex flex-col min-h-0 pb-[0px]">
-						<CreditsHistoryTable isLoading={isLoading} usageData={usageData} paymentsData={paymentsData} />
+						<CreditsHistoryTable isLoading={isLoading} paymentsData={paymentsData} usageData={usageData} />
 					</div>
 				</div>
 			) : (
