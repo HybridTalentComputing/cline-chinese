@@ -1726,11 +1726,7 @@ export class Task {
 			await this.messageStateHandler.saveClineMessagesAndUpdateHistory()
 			// saves task history item which we use to keep track of conversation history deleted range
 		}
-		console.log(
-			systemPrompt,
-			contextManagementMetadata.truncatedConversationHistory,
-			"--------------------------truncatedConversationHistory--------------",
-		)
+
 		const stream = this.api.createMessage(systemPrompt, contextManagementMetadata.truncatedConversationHistory)
 
 		const iterator = stream[Symbol.asyncIterator]()

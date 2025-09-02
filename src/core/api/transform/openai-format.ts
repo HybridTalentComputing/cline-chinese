@@ -83,7 +83,8 @@ export function convertToOpenAiMessages(
 					console.log("+++++++++++++++++++++nonToolMessages.length+++++++++++++++++++++++++", nonToolMessages.length)
 					openAiMessages.push({
 						role: "user",
-						content: nonToolMessages.slice(-6).map((part) => {
+						// content: nonToolMessages.slice(-6).map((part) => {
+						content: nonToolMessages.map((part) => {
 							if (part.type === "image") {
 								return {
 									type: "image_url",
@@ -92,11 +93,12 @@ export function convertToOpenAiMessages(
 									},
 								}
 							}
+							// return { type: "text", text: part.text }
 							console.log(
 								"+++++++++++++++++++++nonToolMessage.text.length+++++++++++++++++++++++++",
 								part.text.length,
 							)
-							return { type: "text", text: part.text.substring(0, 3000) }
+							return { type: "text", text: part.text.substring(0, 6000) }
 						}),
 					})
 				}
