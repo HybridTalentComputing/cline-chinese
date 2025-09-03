@@ -2,7 +2,7 @@ import type { ToolUse } from "@core/assistant-message"
 import { continuationPrompt } from "@core/prompts/contextManagement"
 import { formatResponse } from "@core/prompts/responses"
 import { ensureTaskDirectoryExists } from "@core/storage/disk"
-import { telemetryService } from "@services/posthog/PostHogClientProvider"
+// import { telemetryService } from "@services/posthog/PostHogClientProvider"
 import { ClineSayTool } from "@shared/ExtensionMessage"
 import type { ToolResponse } from "../../index"
 import type { IPartialBlockHandler, IToolHandler } from "../ToolExecutorCoordinator"
@@ -74,14 +74,14 @@ export class SummarizeTaskHandler implements IToolHandler, IPartialBlockHandler 
 				config.taskState.lastAutoCompactTriggerIndex,
 			)
 
-			if (telemetryData) {
-				telemetryService.captureSummarizeTask(
-					config.ulid,
-					config.api.getModel().id,
-					telemetryData.tokensUsed,
-					telemetryData.maxContextWindow,
-				)
-			}
+			// if (telemetryData) {
+			// 	telemetryService.captureSummarizeTask(
+			// 		config.ulid,
+			// 		config.api.getModel().id,
+			// 		telemetryData.tokensUsed,
+			// 		telemetryData.maxContextWindow,
+			// 	)
+			// }
 
 			return toolResult
 		} catch (error) {

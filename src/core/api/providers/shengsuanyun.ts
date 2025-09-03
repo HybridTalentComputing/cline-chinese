@@ -60,8 +60,6 @@ export class ShengSuanYunHandler implements ApiHandler {
 			this.options.thinkingBudgetTokens,
 		)
 
-		let didOutputUsage: boolean = false
-		let lastChunk: any = {}
 		for await (const chunk of stream) {
 			// openrouter returns an error object instead of the openai sdk throwing an error
 			if ("error" in chunk) {
@@ -75,8 +73,6 @@ export class ShengSuanYunHandler implements ApiHandler {
 				console.error("shengSuanYun stream chunk:", chunk)
 				continue
 			}
-
-			lastChunk = chunk
 			// console.log(JSON.stringify(chunk, null, 2))
 
 			const choice = chunk.choices?.[0]
@@ -117,7 +113,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 					reasoning: delta.reasoning,
 				}
 			}
-			if (!didOutputUsage && chunk.usage) {
+			if (chunk.usage) {
 				const input = (chunk.usage.prompt_tokens || 0) - (chunk.usage.prompt_tokens_details?.cached_tokens || 0)
 				const output = chunk.usage.completion_tokens || 0
 				// @ts-ignore-next-line
@@ -132,16 +128,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 					outputTokens: output,
 					totalCost: cost ? cost : (input / 1000000) * inputPrice + (output / 1000000) * outputPrice,
 				}
-				didOutputUsage = true
 			}
-		}
-		// Fallback to generation endpoint if usage chunk not returned ; NotImplemented yet
-		if (!didOutputUsage) {
-			console.log("ShengSuanYunHandler.createMessage -- lastChunk without usage", JSON.stringify(lastChunk, null, 2))
-			// const apiStreamUsage = await this.getApiStreamUsage()
-			// if (apiStreamUsage) {
-			// 	yield apiStreamUsage
-			// }
 		}
 	}
 

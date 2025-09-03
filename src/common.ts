@@ -12,7 +12,7 @@ import "./utils/path" // necessary to have access to String.prototype.toPosix
 
 import { HostProvider } from "@/hosts/host-provider"
 import { FileContextTracker } from "./core/context/context-tracking/FileContextTracker"
-import { telemetryService } from "./services/posthog/PostHogClientProvider"
+// import { telemetryService } from "./services/posthog/PostHogClientProvider"
 import { ShowMessageType } from "./shared/proto/host/window"
 import { getLatestAnnouncementId } from "./utils/announcements"
 /**
@@ -51,7 +51,7 @@ export async function initialize(context: vscode.ExtensionContext): Promise<Webv
 
 	await showVersionUpdateAnnouncement(context)
 
-	telemetryService.captureExtensionActivated()
+	// telemetryService.captureExtensionActivated()
 
 	return sidebarWebview
 }

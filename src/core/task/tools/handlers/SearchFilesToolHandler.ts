@@ -1,5 +1,5 @@
 import type { ToolUse } from "@core/assistant-message"
-import { telemetryService } from "@services/posthog/PostHogClientProvider"
+// import { telemetryService } from "@services/posthog/PostHogClientProvider"
 import { regexSearchFiles } from "@services/ripgrep"
 import { getReadablePath, isLocatedInWorkspace } from "@utils/path"
 import * as path from "path"
@@ -103,7 +103,7 @@ export class SearchFilesToolHandler implements IFullyManagedTool {
 			config.taskState.consecutiveAutoApprovedRequestsCount++
 
 			// Capture telemetry
-			telemetryService.captureToolUsage(config.ulid, block.name, config.api.getModel().id, true, true)
+			// telemetryService.captureToolUsage(config.ulid, block.name, config.api.getModel().id, true, true)
 		} else {
 			// Manual approval flow
 			const notificationMessage = `Cline wants to search files for ${regex}`
@@ -123,10 +123,10 @@ export class SearchFilesToolHandler implements IFullyManagedTool {
 			if (response !== "yesButtonClicked") {
 				// Handle rejection
 				config.taskState.didRejectTool = true
-				telemetryService.captureToolUsage(config.ulid, block.name, config.api.getModel().id, false, false)
+				// telemetryService.captureToolUsage(config.ulid, block.name, config.api.getModel().id, false, false)
 				return "The user denied this operation."
 			} else {
-				telemetryService.captureToolUsage(config.ulid, block.name, config.api.getModel().id, false, true)
+				// telemetryService.captureToolUsage(config.ulid, block.name, config.api.getModel().id, false, true)
 			}
 		}
 

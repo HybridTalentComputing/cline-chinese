@@ -1,6 +1,6 @@
 import { processFilesIntoText } from "@integrations/misc/extract-text"
 import { showSystemNotification } from "@integrations/notifications"
-import { telemetryService } from "@services/posthog/PostHogClientProvider"
+// import { telemetryService } from "@services/posthog/PostHogClientProvider"
 import { findLast, parsePartialArrayString } from "@shared/array"
 import { ClineAsk, ClineAskQuestion } from "@shared/ExtensionMessage"
 import { ToolUse, ToolUseName } from "../../../assistant-message"
@@ -72,7 +72,7 @@ export class AskFollowupQuestionToolHandler implements IToolHandler, IPartialBlo
 
 			// Check if options contains the text response
 			if (optionsRaw && text && options.includes(text)) {
-				telemetryService.captureOptionSelected(config.ulid, options.length, "act")
+				// telemetryService.captureOptionSelected(config.ulid, options.length, "act")
 
 				// Valid option selected, update last followup message with selected option
 				const clineMessages = config.messageState.getClineMessages()
@@ -86,7 +86,7 @@ export class AskFollowupQuestionToolHandler implements IToolHandler, IPartialBlo
 				}
 			} else {
 				// Option not selected, send user feedback
-				telemetryService.captureOptionsIgnored(config.ulid, options.length, "act")
+				// telemetryService.captureOptionsIgnored(config.ulid, options.length, "act")
 				await config.callbacks.say("user_feedback", text ?? "", images, followupFiles)
 			}
 

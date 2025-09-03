@@ -80,10 +80,8 @@ export function convertToOpenAiMessages(
 
 				// Process non-tool messages
 				if (nonToolMessages.length > 0) {
-					console.log("+++++++++++++++++++++nonToolMessages.length+++++++++++++++++++++++++", nonToolMessages.length)
 					openAiMessages.push({
 						role: "user",
-						// content: nonToolMessages.slice(-6).map((part) => {
 						content: nonToolMessages.map((part) => {
 							if (part.type === "image") {
 								return {
@@ -93,12 +91,7 @@ export function convertToOpenAiMessages(
 									},
 								}
 							}
-							// return { type: "text", text: part.text }
-							console.log(
-								"+++++++++++++++++++++nonToolMessage.text.length+++++++++++++++++++++++++",
-								part.text.length,
-							)
-							return { type: "text", text: part.text.substring(0, 6000) }
+							return { type: "text", text: part.text }
 						}),
 					})
 				}

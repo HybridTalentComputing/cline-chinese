@@ -43,7 +43,7 @@ import { UrlContentFetcher } from "@services/browser/UrlContentFetcher"
 import { listFiles } from "@services/glob/list-files"
 import { Logger } from "@services/logging/Logger"
 import { McpHub } from "@services/mcp/McpHub"
-import { telemetryService } from "@services/posthog/PostHogClientProvider"
+// import { telemetryService } from "@services/posthog/PostHogClientProvider"
 import { AutoApprovalSettings } from "@shared/AutoApprovalSettings"
 import { ApiConfiguration } from "@shared/api"
 import { findLast, findLastIndex } from "@shared/array"
@@ -333,13 +333,14 @@ export class Task {
 		}
 
 		// initialize telemetry
-		if (historyItem) {
-			// Open task from history
-			telemetryService.captureTaskRestarted(this.ulid, currentProvider)
-		} else {
-			// New task started
-			telemetryService.captureTaskCreated(this.ulid, currentProvider)
-		}
+		// if (historyItem) {
+		// 	// Open task from history
+		// 	console.log(this.ulid, currentProvider)
+		// 	// telemetryService.captureTaskRestarted(this.ulid, currentProvider)
+		// } else {
+		// 	// New task started
+		// 	telemetryService.captureTaskCreated(this.ulid, currentProvider)
+		// }
 
 		this.toolExecutor = new ToolExecutor(
 			this.controller.context,
@@ -387,7 +388,7 @@ export class Task {
 
 	public updateUseAutoCondense(useAutoCondense: boolean): void {
 		// Track the setting change with current task and model context
-		telemetryService.captureAutoCondenseToggle(this.ulid, useAutoCondense, this.api.getModel().id)
+		// telemetryService.captureAutoCondenseToggle(this.ulid, useAutoCondense, this.api.getModel().id)
 
 		this.useAutoCondense = useAutoCondense
 	}
@@ -2253,13 +2254,13 @@ export class Task {
 			content: userContent,
 		})
 
-		telemetryService.captureConversationTurnEvent(this.ulid, providerId, model.id, "user")
+		// telemetryService.captureConversationTurnEvent(this.ulid, providerId, model.id, "user")
 
-		// Capture task initialization timing telemetry for the first API request
-		if (isFirstRequest) {
-			const durationMs = Math.round(performance.now() - this.taskInitializationStartTime)
-			telemetryService.captureTaskInitialization(this.ulid, this.taskId, durationMs, this.enableCheckpoints)
-		}
+		// // Capture task initialization timing telemetry for the first API request
+		// if (isFirstRequest) {
+		// 	const durationMs = Math.round(performance.now() - this.taskInitializationStartTime)
+		// 	telemetryService.captureTaskInitialization(this.ulid, this.taskId, durationMs, this.enableCheckpoints)
+		// }
 
 		// since we sent off a placeholder api_req_started message to update the webview while waiting to actually start the API request (to load potential details for example), we need to update the text of that message
 		const lastApiReqIndex = findLastIndex(this.messageStateHandler.getClineMessages(), (m) => m.say === "api_req_started")
@@ -2324,13 +2325,13 @@ export class Task {
 				})
 				await this.messageStateHandler.saveClineMessagesAndUpdateHistory()
 
-				telemetryService.captureConversationTurnEvent(this.ulid, providerId, this.api.getModel().id, "assistant", {
-					tokensIn: inputTokens,
-					tokensOut: outputTokens,
-					cacheWriteTokens,
-					cacheReadTokens,
-					totalCost,
-				})
+				// telemetryService.captureConversationTurnEvent(this.ulid, providerId, this.api.getModel().id, "assistant", {
+				// 	tokensIn: inputTokens,
+				// 	tokensOut: outputTokens,
+				// 	cacheWriteTokens,
+				// 	cacheReadTokens,
+				// 	totalCost,
+				// })
 
 				// signals to provider that it can retrieve the saved messages from disk, as abortTask can not be awaited on in nature
 				this.taskState.didFinishAbortingStream = true
@@ -2495,13 +2496,13 @@ export class Task {
 			// need to save assistant responses to file before proceeding to tool use since user can exit at any moment and we wouldn't be able to save the assistant's response
 			let didEndLoop = false
 			if (assistantMessage.length > 0) {
-				telemetryService.captureConversationTurnEvent(this.ulid, providerId, model.id, "assistant", {
-					tokensIn: inputTokens,
-					tokensOut: outputTokens,
-					cacheWriteTokens,
-					cacheReadTokens,
-					totalCost,
-				})
+				// telemetryService.captureConversationTurnEvent(this.ulid, providerId, model.id, "assistant", {
+				// 	tokensIn: inputTokens,
+				// 	tokensOut: outputTokens,
+				// 	cacheWriteTokens,
+				// 	cacheReadTokens,
+				// 	totalCost,
+				// })
 
 				await this.messageStateHandler.addToApiConversationHistory({
 					role: "assistant",

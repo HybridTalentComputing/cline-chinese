@@ -1,4 +1,4 @@
-import { featureFlagsService, telemetryService } from "@services/posthog/PostHogClientProvider"
+// import { featureFlagsService, telemetryService } from "@services/posthog/PostHogClientProvider"
 import { AuthState, UserInfo } from "@shared/proto/cline/account"
 import { type EmptyRequest, String } from "@shared/proto/cline/common"
 import { clineEnvConfig } from "@/config"
@@ -322,12 +322,12 @@ export class AuthService {
 
 				// Identify the user in telemetry if available
 				// Fetch the feature flags for the user
-				if (this._clineAuthInfo?.userInfo?.id) {
-					telemetryService.identifyAccount(this._clineAuthInfo.userInfo)
-					for (const flag of Object.values(FEATURE_FLAGS)) {
-						await featureFlagsService?.isFeatureFlagEnabled(flag)
-					}
-				}
+				// if (this._clineAuthInfo?.userInfo?.id) {
+				// 	telemetryService.identifyAccount(this._clineAuthInfo.userInfo)
+				// 	for (const flag of Object.values(FEATURE_FLAGS)) {
+				// 		await featureFlagsService?.isFeatureFlagEnabled(flag)
+				// 	}
+				// }
 
 				// Update the state in the webview
 				if (controller) {

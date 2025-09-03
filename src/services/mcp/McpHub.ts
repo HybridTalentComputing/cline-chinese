@@ -33,7 +33,7 @@ import ReconnectingEventSource from "reconnecting-eventsource"
 import * as vscode from "vscode"
 import { z } from "zod"
 import { HostProvider } from "@/hosts/host-provider"
-import { TelemetryService } from "@/services/posthog/telemetry/TelemetryService"
+// import { TelemetryService } from "@/services/posthog/telemetry/TelemetryService"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { DEFAULT_REQUEST_TIMEOUT_MS } from "./constants"
 import { BaseConfigSchema, McpSettingsSchema, ServerConfigSchema } from "./schemas"
@@ -42,7 +42,7 @@ export class McpHub {
 	getMcpServersPath: () => Promise<string>
 	private getSettingsDirectoryPath: () => Promise<string>
 	private clientVersion: string
-	private telemetryService?: TelemetryService
+	// private telemetryService?: TelemetryService
 
 	private disposables: vscode.Disposable[] = []
 	private settingsWatcher?: FSWatcher
@@ -65,12 +65,12 @@ export class McpHub {
 		getMcpServersPath: () => Promise<string>,
 		getSettingsDirectoryPath: () => Promise<string>,
 		clientVersion: string,
-		telemetryService?: TelemetryService,
+		// telemetryService?: TelemetryService,
 	) {
 		this.getMcpServersPath = getMcpServersPath
 		this.getSettingsDirectoryPath = getSettingsDirectoryPath
 		this.clientVersion = clientVersion
-		this.telemetryService = telemetryService
+		// this.telemetryService = telemetryService
 		this.watchMcpSettingsFile()
 		this.initializeMcpServers()
 	}
@@ -839,14 +839,14 @@ export class McpHub {
 			console.error(`Failed to parse timeout configuration for server ${serverName}: ${error}`)
 		}
 
-		this.telemetryService?.captureMcpToolCall(
-			ulid,
-			serverName,
-			toolName,
-			"started",
-			undefined,
-			toolArguments ? Object.keys(toolArguments) : undefined,
-		)
+		// this.telemetryService?.captureMcpToolCall(
+		// 	ulid,
+		// 	serverName,
+		// 	toolName,
+		// 	"started",
+		// 	undefined,
+		// 	toolArguments ? Object.keys(toolArguments) : undefined,
+		// )
 
 		try {
 			const result = await connection.client.request(
@@ -863,28 +863,28 @@ export class McpHub {
 				},
 			)
 
-			this.telemetryService?.captureMcpToolCall(
-				ulid,
-				serverName,
-				toolName,
-				"success",
-				undefined,
-				toolArguments ? Object.keys(toolArguments) : undefined,
-			)
+			// this.telemetryService?.captureMcpToolCall(
+			// 	ulid,
+			// 	serverName,
+			// 	toolName,
+			// 	"success",
+			// 	undefined,
+			// 	toolArguments ? Object.keys(toolArguments) : undefined,
+			// )
 
 			return {
 				...result,
 				content: result.content ?? [],
 			}
 		} catch (error) {
-			this.telemetryService?.captureMcpToolCall(
-				ulid,
-				serverName,
-				toolName,
-				"error",
-				error instanceof Error ? error.message : String(error),
-				toolArguments ? Object.keys(toolArguments) : undefined,
-			)
+			// this.telemetryService?.captureMcpToolCall(
+			// 	ulid,
+			// 	serverName,
+			// 	toolName,
+			// 	"error",
+			// 	error instanceof Error ? error.message : String(error),
+			// 	toolArguments ? Object.keys(toolArguments) : undefined,
+			// )
 			throw error
 		}
 	}
