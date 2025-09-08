@@ -2,7 +2,7 @@
 	"name": "cline-shengsuan",
 	"displayName": "Cline中文版",
 	"description": "Cline中文汉化版，由胜算云进行汉化，打造国内版的OpenRouter，让中国开发者更方便进行 AI 编程。",
-	"version": "3.26.6",
+	"version": "3.26.7",
 	"icon": "assets/icons/icon.png",
 	"engines": {
 		"vscode": "^1.84.0"
@@ -441,7 +441,7 @@
 		"dev:webview": "cd webview-ui && npm run dev",
 		"build:webview": "cd webview-ui && npm run build",
 		"test:webview": "cd webview-ui && npm run test",
-		"publish:marketplace": "vsce publish --allow-package-secrets sendgrid && ovsx publish",
+		"publish:marketplace": "vsce publish && ovsx publish",
 		"publish:marketplace:prerelease": "vsce publish --allow-package-secrets sendgrid --pre-release && ovsx publish --pre-release",
 		"prepare": "husky",
 		"changeset": "changeset",
