@@ -4,7 +4,7 @@ import * as vscode from "vscode"
 import { shouldSkipReasoningForModel } from "@/utils/model-utils"
 import { ModelInfo, shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "../../../shared/api"
 import { ApiHandler, CommonApiHandlerOptions } from "../"
-// import { withRetry } from "../retry"
+import { withRetry } from "../retry"
 import { createOpenRouterStream } from "../transform/openrouter-stream"
 import { ApiStream } from "../transform/stream"
 import { OpenRouterErrorResponse } from "./types"
@@ -47,7 +47,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 		return this.client
 	}
 
-	// @withRetry({ maxRetries: 3, baseDelay: 1000, maxDelay: 10000, retryAllErrors: false })
+	@withRetry()
 	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		const client = this.ensureClient()
 		const model = this.getModel()
@@ -61,7 +61,6 @@ export class ShengSuanYunHandler implements ApiHandler {
 				this.options.thinkingBudgetTokens,
 			)
 
-			console.log(stream, "--------------------------")
 			for await (const chunk of stream) {
 				// openrouter returns an error object instead of the openai sdk throwing an error
 				if ("error" in chunk) {

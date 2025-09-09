@@ -68,7 +68,7 @@ import * as vscode from "vscode"
 import type { SystemPromptContext } from "@/core/prompts/system-prompt"
 import { getSystemPrompt } from "@/core/prompts/system-prompt"
 import { HostProvider } from "@/hosts/host-provider"
-// import { errorService } from "@/services/error"
+import { SSYError } from "@/services/error"
 // import { TerminalHangStage, TerminalUserInterventionAction, telemetryService } from "@/services/telemetry"
 import { ShowMessageType } from "@/shared/proto/index.host"
 import { isInTestMode } from "../../services/test/TestMode"
@@ -1380,13 +1380,14 @@ export class Task {
 		} catch (error) {
 			const isContextWindowExceededError = checkContextWindowExceededError(error)
 			const { model, providerId } = this.getCurrentProviderInfo()
-			// const clineError = errorService.toClineError(error, model.id, providerId)
+			const ssyError = SSYError.transform(error, model.id, providerId) //errorService.toClineError(error, model.id, providerId)
 
 			// Capture provider failure telemetry using clineError
 			// TODO: Move into errorService
-			// console.log(clineError.message, clineError,"---------------------------")
+			// console.log( clineError, "----------------clineError.message-----------------")
 			// errorService.logMessage(clineError.message)
 			// errorService.logException(clineError)
+			// console.log(  "***********************clineError.message*************************")
 
 			if (isContextWindowExceededError && !this.taskState.didAutomaticallyRetryFailedApiRequest) {
 				await this.handleContextWindowExceededError()
@@ -1403,12 +1404,12 @@ export class Task {
 					// If the conversation has more than 3 messages, we can truncate again. If not, then the conversation is bricked.
 					// ToDo: Allow the user to change their input if this is the case.
 					if (truncatedConversationHistory.length > 3) {
-						// clineError.message = "Context window exceeded. Click retry to truncate the conversation and try again."
+						// ssyError.message = "Context window exceeded. Click retry to truncate the conversation and try again."
 						this.taskState.didAutomaticallyRetryFailedApiRequest = false
 					}
 				}
 
-				// const streamingFailedMessage = clineError.serialize()
+				const streamingFailedMessage = ssyError.serialize()
 
 				// Update the 'api_req_started' message to reflect final failure before asking user to manually retry
 				const lastApiReqStartedIndex = findLastIndex(
@@ -1423,19 +1424,19 @@ export class Task {
 					await this.messageStateHandler.updateClineMessage(lastApiReqStartedIndex, {
 						text: JSON.stringify({
 							...currentApiReqInfo, // Spread the modified info (with retryStatus removed)
-							// cancelReason: "retries_exhausted", // Indicate that automatic retries failed
-							// streamingFailedMessage,
+							cancelReason: "retries_exhausted", // Indicate that automatic retries failed
+							streamingFailedMessage,
 						} satisfies ClineApiReqInfo),
 					})
 					// this.ask will trigger postStateToWebview, so this change should be picked up.
 				}
 
-				// const { response } = await this.ask("api_req_failed", streamingFailedMessage)
+				const { response } = await this.ask("api_req_failed", streamingFailedMessage)
 
-				// if (response !== "yesButtonClicked") {
-				// 	// this will never happen since if noButtonClicked, we will clear current task, aborting this instance
-				// 	throw new Error("API request failed")
-				// }
+				if (response !== "yesButtonClicked") {
+					// this will never happen since if noButtonClicked, we will clear current task, aborting this instance
+					throw new Error("API request failed")
+				}
 
 				// Clear streamingFailedMessage when user manually retries
 				const manualRetryApiReqIndex = findLastIndex(
