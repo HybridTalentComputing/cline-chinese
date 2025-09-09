@@ -82,6 +82,7 @@ message UserCreditsData {
   UserCreditsBalance balance = 1;
   repeated UsageTransaction usage_transactions = 2;
   repeated PaymentTransaction payment_transactions = 3;
+  optional UserInfo user = 4;
 }
 
 message GetOrganizationCreditsRequest {

@@ -1,7 +1,12 @@
 import { Accordion, AccordionItem } from "@heroui/react"
+import { EmptyRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { CSSProperties, memo } from "react"
+import { CSSProperties, memo, useState } from "react"
+// import { useClineAuth } from "@/context/ClineAuthContext"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { AccountServiceClient } from "@/services/grpc-client"
 import { getAsVar, VSC_DESCRIPTION_FOREGROUND, VSC_INACTIVE_SELECTION_BACKGROUND } from "@/utils/vscStyles"
+import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurationHandlers"
 
 interface AnnouncementProps {
 	version: string
@@ -36,6 +41,37 @@ Patch releases (3.19.1 → 3.19.2) will not trigger new announcements.
 */
 const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 	const minorVersion = version.split(".").slice(0, 2).join(".") // 2.0.0 -> 2.0
+	// const { clineUser } = useClineAuth()
+	const { apiConfiguration, openRouterModels, setShowChatModelSelector } = useExtensionState()
+	const user = undefined
+	const { handleFieldsChange } = useApiConfigurationHandlers()
+
+	const [didClickGrokCodeButton, setDidClickGrokCodeButton] = useState(false)
+
+	const setGrokCodeFast1 = () => {
+		const modelId = "x-ai/grok-code-fast-1"
+		// set both plan and act modes to use grok-code-fast-1
+		handleFieldsChange({
+			planModeOpenRouterModelId: modelId,
+			actModeOpenRouterModelId: modelId,
+			planModeOpenRouterModelInfo: openRouterModels[modelId],
+			actModeOpenRouterModelInfo: openRouterModels[modelId],
+			planModeApiProvider: "cline",
+			actModeApiProvider: "cline",
+		})
+
+		setTimeout(() => {
+			setDidClickGrokCodeButton(true)
+			setShowChatModelSelector(true)
+		}, 10)
+	}
+
+	const handleShowAccount = () => {
+		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
+			console.error("Failed to get login URL:", err),
+		)
+	}
+
 	return (
 		<div style={containerStyle}>
 			<VSCodeButton appearance="icon" data-testid="close-button" onClick={hideAnnouncement} style={closeIconStyle}>

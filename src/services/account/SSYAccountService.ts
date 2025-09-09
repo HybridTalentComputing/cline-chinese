@@ -71,11 +71,17 @@ export class SSYAccountService {
 			if (user.Wallet && user.Wallet.Assets) {
 				balance = { currentBalance: (rate * user.Wallet.Assets) / 10000 }
 			}
-			console.log("UserCreditsData", balance, usage, payment)
+			console.log("UserCreditsData", balance, usage, payment, user)
 			return UserCreditsData.create({
 				balance: balance,
 				usageTransactions: usage,
 				paymentTransactions: payment,
+				user: {
+					uid: user.ID,
+					displayName: user.Nickname || user.Username || user.Phone,
+					email: user.Email,
+					photoUrl: user.HeadImg,
+				},
 			})
 		} catch (error) {
 			console.error("Failed fetchUserDataRPC:", error)

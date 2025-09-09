@@ -2752,6 +2752,14 @@ export const sambanovaModels = {
 		inputPrice: 3.0,
 		outputPrice: 4.5,
 	},
+	"DeepSeek-V3.1": {
+		maxTokens: 7168,
+		contextWindow: 32_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 3.0,
+		outputPrice: 4.5,
+	},
 } as const satisfies Record<string, ModelInfo>
 
 // Cerebras
@@ -2847,7 +2855,7 @@ export const vercelAiGatewayDefaultModelInfo: ModelInfo = {
 // https://console.groq.com/docs/models
 // https://groq.com/pricing/
 export type GroqModelId = keyof typeof groqModels
-export const groqDefaultModelId: GroqModelId = "openai/gpt-oss-120b"
+export const groqDefaultModelId: GroqModelId = "moonshotai/kimi-k2-instruct-0905"
 export const groqModels = {
 	"openai/gpt-oss-120b": {
 		maxTokens: 32766, // Model fails if you try to use more than 32K tokens
@@ -2939,7 +2947,7 @@ export const groqModels = {
 		outputPrice: 0.08,
 		description: "Fast and efficient Llama 3.1 8B model optimized for speed, low latency, and reliable tool execution.",
 	},
-	// Mistral Models
+	// Moonshot Models
 	"moonshotai/kimi-k2-instruct": {
 		maxTokens: 16384,
 		contextWindow: 131072,
@@ -2950,6 +2958,17 @@ export const groqModels = {
 		cacheReadsPrice: 0.5, // 50% discount for cached input tokens
 		description:
 			"Kimi K2 is Moonshot AI's state-of-the-art Mixture-of-Experts (MoE) language model with 1 trillion total parameters and 32 billion activated parameters.",
+	},
+	"moonshotai/kimi-k2-instruct-0905": {
+		maxTokens: 16384,
+		contextWindow: 262144,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 0.6,
+		outputPrice: 2.5,
+		cacheReadsPrice: 0.15,
+		description:
+			"Kimi K2 model gets a new version update: Agentic coding: more accurate, better generalization across scaffolds. Frontend coding: improved aesthetics and functionalities on web, 3d, and other tasks. Context length: extended from 128k to 256k, providing better long-horizon support.",
 	},
 } as const satisfies Record<string, ModelInfo>
 
@@ -3147,6 +3166,14 @@ export const sapAiCoreModels = {
 // Moonshot AI Studio
 // https://platform.moonshot.ai/docs/pricing/chat
 export const moonshotModels = {
+	"kimi-k2-0905-preview": {
+		maxTokens: 16384,
+		contextWindow: 262144,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.6,
+		outputPrice: 2.5,
+	},
 	"kimi-k2-0711-preview": {
 		maxTokens: 32_000,
 		contextWindow: 131_072,
@@ -3181,7 +3208,7 @@ export const moonshotModels = {
 	},
 } as const satisfies Record<string, ModelInfo>
 export type MoonshotModelId = keyof typeof moonshotModels
-export const moonshotDefaultModelId = "kimi-k2-0711-preview" satisfies MoonshotModelId
+export const moonshotDefaultModelId = "kimi-k2-0905-preview" satisfies MoonshotModelId
 
 // Huawei Cloud MaaS
 // Dify.ai - No model selection needed, models are configured in Dify workflows
@@ -3447,8 +3474,19 @@ export const mainlandZAiModels = {
 
 // Fireworks AI
 export type FireworksModelId = keyof typeof fireworksModels
-export const fireworksDefaultModelId: FireworksModelId = "accounts/fireworks/models/kimi-k2-instruct"
+export const fireworksDefaultModelId: FireworksModelId = "accounts/fireworks/models/kimi-k2-instruct-0905"
 export const fireworksModels = {
+	"accounts/fireworks/models/kimi-k2-instruct-0905": {
+		maxTokens: 16384,
+		contextWindow: 262144,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 0.6,
+		outputPrice: 2.5,
+		cacheReadsPrice: 0.15,
+		description:
+			"Kimi K2 model gets a new version update: Agentic coding: more accurate, better generalization across scaffolds. Frontend coding: improved aesthetics and functionalities on web, 3d, and other tasks. Context length: extended from 128k to 256k, providing better long-horizon support.",
+	},
 	"accounts/fireworks/models/kimi-k2-instruct": {
 		maxTokens: 16384,
 		contextWindow: 128000,

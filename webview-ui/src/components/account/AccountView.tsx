@@ -15,7 +15,6 @@ import { useInterval } from "react-use"
 import ClineLogoWhite from "@/assets/ClineLogoWhite"
 import { type ClineUser, handleSignOut } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { useShengSuanYunAuth } from "@/context/ShengSuanYunAuthContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import VSCodeButtonLink from "../common/VSCodeButtonLink"
 import { CreditBalance } from "./CreditBalance"
@@ -91,20 +90,25 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 	}, [])
 
 	// Simple cache function without dependencies
-	const cacheCurrentData = (id: string) => {
-		dataCache.current.set(id, {
-			balance,
-			usageData,
-			paymentsData,
-			lastFetchTime,
-		})
-	}
+	const cacheCurrentData = useCallback(
+		(id: string) => {
+			dataCache.current.set(id, {
+				balance,
+				usageData,
+				paymentsData,
+				lastFetchTime,
+			})
+		},
+		[balance, usageData, paymentsData, lastFetchTime],
+	)
 	// Track the active organization ID to detect changes
 	const [lastActiveOrgId, setLastActiveOrgId] = useState<string | undefined>(activeOrganization?.organizationId)
 	// Use ref for debounce timeout to avoid re-renders
 	const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 	// Track if manual fetch is in progress to avoid duplicate fetches
 	const manualFetchInProgressRef = useRef<boolean>(false)
+	// Track if initial mount fetch has completed to avoid duplicate fetches
+	const initialFetchCompleteRef = useRef<boolean>(false)
 
 	const fetchUserCredit = useCallback(async () => {
 		try {
@@ -121,7 +125,6 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 		}
 	}, [])
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <cacheCurrentData changes on every re-render>
 	const fetchCreditBalance = useCallback(
 		async (id: string, skipCache = false) => {
 			try {
@@ -161,7 +164,6 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 		[isLoading, uid, fetchUserCredit, loadCachedData],
 	)
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <cacheCurrentData changes on every re-render>
 	const handleOrganizationChange = useCallback(
 		async (event: any) => {
 			const target = event.target as HTMLSelectElement
@@ -171,26 +173,43 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 
 			const newValue = target.value
 			if (newValue !== dropdownValue) {
+				// Clear any pending debounced fetch since we're doing a manual one
+				if (debounceTimeoutRef.current) {
+					clearTimeout(debounceTimeoutRef.current)
+					debounceTimeoutRef.current = null
+				}
+
 				// Cache current data before switching
 				cacheCurrentData(dropdownValue)
 				setDropdownValue(newValue)
+
 				// Load cached data for new selection immediately, or clear if no cache
+				// Only clear if we don't have cached data to avoid unnecessary flashing
 				if (!loadCachedData(newValue)) {
 					// No cached data - clear current state to avoid showing wrong data
 					setBalance(null)
 					setUsageData([])
 					setPaymentsData([])
 				}
+
+				// Set flag to indicate manual fetch in progress
+				manualFetchInProgressRef.current = true
+
+				// Fetch the new data
+				await fetchCreditBalance(newValue)
+
+				// Update the last active org ID to prevent the effect from triggering
+				setLastActiveOrgId(newValue === uid ? undefined : newValue)
+
+				// Send the change to the server
+				const organizationId = newValue === uid ? undefined : newValue
+				await AccountServiceClient.setUserOrganization({ organizationId })
+
+				// Clear the manual fetch flag after everything is done
+				manualFetchInProgressRef.current = false
 			}
-			// Set flag to indicate manual fetch in progress
-			manualFetchInProgressRef.current = true
-			await fetchCreditBalance(newValue)
-			manualFetchInProgressRef.current = false
-			// Send the change to the server
-			const organizationId = newValue === uid ? undefined : newValue
-			AccountServiceClient.setUserOrganization({ organizationId })
 		},
-		[uid, dropdownValue, loadCachedData],
+		[uid, dropdownValue, loadCachedData, fetchCreditBalance, cacheCurrentData],
 	)
 
 	// Fetch balance every 60 seconds
@@ -201,33 +220,39 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 	const clineUrl = appBaseUrl || "https://app.cline.bot"
 
 	// Fetch balance on mount
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <Only run once on mount>
 	useEffect(() => {
 		async function initialFetch() {
 			await fetchCreditBalance(dropdownValue)
+			initialFetchCompleteRef.current = true
 		}
 		initialFetch()
 	}, [])
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <cacheCurrentData changes on every re-render>
 	useEffect(() => {
 		// Handle organization changes with 500ms debounce
 		const currentActiveOrgId = activeOrganization?.organizationId
-		const hasDropdownChanged = dropdownValue !== (currentActiveOrgId || uid)
 		const hasActiveOrgChanged = currentActiveOrgId !== lastActiveOrgId
 
-		if (hasDropdownChanged || hasActiveOrgChanged) {
+		// Only handle external organization changes (not dropdown changes)
+		// Dropdown changes are handled by handleOrganizationChange
+		const isExternalOrgChange = hasActiveOrgChanged && !manualFetchInProgressRef.current
+
+		if (isExternalOrgChange) {
 			// Clear any existing timeout
 			if (debounceTimeoutRef.current) {
 				clearTimeout(debounceTimeoutRef.current)
 			}
 
-			// If dropdown changed, load cached data for the current dropdown value
-			if (hasDropdownChanged) {
-				// Cache the previous data first
-				cacheCurrentData(lastActiveOrgId || uid)
-				// Load cached data for current dropdown value, or clear if no cache
-				if (!loadCachedData(dropdownValue)) {
+			// Update dropdown to match the new active organization
+			const newDropdownValue = currentActiveOrgId || uid
+			if (newDropdownValue !== dropdownValue) {
+				// Cache current data before switching
+				cacheCurrentData(dropdownValue)
+				setDropdownValue(newDropdownValue)
+
+				// Load cached data for new selection immediately, or clear if no cache
+				// Only clear data if initial fetch has completed to avoid clearing on mount
+				if (!loadCachedData(newDropdownValue) && initialFetchCompleteRef.current) {
 					// No cached data - clear to avoid showing wrong data
 					setBalance(null)
 					setUsageData([])
@@ -235,15 +260,15 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				}
 			}
 
-			// Only set timeout if manual fetch is not in progress
-			if (!manualFetchInProgressRef.current) {
+			// Only set timeout if initial fetch is complete
+			if (initialFetchCompleteRef.current) {
 				// Set new timeout to fetch after 500ms
 				debounceTimeoutRef.current = setTimeout(() => {
-					fetchCreditBalance(dropdownValue)
+					fetchCreditBalance(newDropdownValue)
 					setLastActiveOrgId(currentActiveOrgId)
 				}, 500)
 			} else {
-				// Manual fetch is handling this, just update the active org ID
+				// Just update the active org ID
 				setLastActiveOrgId(currentActiveOrgId)
 			}
 		}
@@ -254,7 +279,15 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				clearTimeout(debounceTimeoutRef.current)
 			}
 		}
-	}, [dropdownValue, activeOrganization?.organizationId, lastActiveOrgId, uid])
+	}, [
+		activeOrganization?.organizationId,
+		lastActiveOrgId,
+		uid,
+		dropdownValue,
+		loadCachedData,
+		fetchCreditBalance,
+		cacheCurrentData,
+	])
 
 	return (
 		<div className="h-full flex flex-col">
@@ -337,57 +370,53 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 }
 
 export const SSYAccountView = () => {
-	const { userSSY: ssyUser } = useShengSuanYunAuth()
-	const { userInfo, apiConfiguration } = useExtensionState()
-	const user = apiConfiguration?.shengSuanYunToken ? ssyUser || userInfo : undefined
+	const { userInfo, setUserInfo } = useExtensionState()
+	console.log("userInfo: ", userInfo)
 
 	const [balance, setBalance] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
 	const [usageData, setUsageData] = useState<UsageTransaction[]>([])
 	const [paymentsData, setPaymentsData] = useState<PaymentTransaction[]>([])
 
-	console.log("SSYAccountView user:", user)
 	// Fetch all account data when component mounts using gRPC
 	useEffect(() => {
-		if (user) {
-			setIsLoading(true)
-			AccountServiceClient.shengSuanYunUserData(EmptyRequest.create())
-				.then((res: any) => {
-					setBalance(res.balance?.currentBalance || 0)
-					setUsageData(res.usageTransactions)
-					setPaymentsData(res.paymentTransactions)
-					setIsLoading(false)
-				})
-				.catch((error: any) => {
-					console.error("Failed to fetch user credits data:", error)
-					setIsLoading(false)
-				})
-		}
-	}, [user])
+		setIsLoading(true)
+		AccountServiceClient.shengSuanYunUserData(EmptyRequest.create())
+			.then((res: any) => {
+				setBalance(res.balance?.currentBalance || 0)
+				setUsageData(res.usageTransactions)
+				setPaymentsData(res.paymentTransactions)
+				setUserInfo(res.user)
+			})
+			.catch((error: any) => {
+				console.error("Failed to fetch user credits data:", error)
+			})
+			.finally(() => setIsLoading(false))
+	}, [])
 
 	return (
 		<div className="h-full flex flex-col">
-			{user ? (
+			{userInfo ? (
 				<div className="flex flex-col pr-3 h-full">
 					<div className="flex flex-col w-full">
 						<div className="flex items-center mb-6 flex-wrap gap-y-4">
-							{user.photoURL ? (
-								<img alt="Profile" className="size-16 rounded-full mr-4" src={user.photoURL} />
+							{userInfo.photoURL ? (
+								<img alt="Profile" className="size-16 rounded-full mr-4" src={userInfo.photoURL} />
 							) : (
 								<div className="size-16 rounded-full bg-[var(--vscode-button-background)] flex items-center justify-center text-2xl text-[var(--vscode-button-foreground)] mr-4">
-									{user.displayName?.[0] || user.email?.[0] || "?"}
+									{userInfo.displayName?.[0] || userInfo.email?.[0] || "?"}
 								</div>
 							)}
 
 							<div className="flex flex-col">
-								{user.displayName && (
+								{userInfo.displayName && (
 									<h2 className="text-[var(--vscode-foreground)] m-0 mb-1 text-lg font-medium">
-										{user.displayName}
+										{userInfo.displayName}
 									</h2>
 								)}
 
-								{user.email && (
-									<div className="text-sm text-[var(--vscode-descriptionForeground)]">{user.email}</div>
+								{userInfo.email && (
+									<div className="text-sm text-[var(--vscode-descriptionForeground)]">{userInfo.email}</div>
 								)}
 							</div>
 						</div>

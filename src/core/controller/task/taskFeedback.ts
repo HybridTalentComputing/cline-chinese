@@ -1,5 +1,4 @@
-// import { telemetryService } from "@services/posthog/PostHogClientProvider"
-import { Empty, StringRequest } from "@shared/proto/cline/common"
+import { Empty, StringRequest } from "@/shared/proto/cline/common"
 import { Controller } from ".."
 
 /**

@@ -154,8 +154,37 @@ export async function createOpenRouterStream(
 	const isKimiK2 = model.id === "moonshotai/kimi-k2"
 	openRouterProviderSorting = isKimiK2 ? undefined : openRouterProviderSorting
 
+	if (model.id.includes("gpt-5") || model.id.includes("openai/o")) {
+		// @ts-ignore-next-line
+		const stream = await client.chat.completions.create({
+			maxRetries: 3,
+			model: model.id,
+			max_completion_tokens: maxTokens,
+			top_p: topP,
+			messages: openAiMessages,
+			stream: true,
+			stream_options: { include_usage: true },
+			include_reasoning: true,
+			...(model.id.startsWith("openai/o") ? { reasoning_effort: reasoningEffort || "medium" } : {}),
+			...(reasoning ? { reasoning } : {}),
+			...(openRouterProviderSorting ? { provider: { sort: openRouterProviderSorting } } : {}),
+			// limit providers to only those that support the 131k context window
+			...(isKimiK2
+				? {
+						provider: {
+							order: ["groq", "together", "baseten", "parasail", "novita", "deepinfra"],
+							allow_fallbacks: false,
+						},
+					}
+				: {}),
+			// limit providers to only those that support the 1m context window
+			...(isClaudeSonnet41m ? { provider: { order: ["anthropic", "amazon-bedrock"], allow_fallbacks: false } } : {}),
+		})
+		return stream
+	}
 	// @ts-ignore-next-line
 	const stream = await client.chat.completions.create({
+		maxRetries: 3,
 		model: model.id,
 		max_tokens: maxTokens,
 		temperature: temperature,

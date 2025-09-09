@@ -1,7 +1,7 @@
-import path from "node:path"
-// import { telemetryService } from "@services/posthog/PostHogClientProvider"
+// import { getWorkspaceBasename } from "@core/workspace"
 import type { ToggleClineRuleRequest } from "@shared/proto/cline/file"
 import { ToggleClineRules } from "@shared/proto/cline/file"
+// import { telemetryService } from "@/services/telemetry"
 import type { Controller } from "../index"
 
 /**
@@ -34,18 +34,11 @@ export async function toggleClineRule(controller: Controller, request: ToggleCli
 	}
 
 	// Track rule toggle telemetry with current task context
-	if (controller.task?.ulid) {
-		// Extract just the filename for privacy (no full paths)
-		const _ruleFileName = path.basename(rulePath)
-		// telemetryService.captureClineRuleToggled(controller.task.ulid, ruleFileName, enabled, isGlobal)
-	}
-
-	// Track rule toggle telemetry with current task context
-	if (controller.task?.ulid) {
-		// Extract just the filename for privacy (no full paths)
-		const _ruleFileName = path.basename(rulePath)
-		// telemetryService.captureClineRuleToggled(controller.task.ulid, ruleFileName, enabled, isGlobal)
-	}
+	// if (controller.task?.ulid) {
+	// 	// Extract just the filename for privacy (no full paths)
+	// 	const ruleFileName = getWorkspaceBasename(rulePath, "Controller.toggleClineRule")
+	// 	telemetryService.captureClineRuleToggled(controller.task.ulid, ruleFileName, enabled, isGlobal)
+	// }
 
 	// Get the current state to return in the response
 	const globalToggles = controller.stateManager.getGlobalStateKey("globalClineRulesToggles")

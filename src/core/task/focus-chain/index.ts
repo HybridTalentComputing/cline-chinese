@@ -1,7 +1,8 @@
-import { featureFlagsService } from "@services/posthog/PostHogClientProvider"
 import { FocusChainSettings } from "@shared/FocusChainSettings"
 import * as fs from "fs/promises"
 import * as vscode from "vscode"
+import { featureFlagsService } from "@/services/feature-flags"
+// import { telemetryService } from "@/services/telemetry"
 import { HostProvider } from "../../../hosts/host-provider"
 import { ClineSay } from "../../../shared/ExtensionMessage"
 import { FileChangeEvent_ChangeType, SubscribeToFileRequest } from "../../../shared/proto/host/watch"
@@ -25,7 +26,7 @@ export interface FocusChainDependencies {
 	context: vscode.ExtensionContext
 	stateManager: StateManager
 	postStateToWebview: () => Promise<void>
-	say: (type: ClineSay, text?: string, images?: string[], files?: string[], partial?: boolean) => Promise<undefined>
+	say: (type: ClineSay, text?: string, images?: string[], files?: string[], partial?: boolean) => Promise<number | undefined>
 	focusChainSettings: FocusChainSettings
 }
 
@@ -36,7 +37,13 @@ export class FocusChainManager {
 	private context: vscode.ExtensionContext
 	private stateManager: StateManager
 	private postStateToWebview: () => Promise<void>
-	private say: (type: ClineSay, text?: string, images?: string[], files?: string[], partial?: boolean) => Promise<undefined>
+	private say: (
+		type: ClineSay,
+		text?: string,
+		images?: string[],
+		files?: string[],
+		partial?: boolean,
+	) => Promise<number | undefined>
 	private focusChainFileWatcherCancel?: () => void
 	private hasTrackedFirstProgress = false
 	private focusChainSettings: FocusChainSettings

@@ -41,6 +41,7 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 				displayName: res.data.data.Nickname || res.data.data.Username || undefined,
 				email: res.data.data.Email ?? undefined,
 				photoURL: res.data.data.HeadImg ?? undefined,
+				uid: res.data.data.ID || undefined,
 			}
 			setUser(user)
 			setIsInitialized(true)
@@ -53,7 +54,7 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 				})
 		} catch (error) {
 			console.error("Error signing in with custom token:", error)
-			throw error
+			// throw error
 		}
 	}
 
