@@ -87,7 +87,7 @@ class CheckpointTracker {
 	 * - Creates/initializes shadow git repository
 	 *
 	 * Configuration:
-	 * - Respects 'cline.enableCheckpoints' VS Code setting
+	 * - Respects 'ClineShengsuan.enableCheckpoints' VS Code setting
 	 */
 	public static async create(
 		taskId: string,

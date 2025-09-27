@@ -382,13 +382,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Register the command handlers
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.addToChat", async (range?: vscode.Range, diagnostics?: vscode.Diagnostic[]) => {
-			const context = await getContextForCommand(range, diagnostics)
-			if (!context) {
-				return
-			}
-			await addToCline(context.controller, context.commandContext)
-		}),
+		vscode.commands.registerCommand(
+			"ClineShengsuan.addToChat",
+			async (range?: vscode.Range, diagnostics?: vscode.Diagnostic[]) => {
+				const context = await getContextForCommand(range, diagnostics)
+				if (!context) {
+					return
+				}
+				await addToCline(context.controller, context.commandContext)
+			},
+		),
 	)
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
@@ -477,7 +480,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Register the openWalkthrough command handler
 	context.subscriptions.push(
-		vscode.commands.registerCommand("cline.openWalkthrough", async () => {
+		vscode.commands.registerCommand("ClineShengsuan.openWalkthrough", async () => {
 			await vscode.commands.executeCommand("workbench.action.openWalkthrough", "saoudrizwan.claude-dev#ClineWalkthrough")
 			// telemetryService.captureButtonClick("command_openWalkthrough")
 		}),
