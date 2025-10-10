@@ -371,7 +371,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 
 export const SSYAccountView = () => {
 	const { userInfo, setUserInfo } = useExtensionState()
-	console.log("userInfo: ", userInfo)
+	console.log("SSYAccountView() userInfo: ", userInfo)
 
 	const [balance, setBalance] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
@@ -390,6 +390,7 @@ export const SSYAccountView = () => {
 			})
 			.catch((error: any) => {
 				console.error("Failed to fetch user credits data:", error)
+				setUserInfo(undefined)
 			})
 			.finally(() => setIsLoading(false))
 	}, [])

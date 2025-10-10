@@ -68,6 +68,7 @@ export class Controller {
 			.initialize()
 			.then(() => {
 				console.log("todo:")
+				this.fetchUserCreditsData()
 				// this.authService.restoreRefreshTokenAndRetrieveAuthInfo()
 			})
 			.catch((error) => {
@@ -340,11 +341,14 @@ export class Controller {
 	// Account
 	async fetchUserCreditsData() {
 		try {
-			await this.accountServiceSSY?.fetchUserDataRPC()
+			const { user } = await this.accountServiceSSY.fetchUserDataRPC()
+			console.log("Controller.fetchUserCreditsData().user", user)
+			this.stateManager.setGlobalState("userInfo", user)
 		} catch (error) {
 			console.error("Failed to fetch user credits data:", error)
 		}
 	}
+
 	async handleAuthCallback(customToken: string, provider: string | null = null) {
 		try {
 			// await this.authService.handleAuthCallback(customToken, provider ? provider : "google")
