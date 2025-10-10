@@ -187,7 +187,7 @@ export async function runSingleEvaluation(input: TestInput): Promise<TestResult>
 			}
 		}
 
-		const provider = input.provider || "openrouter"
+		const provider = input.provider || "shengsuanyun"
 
 		// Get the output of streaming output of this llm call
 		let streamResult: StreamResult

@@ -41,16 +41,14 @@ const WelcomeView = memo(() => {
 				</div>
 				<div className="flex flex-col gap-3">
 					<div className="">
-						Cline中文汉化版，由中国胜算云赞助开发，方便开发者，国内就能使用包括Claude 4 sonnet、Gemini
-						2.5pro、GPT-4o等全球100+AI大模型
-					</div>
-					<div className="">
-						限时新用户
+						Cline 中文版 · 面向国内开发者（胜算云赞助的开源项目）
 						<br />
-						<VSCodeLink className="text-blue-600 my-3" href="#" onClick={handleLogin} target="_blank">
-							&gt;&gt;点击接入胜算云，领取100万Tokens额度
-						</VSCodeLink>
+						一键接入全球主流大模型：Claude Sonnet 4.5、Gemini 2.5 Pro/Flash、GPT-5 等，官方渠道直连：Anthropic /
+						Google Cloud / AWS，非逆向、稳定合规，支持支付宝/微信充值，发票开具，可试用
 					</div>
+					<VSCodeLink className="inline" href="#" onClick={handleLogin} target="_blank">
+						&gt;&gt;点击接入胜算云，领取100万专属Tokens算力
+					</VSCodeLink>
 				</div>
 
 				<VSCodeButton appearance="primary" className="w-full mt-1" onClick={handleLogin}>

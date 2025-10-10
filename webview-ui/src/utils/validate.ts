@@ -173,11 +173,11 @@ export function validateModelId(
 			case "cline":
 				const modelId = openRouterModelId || openRouterDefaultModelId // in case the user hasn't changed the model id, it will be undefined by default
 				if (!modelId) {
-					return "You must provide a model ID."
+					return "你必须提供一个可用的模型 ID."
 				}
 				if (openRouterModels && !Object.keys(openRouterModels).includes(modelId)) {
 					// even if the model list endpoint failed, extensionstatecontext will always have the default model info
-					return "The model ID you provided is not available. Please choose a different model."
+					return "模型 ID 无效，请选择其他模型."
 				}
 				break
 		}
