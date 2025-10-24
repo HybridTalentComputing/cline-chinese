@@ -33,7 +33,8 @@ https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/
 ## 功能展示
 
 <video width="100%" controls src="https://github.com/user-attachments/assets/a6db47a9-08d7-4d20-afa0-110d23b71a81"></video>
-> 推荐使用GLM-4.5,欢迎点击我的邀请链接，注册双方均可免费获得2000万tokens：[GLM-4.5](https://www.bigmodel.cn/invite?icode=egx%2FKxwhnTHBO3J87TVu8enfet45IvM%2BqDogImfeLyI%3D)
+> 🚀 推荐智谱 GLM Coding 超值订阅，邀你一起薅羊毛！Claude Code、Cline 等 10+ 大编程工具无缝支持，“码力”全开，越拼越爽！立即开拼，享限时惊喜价！
+      链接：(https://www.bigmodel.cn/claude-code?ic=FKYWQWPUMQ)
 
 >
 
