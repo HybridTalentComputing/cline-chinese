@@ -27,7 +27,7 @@ https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/
 <img width="100%" height="200" alt="胜算云" src="https://github.com/user-attachments/assets/5098e0e5-64e0-4184-b9bf-3f44da2f1f2c" />
 
 > 胜算云是获得长三角国家技术创新中心重大科研项目支持的 AI云平台，提供GPT-5, Claude Opus 4.1， Gemini 2.5Pro在内的顶尖编程模型，作为AmazonAWS、Microsoft Azure、Google Cloud 的官方授权合作商，因此速度更快、稳定性更高、命中缓存更便宜、TPM/RPM无限制
-可试用，享百万 Tokens 免费试用额度：[胜算云](https://www.shengsuanyun.com/?from=cline-chinese)
+可试用，注册后扫码添加客服享百万 Tokens 免费试用额度：[胜算云](https://www.shengsuanyun.com/?from=cline-chinese)
 
 
 ## 功能展示
