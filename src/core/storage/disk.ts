@@ -15,7 +15,7 @@ export const GlobalFileNames = {
 	openRouterModels: "openrouter_models.json",
 	groqModels: "groq_models.json",
 	basetenModels: "baseten_models.json",
-	mcpSettings: "cline_mcp_settings.json",
+	mcpSettings: "cline_chinese_mcp_settings.json",
 	clineRules: ".clinerules",
 	workflows: ".clinerules/workflows",
 	cursorRulesDir: ".cursor/rules",
