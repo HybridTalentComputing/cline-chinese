@@ -1,20 +1,20 @@
 import { HeroUIProvider } from "@heroui/react"
 import { type ReactNode } from "react"
-import { CustomPostHogProvider } from "./CustomPostHogProvider"
+// import { CustomPostHogProvider } from "./CustomPostHogProvider"
 // import { ClineAuthProvider } from "./context/ClineAuthContext"
 import { ExtensionStateContextProvider } from "./context/ExtensionStateContext"
-// import { ShengSuanYunAuthProvider } from "./context/ShengSuanYunAuthContext"
+import { PlatformProvider } from "./context/PlatformContext"
 
 export function Providers({ children }: { children: ReactNode }) {
 	return (
-		<ExtensionStateContextProvider>
-			<CustomPostHogProvider>
-				{/* <ClineAuthProvider> */}
-				{/* <ShengSuanYunAuthProvider> */}
+		<PlatformProvider>
+			<ExtensionStateContextProvider>
+				{/* <CustomPostHogProvider>
+					<ClineAuthProvider> */}
 				<HeroUIProvider>{children}</HeroUIProvider>
-				{/* </ShengSuanYunAuthProvider> */}
-				{/* </ClineAuthProvider> */}
-			</CustomPostHogProvider>
-		</ExtensionStateContextProvider>
+				{/* </ClineAuthProvider>
+				</CustomPostHogProvider> */}
+			</ExtensionStateContextProvider>
+		</PlatformProvider>
 	)
 }

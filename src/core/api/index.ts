@@ -1,6 +1,8 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { ApiConfiguration, ModelInfo, QwenApiRegions } from "@shared/api"
 import { Mode } from "@shared/storage/types"
+import { ClineTool } from "@/shared/tools"
+import { AIhubmixHandler } from "./providers/aihubmix"
 import { AnthropicHandler } from "./providers/anthropic"
 import { AskSageHandler } from "./providers/asksage"
 import { BasetenHandler } from "./providers/baseten"
@@ -14,13 +16,16 @@ import { DoubaoHandler } from "./providers/doubao"
 import { FireworksHandler } from "./providers/fireworks"
 import { GeminiHandler } from "./providers/gemini"
 import { GroqHandler } from "./providers/groq"
+import { HicapHandler } from "./providers/hicap"
 import { HuaweiCloudMaaSHandler } from "./providers/huawei-cloud-maas"
 import { HuggingFaceHandler } from "./providers/huggingface"
 import { LiteLlmHandler } from "./providers/litellm"
 import { LmStudioHandler } from "./providers/lmstudio"
+import { MinimaxHandler } from "./providers/minimax"
 import { MistralHandler } from "./providers/mistral"
 import { MoonshotHandler } from "./providers/moonshot"
 import { NebiusHandler } from "./providers/nebius"
+import { OcaHandler } from "./providers/oca"
 import { OllamaHandler } from "./providers/ollama"
 import { OpenAiHandler } from "./providers/openai"
 import { OpenAiNativeHandler } from "./providers/openai-native"
@@ -44,7 +49,7 @@ export type CommonApiHandlerOptions = {
 }
 
 export interface ApiHandler {
-	createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream
+	createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[], tools?: ClineTool[]): ApiStream
 	getModel(): ApiHandlerModel
 	getApiStreamUsage?(): Promise<ApiStreamUsageChunk | undefined>
 }
@@ -58,6 +63,7 @@ export interface ApiProviderInfo {
 	providerId: string
 	model: ApiHandlerModel
 	customPrompt?: string // "compact"
+	autoCondenseThreshold?: number // 0-1 range
 }
 
 export interface SingleCompletionHandler {
@@ -101,6 +107,7 @@ function createHandlerForProvider(
 				awsAuthentication: options.awsAuthentication,
 				awsBedrockApiKey: options.awsBedrockApiKey,
 				awsUseCrossRegionInference: options.awsUseCrossRegionInference,
+				awsUseGlobalInference: options.awsUseGlobalInference,
 				awsBedrockUsePromptCache: options.awsBedrockUsePromptCache,
 				awsUseProfile: options.awsUseProfile,
 				awsProfile: options.awsProfile,
@@ -343,6 +350,7 @@ function createHandlerForProvider(
 				thinkingBudgetTokens:
 					mode === "plan" ? options.planModeThinkingBudgetTokens : options.actModeThinkingBudgetTokens,
 				reasoningEffort: mode === "plan" ? options.planModeReasoningEffort : options.actModeReasoningEffort,
+				deploymentId: mode === "plan" ? options.planModeSapAiCoreDeploymentId : options.actModeSapAiCoreDeploymentId,
 				sapAiCoreUseOrchestrationMode: options.sapAiCoreUseOrchestrationMode,
 			})
 		case "claude-code":
@@ -363,10 +371,6 @@ function createHandlerForProvider(
 					mode === "plan" ? options.planModeHuaweiCloudMaasModelInfo : options.actModeHuaweiCloudMaasModelInfo,
 			})
 		case "dify": // Add Dify.ai handler
-			console.log("[DIFY DEBUG] Instantiating DifyHandler with options:", {
-				difyApiKeyPresent: !!options.difyApiKey,
-				difyBaseUrl: options.difyBaseUrl,
-			})
 			return new DifyHandler({
 				difyApiKey: options.difyApiKey,
 				difyBaseUrl: options.difyBaseUrl,
@@ -375,10 +379,10 @@ function createHandlerForProvider(
 			return new VercelAIGatewayHandler({
 				onRetryAttempt: options.onRetryAttempt,
 				vercelAiGatewayApiKey: options.vercelAiGatewayApiKey,
-				vercelAiGatewayModelId:
-					mode === "plan" ? options.planModeVercelAiGatewayModelId : options.actModeVercelAiGatewayModelId,
-				vercelAiGatewayModelInfo:
-					mode === "plan" ? options.planModeVercelAiGatewayModelInfo : options.actModeVercelAiGatewayModelInfo,
+				openRouterModelId: mode === "plan" ? options.planModeOpenRouterModelId : options.actModeOpenRouterModelId,
+				openRouterModelInfo: mode === "plan" ? options.planModeOpenRouterModelInfo : options.actModeOpenRouterModelInfo,
+				thinkingBudgetTokens:
+					mode === "plan" ? options.planModeThinkingBudgetTokens : options.actModeThinkingBudgetTokens,
 			})
 		case "zai":
 			return new ZAiHandler({
@@ -386,6 +390,43 @@ function createHandlerForProvider(
 				zaiApiLine: options.zaiApiLine,
 				zaiApiKey: options.zaiApiKey,
 				apiModelId: mode === "plan" ? options.planModeApiModelId : options.actModeApiModelId,
+			})
+		case "oca":
+			return new OcaHandler({
+				ocaMode: options.ocaMode || "internal",
+				ocaBaseUrl: options.ocaBaseUrl,
+				ocaModelId: mode === "plan" ? options.planModeOcaModelId : options.actModeOcaModelId,
+				ocaModelInfo: mode === "plan" ? options.planModeOcaModelInfo : options.actModeOcaModelInfo,
+				thinkingBudgetTokens:
+					mode === "plan" ? options.planModeThinkingBudgetTokens : options.actModeThinkingBudgetTokens,
+				ocaUsePromptCache:
+					mode === "plan"
+						? options.planModeOcaModelInfo?.supportsPromptCache
+						: options.actModeOcaModelInfo?.supportsPromptCache,
+				taskId: options.ulid,
+			})
+		case "aihubmix":
+			return new AIhubmixHandler({
+				onRetryAttempt: options.onRetryAttempt,
+				apiKey: options.aihubmixApiKey,
+				baseURL: options.aihubmixBaseUrl,
+				appCode: options.aihubmixAppCode,
+				modelId: mode === "plan" ? (options as any).planModeAihubmixModelId : (options as any).actModeAihubmixModelId,
+				modelInfo:
+					mode === "plan" ? (options as any).planModeAihubmixModelInfo : (options as any).actModeAihubmixModelInfo,
+			})
+		case "minimax":
+			return new MinimaxHandler({
+				onRetryAttempt: options.onRetryAttempt,
+				minimaxApiKey: options.minimaxApiKey,
+				minimaxApiLine: options.minimaxApiLine,
+				apiModelId: mode === "plan" ? options.planModeApiModelId : options.actModeApiModelId,
+			})
+		case "hicap":
+			return new HicapHandler({
+				onRetryAttempt: options.onRetryAttempt,
+				hicapApiKey: options.hicapApiKey,
+				hicapModelId: mode === "plan" ? options.planModeHicapModelId : options.actModeHicapModelId,
 			})
 		default:
 			return new AnthropicHandler({
@@ -412,7 +453,7 @@ export function buildApiHandler(configuration: ApiConfiguration, mode: Mode): Ap
 			const handler = createHandlerForProvider(apiProvider, options, mode)
 
 			const modelInfo = handler.getModel().info
-			if (modelInfo.maxTokens && thinkingBudgetTokens > modelInfo.maxTokens) {
+			if (modelInfo?.maxTokens && modelInfo.maxTokens > 0 && thinkingBudgetTokens > modelInfo.maxTokens) {
 				const clippedValue = modelInfo.maxTokens - 1
 				if (mode === "plan") {
 					options.planModeThinkingBudgetTokens = clippedValue

@@ -1,10 +1,16 @@
 import { McpDisplayMode } from "@shared/McpDisplayMode"
+import { EmptyRequest } from "@shared/proto/index.cline"
 import { OpenaiReasoningEffort } from "@shared/storage/types"
-import { VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { memo } from "react"
+import { VSCodeButton, VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { memo, useEffect, useState } from "react"
 import McpDisplayModeDropdown from "@/components/mcp/chat-display/McpDisplayModeDropdown"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { PLATFORM_CONFIG, PlatformType } from "@/config/platform.config"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { StateServiceClient } from "@/services/grpc-client"
+import { isMacOSOrLinux } from "@/utils/platformUtils"
 import Section from "../Section"
+import SubagentOutputLineLimitSlider from "../SubagentOutputLineLimitSlider"
 import { updateSetting } from "../utils/settingsHandlers"
 
 interface FeatureSettingsSectionProps {
@@ -19,20 +25,143 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 		mcpResponsesCollapsed,
 		openaiReasoningEffort,
 		strictPlanModeEnabled,
+		yoloModeToggled,
+		dictationSettings,
 		useAutoCondense,
 		focusChainSettings,
-		focusChainFeatureFlagEnabled,
+		multiRootSetting,
+		hooksEnabled,
+		remoteConfigSettings,
+		subagentsEnabled,
+		nativeToolCallSetting,
 	} = useExtensionState()
+
+	const [isClineCliInstalled, setIsClineCliInstalled] = useState(false)
 
 	const handleReasoningEffortChange = (newValue: OpenaiReasoningEffort) => {
 		updateSetting("openaiReasoningEffort", newValue)
 	}
+
+	// Poll for CLI installation status while the component is mounted
+	useEffect(() => {
+		const checkInstallation = async () => {
+			try {
+				const result = await StateServiceClient.checkCliInstallation(EmptyRequest.create())
+				setIsClineCliInstalled(result.value)
+			} catch (error) {
+				console.error("Failed to check CLI installation:", error)
+			}
+		}
+
+		checkInstallation()
+
+		// Poll ever 1.5 seconds to see if CLI is installed (only when form is open)
+		const pollInterval = setInterval(checkInstallation, 1500)
+
+		return () => {
+			clearInterval(pollInterval)
+		}
+	}, [])
 
 	return (
 		<div>
 			{renderSectionHeader("features")}
 			<Section>
 				<div style={{ marginBottom: 20 }}>
+					{/* Subagents - Only show on macOS and Linux */}
+					{isMacOSOrLinux() && PLATFORM_CONFIG.type === PlatformType.VSCODE && (
+						<div
+							className="relative p-3 mb-3 rounded-md"
+							id="subagents-section"
+							style={{
+								border: "1px solid var(--vscode-widget-border)",
+								backgroundColor: "var(--vscode-list-hoverBackground)",
+							}}>
+							<div
+								className="absolute -top-2 -right-2 px-2 py-0.5 rounded text-xs font-semibold"
+								style={{
+									backgroundColor: "var(--vscode-button-secondaryBackground)",
+									color: "var(--vscode-button-secondaryForeground)",
+								}}>
+								新特性
+							</div>
+
+							<div
+								className="mt-1.5 mb-2 px-2 pt-0.5 pb-1.5 rounded"
+								style={{
+									backgroundColor: "color-mix(in srgb, var(--vscode-sideBar-background) 99%, black)",
+								}}>
+								<p
+									className="text-xs mb-2 flex items-start"
+									style={{ color: "var(--vscode-inputValidation-warningForeground)" }}>
+									<span
+										className="codicon codicon-warning mr-1"
+										style={{ fontSize: "12px", marginTop: "1px", flexShrink: 0 }}></span>
+									<span>
+										子代理需要 Cline for CLI。请使用以下命令安装：
+										<code
+											className="ml-1 px-1 rounded"
+											style={{
+												backgroundColor: "var(--vscode-editor-background)",
+												color: "var(--vscode-foreground)",
+												opacity: 0.9,
+											}}>
+											npm install -g cline
+										</code>
+										<code
+											className="ml-1 px-1 rounded"
+											style={{
+												backgroundColor: "var(--vscode-editor-background)",
+												color: "var(--vscode-foreground)",
+												opacity: 0.9,
+											}}>
+											cline auth
+										</code>
+										使用 Cline 进行身份验证或配置 API 提供程序。
+									</span>
+								</p>
+								{!isClineCliInstalled && (
+									<VSCodeButton
+										appearance="secondary"
+										onClick={async () => {
+											try {
+												await StateServiceClient.installClineCli(EmptyRequest.create())
+											} catch (error) {
+												console.error("Failed to initiate CLI installation:", error)
+											}
+										}}
+										style={{
+											transform: "scale(0.85)",
+											transformOrigin: "left center",
+											marginLeft: "-2px",
+										}}>
+										现在安装
+									</VSCodeButton>
+								)}
+							</div>
+							<VSCodeCheckbox
+								checked={subagentsEnabled}
+								disabled={!isClineCliInstalled}
+								onChange={(e: any) => {
+									const checked = e.target.checked === true
+									updateSetting("subagentsEnabled", checked)
+								}}>
+								<span className="font-semibold">{subagentsEnabled ? "子 agents 已启用" : "启用子 agents"}</span>
+							</VSCodeCheckbox>
+							<p className="text-xs mt-1 mb-0">
+								<span className="text-[var(--vscode-errorForeground)]">实验功能: </span>{" "}
+								<span className="text-description">
+									允许 Cline 生成子进程来处理诸如探索大型代码库之类的特定任务，从而保持主上下文的清晰。
+								</span>
+							</p>
+							{subagentsEnabled && (
+								<div className="mt-3">
+									<SubagentOutputLineLimitSlider />
+								</div>
+							)}
+						</div>
+					)}
+
 					<div>
 						<VSCodeCheckbox
 							checked={enableCheckpointsSetting}
@@ -42,26 +171,38 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							}}>
 							启用检查点
 						</VSCodeCheckbox>
-						<p className="text-xs text-[var(--vscode-descriptionForeground)]">
-							启用扩展程序以在整个任务过程中保存工作区的检查点。底层使用 Git，因此可能不适用于大型工作区。
+						<p className="text-xs text-(--vscode-descriptionForeground)">
+							启用此扩展程序，以便在任务执行过程中保存工作区的检查点。底层使用 Git，但 Git 可能不适用于大型工作区。
 						</p>
 					</div>
 					<div style={{ marginTop: 10 }}>
-						<VSCodeCheckbox
-							checked={mcpMarketplaceEnabled}
-							onChange={(e: any) => {
-								const checked = e.target.checked === true
-								updateSetting("mcpMarketplaceEnabled", checked)
-							}}>
-							启用 MCP 市场
-						</VSCodeCheckbox>
-						<p className="text-xs text-[var(--vscode-descriptionForeground)]">
-							启用 MCP 市场选项卡以发现和安装 MCP 服务器。
-						</p>
+						<Tooltip>
+							<TooltipTrigger>
+								<div className="flex items-center gap-2">
+									<VSCodeCheckbox
+										checked={mcpMarketplaceEnabled}
+										disabled={remoteConfigSettings?.mcpMarketplaceEnabled !== undefined}
+										onChange={(e: any) => {
+											const checked = e.target.checked === true
+											updateSetting("mcpMarketplaceEnabled", checked)
+										}}>
+										启用 MCP 市场
+									</VSCodeCheckbox>
+									{remoteConfigSettings?.mcpMarketplaceEnabled !== undefined && (
+										<i className="codicon codicon-lock text-description text-sm" />
+									)}
+								</div>
+							</TooltipTrigger>
+							<TooltipContent hidden={remoteConfigSettings?.mcpMarketplaceEnabled === undefined}>
+								此设置由您所在组织的远程配置管理。
+							</TooltipContent>
+						</Tooltip>
+
+						<p className="text-xs text-description">启用 MCP Marketplace 选项卡，用于发现和安装 MCP 服务器。</p>
 					</div>
 					<div style={{ marginTop: 10 }}>
 						<label
-							className="block text-sm font-medium text-[var(--vscode-foreground)] mb-1"
+							className="block text-sm font-medium text-(--vscode-foreground) mb-1"
 							htmlFor="mcp-display-mode-dropdown">
 							MCP 显示模式
 						</label>
@@ -71,8 +212,8 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							onChange={(newMode: McpDisplayMode) => updateSetting("mcpDisplayMode", newMode)}
 							value={mcpDisplayMode}
 						/>
-						<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
-							控制怎么显示 MCP 返回: 纯文本, 富文本和链接/图片或 markdown 渲染
+						<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
+							控制 MCP 响应的显示方式：纯文本、带链接/图像的富文本格式或 Markdown 渲染。
 						</p>
 					</div>
 					<div style={{ marginTop: 10 }}>
@@ -84,11 +225,11 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							}}>
 							折叠 MCP 响应
 						</VSCodeCheckbox>
-						<p className="text-xs text-[var(--vscode-descriptionForeground)]">设置 MCP 响应面板的默认显示模式</p>
+						<p className="text-xs text-(--vscode-descriptionForeground)">设置MCP响应面板的默认显示模式</p>
 					</div>
 					<div style={{ marginTop: 10 }}>
 						<label
-							className="block text-sm font-medium text-[var(--vscode-foreground)] mb-1"
+							className="block text-sm font-medium text-(--vscode-foreground) mb-1"
 							htmlFor="openai-reasoning-effort-dropdown">
 							OpenAI 推理强度
 						</label>
@@ -105,8 +246,8 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							<VSCodeOption value="medium">中</VSCodeOption>
 							<VSCodeOption value="high">高</VSCodeOption>
 						</VSCodeDropdown>
-						<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
-							OpenAI 模型系列的推理工作（适用于所有 OpenAI 模型提供商）
+						<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
+							OpenAI 系列模型的思考工作量（适用于所有 OpenAI 模型提供商）
 						</p>
 					</div>
 					<div style={{ marginTop: 10 }}>
@@ -118,11 +259,11 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							}}>
 							启用严格计划模式
 						</VSCodeCheckbox>
-						<p className="text-xs text-[var(--vscode-descriptionForeground)]">
+						<p className="text-xs text-(--vscode-descriptionForeground)">
 							在计划模式下强制严格使用工具，防止文件编辑。
 						</p>
 					</div>
-					{focusChainFeatureFlagEnabled && (
+					{
 						<div style={{ marginTop: 10 }}>
 							<VSCodeCheckbox
 								checked={focusChainSettings?.enabled || false}
@@ -132,15 +273,15 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								}}>
 								启用焦点链
 							</VSCodeCheckbox>
-							<p className="text-xs text-[var(--vscode-descriptionForeground)]">
-								增强任务进度跟踪，并在整个任务过程中实现焦点链列表的自动管理。
+							<p className="text-xs text-(--vscode-descriptionForeground)">
+								在整个任务过程中，实现更强大的任务进度跟踪和自动焦点链列表管理。
 							</p>
 						</div>
-					)}
-					{focusChainFeatureFlagEnabled && focusChainSettings?.enabled && (
+					}
+					{focusChainSettings?.enabled && (
 						<div style={{ marginTop: 10, marginLeft: 20 }}>
 							<label
-								className="block text-sm font-medium text-[var(--vscode-foreground)] mb-1"
+								className="block text-sm font-medium text-(--vscode-foreground) mb-1"
 								htmlFor="focus-chain-remind-interval">
 								焦点链提醒间隔
 							</label>
@@ -158,8 +299,28 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								}}
 								value={String(focusChainSettings?.remindClineInterval || 6)}
 							/>
-							<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
-								提醒 Cline 焦点链检查表 (1-100) 的间隔（以消息为单位）。值越低，提醒频率越高。
+							<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
+								提醒 Cline 查看其焦点链清单的间隔（以消息数计）（1-100）。数值越低，提醒频率越高。
+							</p>
+						</div>
+					)}
+					{dictationSettings?.featureEnabled && (
+						<div className="mt-2.5">
+							<VSCodeCheckbox
+								checked={dictationSettings?.dictationEnabled}
+								onChange={(e: any) => {
+									const checked = e.target.checked === true
+									const updatedDictationSettings = {
+										...dictationSettings,
+										dictationEnabled: checked,
+									}
+									updateSetting("dictationSettings", updatedDictationSettings)
+								}}>
+								启用听写
+							</VSCodeCheckbox>
+							<p className="text-xs text-description mt-1">
+								使用您的 Cline 帐户启用语音转文本功能。采用 Aqua Voice 的 Avalon 模型，每分钟音频处理费用为 0.0065
+								美元。每条消息最多 5 分钟。
 							</p>
 						</div>
 					)}
@@ -172,15 +333,98 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							}}>
 							启用自动压缩
 						</VSCodeCheckbox>
-						<p className="text-xs text-[var(--vscode-descriptionForeground)]">
-							启用先进的上下文管理系统，该系统使用基于 LLM 的压缩技术来构建下一代模型。{" "}
+						<p className="text-xs text-(--vscode-descriptionForeground)">
+							支持采用基于LLM的压缩技术的下一代模型的高级上下文管理系统。{" "}
 							<a
-								className="text-[var(--vscode-textLink-foreground)] hover:text-[var(--vscode-textLink-activeForeground)]"
+								className="text-(--vscode-textLink-foreground) hover:text-(--vscode-textLink-activeForeground)"
 								href="https://docs.cline.bot/features/auto-compact"
 								rel="noopener noreferrer"
 								target="_blank">
 								了解更多
 							</a>
+						</p>
+					</div>
+					{multiRootSetting.featureFlag && (
+						<div className="mt-2.5">
+							<VSCodeCheckbox
+								checked={multiRootSetting.user}
+								onChange={(e: any) => {
+									const checked = e.target.checked === true
+									updateSetting("multiRootEnabled", checked)
+								}}>
+								启用多根目录工作区
+							</VSCodeCheckbox>
+							<p className="text-xs">
+								<span className="text-(--vscode-errorForeground)">实验功能: </span>{" "}
+								<span className="text-description">允许Cline 跨多个工作区</span>
+							</p>
+						</div>
+					)}
+					<div className="mt-2.5">
+						<VSCodeCheckbox
+							checked={hooksEnabled?.user}
+							disabled={!isMacOSOrLinux()}
+							onChange={(e: any) => {
+								const checked = e.target.checked === true
+								updateSetting("hooksEnabled", checked)
+							}}>
+							启用挂钩
+						</VSCodeCheckbox>
+						{!isMacOSOrLinux() ? (
+							<p className="text-xs mt-1" style={{ color: "var(--vscode-inputValidation-warningForeground)" }}>
+								钩子功能目前在 Windows 系统上尚不支持。此功能目前仅适用于 macOS 和 Linux 系统。
+							</p>
+						) : (
+							<p className="text-xs">
+								<span className="text-(--vscode-errorForeground)">实验功能: </span>{" "}
+								<span className="text-description">允许执行来自 .clinerules/hooks/ 目录的钩子。</span>
+							</p>
+						)}
+					</div>
+					{nativeToolCallSetting?.featureFlag && (
+						<div className="mt-2.5">
+							<VSCodeCheckbox
+								checked={nativeToolCallSetting?.user}
+								onChange={(e) => {
+									const enabled = (e?.target as HTMLInputElement).checked
+									updateSetting("nativeToolCallEnabled", enabled)
+								}}>
+								启用本机工具调用
+							</VSCodeCheckbox>
+							<p className="text-xs">
+								<span className="text-[var(--vscode-errorForeground)]">实验功能: </span>{" "}
+								<span className="text-description">允许 Cline 通过原生 API 调用工具。</span>
+							</p>
+						</div>
+					)}
+					<div style={{ marginTop: 10 }}>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<div className="flex items-center gap-2">
+									<VSCodeCheckbox
+										checked={yoloModeToggled}
+										disabled={remoteConfigSettings?.yoloModeToggled !== undefined}
+										onChange={(e: any) => {
+											const checked = e.target.checked === true
+											updateSetting("yoloModeToggled", checked)
+										}}>
+										启用 YOLO 模式
+									</VSCodeCheckbox>
+									{remoteConfigSettings?.yoloModeToggled !== undefined && (
+										<i className="codicon codicon-lock text-description text-sm" />
+									)}
+								</div>
+							</TooltipTrigger>
+							<TooltipContent
+								className="max-w-xs"
+								hidden={remoteConfigSettings?.yoloModeToggled === undefined}
+								side="top">
+								此设置由您所在组织的远程配置管理。
+							</TooltipContent>
+						</Tooltip>
+
+						<p className="text-xs text-(--vscode-errorForeground)">
+							实验功能有危险：此模式将禁用安全检查和用户确认。Cline 将自动批准所有操作，无需询问。请极其谨慎地使用。
 						</p>
 					</div>
 				</div>

@@ -23,8 +23,8 @@ const DebugSection = ({ onResetState, renderSectionHeader }: DebugSectionProps) 
 					style={{ backgroundColor: "var(--vscode-errorForeground)", color: "black" }}>
 					重置全局状态
 				</VSCodeButton>
-				<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
-					这将重置扩展中的所有全局状态和秘密存储。
+				<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
+					这将重置扩展程序中的所有全局状态和密钥存储。
 				</p>
 			</Section>
 		</div>

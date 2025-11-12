@@ -43,30 +43,17 @@ e2e("Views - can set up API keys and navigate to Settings from Chat", async ({ s
 	await expect(providerSelectorInput).not.toBeVisible()
 
 	// Verify you are now in the chat page after setup was completed
-	const clineLogo = sidebar.getByRole("img").filter({ hasText: /^$/ }).locator("path")
+	// cline logo has the name "clline-logo"
+	const clineLogo = sidebar.locator(".size-20 > path")
 	await expect(clineLogo).toBeVisible()
 	const chatInputBox = sidebar.getByTestId("chat-input")
 	await expect(chatInputBox).toBeVisible()
-
-	// Verify the help improve banner is visible and can be closed.
-	const telemetryBanner = sidebar.getByText("Help Improve Cline")
-	await expect(telemetryBanner).toBeVisible()
-	await sidebar.getByText("settings").click() // Click on the settings link in the banner
-	await expect(sidebar.getByText("General Settings")).toBeVisible() // Default view should be set to General tab
-	await sidebar.getByTestId("tab-api-config").click()
-	await expect(sidebar.locator("h4").getByText("API Configuration")).toBeVisible()
-	await sidebar.getByTestId("tab-about").click()
-	await expect(sidebar.getByRole("heading", { name: "About" }).locator("div").first()).toBeVisible()
-
-	// Exit the Settings view by clicking the Done button
-	await sidebar.getByRole("button", { name: "Done" }).click()
 
 	// Verify the release banner is visible for new installs and can be closed.
 	const releaseBanner = sidebar.getByRole("heading", {
 		name: /^🎉 New in v\d/,
 	})
 	await expect(releaseBanner).toBeVisible()
-	await sidebar.getByTestId("close-button").locator("span").first().click()
+	await sidebar.getByTestId("close-announcement-button").click()
 	await expect(releaseBanner).not.toBeVisible()
-	await expect(telemetryBanner).not.toBeVisible()
 })

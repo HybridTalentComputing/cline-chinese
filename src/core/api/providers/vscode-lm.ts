@@ -17,14 +17,14 @@ interface VsCodeLmHandlerOptions extends CommonApiHandlerOptions {
 // This declaration (as seen in src/integrations/TerminalManager.ts) provides types for the Language Model API in newer versions of VSCode.
 // Extracted from https://github.com/microsoft/vscode/blob/131ee0ef660d600cd0a7e6058375b281553abe20/src/vscode-dts/vscode.d.ts
 declare module "vscode" {
-	// enum LanguageModelChatMessageRole {
-	// 	User = 1,
-	// 	Assistant = 2,
-	// }
-	// enum LanguageModelChatToolMode {
-	// 	Auto = 1,
-	// 	Required = 2,
-	// }
+	enum LanguageModelChatMessageRole {
+		User = 1,
+		Assistant = 2,
+	}
+	enum LanguageModelChatToolMode {
+		Auto = 1,
+		Required = 2,
+	}
 	interface LanguageModelChatSelector extends LanguageModelChatSelectorFromTypes {}
 	interface LanguageModelChatTool {
 		name: string
@@ -35,20 +35,20 @@ declare module "vscode" {
 		justification?: string
 		modelOptions?: { [name: string]: any }
 		tools?: LanguageModelChatTool[]
-		toolMode?: LanguageModelChatToolMode
+		toolMode?: LanguageModelChatTool
 	}
-	// class LanguageModelTextPart {
-	// 	value: string
-	// 	constructor(value: string)
-	// }
-	// class LanguageModelToolCallPart {
-	// 	callId: string
-	// 	name: string
-	// 	input: object
-	// 	constructor(callId: string, name: string, input: object)
-	// }
+	class LanguageModelTextPart {
+		value: string
+		constructor(value: string)
+	}
+	class LanguageModelToolCallPart {
+		callId: string
+		name: string
+		input: object
+		constructor(callId: string, name: string, input: object)
+	}
 	interface LanguageModelChatResponse {
-		stream: AsyncIterable<LanguageModelTextPart | LanguageModelToolCallPart | unknown>
+		stream: AsyncIterable<LanguageModelChat | LanguageModelChat | unknown>
 		text: AsyncIterable<string>
 	}
 	interface LanguageModelChat {
@@ -66,35 +66,35 @@ declare module "vscode" {
 		): Thenable<LanguageModelChatResponse>
 		countTokens(text: string | LanguageModelChatMessage, token?: CancellationToken): Thenable<number>
 	}
-	// class LanguageModelPromptTsxPart {
-	// 	value: unknown
-	// 	constructor(value: unknown)
-	// }
-	// class LanguageModelToolResultPart {
-	// 	callId: string
-	// 	content: Array<LanguageModelTextPart | LanguageModelPromptTsxPart | unknown>
-	// 	constructor(callId: string, content: Array<LanguageModelTextPart | LanguageModelPromptTsxPart | unknown>)
-	// }
-	// class LanguageModelChatMessage {
-	// 	static User(
-	// 		content: string | Array<LanguageModelTextPart | LanguageModelToolResultPart>,
-	// 		name?: string,
-	// 	): LanguageModelChatMessage
-	// 	static Assistant(
-	// 		content: string | Array<LanguageModelTextPart | LanguageModelToolCallPart>,
-	// 		name?: string,
-	// 	): LanguageModelChatMessage
+	class LanguageModelPromptTsxPart {
+		value: unknown
+		constructor(value: unknown)
+	}
+	class LanguageModelToolResultPart {
+		callId: string
+		content: Array<LanguageModelChat | LanguageModelPromptTsxPart | unknown>
+		constructor(callId: string, content: Array<LanguageModelChat | LanguageModelPromptTsxPart | unknown>)
+	}
+	class LanguageModelChatMessage {
+		static User(
+			content: string | Array<LanguageModelTextPart | LanguageModelToolResultPart>,
+			name?: string,
+		): LanguageModelChatMessage
+		static Assistant(
+			content: string | Array<LanguageModelTextPart | LanguageModelToolCallPart>,
+			name?: string,
+		): LanguageModelChatMessage
 
-	// 	role: LanguageModelChatMessageRole
-	// 	content: Array<LanguageModelTextPart | LanguageModelToolResultPart | LanguageModelToolCallPart>
-	// 	name: string | undefined
+		role: LanguageModelChatMessageRole
+		content: Array<LanguageModelTextPart | LanguageModelToolResultPart | LanguageModelToolCallPart>
+		name: string | undefined
 
-	// 	constructor(
-	// 		role: LanguageModelChatMessageRole,
-	// 		content: string | Array<LanguageModelTextPart | LanguageModelToolResultPart | LanguageModelToolCallPart>,
-	// 		name?: string,
-	// 	)
-	// }
+		constructor(
+			role: LanguageModelChatMessageRole,
+			content: string | Array<LanguageModelTextPart | LanguageModelToolResultPart | LanguageModelToolCallPart>,
+			name?: string,
+		)
+	}
 	namespace lm {
 		function selectChatModels(selector?: LanguageModelChatSelector): Thenable<LanguageModelChat[]>
 	}

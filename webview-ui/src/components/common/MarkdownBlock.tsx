@@ -19,7 +19,7 @@ const ActModeHighlight: React.FC = () => {
 
 	return (
 		<span
-			className={`text-[var(--vscode-textLink-foreground)] inline-flex items-center gap-1 ${
+			className={`text-(--vscode-textLink-foreground) inline-flex items-center gap-1 ${
 				mode === "plan" ? "hover:opacity-90 cursor-pointer" : "cursor-default opacity-60"
 			}`}
 			onClick={() => {
@@ -33,8 +33,8 @@ const ActModeHighlight: React.FC = () => {
 				}
 			}}
 			title={mode === "plan" ? "点击切换到执行模式" : "已经在执行模式"}>
-			<div className="p-1 rounded-[12px] bg-[var(--vscode-editor-background)] flex items-center justify-end w-4 border-[1px] border-[var(--vscode-input-border)]">
-				<div className="rounded-full bg-[var(--vscode-textLink-foreground)] w-2 h-2" />
+			<div className="p-1 rounded-[12px] bg-(--vscode-editor-background) flex items-center justify-end w-4 border border-(--vscode-input-border)">
+				<div className="rounded-full bg-(--vscode-textLink-foreground) w-2 h-2" />
 			</div>
 			执行模式 (⌘⇧A)
 		</span>
@@ -43,6 +43,7 @@ const ActModeHighlight: React.FC = () => {
 
 interface MarkdownBlockProps {
 	markdown?: string
+	compact?: boolean
 }
 
 /**
@@ -205,7 +206,7 @@ const remarkPreventBoldFilenames = () => {
 	}
 }
 
-const StyledMarkdown = styled.div`
+const StyledMarkdown = styled.div<{ compact?: boolean }>`
 	pre {
 		background-color: ${CODE_BLOCK_BG_COLOR};
 		border-radius: 3px;
@@ -283,6 +284,7 @@ const StyledMarkdown = styled.div`
 
 	p {
 		white-space: pre-wrap;
+		${(props) => props.compact && "margin: 0;"}
 	}
 
 	a {
@@ -353,7 +355,7 @@ const remarkFilePathDetection = () => {
 	}
 }
 
-const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
+const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 	const [reactContent, setMarkdown] = useRemark({
 		remarkPlugins: [
 			remarkPreventBoldFilenames,
@@ -405,7 +407,7 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 							<>
 								<code {...props} />
 								<button
-									className="codicon codicon-link-external bg-transparent border-0 appearance-none p-0 ml-0.5 leading-none align-middle opacity-70 hover:opacity-100 transition-opacity text-[1em] relative top-[1px] text-[var(--vscode-textPreformat-foreground)] translate-y-[-2px]"
+									className="codicon codicon-link-external bg-transparent border-0 appearance-none p-0 ml-0.5 leading-none align-middle opacity-70 hover:opacity-100 transition-opacity text-[1em] relative top-px text-(--vscode-textPreformat-foreground) translate-y-[-2px]"
 									onClick={() => FileServiceClient.openFileRelativePath({ value: filePath })}
 									title={`Open ${filePath} in editor`}
 									type="button"
@@ -450,7 +452,9 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 
 	return (
 		<div>
-			<StyledMarkdown className="ph-no-capture">{reactContent}</StyledMarkdown>
+			<StyledMarkdown className="ph-no-capture" compact={compact}>
+				{reactContent}
+			</StyledMarkdown>
 		</div>
 	)
 })

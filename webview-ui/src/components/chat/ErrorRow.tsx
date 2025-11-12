@@ -9,7 +9,7 @@ const _errorColor = "var(--vscode-errorForeground)"
 
 interface ErrorRowProps {
 	message: ClineMessage
-	errorType: "error" | "mistake_limit_reached" | "auto_approval_max_req_reached" | "diff_error" | "clineignore_error"
+	errorType: "error" | "mistake_limit_reached" | "diff_error" | "clineignore_error"
 	apiRequestFailedMessage?: string
 	apiReqStreamingFailedMessage?: string
 }
@@ -21,7 +21,6 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 		switch (errorType) {
 			case "error":
 			case "mistake_limit_reached":
-			case "auto_approval_max_req_reached":
 				// Handle API request errors with special error parsing
 				if (apiRequestFailedMessage || apiReqStreamingFailedMessage) {
 					const ssyError = SSYError.parse(apiRequestFailedMessage || apiReqStreamingFailedMessage)
@@ -44,7 +43,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 
 					if (ssyError?.isErrorType(SSYErrorType.RateLimit)) {
 						return (
-							<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
+							<p className="m-0 whitespace-pre-wrap text-(--vscode-errorForeground) wrap-anywhere">
 								{ssyErrorMessage}
 								{requestId && <div>请求 ID: {requestId}</div>}
 							</p>
@@ -139,9 +138,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 									<br />
 									{/* The user is signed in or not using cline provider */}
 									{ssyUser && !isSSYProvider ? (
-										<span className="mb-4 text-[var(--vscode-descriptionForeground)]">
-											(点击下方的“重试”)
-										</span>
+										<span className="mb-4 text-(--vscode-descriptionForeground)">(重试)</span>
 									) : (
 										<VSCodeButton className="w-full mb-4" onClick={handleSignInSSY}>
 											登录 Cline 胜算云
@@ -154,20 +151,18 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 				}
 
 				// Regular error message
-				return (
-					<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">{message.text}</p>
-				)
+				return <p className="m-0 whitespace-pre-wrap text-(--vscode-errorForeground) wrap-anywhere">{message.text}</p>
 
 			case "diff_error":
 				return (
-					<div className="flex flex-col p-2 rounded text-xs opacity-80 bg-[var(--vscode-textBlockQuote-background)] text-[var(--vscode-foreground)]">
+					<div className="flex flex-col p-2 rounded text-xs opacity-80 bg-(--vscode-textBlockQuote-background) text-(--vscode-foreground)">
 						<div>该模型使用的搜索模式与文件中的任何内容均不匹配。正在重试...</div>
 					</div>
 				)
 
 			case "clineignore_error":
 				return (
-					<div className="flex flex-col p-2 rounded text-xs bg-[var(--vscode-textBlockQuote-background)] text-[var(--vscode-foreground)] opacity-80">
+					<div className="flex flex-col p-2 rounded text-xs bg-(--vscode-textBlockQuote-background) text-(--vscode-foreground) opacity-80">
 						<div>
 							Cline 访问 <code>{message.text}</code> 被 <code>.clineignore</code>配置阻拦
 						</div>

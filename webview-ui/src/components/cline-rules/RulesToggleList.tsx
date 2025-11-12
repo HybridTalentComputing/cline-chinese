@@ -45,7 +45,7 @@ const RulesToggleList = ({
 			) : (
 				<>
 					{showNoRules && (
-						<div className="flex flex-col items-center gap-3 my-3 text-[var(--vscode-descriptionForeground)]">
+						<div className="flex flex-col items-center gap-3 my-3 text-(--vscode-descriptionForeground)">
 							{ruleType === "workflow" ? "没有设置工作流" : "没有设置规则"}
 						</div>
 					)}

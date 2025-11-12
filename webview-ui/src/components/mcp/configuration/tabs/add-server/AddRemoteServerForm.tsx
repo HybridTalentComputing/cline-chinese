@@ -65,7 +65,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 
 	return (
 		<div className="p-4 px-5">
-			<div className="text-[var(--vscode-foreground)] mb-2">
+			<div className="text-(--vscode-foreground) mb-2">
 				通过提供名称及其 URL 端点来添加远程 MCP 服务器。{" "}
 				<VSCodeLink href={LINKS.DOCUMENTATION.REMOTE_MCP_SERVER_DOCS} style={{ display: "inline" }}>
 					了解更多信息
@@ -101,7 +101,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 					</VSCodeTextField>
 				</div>
 
-				{error && <div className="mb-3 text-[var(--vscode-errorForeground)]">{error}</div>}
+				{error && <div className="mb-3 text-(--vscode-errorForeground)">{error}</div>}
 
 				<div className="flex items-center mt-3 w-full">
 					<VSCodeButton className="w-full" disabled={isSubmitting} type="submit">
@@ -109,7 +109,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 					</VSCodeButton>
 
 					{showConnectingMessage && (
-						<div className="ml-3 text-[var(--vscode-notificationsInfoIcon-foreground)] text-sm">
+						<div className="ml-3 text-(--vscode-notificationsInfoIcon-foreground) text-sm">
 							正在连接服务... 可能需要几秒钟.
 						</div>
 					)}

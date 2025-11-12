@@ -5,24 +5,44 @@ interface AboutSectionProps {
 	version: string
 	renderSectionHeader: (tabId: string) => JSX.Element | null
 }
-
 const AboutSection = ({ version, renderSectionHeader }: AboutSectionProps) => {
 	return (
 		<div>
 			{renderSectionHeader("about")}
 			<Section>
-				<div className="text-center text-[var(--vscode-descriptionForeground)] text-xs leading-[1.2] px-0 py-0 pr-2 pb-[15px] mt-auto flex flex-col items-center justify-center gap-5">
-					<p className="break-words m-0 p-0">
-						如果您有任何问题或反馈，请随时在{" "}
-						<VSCodeLink className="inline" href="https://github.com/SSYCloud/cline-chinese-ssy/issues">
-							https://github.com/SSYCloud/cline-chinese-ssy
-						</VSCodeLink>{" "}
-						反馈或使用微信联系客服。
+				<div className="flex px-4 flex-col gap-2">
+					<h2 className="text-lg font-semibold">Cline v{version}</h2>
+					<p>
+						一款可以使用命令行界面和编辑器的AI助手。Cline可以逐步处理复杂的软件开发任务，它使用的工具包括创建和编辑文件、浏览大型项目、使用浏览器，以及执行终端命令（在您授予权限后）。
 					</p>
-					<div className="w-full flex flex-col justify-center items-center">
-						<img alt="customer service" className="w-30 h-30" src="https://www.shengsuanyun.com/relation.webp" />
-					</div>
-					<p className="italic mt-[10px] mb-0 p-0">v{version}</p>
+
+					<h3 className="text-md font-semibold">社区 & 支持</h3>
+					<p>
+						<VSCodeLink href="https://x.com/cline">X</VSCodeLink>
+						{" • "}
+						<VSCodeLink href="https://discord.gg/cline">Discord</VSCodeLink>
+						{" • "}
+						<VSCodeLink href="https://www.reddit.com/r/cline/"> r/cline</VSCodeLink>
+					</p>
+
+					<h3 className="text-md font-semibold">Development</h3>
+					<p>
+						<VSCodeLink href="https://github.com/cline/cline">GitHub</VSCodeLink>
+						{" • "}
+						<VSCodeLink href="https://github.com/cline/cline/issues"> Issues</VSCodeLink>
+						{" • "}
+						<VSCodeLink href="https://github.com/cline/cline/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop">
+							{" "}
+							Feature Requests
+						</VSCodeLink>
+					</p>
+
+					<h3 className="text-md font-semibold">资源</h3>
+					<p>
+						<VSCodeLink href="https://docs.cline.bot/getting-started/for-new-coders">文档</VSCodeLink>
+						{" • "}
+						<VSCodeLink href="https://router.shengsuanyun.com/model">胜算云</VSCodeLink>
+					</p>
 				</div>
 			</Section>
 		</div>

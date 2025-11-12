@@ -1,7 +1,13 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { ApiHandlerOptions, ModelInfo } from "../../../shared/api"
+import { fetch } from "@/shared/net"
+import { ModelInfo } from "../../../shared/api"
 import { ApiHandler } from "../index"
 import { ApiStream } from "../transform/stream"
+
+interface DifyHandlerOptions {
+	difyApiKey?: string
+	difyBaseUrl?: string
+}
 
 // Dify API Response Types
 export interface DifyFileResponse {
@@ -66,11 +72,13 @@ interface DifyConversationResponse {
 }
 
 export class DifyHandler implements ApiHandler {
+	private options: DifyHandlerOptions
 	private baseUrl: string
 	private apiKey: string
 	private conversationId: string | null = null
 
-	constructor(options: ApiHandlerOptions) {
+	constructor(options: DifyHandlerOptions) {
+		this.options = options
 		this.apiKey = options.difyApiKey || ""
 		this.baseUrl = options.difyBaseUrl || ""
 

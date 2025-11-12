@@ -1,26 +1,24 @@
-import type { UsageTransaction as ClineAccountUsageTransaction, PaymentTransaction, UsageTransaction } from "@shared/ClineAccount"
+import type { UsageTransaction as ClineAccountUsageTransaction, PaymentTransaction } from "@shared/ClineAccount"
+import { isClineInternalTester } from "@shared/internal/account"
 import type { UserOrganization } from "@shared/proto/cline/account"
 import { EmptyRequest } from "@shared/proto/cline/common"
-import {
-	VSCodeButton,
-	VSCodeDivider,
-	VSCodeDropdown,
-	VSCodeLink,
-	VSCodeOption,
-	VSCodeTag,
-} from "@vscode/webview-ui-toolkit/react"
+import { VSCodeButton, VSCodeDivider, VSCodeDropdown, VSCodeOption, VSCodeTag } from "@vscode/webview-ui-toolkit/react"
 import deepEqual from "fast-deep-equal"
-import { memo, useCallback, useEffect, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useInterval } from "react-use"
-import ClineLogoWhite from "@/assets/ClineLogoWhite"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { type ClineUser, handleSignOut } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { cn } from "@/lib/utils"
 import { AccountServiceClient } from "@/services/grpc-client"
+import { getClineEnvironmentClassname } from "@/utils/environmentColors"
 import VSCodeButtonLink from "../common/VSCodeButtonLink"
+import { updateSetting } from "../settings/utils/settingsHandlers"
+// import { AccountWelcomeView } from "./AccountWelcomeView"
 import { CreditBalance } from "./CreditBalance"
 import CreditsHistoryTable from "./CreditsHistoryTable"
 import { convertProtoUsageTransactions, getClineUris, getMainRole } from "./helpers"
-import { StyledCreditDisplaySSY } from "./StyledCreditDisplaySSY"
+import { SSYAccountView } from "./SSYAccountView"
 
 type AccountViewProps = {
 	clineUser: ClineUser | null
@@ -33,6 +31,7 @@ type ClineAccountViewProps = {
 	clineUser: ClineUser
 	userOrganizations: UserOrganization[] | null
 	activeOrganization: UserOrganization | null
+	clineEnv: "Production" | "Staging" | "Local"
 }
 
 type CachedData = {
@@ -42,15 +41,35 @@ type CachedData = {
 	lastFetchTime: number
 }
 
+const ClineEnvOptions = ["Production", "Staging", "Local"] as const
+
 const AccountView = ({ onDone, clineUser, organizations, activeOrganization }: AccountViewProps) => {
+	const { environment } = useExtensionState()
+	const titleColor = getClineEnvironmentClassname(environment)
+
 	return (
 		<div className="fixed inset-0 flex flex-col overflow-hidden pt-[10px] pl-[20px]">
 			<div className="flex justify-between items-center mb-[17px] pr-[17px]">
-				<h3 className="text-[var(--vscode-foreground)] m-0">账户</h3>
+				<h3 className={cn("text-(--vscode-foreground) m-0", titleColor)}>
+					账户 {environment !== "production" ? ` - ${environment} environment` : ""}
+				</h3>
 				<VSCodeButton onClick={onDone}>确定</VSCodeButton>
 			</div>
-			<div className="flex-grow overflow-hidden pr-[8px] flex flex-col">
-				<div className="h-full mb-[5px]">
+			<div className="grow overflow-hidden pr-[8px] flex flex-col">
+				<div className="h-full mb-1.5">
+					{/* {clineUser?.uid ? (
+						<ClineAccountView
+							activeOrganization={activeOrganization}
+							clineEnv={environment === "local" ? "Local" : environment === "staging" ? "Staging" : "Production"}
+							clineUser={clineUser}
+							key={clineUser.uid}
+							userOrganizations={organizations}
+						/>
+						<SSYAccountView />
+					) : (
+						<AccountWelcomeView />
+					)} */}
+
 					<SSYAccountView />
 				</div>
 			</div>
@@ -58,13 +77,17 @@ const AccountView = ({ onDone, clineUser, organizations, activeOrganization }: A
 	)
 }
 
-export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganization }: ClineAccountViewProps) => {
+export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganization, clineEnv }: ClineAccountViewProps) => {
 	const { email, displayName, appBaseUrl, uid } = clineUser
+	const { remoteConfigSettings } = useExtensionState()
+
+	// Determine if dropdown should be locked by remote config
+	const isLockedByRemoteConfig = Object.keys(remoteConfigSettings || {}).length > 0
+	console.log("isLockedByRemoteConfig", isLockedByRemoteConfig)
 
 	// Source of truth: Dedicated state for dropdown value that persists through failures
 	// and represents that user's current selection.
 	const [dropdownValue, setDropdownValue] = useState<string>(activeOrganization?.organizationId || uid)
-
 	const [isLoading, setIsLoading] = useState(false)
 
 	// Cache data per organization/user ID to avoid showing empty state when switching
@@ -109,6 +132,8 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 	const manualFetchInProgressRef = useRef<boolean>(false)
 	// Track if initial mount fetch has completed to avoid duplicate fetches
 	const initialFetchCompleteRef = useRef<boolean>(false)
+
+	const isClineTester = useMemo(() => (email ? isClineInternalTester(email) : false), [email])
 
 	const fetchUserCredit = useCallback(async () => {
 		try {
@@ -297,33 +322,38 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 						{/* {user.photoUrl ? (
 								<img src={user.photoUrl} alt="Profile" className="size-16 rounded-full mr-4" />
 							) : ( */}
-						<div className="size-16 rounded-full bg-[var(--vscode-button-background)] flex items-center justify-center text-2xl text-[var(--vscode-button-foreground)] mr-4">
+						<div className="size-16 rounded-full bg-button-background flex items-center justify-center text-2xl text-button-foreground mr-4">
 							{displayName?.[0] || email?.[0] || "?"}
 						</div>
 						{/* )} */}
 
 						<div className="flex flex-col">
-							{displayName && (
-								<h2 className="text-[var(--vscode-foreground)] m-0 text-lg font-medium">{displayName}</h2>
-							)}
+							{displayName && <h2 className="text-foreground m-0 text-lg font-medium">{displayName}</h2>}
 
-							{email && <div className="text-sm text-[var(--vscode-descriptionForeground)]">{email}</div>}
+							{email && <div className="text-sm text-description">{email}</div>}
 
 							<div className="flex gap-2 items-center mt-1">
-								<VSCodeDropdown
-									className="w-full"
-									currentValue={dropdownValue}
-									disabled={isLoading}
-									onChange={handleOrganizationChange}>
-									<VSCodeOption key="personal" value={uid}>
-										Personal
-									</VSCodeOption>
-									{userOrganizations?.map((org: UserOrganization) => (
-										<VSCodeOption key={org.organizationId} value={org.organizationId}>
-											{org.name}
-										</VSCodeOption>
-									))}
-								</VSCodeDropdown>
+								<Tooltip>
+									<TooltipTrigger>
+										<VSCodeDropdown
+											className="w-full"
+											currentValue={dropdownValue}
+											disabled={isLoading || isLockedByRemoteConfig}
+											onChange={handleOrganizationChange}>
+											<VSCodeOption key="personal" value={uid}>
+												Personal
+											</VSCodeOption>
+											{userOrganizations?.map((org: UserOrganization) => (
+												<VSCodeOption key={org.organizationId} value={org.organizationId}>
+													{org.name}
+												</VSCodeOption>
+											))}
+										</VSCodeDropdown>
+									</TooltipTrigger>
+									<TooltipContent hidden={!isLockedByRemoteConfig}>
+										This cannot be changed while your organization has remote configuration enabled.
+									</TooltipContent>
+								</Tooltip>
 								{activeOrganization && (
 									<VSCodeTag className="text-xs p-2" title="Role">
 										{getMainRole(activeOrganization.roles)}
@@ -356,7 +386,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 
 				<VSCodeDivider className="mt-6 mb-3 w-full" />
 
-				<div className="flex-grow flex flex-col min-h-0 pb-[0px]">
+				<div className="grow flex flex-col min-h-0 pb-[0px]">
 					<CreditsHistoryTable
 						isLoading={isLoading}
 						paymentsData={paymentsData}
@@ -364,155 +394,31 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 						usageData={usageData}
 					/>
 				</div>
+
+				{isClineTester && (
+					<div className="w-full gap-1 items-end">
+						<VSCodeDivider className="w-full my-3" />
+						<div className="text-sm font-semibold">Cline Environment</div>
+						<VSCodeDropdown
+							className="w-full mt-1"
+							currentValue={clineEnv}
+							onChange={async (e) => {
+								const target = e.target as HTMLSelectElement
+								if (target?.value) {
+									const value = target.value as "Local" | "Staging" | "Production"
+									updateSetting("clineEnv", value.toLowerCase())
+								}
+							}}>
+							{ClineEnvOptions.map((env) => (
+								<VSCodeOption key={env} value={env}>
+									{env}
+								</VSCodeOption>
+							))}
+						</VSCodeDropdown>
+					</div>
+				)}
 			</div>
 		</div>
 	)
 }
-
-export const SSYAccountView = () => {
-	const { userInfo, setUserInfo } = useExtensionState()
-	console.log("SSYAccountView() userInfo: ", userInfo)
-
-	const [balance, setBalance] = useState(0)
-	const [isLoading, setIsLoading] = useState(true)
-	const [usageData, setUsageData] = useState<UsageTransaction[]>([])
-	const [paymentsData, setPaymentsData] = useState<PaymentTransaction[]>([])
-
-	// Fetch all account data when component mounts using gRPC
-	useEffect(() => {
-		setIsLoading(true)
-		AccountServiceClient.shengSuanYunUserData(EmptyRequest.create())
-			.then((res: any) => {
-				setBalance(res.balance?.currentBalance || 0)
-				setUsageData(res.usageTransactions)
-				setPaymentsData(res.paymentTransactions)
-				setUserInfo(res.user)
-			})
-			.catch((error: any) => {
-				console.error("Failed to fetch user credits data:", error)
-				setUserInfo(undefined)
-			})
-			.finally(() => setIsLoading(false))
-	}, [])
-
-	return (
-		<div className="h-full flex flex-col">
-			{userInfo ? (
-				<div className="flex flex-col pr-3 h-full">
-					<div className="flex flex-col w-full">
-						<div className="flex items-center mb-6 flex-wrap gap-y-4">
-							{userInfo.photoURL ? (
-								<img alt="Profile" className="size-16 rounded-full mr-4" src={userInfo.photoURL} />
-							) : (
-								<div className="size-16 rounded-full bg-[var(--vscode-button-background)] flex items-center justify-center text-2xl text-[var(--vscode-button-foreground)] mr-4">
-									{userInfo.displayName?.[0] || userInfo.email?.[0] || "?"}
-								</div>
-							)}
-
-							<div className="flex flex-col">
-								{userInfo.displayName && (
-									<h2 className="text-[var(--vscode-foreground)] m-0 mb-1 text-lg font-medium">
-										{userInfo.displayName}
-									</h2>
-								)}
-
-								{userInfo.email && (
-									<div className="text-sm text-[var(--vscode-descriptionForeground)]">{userInfo.email}</div>
-								)}
-							</div>
-						</div>
-					</div>
-
-					<div className="w-full flex gap-2 flex-col min-[225px]:flex-row">
-						<div className="w-full min-[225px]:w-1/2">
-							<VSCodeButtonLink
-								appearance="primary"
-								className="w-full"
-								href="https://console.shengsuanyun.com/user/overview">
-								个人中心
-							</VSCodeButtonLink>
-						</div>
-
-						<VSCodeButton
-							appearance="secondary"
-							className="w-full min-[225px]:w-1/2"
-							onClick={() => {
-								AccountServiceClient.shengSuanYunLogoutClicked(EmptyRequest.create()).catch((err) =>
-									console.error("Failed to logout:", err),
-								)
-							}}>
-							退出登录
-						</VSCodeButton>
-					</div>
-
-					<VSCodeDivider className="w-full my-6" />
-					<div className="w-full flex flex-col items-center">
-						<div className="text-sm text-[var(--vscode-descriptionForeground)] mb-3">余额</div>
-
-						<div className="text-4xl font-bold text-[var(--vscode-foreground)] mb-6 flex items-center gap-2">
-							{isLoading ? (
-								<div className="text-[var(--vscode-descriptionForeground)]">加载中...</div>
-							) : (
-								<>
-									<span>$</span>
-									<StyledCreditDisplaySSY balance={balance} />
-									<VSCodeButton
-										appearance="icon"
-										className="mt-1"
-										onClick={() => {
-											setIsLoading(true)
-											AccountServiceClient.shengSuanYunUserData(EmptyRequest.create())
-												.then((res) => {
-													setBalance(res.balance?.currentBalance || 0)
-													setUsageData(res.usageTransactions as any)
-													setPaymentsData(res.paymentTransactions)
-												})
-												.catch((error) => {
-													console.error("Failed to refresh user credits data:", error)
-												})
-												.finally(() => setIsLoading(false))
-										}}>
-										<span className="codicon codicon-refresh"></span>
-									</VSCodeButton>
-								</>
-							)}
-						</div>
-
-						<div className="w-full">
-							<VSCodeButtonLink className="w-full" href="https://console.shengsuanyun.com/user/recharge">
-								充值
-							</VSCodeButtonLink>
-						</div>
-					</div>
-
-					<VSCodeDivider className="mt-6 mb-3 w-full" />
-
-					<div className="flex-grow flex flex-col min-h-0 pb-[0px]">
-						<CreditsHistoryTable isLoading={isLoading} paymentsData={paymentsData} usageData={usageData} />
-					</div>
-				</div>
-			) : (
-				<div className="flex flex-col items-center pr-3">
-					<ClineLogoWhite className="size-16 mb-4" />
-					<p style={{}}>注册帐户访问最新模型，进群联系客服，获得100万Tokens免费额度，以及更多即将推出的功能。</p>
-					<VSCodeButton
-						className="w-full mb-4"
-						onClick={() =>
-							AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create()).catch((err) =>
-								console.error("Failed to get login URL:", err),
-							)
-						}>
-						注册 Cline 胜算云
-					</VSCodeButton>
-					<p className="text-[var(--vscode-descriptionForeground)] text-xs text-center m-0">
-						继续即表示您同意{" "}
-						<VSCodeLink href="https://docs.router.shengsuanyun.com/terms-of-service">服务条款</VSCodeLink> 和{" "}
-						<VSCodeLink href="https://docs.router.shengsuanyun.com/privacy-policy">隐私政策.</VSCodeLink>
-					</p>
-				</div>
-			)}
-		</div>
-	)
-}
-
 export default memo(AccountView)

@@ -2,11 +2,14 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { ModelInfo, XAIModelId, xaiDefaultModelId, xaiModels } from "@shared/api"
 import { shouldSkipReasoningForModel } from "@utils/model-utils"
 import OpenAI from "openai"
+import type { ChatCompletionTool as OpenAITool } from "openai/resources/chat/completions"
 import { ChatCompletionReasoningEffort } from "openai/resources/chat/completions"
+import { fetch } from "@/shared/net"
 import { ApiHandler, CommonApiHandlerOptions } from "../"
 import { withRetry } from "../retry"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
+import { getOpenAIToolParams, ToolCallProcessor } from "../transform/tool-call-processor"
 
 interface XAIHandlerOptions extends CommonApiHandlerOptions {
 	xaiApiKey?: string
@@ -31,6 +34,7 @@ export class XAIHandler implements ApiHandler {
 				this.client = new OpenAI({
 					baseURL: "https://api.x.ai/v1",
 					apiKey: this.options.xaiApiKey,
+					fetch, // Use configured fetch with proxy support
 				})
 			} catch (error: any) {
 				throw new Error(`Error creating xAI client: ${error.message}`)
@@ -40,7 +44,7 @@ export class XAIHandler implements ApiHandler {
 	}
 
 	@withRetry()
-	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[], tools?: OpenAITool[]): ApiStream {
 		const client = this.ensureClient()
 		const modelId = this.getModel().id
 		// ensure reasoning effort is either "low" or "high" for grok-3-mini
@@ -59,7 +63,10 @@ export class XAIHandler implements ApiHandler {
 			stream: true,
 			stream_options: { include_usage: true },
 			reasoning_effort: reasoningEffort,
+			...getOpenAIToolParams(tools),
 		})
+
+		const toolCallProcessor = new ToolCallProcessor()
 
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
@@ -70,12 +77,16 @@ export class XAIHandler implements ApiHandler {
 				}
 			}
 
+			if (delta?.tool_calls) {
+				yield* toolCallProcessor.processToolCallDeltas(delta.tool_calls)
+			}
+
 			if (delta && "reasoning_content" in delta && delta.reasoning_content) {
 				// Skip reasoning content for Grok 4 models since it only displays "thinking" without providing useful information
 				if (!shouldSkipReasoningForModel(modelId)) {
 					yield {
 						type: "reasoning",
-						// @ts-ignore-next-line
+						// @ts-expect-error-next-line
 						reasoning: delta.reasoning_content,
 					}
 				}
@@ -86,9 +97,9 @@ export class XAIHandler implements ApiHandler {
 					type: "usage",
 					inputTokens: chunk.usage.prompt_tokens || 0,
 					outputTokens: chunk.usage.completion_tokens || 0,
-					// @ts-ignore-next-line
+					// @ts-expect-error-next-line
 					cacheReadTokens: chunk.usage.prompt_tokens_details?.cached_tokens || 0,
-					// @ts-ignore-next-line
+					// @ts-expect-error-next-line
 					cacheWriteTokens: chunk.usage.prompt_cache_miss_tokens || 0,
 				}
 			}

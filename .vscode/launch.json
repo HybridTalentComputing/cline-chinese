@@ -12,12 +12,14 @@
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--disable-workspace-trust",
+				"--disable-extensions", // Avoid conflicts with installed extensions
 				"${workspaceFolder}"
 			],
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],
 			"preLaunchTask": "${defaultBuildTask}",
+			"envFile": "${workspaceFolder}/.env",
 			"env": {
 				"IS_DEV": "true",
 				"DEV_WORKSPACE_FOLDER": "${workspaceFolder}",
@@ -31,12 +33,14 @@
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--disable-workspace-trust",
+				"--disable-extensions", // Avoid conflicts with installed extensions
 				"${workspaceFolder}"
 			],
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],
 			"preLaunchTask": "${defaultBuildTask}",
+			"envFile": "${workspaceFolder}/.env",
 			"env": {
 				"IS_DEV": "true",
 				"DEV_WORKSPACE_FOLDER": "${workspaceFolder}",
@@ -50,12 +54,14 @@
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--disable-workspace-trust",
+				"--disable-extensions", // Avoid conflicts with installed extensions
 				"${workspaceFolder}"
 			],
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],
 			"preLaunchTask": "${defaultBuildTask}",
+			"envFile": "${workspaceFolder}/.env",
 			"env": {
 				"IS_DEV": "true",
 				"DEV_WORKSPACE_FOLDER": "${workspaceFolder}",
@@ -71,7 +77,7 @@
 				"--user-data-dir=${workspaceFolder}/dist/tmp/user",
 				"--profile-temp",
 				"--sync=off",
-				"--disable-extensions",
+				"--disable-extensions", // Avoid conflicts with installed extensions
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"${workspaceFolder}"
 			],
@@ -81,6 +87,7 @@
 			"preLaunchTask": "clean-tmp-user",
 			"internalConsoleOptions": "openOnSessionStart",
 			"postDebugTask": "stop",
+			"envFile": "${workspaceFolder}/.env",
 			"env": {
 				"IS_DEV": "true",
 				"TEMP_PROFILE": "true",
@@ -111,6 +118,7 @@
 				"tsx"
 			],
 			"program": "scripts/test-standalone-core-api-server.ts",
+			"envFile": "${workspaceFolder}/.env",
 			"env": {
 				"PROTOBUS_PORT": "26040",
 				"HOSTBRIDGE_PORT": "26041",
@@ -148,6 +156,7 @@
 				"--exit",
 				"${file}"
 			],
+			"envFile": "${workspaceFolder}/.env",
 			"env": {
 				"TS_NODE_PROJECT": "./tsconfig.unit-test.json",
 				"NODE_ENV": "test",

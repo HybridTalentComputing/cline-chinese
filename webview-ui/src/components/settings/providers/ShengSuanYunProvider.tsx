@@ -13,7 +13,6 @@ interface ShengSuanYunProviderProps {
 export const ShengSuanYunProvider = ({ showModelOptions, isPopup, currentMode }: ShengSuanYunProviderProps) => {
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
-
 	return (
 		<div>
 			<ApiKeyField

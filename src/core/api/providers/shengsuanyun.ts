@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
-import * as vscode from "vscode"
+// import * as vscode from "vscode"
 import { shouldSkipReasoningForModel } from "@/utils/model-utils"
 import { ModelInfo, shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "../../../shared/api"
 import { ApiHandler, CommonApiHandlerOptions } from "../"
@@ -36,7 +36,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 					baseURL: "https://router.shengsuanyun.com/api/v1",
 					apiKey: this.options.shengSuanYunApiKey,
 					defaultHeaders: {
-						"HTTP-Referer": `${vscode.env.uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan/ssy`,
+						"HTTP-Referer": `vscode://shengsuan-cloud.cline-shengsuan/ssy`,
 						"X-Title": "ClineShengsuan",
 					},
 				})
@@ -123,14 +123,14 @@ export class ShengSuanYunHandler implements ApiHandler {
 				if ("reasoning" in delta && delta.reasoning && !shouldSkipReasoningForModel(this.options.shengSuanYunModelId)) {
 					yield {
 						type: "reasoning",
-						// @ts-ignore-next-line
+						// @ts-expect-error-next-line
 						reasoning: delta.reasoning,
 					}
 				}
 				if (chunk.usage) {
 					const input = (chunk.usage.prompt_tokens || 0) - (chunk.usage.prompt_tokens_details?.cached_tokens || 0)
 					const output = chunk.usage.completion_tokens || 0
-					// @ts-ignore-next-line
+					// @ts-expect-error-next-line
 					const cost = (chunk.usage.cost || 0) + (chunk.usage.cost_details?.upstream_inference_cost || 0)
 					const inputPrice = model.info.inputPrice || 0
 					const outputPrice = model.info.outputPrice || 0
@@ -156,6 +156,6 @@ export class ShengSuanYunHandler implements ApiHandler {
 		if (modelId && modelInfo) {
 			return { id: modelId, info: modelInfo }
 		}
-		return { id: shengSuanYunDefaultModelId, info: shengSuanYunDefaultModelInfo }
+		return { id: shengSuanYunDefaultModelId, info: shengSuanYunDefaultModelInfo as ModelInfo }
 	}
 }

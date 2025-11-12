@@ -28,9 +28,9 @@ import { secondsToMs } from "@utils/time"
 import chokidar, { FSWatcher } from "chokidar"
 import deepEqual from "fast-deep-equal"
 import * as fs from "fs/promises"
+import { nanoid } from "nanoid"
 import * as path from "path"
 import ReconnectingEventSource from "reconnecting-eventsource"
-import * as vscode from "vscode"
 import { z } from "zod"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
@@ -44,11 +44,15 @@ export class McpHub {
 	private clientVersion: string
 	// private telemetryService?: TelemetryService
 
-	private disposables: vscode.Disposable[] = []
 	private settingsWatcher?: FSWatcher
 	private fileWatchers: Map<string, FSWatcher> = new Map()
 	connections: McpConnection[] = []
 	isConnecting: boolean = false
+
+	/**
+	 * Map of unique keys to each connected server names
+	 */
+	private static mcpServerKeys = new Map<string, string>()
 
 	// Store notifications for display in chat
 	private pendingNotifications: Array<{
@@ -79,6 +83,32 @@ export class McpHub {
 		// Only return enabled servers
 
 		return this.connections.filter((conn) => !conn.server.disabled).map((conn) => conn.server)
+	}
+
+	/**
+	 * Get the MCP server name from its unique key.
+	 * If the key is not found, return the key itself.
+	 */
+	public static getMcpServerByKey(key: string): string {
+		return McpHub.mcpServerKeys.get(key) || key
+	}
+
+	/**
+	 * Create a unique key for an MCP server based on its name.
+	 * This avoids making a tool name too long while still ensuring uniqueness.
+	 */
+	private getMcpServerKey(server: string): string {
+		// Reuse existing key if server is already registered
+		for (const [existingKey, existingServer] of McpHub.mcpServerKeys.entries()) {
+			if (existingServer === server) {
+				return existingKey
+			}
+		}
+		// Generate a 118 bytes unique ID for the server
+		// Add c prefix to ensure it starts with a letter (for compatibility with Gemini)
+		const uid = "c" + nanoid()
+		McpHub.mcpServerKeys.set(uid, server)
+		return uid
 	}
 
 	async getMcpSettingsFilePath(): Promise<string> {
@@ -140,7 +170,7 @@ export class McpHub {
 			ignoreInitial: true, // Don't fire 'add' events when discovering the file initially
 			awaitWriteFinish: {
 				// Wait for writes to finish before emitting events (handles chunked writes)
-				stabilityThreshold: 100, // Wait 100ms for file size to remain constant (matches the debounce from subscribeToFile.ts)
+				stabilityThreshold: 100, // Wait 100ms for file size to remain constant
 				pollInterval: 100, // Check file size every 100ms while waiting for stability
 			},
 			atomic: true, // Handle atomic writes where editors write to a temp file then rename (prevents duplicate events)
@@ -231,6 +261,7 @@ export class McpHub {
 						const connection = this.findConnection(name, source)
 						if (connection) {
 							connection.server.status = "disconnected"
+							McpHub.mcpServerKeys.delete(connection.server.uid || name)
 							this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
 						}
 						await this.notifyWebviewOfServerChanges()
@@ -240,6 +271,7 @@ export class McpHub {
 						const connection = this.findConnection(name, source)
 						if (connection) {
 							connection.server.status = "disconnected"
+							McpHub.mcpServerKeys.delete(connection.server.uid || name)
 						}
 						await this.notifyWebviewOfServerChanges()
 					}
@@ -291,6 +323,7 @@ export class McpHub {
 						const connection = this.findConnection(name, source)
 						if (connection) {
 							connection.server.status = "disconnected"
+							McpHub.mcpServerKeys.delete(connection.server.uid || name)
 							this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
 						}
 						await this.notifyWebviewOfServerChanges()
@@ -308,6 +341,7 @@ export class McpHub {
 						const connection = this.findConnection(name, source)
 						if (connection) {
 							connection.server.status = "disconnected"
+							McpHub.mcpServerKeys.delete(connection.server.uid || name)
 							this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
 						}
 						await this.notifyWebviewOfServerChanges()
@@ -324,6 +358,7 @@ export class McpHub {
 					config: JSON.stringify(config),
 					status: "connecting",
 					disabled: config.disabled,
+					uid: this.getMcpServerKey(name),
 				},
 				client,
 				transport,
@@ -636,7 +671,9 @@ export class McpHub {
 	}
 
 	private removeAllFileWatchers() {
-		this.fileWatchers.forEach((watcher) => watcher.close())
+		this.fileWatchers.forEach((watcher) => {
+			watcher.close()
+		})
 		this.fileWatchers.clear()
 	}
 
@@ -1153,6 +1190,5 @@ export class McpHub {
 		if (this.settingsWatcher) {
 			await this.settingsWatcher.close()
 		}
-		this.disposables.forEach((d) => d.dispose())
 	}
 }

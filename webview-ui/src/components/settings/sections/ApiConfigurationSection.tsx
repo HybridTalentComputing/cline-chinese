@@ -24,8 +24,8 @@ const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectio
 			<Section>
 				{/* Tabs container */}
 				{planActSeparateModelsSetting ? (
-					<div className="rounded-md mb-5 bg-[var(--vscode-panel-background)]">
-						<div className="flex gap-[1px] mb-[10px] -mt-2 border-0 border-b border-solid border-[var(--vscode-panel-border)]">
+					<div className="rounded-md mb-5">
+						<div className="flex gap-px mb-[10px] -mt-2 border-0 border-b border-solid border-(--vscode-panel-border)">
 							<TabButton
 								disabled={currentTab === "plan"}
 								isActive={currentTab === "plan"}
@@ -79,9 +79,9 @@ const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectio
 						}}>
 						对计划和行动模式使用不同的模型
 					</VSCodeCheckbox>
-					<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
-						在“计划”和“行动”模式之间切换将保留前一个模式中使用的 API
-						和模型。这可能会有所帮助，例如，在使用强推理模型构建计划以用于更低成本的编码模型时。
+					<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
+						在“计划”模式和“行动”模式之间切换时，会保留前一种模式下使用的 API
+						和模型。例如，当使用强大的推理模型来构建计划，以便使用成本更低的编码模型来执行时，这可能非常有用。
 					</p>
 				</div>
 			</Section>

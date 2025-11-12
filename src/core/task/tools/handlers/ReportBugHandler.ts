@@ -4,7 +4,8 @@ import { processFilesIntoText } from "@integrations/misc/extract-text"
 import { showSystemNotification } from "@integrations/notifications"
 import { createAndOpenGitHubIssue } from "@utils/github-url-utils"
 import * as os from "os"
-import * as vscode from "vscode"
+import { HostProvider } from "@/hosts/host-provider"
+import { ExtensionRegistryInfo } from "@/registry"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
 import type { IPartialBlockHandler, IToolHandler } from "../ToolExecutorCoordinator"
@@ -63,8 +64,8 @@ export class ReportBugHandler implements IToolHandler, IPartialBlockHandler {
 
 		config.taskState.consecutiveMistakeCount = 0
 
-		// Show notification if auto-approval is enabled
-		if (config.autoApprovalSettings.enabled && config.autoApprovalSettings.enableNotifications) {
+		// Show notification if enabled
+		if (config.autoApprovalSettings.enableNotifications) {
 			showSystemNotification({
 				subtitle: "Cline wants to create a github issue...",
 				message: `Cline is suggesting to create a github issue with the title: ${title}`,
@@ -73,9 +74,10 @@ export class ReportBugHandler implements IToolHandler, IPartialBlockHandler {
 
 		// Derive system information values algorithmically
 		const operatingSystem = os.platform() + " " + os.release()
-		const clineVersion = vscode.extensions.getExtension("saoudrizwan.claude-dev")?.packageJSON.version || "Unknown"
-		const systemInfo = `VSCode: ${vscode.version}, Node.js: ${process.version}, Architecture: ${os.arch()}`
 		const currentMode = config.mode
+		const clineVersion = ExtensionRegistryInfo.version
+		const host = await HostProvider.env.getHostVersion({})
+		const systemInfo = `${host.platform}: ${host.version}, Node.js: ${process.version}, Architecture: ${os.arch()}`
 		const apiConfig = config.services.stateManager.getApiConfiguration()
 		const apiProvider = currentMode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider
 		const providerAndModel = `${apiProvider} / ${config.api.getModel().id}`

@@ -1,19 +1,21 @@
 syntax = "proto3";
 
 package host;
-option java_package = "bot.cline.host.proto";
-option java_multiple_files = true;
 
 import "cline/common.proto";
+
+option go_package = "github.com/cline/grpc-go/host";
+option java_multiple_files = true;
+option java_package = "bot.cline.host.proto";
 
 // UriService provides methods for working with URIs in the IDE
 service UriService {
   // Create a new file URI from a file path
   rpc file(cline.StringRequest) returns (Uri);
-  
+
   // Join a URI with additional path segments
   rpc joinPath(JoinPathRequest) returns (Uri);
-  
+
   // Parse a string URI into a Uri object
   rpc parse(cline.StringRequest) returns (Uri);
 }

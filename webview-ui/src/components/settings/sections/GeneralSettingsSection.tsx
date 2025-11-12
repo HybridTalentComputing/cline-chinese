@@ -1,4 +1,7 @@
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { updateAutoApproveSettings } from "@/components/chat/auto-approve-menu/AutoApproveSettingsAPI"
+import { Tooltip } from "@/components/ui/tooltip"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import PreferredLanguageSetting from "../PreferredLanguageSetting"
 import Section from "../Section"
 
@@ -7,24 +10,74 @@ interface GeneralSettingsSectionProps {
 }
 
 const GeneralSettingsSection = ({ renderSectionHeader }: GeneralSettingsSectionProps) => {
+	const { telemetrySetting, remoteConfigSettings, autoApprovalSettings } = useExtensionState()
+
 	return (
 		<div>
 			{renderSectionHeader("general")}
 			<Section>
 				<PreferredLanguageSetting />
+
+				<div className="mb-[5px]" id="enable-notifications">
+					<VSCodeCheckbox
+						checked={autoApprovalSettings.enableNotifications}
+						onChange={async (e: any) => {
+							const checked = e.target.checked === true
+							await updateAutoApproveSettings({
+								...autoApprovalSettings,
+								version: (autoApprovalSettings.version ?? 1) + 1,
+								enableNotifications: checked,
+							})
+						}}>
+						启用通知
+					</VSCodeCheckbox>
+
+					<p className="text-sm mt-[5px] text-description">
+						当 Cline 需要获得批准才能继续执行或任务完成时，接收系统通知。
+					</p>
+				</div>
+
 				<div className="mb-[5px]">
-					<h2 className="block mb-1 text-sm font-medium">本插件不会收集或传输任何用户信息</h2>
-					<p className="text-xs mt-[5px] text-[var(--vscode-descriptionForeground)]">
-						选择使用胜算云 API 的用户。请参阅{" "}
-						<VSCodeLink className="text-inherit" href="https://docs.router.shengsuanyun.com/terms-of-service">
-							使用条款
+					<Tooltip>
+						{/* <TooltipContent hidden={remoteConfigSettings?.telemetrySetting === undefined}>
+							此设置由您所在组织的远程配置管理。
+						</TooltipContent>
+						<TooltipTrigger asChild>
+							<div className="flex items-center gap-2 mb-[5px]">
+								<VSCodeCheckbox
+									checked={telemetrySetting === "enabled"}
+									disabled={remoteConfigSettings?.telemetrySetting === "disabled"}
+									onChange={(e: any) => {
+										const checked = e.target.checked === true
+										updateSetting("telemetrySetting", checked ? "enabled" : "disabled")
+									}}>
+									Allow error and usage reporting
+								</VSCodeCheckbox>
+								{!!remoteConfigSettings?.telemetrySetting && (
+									<i className="codicon codicon-lock text-description text-sm" />
+								)}
+							</div>
+						</TooltipTrigger> */}
+					</Tooltip>
+
+					{/* <p className="text-sm mt-[5px] text-description">
+						Help improve Cline by sending usage data and error reports. No code, prompts, or personal information are
+						ever sent. See our{" "}
+						<VSCodeLink
+							className="text-inherit"
+							href="https://docs.cline.bot/more-info/telemetry"
+							style={{ fontSize: "inherit", textDecoration: "underline" }}>
+							telemetry overview
 						</VSCodeLink>{" "}
-						和{" "}
-						<VSCodeLink className="text-inherit" href="https://docs.router.shengsuanyun.com/privacy-policy">
-							隐私政策
+						and{" "}
+						<VSCodeLink
+							className="text-inherit"
+							href="https://cline.bot/privacy"
+							style={{ fontSize: "inherit", textDecoration: "underline" }}>
+							privacy policy
 						</VSCodeLink>{" "}
 						获取详情.
-					</p>
+					</p> */}
 				</div>
 			</Section>
 		</div>

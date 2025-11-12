@@ -2,20 +2,6 @@ import { ActionMetadata } from "./types"
 
 export const ACTION_METADATA: ActionMetadata[] = [
 	{
-		id: "enableAutoApprove",
-		label: "启用自动批准",
-		shortName: "启用",
-		description: "启用或禁用自动批准功能。",
-		icon: "codicon-play-circle",
-	},
-	{
-		id: "enableAll",
-		label: "启用所有",
-		shortName: "所有",
-		description: "启用或禁用所有操作。",
-		icon: "codicon-checklist",
-	},
-	{
 		id: "readFiles",
 		label: "读取项目文件",
 		shortName: "读取",

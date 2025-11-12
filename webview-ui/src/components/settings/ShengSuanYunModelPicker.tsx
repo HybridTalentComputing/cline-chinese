@@ -1,12 +1,12 @@
 import { shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "@shared/api"
-import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
+import { EmptyRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import React, { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
 import { useMount } from "react-use"
 import styled from "styled-components"
-import { ModelsServiceClient, StateServiceClient } from "@/services/grpc-client"
+import { ModelsServiceClient } from "@/services/grpc-client"
 import { useExtensionState } from "../../context/ExtensionStateContext"
 import { highlight } from "../history/HistoryView"
 import { ModelInfoView } from "./common/ModelInfoView"
@@ -237,7 +237,6 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 					{isDropdownVisible && (
 						<DropdownList ref={dropdownListRef}>
 							{modelSearchResults.map((item, index) => {
-								const isFavorite = (apiConfiguration?.favoritedModelIds || []).includes(item.id)
 								return (
 									<DropdownItem
 										isSelected={index === selectedIndex}
@@ -250,15 +249,6 @@ const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPop
 										ref={(el) => (itemRefs.current[index] = el)}>
 										<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
 											<span dangerouslySetInnerHTML={{ __html: item.html }} />
-											<StarIcon
-												isFavorite={isFavorite}
-												onClick={(e) => {
-													e.stopPropagation()
-													StateServiceClient.toggleFavoriteModel(
-														StringRequest.create({ value: item.id }),
-													).catch((error) => console.error("Failed to toggle favorite model:", error))
-												}}
-											/>
 										</div>
 									</DropdownItem>
 								)

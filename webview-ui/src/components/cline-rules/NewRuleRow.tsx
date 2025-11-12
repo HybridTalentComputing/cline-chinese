@@ -1,4 +1,4 @@
-import { CreateRuleFileRequest } from "@shared/proto-conversions/file/rule-files-conversion"
+import { RuleFileRequest } from "@shared/proto/index.cline"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
 import { useClickAway } from "react-use"
@@ -63,7 +63,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 
 			try {
 				await FileServiceClient.createRuleFile(
-					CreateRuleFileRequest.create({
+					RuleFileRequest.create({
 						isGlobal,
 						filename: finalFilename,
 						type: ruleType || "cline",
@@ -92,13 +92,13 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 			onClick={() => !isExpanded && setIsExpanded(true)}
 			ref={componentRef}>
 			<div
-				className={`flex items-center p-2 rounded bg-[var(--vscode-input-background)] transition-all duration-300 ease-in-out h-[18px] ${
+				className={`flex items-center p-2 py-4 rounded bg-input-background transition-all duration-300 ease-in-out h-[18px] ${
 					isExpanded ? "shadow-sm" : ""
 				}`}>
 				{isExpanded ? (
 					<form className="flex flex-1 items-center" onSubmit={handleSubmit}>
 						<input
-							className="flex-1 bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] border-0 outline-0 rounded focus:outline-none focus:ring-0 focus:border-transparent"
+							className="flex-1 bg-input-background text-(--vscode-input-foreground) border-0 outline-0 rounded focus:outline-none focus:ring-0 focus:border-transparent"
 							onChange={(e) => setFilename(e.target.value)}
 							onKeyDown={handleKeyDown}
 							placeholder={
@@ -125,13 +125,13 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 					</form>
 				) : (
 					<>
-						<span className="flex-1 text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-input-background)] italic text-xs">
+						<span className="flex-1 text-(--vscode-descriptionForeground) bg-input-background italic text-xs">
 							{ruleType === "workflow" ? "新工作流文件..." : "新规则文件..."}
 						</span>
 						<div className="flex items-center ml-2 space-x-2">
 							<VSCodeButton
 								appearance="icon"
-								aria-label="新规则文件"
+								aria-label={ruleType === "workflow" ? "新工作流文件..." : "新规则文件..."}
 								onClick={(e) => {
 									e.stopPropagation()
 									setIsExpanded(true)
@@ -144,7 +144,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 					</>
 				)}
 			</div>
-			{isExpanded && error && <div className="text-[var(--vscode-errorForeground)] text-xs mt-1 ml-2">{error}</div>}
+			{isExpanded && error && <div className="text-(--vscode-errorForeground) text-xs mt-1 ml-2">{error}</div>}
 		</div>
 	)
 }

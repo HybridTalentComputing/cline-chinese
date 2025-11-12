@@ -1,3 +1,5 @@
+import { getShell } from "@utils/shell"
+
 export const newTaskToolResponse = () =>
 	`<explicit_instructions type="new_task">
 The user has explicitly asked you to help them create a new task with preloaded context, which you will generate. The user may have provided instructions or additional information for you to consider when summarizing existing work and creating the context for the new task.
@@ -197,9 +199,26 @@ Below is the user's input when they indicated that they wanted to submit a Githu
 </explicit_instructions>\n
 `
 
+export const subagentToolResponse = () =>
+	`<explicit_instructions type="subagent">
+The user has requested to invoke a Cline CLI subagent with the context below. You should execute a subagent command to handle this request using the CLI subagents feature.
+
+Transform the user's request into a subagent command by executing:
+cline "<prompt>"
+</explicit_instructions>\n
+`
+
 export const deepPlanningToolResponse = (focusChainSettings?: { enabled: boolean }) => {
-	const detectedShell = require("@utils/shell").getShell()
-	const isPowerShell = detectedShell.toLowerCase().includes("powershell") || detectedShell.toLowerCase().includes("pwsh")
+	const detectedShell = getShell()
+
+	// FIXME: detectedShell returns a non-string value on some Windows machines
+	let isPowerShell = false
+	try {
+		isPowerShell =
+			detectedShell != null &&
+			typeof detectedShell === "string" &&
+			(detectedShell.toLowerCase().includes("powershell") || detectedShell.toLowerCase().includes("pwsh"))
+	} catch {}
 
 	return `<explicit_instructions type="deep-planning">
 Your task is to create a comprehensive implementation plan before writing any code. This process has four distinct steps that must be completed in order.
@@ -243,16 +262,16 @@ Get-ChildItem -Recurse -Include "*.py","*.js","*.ts","*.java","*.cpp","*.go" | S
 find . -type f -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.java" -o -name "*.cpp" -o -name "*.go" | head -30 | cat
 
 # Find all class and function definitions
-grep -r "class\|function\|def\|interface\|struct\|func\|type.*struct\|type.*interface" --include="*.py" --include="*.js" --include="*.ts" --include="*.java" --include="*.cpp" --include="*.go" . | cat
+grep -r "class|function|def|interface|struct|func|type.*struct|type.*interface" --include="*.py" --include="*.js" --include="*.ts" --include="*.java" --include="*.cpp" --include="*.go" . | cat
 
 # Analyze import patterns and dependencies
-grep -r "import\|from\|require\|#include" --include="*.py" --include="*.js" --include="*.ts" --include="*.java" --include="*.cpp" . | sort | uniq | cat
+grep -r "import|from|require|#include" --include="*.py" --include="*.js" --include="*.ts" --include="*.java" --include="*.cpp" . | sort | uniq | cat
 
 # Find dependency manifests
 find . -name "requirements*.txt" -o -name "package.json" -o -name "Cargo.toml" -o -name "pom.xml" -o -name "Gemfile" -o -name "go.mod" | xargs cat
 
 # Identify technical debt and TODOs
-grep -r "TODO\|FIXME\|XXX\|HACK\|NOTE" --include="*.py" --include="*.js" --include="*.ts" --include="*.java" --include="*.cpp" --include="*.go" . | cat
+grep -r "TODO|FIXME|XXX|HACK|NOTE" --include="*.py" --include="*.js" --include="*.ts" --include="*.java" --include="*.cpp" --include="*.go" . | cat
 `
 }
 
@@ -371,28 +390,28 @@ $content = Get-Content implementation_plan.md; $start = ($content | Select-Strin
 `
 		: `
 # Read Overview section
-sed -n '/\[Overview\]/,/\[Types\]/p' implementation_plan.md | head -n 1 | cat
+sed -n '/[Overview]/,/[Types]/p' implementation_plan.md | head -n 1 | cat
 
 # Read Types section  
-sed -n '/\[Types\]/,/\[Files\]/p' implementation_plan.md | head -n 1 | cat
+sed -n '/[Types]/,/[Files]/p' implementation_plan.md | head -n 1 | cat
 
 # Read Files section
-sed -n '/\[Files\]/,/\[Functions\]/p' implementation_plan.md | head -n 1 | cat
+sed -n '/[Files]/,/[Functions]/p' implementation_plan.md | head -n 1 | cat
 
 # Read Functions section
-sed -n '/\[Functions\]/,/\[Classes\]/p' implementation_plan.md | head -n 1 | cat
+sed -n '/[Functions]/,/[Classes]/p' implementation_plan.md | head -n 1 | cat
 
 # Read Classes section
-sed -n '/\[Classes\]/,/\[Dependencies\]/p' implementation_plan.md | head -n 1 | cat
+sed -n '/[Classes]/,/[Dependencies]/p' implementation_plan.md | head -n 1 | cat
 
 # Read Dependencies section
-sed -n '/\[Dependencies\]/,/\[Testing\]/p' implementation_plan.md | head -n 1 | cat
+sed -n '/[Dependencies]/,/[Testing]/p' implementation_plan.md | head -n 1 | cat
 
 # Read Testing section
-sed -n '/\[Testing\]/,/\[Implementation Order\]/p' implementation_plan.md | head -n 1 | cat
+sed -n '/[Testing]/,/[Implementation Order]/p' implementation_plan.md | head -n 1 | cat
 
 # Read Implementation Order section
-sed -n '/\[Implementation Order\]/,$p' implementation_plan.md | cat
+sed -n '/[Implementation Order]/,$p' implementation_plan.md | cat
 `
 }
 

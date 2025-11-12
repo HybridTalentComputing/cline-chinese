@@ -14,9 +14,9 @@ interface CreditsHistoryTableProps {
 const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, showPayments }: CreditsHistoryTableProps) => {
 	const [activeTab, setActiveTab] = useState<"usage" | "payments">("usage")
 	return (
-		<div className="flex flex-col flex-grow h-full">
+		<div className="flex flex-col grow h-full">
 			{/* Tabs container */}
-			<div className="flex border-b border-[var(--vscode-panel-border)]">
+			<div className="flex border-b border-(--vscode-panel-border)">
 				<TabButton isActive={activeTab === "usage"} onClick={() => setActiveTab("usage")}>
 					使用记录
 				</TabButton>
@@ -26,10 +26,10 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, showPayments 
 			</div>
 
 			{/* Content container */}
-			<div className="mt-[15px] mb-[0px] rounded-md overflow-auto flex-grow">
+			<div className="mt-[15px] mb-[0px] rounded-md overflow-auto grow">
 				{isLoading ? (
 					<div className="flex justify-center items-center p-4">
-						<div className="text-[var(--vscode-descriptionForeground)]">加载中...</div>
+						<div className="text-(--vscode-descriptionForeground)">加载中...</div>
 					</div>
 				) : (
 					<>
@@ -43,29 +43,26 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, showPayments 
 										<VSCodeDataGridCell cell-type="columnheader" grid-column="2">
 											模型
 										</VSCodeDataGridCell>
-										{/* <VSCodeDataGridCell cell-type="columnheader" grid-column="3">
-												Tokens Used
-											</VSCodeDataGridCell> */}
 										<VSCodeDataGridCell cell-type="columnheader" grid-column="3">
 											已使用
 										</VSCodeDataGridCell>
 									</VSCodeDataGridRow>
 
-									{usageData &&
-										usageData.map((row, index) => (
-											<VSCodeDataGridRow key={index}>
-												<VSCodeDataGridCell grid-column="1">
-													{formatTimestamp(row.spentAt || "", "zh-CN")}
-												</VSCodeDataGridCell>
-												<VSCodeDataGridCell grid-column="2">{row.model}</VSCodeDataGridCell>
-												{/* <VSCodeDataGridCell grid-column="3">{`${row.promptTokens} → ${row.completionTokens}`}</VSCodeDataGridCell> */}
-												<VSCodeDataGridCell grid-column="3">{`$${Number(row.credits || "0").toFixed(7)}`}</VSCodeDataGridCell>
-											</VSCodeDataGridRow>
-										))}
+									{usageData.map((row, index) => (
+										<VSCodeDataGridRow key={index}>
+											<VSCodeDataGridCell grid-column="1">
+												{formatTimestamp(row.spentAt || "", "zh-CN")}
+											</VSCodeDataGridCell>
+											<VSCodeDataGridCell grid-column="2">{`${row.model}`}</VSCodeDataGridCell>
+											<VSCodeDataGridCell grid-column="3">
+												{Number(row.credits).toFixed(4)}
+											</VSCodeDataGridCell>
+										</VSCodeDataGridRow>
+									))}
 								</VSCodeDataGrid>
 							) : (
 								<div className="flex justify-center items-center p-4">
-									<div className="text-[var(--vscode-descriptionForeground)]">还没有使用记录</div>
+									<div className="text-(--vscode-descriptionForeground)">没有使用记录</div>
 								</div>
 							))}
 
@@ -86,6 +83,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, showPayments 
 									</VSCodeDataGridRow>
 
 									{paymentsData.map((row, index) => (
+										// biome-ignore lint/suspicious/noArrayIndexKey: use index as key
 										<VSCodeDataGridRow key={index}>
 											<VSCodeDataGridCell grid-column="1">
 												{formatTimestamp(row.paidAt, "zh-CN")}
@@ -97,7 +95,7 @@ const CreditsHistoryTable = ({ isLoading, usageData, paymentsData, showPayments 
 								</VSCodeDataGrid>
 							) : (
 								<div className="flex justify-center items-center p-4">
-									<div className="text-[var(--vscode-descriptionForeground)]">还没有支付记录</div>
+									<div className="text-(--vscode-descriptionForeground)">还没有支付记录</div>
 								</div>
 							))}
 					</>

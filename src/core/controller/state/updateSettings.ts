@@ -1,4 +1,5 @@
 import { buildApiHandler } from "@core/api"
+
 import { Empty } from "@shared/proto/cline/common"
 import {
 	PlanActMode,
@@ -6,9 +7,10 @@ import {
 	OpenaiReasoningEffort as ProtoOpenaiReasoningEffort,
 	UpdateSettingsRequest,
 } from "@shared/proto/cline/state"
-import { convertProtoApiConfigurationToApiConfiguration } from "@shared/proto-conversions/state/settings-conversion"
+import { convertProtoToApiProvider } from "@shared/proto-conversions/models/api-configuration-conversion"
 import { OpenaiReasoningEffort } from "@shared/storage/types"
 import { TelemetrySetting } from "@shared/TelemetrySetting"
+import { ClineEnv } from "@/config"
 import { HostProvider } from "@/hosts/host-provider"
 import { TerminalInfo } from "@/integrations/terminal/TerminalRegistry"
 import { McpDisplayMode } from "@/shared/McpDisplayMode"
@@ -16,6 +18,7 @@ import { ShowMessageType } from "@/shared/proto/host/window"
 // import { telemetryService } from "../../../services/telemetry"
 import { BrowserSettings as SharedBrowserSettings } from "../../../shared/BrowserSettings"
 import { Controller } from ".."
+import { accountLogoutClicked } from "../account/accountLogoutClicked"
 
 /**
  * Updates multiple extension settings in a single request
@@ -25,14 +28,34 @@ import { Controller } from ".."
  */
 export async function updateSettings(controller: Controller, request: UpdateSettingsRequest): Promise<Empty> {
 	try {
-		// Update API configuration
+		if (request.clineEnv !== undefined) {
+			ClineEnv.setEnvironment(request.clineEnv)
+			await accountLogoutClicked(controller, Empty.create())
+		}
+
 		if (request.apiConfiguration) {
-			const apiConfiguration = convertProtoApiConfigurationToApiConfiguration(request.apiConfiguration)
-			controller.stateManager.setApiConfiguration(apiConfiguration)
+			const protoApiConfiguration = request.apiConfiguration
+
+			const convertedApiConfigurationFromProto = {
+				...protoApiConfiguration,
+				// Convert proto ApiProvider enums to native string types
+				planModeApiProvider: protoApiConfiguration.planModeApiProvider
+					? convertProtoToApiProvider(protoApiConfiguration.planModeApiProvider)
+					: undefined,
+				actModeApiProvider: protoApiConfiguration.actModeApiProvider
+					? convertProtoToApiProvider(protoApiConfiguration.actModeApiProvider)
+					: undefined,
+			}
+
+			controller.stateManager.setApiConfiguration(convertedApiConfigurationFromProto)
 
 			if (controller.task) {
-				const currentMode = await controller.getCurrentMode()
-				controller.task.api = buildApiHandler({ ...apiConfiguration, ulid: controller.task.ulid }, currentMode)
+				const currentMode = controller.stateManager.getGlobalSettingsKey("mode")
+				const apiConfigForHandler = {
+					...convertedApiConfigurationFromProto,
+					ulid: controller.task.ulid,
+				}
+				controller.task.api = buildApiHandler(apiConfigForHandler, currentMode)
 			}
 		}
 
@@ -83,9 +106,6 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 
 		if (request.mode !== undefined) {
 			const mode = request.mode === PlanActMode.PLAN ? "plan" : "act"
-			if (controller.task) {
-				controller.task.updateMode(mode)
-			}
 			controller.stateManager.setGlobalState("mode", mode)
 		}
 
@@ -109,17 +129,10 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 					throw new Error(`Invalid OpenAI reasoning effort value: ${request.openaiReasoningEffort}`)
 			}
 
-			if (controller.task) {
-				controller.task.openaiReasoningEffort = reasoningEffort
-			}
-
 			controller.stateManager.setGlobalState("openaiReasoningEffort", reasoningEffort)
 		}
 
 		if (request.preferredLanguage !== undefined) {
-			if (controller.task) {
-				controller.task.preferredLanguage = request.preferredLanguage
-			}
 			controller.stateManager.setGlobalState("preferredLanguage", request.preferredLanguage)
 		}
 
@@ -138,30 +151,72 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 			controller.stateManager.setGlobalState("terminalOutputLineLimit", Number(request.terminalOutputLineLimit))
 		}
 
-		// Update strict plan mode setting
-		if (request.strictPlanModeEnabled !== undefined) {
-			if (controller.task) {
-				controller.task.updateStrictPlanMode(request.strictPlanModeEnabled)
-			}
-			controller.stateManager.setGlobalState("strictPlanModeEnabled", request.strictPlanModeEnabled)
+		if (request.vscodeTerminalExecutionMode !== undefined && request.vscodeTerminalExecutionMode !== "") {
+			controller.stateManager.setGlobalState(
+				"vscodeTerminalExecutionMode",
+				request.vscodeTerminalExecutionMode === "backgroundExec" ? "backgroundExec" : "vscodeTerminal",
+			)
 		}
 
+		// Update subagent terminal output line limit
+		if (request.subagentTerminalOutputLineLimit !== undefined) {
+			controller.stateManager.setGlobalState(
+				"subagentTerminalOutputLineLimit",
+				Number(request.subagentTerminalOutputLineLimit),
+			)
+		}
+
+		// Update subagent terminal output line limit
+		if (request.subagentTerminalOutputLineLimit !== undefined) {
+			controller.stateManager.setGlobalState(
+				"subagentTerminalOutputLineLimit",
+				Number(request.subagentTerminalOutputLineLimit),
+			)
+		}
+
+		// Update max consecutive mistakes
+		if (request.maxConsecutiveMistakes !== undefined) {
+			controller.stateManager.setGlobalState("maxConsecutiveMistakes", Number(request.maxConsecutiveMistakes))
+		}
+
+		// Update strict plan mode setting
+		if (request.strictPlanModeEnabled !== undefined) {
+			controller.stateManager.setGlobalState("strictPlanModeEnabled", request.strictPlanModeEnabled)
+		}
+		// Update yolo mode setting
+		if (request.yoloModeToggled !== undefined) {
+			// if (controller.task) {
+			// 	telemetryService.captureYoloModeToggle(controller.task.ulid, request.yoloModeToggled)
+			// }
+			controller.stateManager.setGlobalState("yoloModeToggled", request.yoloModeToggled)
+		}
+
+		if (request.dictationSettings !== undefined) {
+			// Convert from protobuf format (snake_case) to TypeScript format (camelCase)
+			const dictationSettings = {
+				featureEnabled: request.dictationSettings.featureEnabled ?? true,
+				dictationEnabled: request.dictationSettings.dictationEnabled ?? true,
+				dictationLanguage: request.dictationSettings.dictationLanguage ?? "en",
+			}
+			controller.stateManager.setGlobalState("dictationSettings", dictationSettings)
+		}
 		// Update auto-condense setting
 		if (request.useAutoCondense !== undefined) {
-			if (controller.task) {
-				controller.task.updateUseAutoCondense(request.useAutoCondense)
-			}
+			// if (controller.task) {
+			// 	telemetryService.captureAutoCondenseToggle(
+			// 		controller.task.ulid,
+			// 		request.useAutoCondense,
+			// 		controller.task.api.getModel().id,
+			// 	)
+			// }
 			controller.stateManager.setGlobalState("useAutoCondense", request.useAutoCondense)
 		}
 
 		// Update focus chain settings
 		if (request.focusChainSettings !== undefined) {
-			const remoteEnabled = controller.stateManager.getGlobalStateKey("focusChainFeatureFlagEnabled")
-			if (remoteEnabled === false) {
-				// No-op when feature flag disabled
-			} else {
-				const currentSettings = controller.stateManager.getGlobalStateKey("focusChainSettings")
-				const _wasEnabled = currentSettings?.enabled ?? false
+			{
+				const currentSettings = controller.stateManager.getGlobalSettingsKey("focusChainSettings")
+				const wasEnabled = currentSettings?.enabled ?? false
 				const isEnabled = request.focusChainSettings.enabled
 
 				const focusChainSettings = {
@@ -186,7 +241,7 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 		// Update browser settings
 		if (request.browserSettings !== undefined) {
 			// Get current browser settings to preserve fields not in the request
-			const currentSettings = controller.stateManager.getGlobalStateKey("browserSettings")
+			const currentSettings = controller.stateManager.getGlobalSettingsKey("browserSettings")
 
 			// Convert from protobuf format to shared format, merging with existing settings
 			const newBrowserSettings: SharedBrowserSettings = {
@@ -221,12 +276,6 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 
 			// Update global state with new settings
 			controller.stateManager.setGlobalState("browserSettings", newBrowserSettings)
-
-			// Update task browser settings if task exists
-			if (controller.task) {
-				controller.task.browserSettings = newBrowserSettings
-				controller.task.browserSession.browserSettings = newBrowserSettings
-			}
 		}
 
 		// Update default terminal profile
@@ -266,6 +315,57 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 					})
 				}
 			}
+		}
+
+		if (request.autoCondenseThreshold !== undefined) {
+			const threshold = Math.min(1, Math.max(0, request.autoCondenseThreshold)) // Clamp to 0-1 range
+			controller.stateManager.setGlobalState("autoCondenseThreshold", threshold)
+		}
+
+		if (request.multiRootEnabled !== undefined) {
+			controller.stateManager.setGlobalState("multiRootEnabled", !!request.multiRootEnabled)
+		}
+
+		if (request.hooksEnabled !== undefined) {
+			const isEnabled = !!request.hooksEnabled
+
+			// Platform validation: Only allow enabling hooks on macOS and Linux
+			if (isEnabled && process.platform === "win32") {
+				throw new Error("Hooks are not yet supported on Windows")
+			}
+
+			controller.stateManager.setGlobalState("hooksEnabled", isEnabled)
+		}
+
+		if (request.subagentsEnabled !== undefined) {
+			const currentSettings = controller.stateManager.getGlobalSettingsKey("subagentsEnabled")
+			const wasEnabled = currentSettings ?? false
+			const isEnabled = !!request.subagentsEnabled
+
+			// Platform validation: Only allow enabling subagents on macOS and Linux
+			if (isEnabled && process.platform !== "darwin" && process.platform !== "linux") {
+				throw new Error("CLI subagents are only supported on macOS and Linux platforms")
+			}
+
+			controller.stateManager.setGlobalState("subagentsEnabled", isEnabled)
+
+			// Capture telemetry when setting changes
+			// if (wasEnabled !== isEnabled) {
+			// 	telemetryService.captureSubagentToggle(isEnabled)
+			// }
+			controller.stateManager.setGlobalState("subagentsEnabled", !!request.subagentsEnabled)
+		}
+
+		if (request.nativeToolCallEnabled !== undefined) {
+			controller.stateManager.setGlobalState("nativeToolCallEnabled", !!request.nativeToolCallEnabled)
+			// if (controller.task) {
+			// 	telemetryService.captureFeatureToggle(
+			// 		controller.task.ulid,
+			// 		"native-tool-call",
+			// 		request.nativeToolCallEnabled,
+			// 		controller.task.api.getModel().id,
+			// 	)
+			// }
 		}
 
 		// Post updated state to webview

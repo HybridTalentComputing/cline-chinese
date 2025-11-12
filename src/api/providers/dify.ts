@@ -1,15 +1,21 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { ApiHandlerOptions, ModelInfo } from "@shared/api"
+import { ModelInfo } from "@shared/api"
+import { fetch } from "@/shared/net"
 import { ApiHandler } from "../../core/api/index"
 import { ApiStream } from "../../core/api/transform/stream"
 
+interface DifyHandlerOptions {
+	difyApiKey?: string
+	difyBaseUrl?: string
+}
+
 export class DifyHandler implements ApiHandler {
+	private options: DifyHandlerOptions
 	private baseUrl: string
 	private apiKey: string
-	private options: ApiHandlerOptions
 	private conversationId: string | null = null
 
-	constructor(options: ApiHandlerOptions) {
+	constructor(options: DifyHandlerOptions) {
 		this.options = options
 		this.apiKey = options.difyApiKey || ""
 		this.baseUrl = options.difyBaseUrl || ""

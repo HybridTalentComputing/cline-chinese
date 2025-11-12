@@ -8,11 +8,11 @@ type AddLocalServerFormProps = {
 	onServerAdded: () => void
 }
 
-const AddLocalServerForm = ({ onServerAdded }: AddLocalServerFormProps) => {
+const AddLocalServerForm = ({}: AddLocalServerFormProps) => {
 	return (
 		<FormContainer>
-			<div className="text-[var(--vscode-foreground)]">
-				通过在 <code>cline_shengsuan_mcp_settings.json</code> 中配置本地 MCP 服务器来添加本地 MCP 服务器。您需要指定 JSON
+			<div className="text-(--vscode-foreground)">
+				通过在 <code>cline_mcp_settings.json</code>.中配置本地 MCP 服务器来添加本地 MCP 服务器。您需要指定 JSON
 				配置中的服务器名称、命令、参数和任何必需的环境变量。
 				<VSCodeLink href={LINKS.DOCUMENTATION.LOCAL_MCP_SERVER_DOCS} style={{ display: "inline" }}>
 					了解更多信息

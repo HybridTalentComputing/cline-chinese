@@ -35,6 +35,8 @@ const TaskTimelineTooltip = ({ message, children }: TaskTimelineTooltipProps) =>
 								return `编辑文件: ${toolData.path || "未知文件"}`
 							} else if (toolData.tool === "newFileCreated") {
 								return `新文件: ${toolData.path || "未知文件"}`
+							} else if (toolData.tool === "fileDeleted") {
+								return `删除文件: ${toolData.path || "未知文件"}`
 							} else if (toolData.tool === "webFetch") {
 								return `读取网页: ${toolData.path || "未知的 URL"}`
 							}
@@ -80,7 +82,9 @@ const TaskTimelineTooltip = ({ message, children }: TaskTimelineTooltipProps) =>
 							} else if (toolData.tool === "editedExistingFile") {
 								return `编辑文件批准: ${toolData.path || "未知文件"}`
 							} else if (toolData.tool === "newFileCreated") {
-								return `新文件批准: ${toolData.path || "未知文件"}`
+								return `批准新建文件: ${toolData.path || "未知文件"}`
+							} else if (toolData.tool === "fileDeleted") {
+								return `删除批准文件: ${toolData.path || "未知文件"}`
 							} else if (toolData.tool === "webFetch") {
 								return `网页读取: ${toolData.path || "未知的 URL"}`
 							}
@@ -168,7 +172,7 @@ const TaskTimelineTooltip = ({ message, children }: TaskTimelineTooltipProps) =>
 	return (
 		<Tooltip
 			classNames={{
-				base: "bg-[var(--vscode-editor-background)] text-[var(--vscode-editor-foreground)] border-[var(--vscode-widget-border)] py-1 rounded-[3px] max-w-[calc(100dvw-2rem)] text-xs",
+				base: "bg-(--vscode-editor-background) text-(--vscode-editor-foreground) border-(--vscode-widget-border) py-1 rounded-[3px] max-w-[calc(100dvw-2rem)] text-xs",
 			}}
 			closeDelay={100}
 			content={
@@ -181,7 +185,7 @@ const TaskTimelineTooltip = ({ message, children }: TaskTimelineTooltipProps) =>
 									height: "10px",
 									minWidth: "10px", // Ensure fixed width
 									minHeight: "10px", // Ensure fixed height
-									borderRadius: "50%",
+									borderRadius: 1.5,
 									backgroundColor: getColor(message),
 									marginRight: "8px",
 									display: "inline-block",

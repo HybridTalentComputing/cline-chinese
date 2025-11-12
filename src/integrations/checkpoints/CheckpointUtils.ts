@@ -1,6 +1,7 @@
 import { access, constants, mkdir } from "fs/promises"
 import os from "os"
 import * as path from "path"
+import { HostProvider } from "@/hosts/host-provider"
 import { getCwd, getDesktopDir } from "@/utils/path"
 
 /**
@@ -12,20 +13,59 @@ import { getCwd, getDesktopDir } from "@/utils/path"
  *     {cwdHash}/
  *       .git/
  *
- * @param globalStoragePath - The VS Code global storage path
- * @param taskId - The ID of the task
  * @param cwdHash - Hash of the working directory path
  * @returns Promise<string> The absolute path to the shadow git directory
  * @throws Error if global storage path is invalid
  */
-export async function getShadowGitPath(globalStoragePath: string, _taskId: string, cwdHash: string): Promise<string> {
-	if (!globalStoragePath) {
-		throw new Error("全局存储 uri 无效")
-	}
-	const checkpointsDir = path.join(globalStoragePath, "checkpoints", cwdHash)
+export async function getShadowGitPath(cwdHash: string): Promise<string> {
+	const checkpointsDir = path.join(HostProvider.get().globalStorageFsPath, "checkpoints", cwdHash)
 	await mkdir(checkpointsDir, { recursive: true })
 	const gitPath = path.join(checkpointsDir, ".git")
 	return gitPath
+}
+
+/**
+ * Validates that a workspace path is safe for checkpoints.
+ * Checks that checkpoints are not being used in protected directories
+ * like home, Desktop, Documents, or Downloads. Also confirms that the workspace
+ * is accessible and that we will not encounter breaking permissions issues when
+ * creating checkpoints.
+ *
+ * Protected directories:
+ * - User's home directory
+ * - Desktop
+ * - Documents
+ * - Downloads
+ *
+ * @param workspacePath - The absolute path to the workspace directory to validate
+ * @returns Promise<void> Resolves if the path is valid
+ * @throws Error if the path is in a protected directory or if no read access
+ */
+export async function validateWorkspacePath(workspacePath: string): Promise<void> {
+	// Check if directory exists and we have read permissions
+	try {
+		await access(workspacePath, constants.R_OK)
+	} catch (error) {
+		throw new Error(
+			`无法访问工作区目录。请确保 VS Code 拥有访问您工作区的权限。错误： ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+
+	const homedir = os.homedir()
+	const desktopPath = getDesktopDir()
+	const documentsPath = path.join(homedir, "Documents")
+	const downloadsPath = path.join(homedir, "Downloads")
+
+	switch (workspacePath) {
+		case homedir:
+			throw new Error("无法在主目录中使用检查点")
+		case desktopPath:
+			throw new Error("无法使用桌面目录中的检查点")
+		case documentsPath:
+			throw new Error("无法在“文档”目录中使用检查点")
+		case downloadsPath:
+			throw new Error("无法使用下载目录中的检查点")
+	}
 }
 
 /**
@@ -50,32 +90,8 @@ export async function getWorkingDirectory(): Promise<string> {
 		throw new Error("未检测到工作区。请在工作区中打开 Cline 以使用检查点。")
 	}
 
-	// Check if directory exists and we have read permissions
-	try {
-		await access(cwd, constants.R_OK)
-	} catch (error) {
-		throw new Error(
-			`无法访问工作区目录。请确保 VS Code 有权访问您的工作区。错误: ${error instanceof Error ? error.message : String(error)}`,
-		)
-	}
-
-	const homedir = os.homedir()
-	const desktopPath = getDesktopDir()
-	const documentsPath = path.join(homedir, "Documents")
-	const downloadsPath = path.join(homedir, "Downloads")
-
-	switch (cwd) {
-		case homedir:
-			throw new Error("不能在主目录中使用检查点")
-		case desktopPath:
-			throw new Error("无法使用 Desktop 目录中的检查点")
-		case documentsPath:
-			throw new Error("无法使用 Documents 目录中的检查点")
-		case downloadsPath:
-			throw new Error("无法使用 Downloads 目录中的检查点")
-		default:
-			return cwd
-	}
+	await validateWorkspacePath(cwd)
+	return cwd
 }
 
 /**

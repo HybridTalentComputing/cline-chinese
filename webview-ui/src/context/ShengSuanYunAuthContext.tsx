@@ -59,7 +59,7 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 	}
 
 	useEffect(() => {
-		const cleanup = AccountServiceClient.subscribeSSYAuthCallback(EmptyRequest.create({}), {
+		const cleanup = AccountServiceClient.subscribeSsyAuthCallback(EmptyRequest.create({}), {
 			onResponse: (event) => {
 				if (event.value) {
 					signInWithTokenSSY(event.value)

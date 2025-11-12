@@ -11,7 +11,7 @@ export class SSYAccountService {
 	private async authenticatedRequest<T>(endpoint: string, config: AxiosRequestConfig = {}): Promise<T> {
 		const ssyApiKey = await this.getSSYApiKey()
 		if (!ssyApiKey) {
-			throw new Error("未找到胜算云 API key ")
+			throw new Error("未找到胜算云 Auth API")
 		}
 		const reqConfig: AxiosRequestConfig = {
 			...config,

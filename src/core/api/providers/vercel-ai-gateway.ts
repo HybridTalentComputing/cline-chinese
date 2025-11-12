@@ -1,15 +1,19 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { ModelInfo, vercelAiGatewayDefaultModelId, vercelAiGatewayDefaultModelInfo } from "@shared/api"
+import { ModelInfo, openRouterDefaultModelId, openRouterDefaultModelInfo } from "@shared/api"
 import OpenAI from "openai"
+import type { ChatCompletionTool as OpenAITool } from "openai/resources/chat/completions"
+import { fetch } from "@/shared/net"
 import { ApiHandler, CommonApiHandlerOptions } from "../index"
 import { withRetry } from "../retry"
 import { ApiStream } from "../transform/stream"
+import { ToolCallProcessor } from "../transform/tool-call-processor"
 import { createVercelAIGatewayStream } from "../transform/vercel-ai-gateway-stream"
 
 interface VercelAIGatewayHandlerOptions extends CommonApiHandlerOptions {
 	vercelAiGatewayApiKey?: string
-	vercelAiGatewayModelId?: string
-	vercelAiGatewayModelInfo?: ModelInfo
+	openRouterModelId?: string
+	openRouterModelInfo?: ModelInfo
+	thinkingBudgetTokens?: number
 }
 
 export class VercelAIGatewayHandler implements ApiHandler {
@@ -33,6 +37,7 @@ export class VercelAIGatewayHandler implements ApiHandler {
 						"http-referer": "https://cline.bot",
 						"x-title": "Cline",
 					},
+					fetch, // Use configured fetch with proxy support
 				})
 			} catch (error: any) {
 				throw new Error(`Error creating Vercel AI Gateway client: ${error.message}`)
@@ -42,14 +47,23 @@ export class VercelAIGatewayHandler implements ApiHandler {
 	}
 
 	@withRetry()
-	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[], tools?: OpenAITool[]): ApiStream {
 		const client = this.ensureClient()
 		const modelId = this.getModel().id
 		const modelInfo = this.getModel().info
 
 		try {
-			const stream = await createVercelAIGatewayStream(client, systemPrompt, messages, { id: modelId, info: modelInfo })
+			const stream = await createVercelAIGatewayStream(
+				client,
+				systemPrompt,
+				messages,
+				{ id: modelId, info: modelInfo },
+				this.options.thinkingBudgetTokens,
+				tools,
+			)
 			let didOutputUsage: boolean = false
+
+			const toolCallProcessor = new ToolCallProcessor()
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices[0]?.delta
@@ -60,13 +74,39 @@ export class VercelAIGatewayHandler implements ApiHandler {
 					}
 				}
 
+				if (delta?.tool_calls) {
+					yield* toolCallProcessor.processToolCallDeltas(delta.tool_calls)
+				}
+
+				// Reasoning tokens are returned separately from the content
+				if ("reasoning" in delta && delta.reasoning) {
+					yield {
+						type: "reasoning",
+						// @ts-expect-error-next-line
+						reasoning: delta.reasoning,
+					}
+				}
+
+				// Reasoning details that can be passed back in API requests to preserve reasoning traces
+				if (
+					"reasoning_details" in delta &&
+					delta.reasoning_details &&
+					// @ts-expect-error-next-line
+					delta.reasoning_details.length // exists and non-0
+				) {
+					yield {
+						type: "reasoning_details",
+						reasoning_details: delta.reasoning_details,
+					}
+				}
+
 				if (!didOutputUsage && chunk.usage) {
 					const inputTokens = chunk.usage.prompt_tokens || 0
 					const outputTokens =
 						(chunk.usage.completion_tokens || 0) + (chunk.usage.completion_tokens_details?.reasoning_tokens || 0)
 
 					const cacheReadTokens = chunk.usage.prompt_tokens_details?.cached_tokens || 0
-					// @ts-ignore - Vercel AI Gateway extends OpenAI types
+					// @ts-expect-error - Vercel AI Gateway extends OpenAI types
 					const cacheWriteTokens = chunk.usage.cache_creation_input_tokens || 0
 
 					yield {
@@ -93,11 +133,11 @@ export class VercelAIGatewayHandler implements ApiHandler {
 	}
 
 	getModel(): { id: string; info: ModelInfo } {
-		const modelId = this.options.vercelAiGatewayModelId
-		const modelInfo = this.options.vercelAiGatewayModelInfo
+		const modelId = this.options.openRouterModelId
+		const modelInfo = this.options.openRouterModelInfo
 		if (modelId && modelInfo) {
 			return { id: modelId, info: modelInfo }
 		}
-		return { id: vercelAiGatewayDefaultModelId, info: vercelAiGatewayDefaultModelInfo }
+		return { id: openRouterDefaultModelId, info: openRouterDefaultModelInfo }
 	}
 }

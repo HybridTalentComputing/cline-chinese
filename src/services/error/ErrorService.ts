@@ -1,4 +1,5 @@
 import { ClineError } from "./ClineError"
+import { ErrorProviderFactory } from "./ErrorProviderFactory"
 import { IErrorProvider } from "./providers/IErrorProvider"
 import { SSYError } from "./SSYError"
 
@@ -8,7 +9,32 @@ import { SSYError } from "./SSYError"
  * Respects user privacy settings and VSCode's global telemetry configuration
  */
 export class ErrorService {
+	private static instance: ErrorService | null = null
+
 	private provider: IErrorProvider
+
+	/**
+	 * Sets up the ErrorService singleton.
+	 */
+	public static async initialize(): Promise<ErrorService> {
+		if (ErrorService.instance) {
+			throw new Error("ErrorService has already been initialized.")
+		}
+
+		const provider = await ErrorProviderFactory.createProvider(ErrorProviderFactory.getDefaultConfig())
+		ErrorService.instance = new ErrorService(provider)
+		return ErrorService.instance
+	}
+
+	/**
+	 * Gets the singleton instance
+	 */
+	public static get(): ErrorService {
+		if (!ErrorService.instance) {
+			throw new Error("ErrorService not setup. Call ErrorService.initialize() first.")
+		}
+		return ErrorService.instance
+	}
 
 	constructor(provider: IErrorProvider) {
 		this.provider = provider

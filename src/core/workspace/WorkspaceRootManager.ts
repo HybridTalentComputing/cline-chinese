@@ -3,10 +3,10 @@
  * This class handles workspace root resolution, path mapping, and workspace context
  */
 
+import { VcsType, WorkspaceRoot } from "@shared/multi-root/types"
 import { execa } from "execa"
 import * as path from "path"
-import { getLatestGitCommitHash } from "../../utils/git"
-import { VcsType, WorkspaceRoot } from "./WorkspaceRoot"
+import { getGitRemoteUrls, getLatestGitCommitHash } from "../../utils/git"
 
 export interface WorkspaceContext {
 	workspaceRoots: WorkspaceRoot[]
@@ -65,43 +65,6 @@ export class WorkspaceRootManager {
 	}
 
 	/**
-	 * Add a new workspace root
-	 */
-	async addRoot(rootPath: string, name?: string): Promise<void> {
-		const vcs = await WorkspaceRootManager.detectVcs(rootPath)
-		const gitHash = vcs === VcsType.Git ? await getLatestGitCommitHash(rootPath) : null
-		const commitHash = gitHash === null ? undefined : gitHash
-
-		const root: WorkspaceRoot = {
-			path: rootPath,
-			name: name || path.basename(rootPath),
-			vcs,
-			commitHash,
-		}
-
-		this.roots.push(root)
-	}
-
-	/**
-	 * Remove a workspace root by path
-	 */
-	removeRoot(path: string): boolean {
-		const index = this.roots.findIndex((r) => r.path === path)
-		if (index === -1) {
-			return false
-		}
-
-		this.roots.splice(index, 1)
-
-		// Adjust primary index if needed
-		if (this.primaryIndex >= this.roots.length) {
-			this.primaryIndex = Math.max(0, this.roots.length - 1)
-		}
-
-		return true
-	}
-
-	/**
 	 * Get all workspace roots
 	 */
 	getRoots(): WorkspaceRoot[] {
@@ -113,6 +76,13 @@ export class WorkspaceRootManager {
 	 */
 	getPrimaryRoot(): WorkspaceRoot | undefined {
 		return this.roots[this.primaryIndex]
+	}
+
+	/**
+	 * Get the primary workspace root index
+	 */
+	getPrimaryIndex(): number {
+		return this.primaryIndex
 	}
 
 	/**
@@ -248,6 +218,33 @@ export class WorkspaceRootManager {
 				root.commitHash = gitHash === null ? undefined : gitHash
 			}
 		}
+	}
+
+	/**
+	 * Build workspaces JSON structure for environment details
+	 */
+	async buildWorkspacesJson(): Promise<string | null> {
+		const workspaces: Record<string, { hint: string; associatedRemoteUrls?: string[]; latestGitCommitHash?: string }> = {}
+
+		// Process all workspace roots
+		for (const root of this.roots) {
+			const hint = root.name || path.basename(root.path)
+			const gitRemotes = await getGitRemoteUrls(root.path)
+			const gitCommitHash = await getLatestGitCommitHash(root.path)
+
+			workspaces[root.path] = {
+				hint,
+				...(gitRemotes.length > 0 && { associatedRemoteUrls: gitRemotes }),
+				...(gitCommitHash && { latestGitCommitHash: gitCommitHash }),
+			}
+		}
+
+		// Only return JSON if there's content to feed the env details
+		if (Object.keys(workspaces).length === 0) {
+			return null
+		}
+
+		return JSON.stringify({ workspaces }, null, 2)
 	}
 }
 

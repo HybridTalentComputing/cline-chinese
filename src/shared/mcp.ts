@@ -1,3 +1,9 @@
+/**
+ * Identifier for the MCP tools that are used in native tool calls,
+ * where each tool name is the combination of the server name + identifier + tool name.
+ * This enables to uniquely identify which MCP server a tool belongs to.
+ */
+export const CLINE_MCP_TOOL_IDENTIFIER = "0mcp0"
 export const DEFAULT_MCP_TIMEOUT_SECONDS = 60 // matches Anthropic's default timeout in their MCP SDK
 export const MIN_MCP_TIMEOUT_SECONDS = 1
 export type McpMode = "full" | "server-use-only" | "off"
@@ -12,6 +18,7 @@ export type McpServer = {
 	resourceTemplates?: McpResourceTemplate[]
 	disabled?: boolean
 	timeout?: number
+	uid?: string
 }
 
 export type McpTool = {
@@ -47,34 +54,38 @@ export type McpResourceResponse = {
 
 export type McpToolCallResponse = {
 	_meta?: Record<string, any>
-	content:
-		| Array<
-				| {
-						type: "text"
-						text: string
-				  }
-				| {
-						type: "image"
-						data: string
-						mimeType: string
-				  }
-				| {
-						type: "audio"
-						data: string
-						mimeType: string
-				  }
-				| {
-						type: "resource"
-						resource: {
-							uri: string
-							mimeType?: string
-							text?: string
-							blob?: string
-						}
-				  }
-				| any
-		  >
-		| []
+	content: Array<
+		| {
+				type: "text"
+				text: string
+		  }
+		| {
+				type: "image"
+				data: string
+				mimeType: string
+		  }
+		| {
+				type: "audio"
+				data: string
+				mimeType: string
+		  }
+		| {
+				type: "resource"
+				resource: {
+					uri: string
+					mimeType?: string
+					text?: string
+					blob?: string
+				}
+		  }
+		| {
+				type: "resource_link"
+				uri: string
+				name?: string
+				description?: string
+				mimeType?: string
+		  }
+	>
 	isError?: boolean
 }
 
@@ -114,4 +125,4 @@ export interface McpDownloadResponse {
 	requiresApiKey: boolean
 }
 
-export type McpViewTab = "marketplace" | "addRemote" | "installed"
+export type McpViewTab = "marketplace" | "addRemote" | "configure"

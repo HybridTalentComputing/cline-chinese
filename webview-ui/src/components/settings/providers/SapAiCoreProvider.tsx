@@ -1,4 +1,4 @@
-import { SapAiCoreModelsRequest } from "@shared/proto/index.cline"
+import { SapAiCoreModelDeployment, SapAiCoreModelsRequest } from "@shared/proto/index.cline"
 import { Mode } from "@shared/storage/types"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useCallback, useEffect, useState } from "react"
@@ -24,7 +24,7 @@ interface SapAiCoreProviderProps {
  */
 export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: SapAiCoreProviderProps) => {
 	const { apiConfiguration } = useExtensionState()
-	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
+	const { handleFieldChange, handleModeFieldsChange } = useApiConfigurationHandlers()
 
 	// Handle orchestration checkbox change
 	const handleOrchestrationChange = async (checked: boolean) => {
@@ -34,7 +34,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 	const { selectedModelId, selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, currentMode)
 
 	// State for dynamic model fetching
-	const [deployedModelsArray, setDeployedModelsArray] = useState<string[]>([])
+	const [sapAiCoreModelDeployments, setSapAiCoreModelDeployments] = useState<SapAiCoreModelDeployment[]>([])
 	const [orchestrationAvailable, setOrchestrationAvailable] = useState<boolean>(false)
 	const [hasCheckedOrchestration, setHasCheckedOrchestration] = useState<boolean>(false)
 	const [isLoadingModels, setIsLoadingModels] = useState(false)
@@ -50,7 +50,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 	// Function to fetch SAP AI Core models
 	const fetchSapAiCoreModels = useCallback(async () => {
 		if (!hasRequiredCredentials) {
-			setDeployedModelsArray([])
+			setSapAiCoreModelDeployments([])
 			setOrchestrationAvailable(false)
 			setHasCheckedOrchestration(false)
 			return
@@ -71,18 +71,18 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 			)
 
 			if (response) {
-				setDeployedModelsArray(response.modelNames || [])
+				setSapAiCoreModelDeployments(response.deployments || [])
 				setOrchestrationAvailable(response.orchestrationAvailable || false)
 				setHasCheckedOrchestration(true)
 			} else {
-				setDeployedModelsArray([])
+				setSapAiCoreModelDeployments([])
 				setOrchestrationAvailable(false)
 				setHasCheckedOrchestration(true)
 			}
 		} catch (error) {
 			console.error("Error fetching SAP AI Core models:", error)
 			setModelError("Failed to fetch models. Please check your configuration.")
-			setDeployedModelsArray([])
+			setSapAiCoreModelDeployments([])
 			setOrchestrationAvailable(false)
 			setHasCheckedOrchestration(true)
 		} finally {
@@ -112,10 +112,18 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 
 	// Handle model selection
 	const handleModelChange = useCallback(
-		(modelId: string) => {
-			handleModeFieldChange({ plan: "planModeApiModelId", act: "actModeApiModelId" }, modelId, currentMode)
+		(modelId: string, deploymentId: string) => {
+			// Update both model ID and deployment ID atomically
+			handleModeFieldsChange(
+				{
+					modelId: { plan: "planModeApiModelId", act: "actModeApiModelId" },
+					deploymentId: { plan: "planModeSapAiCoreDeploymentId", act: "actModeSapAiCoreDeploymentId" },
+				},
+				{ modelId, deploymentId },
+				currentMode,
+			)
 		},
-		[handleModeFieldChange, currentMode],
+		[handleModeFieldsChange, currentMode],
 	)
 
 	return (
@@ -129,7 +137,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 				<span className="font-medium">AI Core Client Id</span>
 			</DebouncedTextField>
 			{apiConfiguration?.sapAiCoreClientId && (
-				<p className="text-xs text-[var(--vscode-descriptionForeground)]">客户端 ID 已设置。如需更改，请重新输入该值。</p>
+				<p className="text-xs text-(--vscode-descriptionForeground)">客户端 ID 已设置。如需更改，请重新输入该值。</p>
 			)}
 
 			<DebouncedTextField
@@ -141,7 +149,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 				<span className="font-medium">AI Core Client Secret</span>
 			</DebouncedTextField>
 			{apiConfiguration?.sapAiCoreClientSecret && (
-				<p className="text-xs text-[var(--vscode-descriptionForeground)]">客户端密钥已设置。如需更改，请重新输入该值。</p>
+				<p className="text-xs text-(--vscode-descriptionForeground)">客户端密钥已设置。如需更改，请重新输入该值。</p>
 			)}
 
 			<DebouncedTextField
@@ -168,7 +176,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 				<span className="font-medium">AI Core Resource Group</span>
 			</DebouncedTextField>
 
-			<p className="text-xs mt-1.5 text-[var(--vscode-descriptionForeground)]">
+			<p className="text-xs mt-1.5 text-(--vscode-descriptionForeground)">
 				这些凭证存储在本地，仅用于从此扩展发出 API 请求。
 				<VSCodeLink
 					className="inline"
@@ -182,17 +190,17 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 					<div className="flex items-center gap-2">
 						<VSCodeCheckbox
 							aria-label="Orchestration Mode"
-							checked={apiConfiguration?.sapAiCoreUseOrchestrationMode ?? true}
+							checked={apiConfiguration?.sapAiCoreUseOrchestrationMode}
 							onChange={(e) => handleOrchestrationChange((e.target as HTMLInputElement).checked)}
 						/>
 						<span className="font-medium">Orchestration Mode</span>
 					</div>
 
-					<p className="text-xs text-[var(--vscode-descriptionForeground)]">
-						When enabled, provides access to all available models without requiring individual deployments.
+					<p className="text-xs text-(--vscode-descriptionForeground)">
+						启用后，无需单独部署即可访问所有可用模型。
 						<br />
 						<br />
-						When disabled, provides access only to deployed models in your AI Core service instance.
+						禁用后，仅允许访问 AI Core 服务实例中已部署的模型。
 					</p>
 				</div>
 			)}
@@ -201,35 +209,42 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 				<>
 					<div className="flex flex-col gap-1.5">
 						{isLoadingModels ? (
-							<div className="text-xs text-[var(--vscode-descriptionForeground)]">Loading models...</div>
+							<div className="text-xs text-(--vscode-descriptionForeground)">加载模型...</div>
 						) : modelError ? (
-							<div className="text-xs text-[var(--vscode-errorForeground)]">
+							<div className="text-xs text-(--vscode-errorForeground)">
 								{modelError}
 								<button
-									className="ml-2 text-[11px] px-1.5 py-0.5 bg-[var(--vscode-button-background)] text-[var(--vscode-button-foreground)] border-none rounded-sm cursor-pointer"
+									className="ml-2 text-[11px] px-1.5 py-0.5 bg-(--vscode-button-background) text-(--vscode-button-foreground) border-none rounded-sm cursor-pointer"
 									onClick={fetchSapAiCoreModels}>
-									Retry
+									重试
 								</button>
 							</div>
 						) : hasRequiredCredentials ? (
 							<>
-								{deployedModelsArray.length === 0 && (
-									<div className="text-xs text-[var(--vscode-errorForeground)] mb-2">
-										Unable to fetch models from SAP AI Core service instance. Please check your SAP AI Core
-										configuration or ensure your deployments are deployed and running in the service instance
+								{sapAiCoreModelDeployments.length === 0 && (
+									<div className="text-xs text-(--vscode-errorForeground) mb-2">
+										无法从 SAP AI Core 服务实例获取模型。请检查您的 SAP AI Core
+										配置，或确保您的部署已部署并在服务实例中运行。
 									</div>
 								)}
 								<SapAiCoreModelPicker
 									onModelChange={handleModelChange}
 									placeholder="Select a model..."
-									sapAiCoreDeployedModels={deployedModelsArray}
+									sapAiCoreModelDeployments={sapAiCoreModelDeployments}
+									selectedDeploymentId={
+										apiConfiguration?.[
+											currentMode === "plan"
+												? "planModeSapAiCoreDeploymentId"
+												: "actModeSapAiCoreDeploymentId"
+										]
+									}
 									selectedModelId={selectedModelId || ""}
-									useOrchestrationMode={apiConfiguration?.sapAiCoreUseOrchestrationMode ?? true}
+									useOrchestrationMode={apiConfiguration?.sapAiCoreUseOrchestrationMode}
 								/>
 							</>
 						) : (
-							<div className="text-xs text-[var(--vscode-errorForeground)]">
-								Please configure your SAP AI Core credentials to see available models.
+							<div className="text-xs text-(--vscode-errorForeground)">
+								请配置您的 SAP AI Core 凭据以查看可用模型。
 							</div>
 						)}
 					</div>
