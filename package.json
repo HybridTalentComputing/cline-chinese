@@ -2,7 +2,7 @@
 	"name": "cline-shengsuan",
 	"displayName": "Cline 中文版",
 	"description": "Cline 中文汉化版，由胜算云进行汉化，打造国内版的OpenRouter，让中国开发者更方便进行 AI 编程。",
-	"version": "3.36.1",
+	"version": "3.36.2",
 	"icon": "assets/icons/icon.png",
 	"engines": {
 		"vscode": "^1.84.0"

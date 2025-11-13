@@ -1,7 +1,9 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
+import { EmptyRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { memo } from "react"
-import { handleSignInSSY, useShengSuanYunAuth } from "@/context/ShengSuanYunAuthContext"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { AccountServiceClient } from "@/services/grpc-client"
 import { SSYError, SSYErrorType } from "../../../../src/services/error/SSYError"
 import CreditLimitErrorSSY from "./CreditLimitErrorSSY"
 
@@ -15,8 +17,7 @@ interface ErrorRowProps {
 }
 
 const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStreamingFailedMessage }: ErrorRowProps) => {
-	const { userSSY: ssyUser } = useShengSuanYunAuth()
-
+	const { userInfo } = useExtensionState()
 	const renderErrorContent = () => {
 		switch (errorType) {
 			case "error":
@@ -137,10 +138,16 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 									<br />
 									<br />
 									{/* The user is signed in or not using cline provider */}
-									{ssyUser && !isSSYProvider ? (
+									{userInfo ? (
 										<span className="mb-4 text-(--vscode-descriptionForeground)">(重试)</span>
 									) : (
-										<VSCodeButton className="w-full mb-4" onClick={handleSignInSSY}>
+										<VSCodeButton
+											className="w-full mb-4"
+											onClick={() => {
+												AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create()).catch(
+													(err) => console.error("Failed to get login URL:", err),
+												)
+											}}>
 											登录 Cline 胜算云
 										</VSCodeButton>
 									)}

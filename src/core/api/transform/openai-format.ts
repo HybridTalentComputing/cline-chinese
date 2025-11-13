@@ -129,7 +129,6 @@ export function convertToOpenAiMessages(
 								// @ts-expect-error-next-line
 								reasoningDetails.push(part.reasoning_details)
 							}
-							// @ts-expect-error-next-line
 							// delete part.reasoning_details
 						}
 					})
