@@ -2,6 +2,7 @@ import { vertexGlobalModels, vertexModels } from "@shared/api"
 import VertexData from "@shared/providers/vertex.json"
 import { Mode } from "@shared/storage/types"
 import { VSCodeDropdown, VSCodeLink, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
+import { useTranslation, Trans } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { DROPDOWN_Z_INDEX, DropdownContainer } from "../ApiOptions"
 import { DebouncedTextField } from "../common/DebouncedTextField"
@@ -40,6 +41,7 @@ const REGIONS = VertexData.regions
  * The GCP Vertex AI provider configuration component
  */
 export const VertexProvider = ({ showModelOptions, isPopup, currentMode }: VertexProviderProps) => {
+	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -62,21 +64,21 @@ export const VertexProvider = ({ showModelOptions, isPopup, currentMode }: Verte
 			<DebouncedTextField
 				initialValue={apiConfiguration?.vertexProjectId || ""}
 				onChange={(value) => handleFieldChange("vertexProjectId", value)}
-				placeholder="Enter Project ID..."
+				placeholder={t("settings.apiConfig.projectIdPlaceholder")}
 				style={{ width: "100%" }}>
-				<span style={{ fontWeight: 500 }}>Google Cloud Project ID</span>
+				<span style={{ fontWeight: 500 }}>{t("settings.providers.projectId")}</span>
 			</DebouncedTextField>
 
 			<DropdownContainer className="dropdown-container" zIndex={DROPDOWN_Z_INDEX - 1}>
 				<label htmlFor="vertex-region-dropdown">
-					<span style={{ fontWeight: 500 }}>Google Cloud Region</span>
+					<span style={{ fontWeight: 500 }}>{t("settings.providers.region")}</span>
 				</label>
 				<VSCodeDropdown
 					id="vertex-region-dropdown"
 					onChange={(e: any) => handleFieldChange("vertexRegion", e.target.value)}
 					style={{ width: "100%" }}
 					value={apiConfiguration?.vertexRegion || ""}>
-					<VSCodeOption value="">Select a region...</VSCodeOption>
+					<VSCodeOption value="">{t("settings.providers.selectRegion")}</VSCodeOption>
 					{REGIONS.map((region) => (
 						<VSCodeOption key={region} value={region}>
 							{region}
@@ -91,23 +93,31 @@ export const VertexProvider = ({ showModelOptions, isPopup, currentMode }: Verte
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				To use Google Cloud Vertex AI, you need to
-				<VSCodeLink
-					href="https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude#before_you_begin"
-					style={{ display: "inline", fontSize: "inherit" }}>
-					{"1) create a Google Cloud account › enable the Vertex AI API › enable the desired Claude models,"}
-				</VSCodeLink>{" "}
-				<VSCodeLink
-					href="https://cloud.google.com/docs/authentication/provide-credentials-adc#google-idp"
-					style={{ display: "inline", fontSize: "inherit" }}>
-					{"2) install the Google Cloud CLI › configure Application Default Credentials."}
-				</VSCodeLink>
+				<Trans
+					i18nKey="settings.providers.vertexDescription"
+					components={{
+						step1: (
+							<VSCodeLink
+								href="https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude#before_you_begin"
+								style={{ display: "inline", fontSize: "inherit" }}>
+								{t("settings.providers.vertexStep1")}
+							</VSCodeLink>
+						),
+						step2: (
+							<VSCodeLink
+								href="https://cloud.google.com/docs/authentication/provide-credentials-adc#google-idp"
+								style={{ display: "inline", fontSize: "inherit" }}>
+								{t("settings.providers.vertexStep2")}
+							</VSCodeLink>
+						),
+					}}
+				/>
 			</p>
 
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.providers.model")}
 						models={modelsToUse}
 						onChange={(e: any) =>
 							handleModeFieldChange(
@@ -127,7 +137,7 @@ export const VertexProvider = ({ showModelOptions, isPopup, currentMode }: Verte
 					{selectedModelInfo.thinkingConfig?.supportsThinkingLevel && (
 						<DropdownContainer className="dropdown-container" style={{ marginTop: "8px" }} zIndex={1}>
 							<label htmlFor="thinking-level">
-								<span style={{ fontWeight: 500 }}>Thinking Level</span>
+								<span style={{ fontWeight: 500 }}>{t("settings.providers.thinkingLevel")}</span>
 							</label>
 							<VSCodeDropdown
 								className="w-full"
@@ -140,8 +150,8 @@ export const VertexProvider = ({ showModelOptions, isPopup, currentMode }: Verte
 									)
 								}
 								value={geminiThinkingLevel || "high"}>
-								<VSCodeOption value="low">Low</VSCodeOption>
-								<VSCodeOption value="high">High</VSCodeOption>
+								<VSCodeOption value="low">{t("settings.providers.low")}</VSCodeOption>
+								<VSCodeOption value="high">{t("settings.providers.high")}</VSCodeOption>
 							</VSCodeDropdown>
 						</DropdownContainer>
 					)}

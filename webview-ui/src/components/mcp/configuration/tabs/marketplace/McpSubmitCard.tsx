@@ -1,4 +1,7 @@
+import { useTranslation } from "react-i18next"
+
 const McpSubmitCard = () => {
+	const { t } = useTranslation()
 	return (
 		<div
 			style={{
@@ -31,10 +34,10 @@ const McpSubmitCard = () => {
 						fontWeight: 600,
 						color: "var(--vscode-foreground)",
 					}}>
-					Submit MCP Server
+					{t("mcp.marketplace.submit.title")}
 				</h3>
 				<p style={{ fontSize: "13px", margin: 0, color: "var(--vscode-descriptionForeground)" }}>
-					Help others discover great MCP servers by submitting an issue to{" "}
+					{t("mcp.marketplace.submit.description")}
 					<a href="https://github.com/cline/mcp-marketplace">github.com/cline/mcp-marketplace</a>
 				</p>
 			</div>

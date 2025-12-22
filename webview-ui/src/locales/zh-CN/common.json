@@ -5,7 +5,16 @@
 		"subDescription": "注册账户即可免费开始使用，或者使用提供 Claude Sonnet 等模型访问权限的 API 密钥。",
 		"getStartedFree": "免费开始使用",
 		"useOwnApiKey": "使用您自己的 API 密钥",
-		"letsGo": "出发！"
+		"letsGo": "出发！",
+		"quickWins": {
+			"title": "使用 Cline 快速 [上手]",
+			"nextjsTitle": "构建 Next.js 应用",
+			"nextjsDesc": "使用 Next.js 和 Tailwind 创建一个精美的记事本应用",
+			"cliTitle": "打造 CLI 工具",
+			"cliDesc": "开发一个强大的终端 CLI 来自动化酷炫的任务",
+			"gameTitle": "开发一款游戏",
+			"gameDesc": "编写一个在浏览器中运行的经典贪吃蛇游戏"
+		}
 	},
 	"chat": {
 		"placeholder": "输入消息...",
@@ -26,6 +35,84 @@
 		"plan": "计划",
 		"act": "执行"
 	},
+	"chatRow": {
+		"error": "错误",
+		"clineTrouble": "Cline 遇到了点麻烦...",
+		"wantsToExecute": "Cline 想要执行此命令：",
+		"wantsToUseTool": "Cline 想要使用工具",
+		"wantsToAccessResource": "Cline 想要访问资源",
+		"taskCompleted": "任务已完成",
+		"hasQuestion": "Cline 有个问题：",
+		"outsideWorkspace": "此文件在您的工作区之外",
+		"creatingPatches": "Cline 正在创建补丁来编辑此文件：",
+		"wantsToEdit": "Cline 想要编辑此文件：",
+		"wantsToDelete": "Cline 想要删除此文件：",
+		"wantsToCreate": "Cline 想要创建一个新文件：",
+		"wantsToRead": "Cline 想要读取此文件：",
+		"wantsToViewTopLevel": "Cline 想要查看此目录中的顶层文件：",
+		"viewedTopLevel": "Cline 查看了此目录中的顶层文件：",
+		"wantsToViewRecursive": "Cline 想要递归查看此目录中的所有文件：",
+		"viewedRecursive": "Cline 递归查看了此目录中的所有文件：",
+		"wantsToViewDefinitions": "Cline 想要查看此目录中使用的源代码定义名称：",
+		"viewedDefinitions": "Cline 查看了此目录中使用的源代码定义名称：",
+		"wantsToSearch": "Cline 想要在此目录中搜索",
+		"condensing": "Cline 正在压缩对话：",
+		"collapseSummary": "折叠摘要",
+		"expandSummary": "展开摘要",
+		"summary": "摘要：",
+		"urlExternal": "此 URL 是外部的",
+		"wantsToFetch": "Cline 想要从此 URL 获取内容：",
+		"fetched": "Cline 已从此 URL 获取内容：",
+		"searchExternal": "此搜索是外部的",
+		"wantsToSearchWeb": "Cline 想要在网上搜索：",
+		"searchedWeb": "Cline 已在网上搜索：",
+		"cancel": "取消",
+		"stop": "停止",
+		"running": "运行中",
+		"pending": "等待中",
+		"completed": "已完成",
+		"notExecuted": "未执行",
+		"terminalStopInfo": "此命令正在 VSCode 终端中运行。您可以在终端中使用 Ctrl+C 手动停止它，或在设置中切换到“后台执行”模式以启用可取消的命令。",
+		"prompt": "提示词：",
+		"explicitApproval": "模型认为此命令需要明确批准。",
+		"arguments": "参数",
+		"mcpNotification": "MCP 通知：",
+		"thinking": "思考中",
+		"loadingMcpDoc": "正在加载 MCP 文档",
+		"generatingExplanation": "正在生成解释",
+		"failedToGenerateExplanation": "生成解释失败",
+		"explanationCancelled": "解释已取消",
+		"generatedExplanation": "解释已生成",
+		"viewChanges": "查看更改",
+		"explainChanges": "解释更改",
+		"explaining": "正在解释...",
+		"shellIntegrationUnavailable": "终端集成不可用",
+		"shellIntegrationWarning": "Cline 可能会在查看命令输出时遇到困难。请更新 VSCode（CMD/CTRL + Shift + P → \"Update\"）并确保您使用的是受支持的终端：zsh, bash, fish 或 PowerShell（CMD/CTRL + Shift + P → \"Terminal: Select Default Profile\"）。",
+		"stillHavingTrouble": "仍然有问题？",
+		"autoRetryFailed": "自动重试失败",
+		"autoRetryInProgress": "正在自动重试",
+		"autoRetryFailedAttempts": "自动重试在 {{maxAttempts}} 次尝试后失败。需要手动干预。",
+		"autoRetryAttempt": "正在进行第 {{attempt}} 次尝试（共 {{maxAttempts}} 次）- 将在 {{delaySeconds}} 秒后重试...",
+		"shellIntegrationIssues": "终端集成问题",
+		"shellIntegrationSuggestion": "由于您反复遇到终端集成问题，我们建议切换到“后台终端”模式以获得更好的稳定性。",
+		"backgroundTerminalEnabled": "后台终端已启用",
+		"enableBackgroundTerminal": "启用后台终端（推荐）",
+		"wantsToStartNewTask": "Cline 想要开始一个新任务：",
+		"wantsToCondense": "Cline 想要压缩您的对话：",
+		"wantsToCreateGithubIssue": "Cline 想要创建一个 Github issue：",
+		"wantsToUseSubagent": "Cline 想要使用子代理：",
+		"requestId": "请求 ID: {{requestId}}",
+		"powershellIssues": "看来您遇到了 Windows PowerShell 问题，请参阅此",
+		"troubleshootingGuide": "疑难解答指南",
+		"signInToCline": "登录到 Cline",
+		"clickRetryBelow": "（点击下方的“重试”）",
+		"diffErrorNoMatch": "模型使用的搜索模式在文件中没有匹配到任何内容。正在重试...",
+		"clineIgnoreError": "Cline 尝试访问 {{path}}，但该路径已被 .clineignore 文件禁用。",
+		"restoreAll": "恢复全部",
+		"restoreChat": "恢复聊天",
+		"restoreAllTooltip": "将聊天和工作区文件恢复到此检查点，并发送您编辑后的消息",
+		"restoreChatTooltip": "仅将聊天恢复到此检查点，并发送您编辑后的消息"
+	},
 	"settings": {
 		"title": "设置",
 		"done": "完成",
@@ -37,6 +124,379 @@
 			"general": "常规",
 			"about": "关于",
 			"debug": "调试"
+		},
+		"general": {
+			"remoteConfigManaged": "此设置由您组织的远程配置管理",
+			"allowTelemetry": "允许错误和使用情况报告",
+			"telemetryDescription": "通过发送使用数据和错误报告来帮助改进 Cline。绝不会发送代码、提示词或个人信息。有关更多详细信息，请参阅我们的{{telemetryLink}}和{{privacyLink}}。",
+			"telemetryOverview": "遥测概述",
+			"privacyPolicy": "隐私政策",
+			"preferredLanguage": "首选语言",
+			"preferredLanguageDescription": "Cline 在交流中应使用的语言。"
+		},
+		"terminal": {
+			"defaultProfile": "默认终端配置文件",
+			"defaultProfileDescription": "选择 Cline 将使用的默认终端。“默认”使用您的 VSCode 全局设置。",
+			"timeout": "终端集成超时（秒）",
+			"timeoutPlaceholder": "输入超时秒数",
+			"timeoutError": "请输入一个正数",
+			"timeoutDescription": "设置 Cline 在执行命令前等待终端集成激活的时间。如果您遇到终端连接超时，请增加此值。",
+			"aggressiveReuse": "启用激进的终端复用",
+			"aggressiveReuseDescription": "启用后，Cline 将复用不在当前工作目录中的现有终端窗口。如果您在执行终端命令后遇到任务锁定问题，请禁用此项。",
+			"executionMode": "终端执行模式",
+			"executionModeDescription": "选择 Cline 是在 VS Code 终端中还是在后台进程中运行命令。",
+			"vscodeTerminal": "VS Code 终端",
+			"backgroundExec": "后台执行",
+			"havingIssues": "终端遇到问题？",
+			"quickFixes": "终端快速修复",
+			"troubleshootingGuide": "完整故障排除指南",
+			"checkOur": "请查看我们的",
+			"orThe": "或",
+			"outputLimit": "终端输出限制",
+			"outputLimitDescription": "执行命令时包含在终端输出中的最大行数。超过后，将从中间移除多余行以节省 Token。"
+		},
+		"browser": {
+			"disableToolUse": "禁用浏览器工具使用",
+			"disableToolUseDescription": "阻止 Cline 使用浏览器操作（如启动、点击、输入）。",
+			"viewportSize": "视口大小",
+			"viewportSizeDescription": "设置用于截图和交互的浏览器视口大小。",
+			"remoteConnection": "使用远程浏览器连接",
+			"remoteConnectionDescription": "允许 Cline 使用您的 Chrome {{chromePathInfo}}。您可以在下方指定自定义路径。使用远程浏览器连接需要以调试模式启动 Chrome {{debugModeInfo}}。",
+			"chromeNotDetected": "（在您的机器上未检测到）",
+			"debugModeManual": "手动（使用 <code>--remote-debugging-port=9222</code>）或使用下方按钮。输入主机地址，或留空以进行自动发现。",
+			"hostPlaceholder": "http://localhost:9222",
+			"launchingBrowser": "正在启动浏览器...",
+			"launchBrowserDebug": "以调试模式启动浏览器",
+			"chromeExecutablePath": "Chrome 可执行文件路径（可选）",
+			"chromePathPlaceholder": "例如：/usr/bin/google-chrome 或 C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+			"chromePathDescription": "留空以自动检测。",
+			"customBrowserArgs": "自定义浏览器参数（可选）",
+			"customArgsPlaceholder": "例如：--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --no-zygote",
+			"customArgsDescription": "传递给浏览器可执行文件的空格分隔参数。",
+			"checkingConnection": "正在检查连接...",
+			"connected": "已连接",
+			"notConnected": "未连接"
+		},
+		"features": {
+			"new": "新",
+			"subagentsDescription": "子代理需要安装 Cline CLI。请使用 {{installCmd}} 安装，然后运行 {{authCmd}} 以使用 Cline 进行身份验证或配置 API 提供商。",
+			"installNow": "立即安装",
+			"subagentsEnabled": "子代理已启用",
+			"enableSubagents": "启用子代理",
+			"experimental": "实验性：",
+			"subagentsExplanation": "允许 Cline 生成子进程来处理重点任务（如探索大型代码库），从而保持主上下文整洁。",
+			"enableCheckpoints": "启用检查点",
+			"checkpointsDescription": "允许扩展在整个任务过程中保存工作区的检查点。底层使用 git，在大型工作区中可能表现不佳。",
+			"mcpDisplayMode": "MCP 显示模式",
+			"mcpDisplayModeDescription": "控制 MCP 响应的显示方式：纯文本、带有链接/图片的富文本格式或 Markdown 渲染。",
+			"collapseMcpResponses": "折叠 MCP 响应",
+			"collapseMcpResponsesDescription": "设置 MCP 响应面板的默认显示模式",
+			"openaiReasoningEffort": "OpenAI 推理强度",
+			"openaiReasoningEffortDescription": "OpenAI 系列模型的推理强度（适用于所有 OpenAI 模型提供商）",
+			"openaiReasoningEffortOptions": {
+				"minimal": "最低 (Minimal)",
+				"low": "低 (Low)",
+				"medium": "中 (Medium)",
+				"high": "高 (High)"
+			},
+			"strictPlanMode": "启用严格计划模式",
+			"strictPlanModeDescription": "在计划模式下强制执行严格的工具使用，防止文件编辑。",
+			"enableFocusChain": "启用关注链 (Focus Chain)",
+			"focusChainDescription": "在整个任务中启用增强的任务进度跟踪和自动关注链列表管理。",
+			"focusChainReminderInterval": "关注链提醒间隔",
+			"focusChainReminderIntervalDescription": "提醒 Cline 关注其关注链清单的消息间隔（1-100）。较低的值提供更频繁的提醒。",
+			"enableDictation": "启用听写",
+			"dictationDescription": "使用您的 Cline 账户启用语音转文本。使用 Aqua Voice 的 Avalon 模型，每分钟音频处理费用为 0.0065 积分。每条消息最长 5 分钟。",
+			"enableAutoCompact": "启用自动压缩",
+			"autoCompactDescription": "启用先进的上下文管理系统，为下一代模型使用基于 LLM 的压缩。{{learnMore}}",
+			"learnMore": "了解更多",
+			"enableWebTools": "启用 Cline 网页工具",
+			"webToolsDescription": "在使用 Cline 提供商时启用网页搜索和网页获取工具。",
+			"nativeToolCall": "启用原生工具调用",
+			"nativeToolCallDescription": "使用模型的原生工具调用 API，而不是基于 XML 的工具解析。这将提高受支持模型的性能。",
+			"parallelToolCalling": "启用并行工具调用",
+			"parallelToolCallingDescription": "允许模型在单个响应中调用多个工具。对 GPT-5 模型自动启用。",
+			"backgroundEdit": "启用后台编辑",
+			"backgroundEditDescription": "允许在后台编辑文件，而无需在编辑器中打开差异视图。",
+			"multiRoot": "启用多根工作区",
+			"multiRootDescription": "允许 Cline 跨多个工作区工作。",
+			"enableHooks": "启用钩子 (Hooks)",
+			"hooksNotSupportedWindows": "Windows 尚不支持钩子。此功能目前仅适用于 macOS 和 Linux。",
+			"hooksDescription": "允许执行 .clinerules/hooks/ 目录中的钩子。",
+			"enableYolo": "启用 YOLO 模式",
+			"yoloDescription": "实验性且危险：此模式禁用安全检查和用户确认。Cline 将自动批准所有操作而不进行询问。请极端谨慎使用。",
+			"subagentOutputLimit": "子代理输出限制",
+			"subagentOutputLimitDescription": "包含在 CLI 子代理输出中的最大行数。截断中间部分以节省 Token。"
+		},
+		"about": {
+			"description": "一个可以使用您的终端和编辑器的 AI 助手。Cline 可以通过能够创建和编辑文件、探索大型项目、使用浏览器和执行终端命令（在您授予权限后）的工具，步进式地处理复杂的软件开发任务。",
+			"communitySupport": "社区与支持",
+			"development": "开发",
+			"resources": "资源",
+			"documentation": "文档",
+			"featureRequests": "功能请求"
+		},
+		"debug": {
+			"resetWorkspace": "重置工作区状态",
+			"resetGlobal": "重置全局状态",
+			"resetGlobalDescription": "这将重置扩展中的所有全局状态和机密存储。",
+			"resetOnboarding": "重置入门状态"
+		},
+		"apiConfig": {
+			"provider": "API 提供商",
+			"remoteConfigManaged": "提供商选项由您的组织的远程配置管理",
+			"searchProvider": "搜索并选择提供商...",
+			"planMode": "计划模式",
+			"actMode": "执行模式",
+			"separateModels": "为计划和执行模式使用不同的模型",
+			"separateModelsDescription": "在计划和执行模式之间切换时，将保留上一模式中使用的 API 和模型。例如，在使用强大的推理模型构建计划，并由较便宜的编码模型执行时，这会很有帮助。"
+		},
+		"providers": {
+			"model": "模型",
+			"apiKey": "API 密钥",
+			"projectId": "项目 ID",
+			"region": "区域",
+			"selectRegion": "选择区域...",
+			"thinkingLevel": "思考层级",
+			"thinkingBudget": "思考预算",
+			"thinkingBudgetPlaceholder": "输入思考 Token 预算 (最大 {{max}})",
+			"reasoningEffort": "推理强度",
+			"low": "低",
+			"high": "高",
+			"minimal": "极小",
+			"medium": "中",
+			"vertexDescription": "要使用 Google Cloud Vertex AI，您需要 {{step1}} 以及 {{step2}}",
+			"vertexStep1": "1) 创建 Google Cloud 账号 › 启用 Vertex AI API › 启用所需的 Claude 模型，",
+			"vertexStep2": "2) 安装 Google Cloud CLI › 配置应用默认凭据 (Application Default Credentials)。"
+		}
+	},
+	"history": {
+		"title": "历史记录",
+		"searchPlaceholder": "模糊搜索历史记录...",
+		"sort": {
+			"newest": "最新",
+			"oldest": "最旧",
+			"mostExpensive": "最昂贵",
+			"mostTokens": "Token 最多",
+			"mostRelevant": "最相关"
+		},
+		"filter": {
+			"workspace": "工作区",
+			"favorites": "收藏"
+		},
+		"stats": {
+			"tokens": "Token:",
+			"cache": "缓存:",
+			"model": "模型:",
+			"apiCost": "API 费用:"
+		},
+		"actions": {
+			"export": "导出",
+			"delete": "删除",
+			"selectAll": "全选",
+			"selectNone": "全不选",
+			"deleteSelected": "删除 {{count}} 个已选项",
+			"deleteAll": "删除所有历史记录",
+			"addToFavorites": "添加到收藏",
+			"removeFromFavorites": "从收藏中移除"
+		}
+	},
+	"mcp": {
+		"title": "MCP 服务器",
+		"tabs": {
+			"marketplace": "市场",
+			"remoteServers": "远程服务器",
+			"configure": "配置"
+		},
+		"marketplace": {
+			"searchPlaceholder": "搜索 MCP...",
+			"filter": "筛选：",
+			"allCategories": "所有类别",
+			"sort": "排序：",
+			"sortOptions": {
+				"mostInstalls": "安装最多",
+				"newest": "最新",
+				"stars": "GitHub Star 数",
+				"name": "名称"
+			},
+			"remoteConfigManaged": "您的组织已预配置可用的 MCP 服务器",
+			"noMatchingServers": "未找到匹配的 MCP 服务器",
+			"noServersFound": "市场中未找到 MCP 服务器",
+			"failedToLoad": "加载市场数据失败",
+			"retry": "重试",
+			"card": {
+				"installed": "已安装",
+				"installing": "安装中...",
+				"install": "安装",
+				"requiresApiKey": "需要 API 密钥"
+			},
+			"submit": {
+				"title": "提交 MCP 服务器",
+				"description": "通过向以下地址提交问题，帮助他人发现优秀的 MCP 服务器："
+			}
+		},
+		"configure": {
+			"description": "{{mcpLink}} 允许与本地运行 of MCP 服务器进行通信，这些服务器提供额外的工具和资源来扩展 Cline 的能力。您可以使用 {{communityServersLink}}，或者要求 Cline 创建特定于您工作流的新工具（例如，“添加一个获取最新 npm 文档的工具”）。",
+			"seeDemo": "在此查看演示。",
+			"configureServers": "配置 MCP 服务器",
+			"advancedSettings": "高级 MCP 设置"
+		},
+		"addLocalServer": {
+			"description": "通过提供名称、命令及其参数添加一个新的本地 MCP 服务器。了解更多信息请点击",
+			"learnMore": "这里。",
+			"serverName": "服务器名称",
+			"command": "命令",
+			"args": "参数 (逗号分隔)",
+			"addServer": "添加服务器",
+			"adding": "添加中...",
+			"editConfig": "编辑配置",
+			"error": {
+				"nameRequired": "必须填写服务器名称",
+				"commandRequired": "必须填写命令",
+				"failed": "无法添加服务器"
+			}
+		},
+		"addRemoteServer": {
+			"description": "通过提供名称和 URL 端点添加远程 MCP 服务器。了解更多信息请点击",
+			"learnMore": "这里。",
+			"serverName": "服务器名称",
+			"serverUrl": "服务器 URL",
+			"transportType": "传输类型",
+			"streamableHttp": "可流式传输的 HTTP",
+			"sse": "SSE (旧版)",
+			"addServer": "添加服务器",
+			"connecting": "连接中...",
+			"editConfig": "编辑配置",
+			"error": {
+				"nameRequired": "必须填写服务器名称",
+				"urlRequired": "必须填写服务器 URL",
+				"invalidUrl": "无效的 URL 格式",
+				"failed": "无法添加服务器"
+			}
+		},
+		"resource": {
+			"noDescription": "无描述",
+			"returns": "返回 ",
+			"unknown": "未知"
+		},
+		"tool": {
+			"autoApprove": "自动批准",
+			"parameters": "参数",
+			"noDescription": "无描述"
+		},
+		"unknown": "未知"
+	},
+	"onboarding": {
+		"userType": {
+			"title": "您将如何使用 Cline？",
+			"description": "请选择以下选项之一以开始。",
+			"free": {
+				"title": "完全免费",
+				"description": "零成本开始使用"
+			},
+			"power": {
+				"title": "前沿模型",
+				"description": "Claude 4.5, GPT-5 Codex 等"
+			},
+			"byok": {
+				"title": "自带 API 密钥",
+				"description": "在您选择的提供商中使用 Cline"
+			}
+		},
+		"step": {
+			"free": {
+				"title": "选择一个免费模型"
+			},
+			"power": {
+				"title": "选择您的模型"
+			},
+			"byok": {
+				"title": "配置您的提供商"
+			},
+			"almost": {
+				"title": "即将完成！",
+				"description": "在浏览器中完成账号创建，然后返回这里完成设置。"
+			}
+		},
+		"button": {
+			"continue": "继续",
+			"login": "登录 Cline",
+			"createAccount": "创建我的账号",
+			"back": "返回"
+		},
+		"footer": {
+			"changeLater": "您以后可以在设置中更改此项"
+		},
+		"model": {
+			"support": "支持：",
+			"overview": "模型概览：",
+			"speed": "速度：",
+			"context": "上下文：",
+			"otherOptions": "其他选项",
+			"searchPlaceholder": "搜索模型...",
+			"noResult": "未找到 \"{{searchTerm}}\" 的结果",
+			"capabilities": {
+				"images": "图像",
+				"promptCache": "提示词缓存",
+				"tools": "工具"
+			},
+			"overviewLabels": {
+				"topPerformer": "顶级表现",
+				"great": "极好",
+				"good": "良好",
+				"average": "一般",
+				"belowAverage": "低于平均水平"
+			},
+			"speedLabels": {
+				"instant": "极快",
+				"fast": "快速",
+				"slow": "缓慢",
+				"average": "一般"
+			},
+			"priceRange": {
+				"free": "免费"
+			}
+		}
+	},
+	"account": {
+		"welcome": {
+			"description": "注册账号即可访问最新模型、账单仪表盘以查看使用情况和额度，以及更多即将推出的功能。",
+			"signUp": "使用 Cline 注册",
+			"tosAgreement": "继续操作即表示您同意",
+			"tos": "服务条款",
+			"and": " 和 ",
+			"privacyPolicy": "隐私政策。"
+		},
+		"view": {
+			"title": "账户",
+			"environment": " - {{environment}} 环境",
+			"done": "完成",
+			"personal": "个人",
+			"lockedByRemoteConfig": "当您的组织启用了远程配置时，无法更改此项。",
+			"role": "角色",
+			"dashboard": "控制台",
+			"logout": "登出",
+			"clineEnvironment": "Cline 环境"
+		},
+		"creditBalance": {
+			"lastUpdated": "上次更新时间：{{time}}",
+			"currentBalance": "当前余额",
+			"addCredits": "充值"
+		},
+		"creditsHistory": {
+			"usageHistoryTab": "使用历史",
+			"paymentsHistoryTab": "支付历史",
+			"loading": "加载中...",
+			"date": "日期",
+			"model": "模型",
+			"creditsUsed": "已用额度",
+			"totalCost": "总费用",
+			"credits": "额度",
+			"noUsageHistory": "暂无使用历史",
+			"noPaymentHistory": "暂无支付历史",
+			"webSearch": "网络搜索",
+			"webFetch": "网页抓取",
+			"webFetchLlm": "网页抓取 (LLM)"
 		}
 	}
 }

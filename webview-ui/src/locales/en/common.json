@@ -5,7 +5,16 @@
 		"subDescription": "Sign up for an account to get started for free, or use an API key that provides access to models like Claude Sonnet.",
 		"getStartedFree": "Get Started for Free",
 		"useOwnApiKey": "Use your own API key",
-		"letsGo": "Let's go!"
+		"letsGo": "Let's go!",
+		"quickWins": {
+			"title": "Quick [Wins] with Cline",
+			"nextjsTitle": "Build a Next.js App",
+			"nextjsDesc": "Create a beautiful notetaking app with Next.js and Tailwind",
+			"cliTitle": "Craft a CLI Tool",
+			"cliDesc": "Develop a powerful terminal CLI to automate a cool task",
+			"gameTitle": "Develop a Game",
+			"gameDesc": "Code a classic Snake game that runs in the browser."
+		}
 	},
 	"chat": {
 		"placeholder": "Type a message...",
@@ -26,6 +35,84 @@
 		"plan": "Plan",
 		"act": "Act"
 	},
+	"chatRow": {
+		"error": "Error",
+		"clineTrouble": "Cline is having trouble...",
+		"wantsToExecute": "Cline wants to execute this command:",
+		"wantsToUseTool": "Cline wants to use a tool",
+		"wantsToAccessResource": "Cline wants to access a resource",
+		"taskCompleted": "Task Completed",
+		"hasQuestion": "Cline has a question:",
+		"outsideWorkspace": "This file is outside of your workspace",
+		"creatingPatches": "Cline is creating patches to edit this file:",
+		"wantsToEdit": "Cline wants to edit this file:",
+		"wantsToDelete": "Cline wants to delete this file:",
+		"wantsToCreate": "Cline wants to create a new file:",
+		"wantsToRead": "Cline wants to read this file:",
+		"wantsToViewTopLevel": "Cline wants to view the top level files in this directory:",
+		"viewedTopLevel": "Cline viewed the top level files in this directory:",
+		"wantsToViewRecursive": "Cline wants to recursively view all files in this directory:",
+		"viewedRecursive": "Cline recursively viewed all files in this directory:",
+		"wantsToViewDefinitions": "Cline wants to view source code definition names used in this directory:",
+		"viewedDefinitions": "Cline viewed source code definition names used in this directory:",
+		"wantsToSearch": "Cline wants to search this directory for",
+		"condensing": "Cline is condensing the conversation:",
+		"collapseSummary": "Collapse summary",
+		"expandSummary": "Expand summary",
+		"summary": "Summary:",
+		"urlExternal": "This URL is external",
+		"wantsToFetch": "Cline wants to fetch content from this URL:",
+		"fetched": "Cline fetched content from this URL:",
+		"searchExternal": "This search is external",
+		"wantsToSearchWeb": "Cline wants to search the web for:",
+		"searchedWeb": "Cline searched the web for:",
+		"cancel": "cancel",
+		"stop": "stop",
+		"running": "Running",
+		"pending": "Pending",
+		"completed": "Completed",
+		"notExecuted": "Not Executed",
+		"terminalStopInfo": "This command is running in the VSCode terminal. You can manually stop it using Ctrl+C in the terminal, or switch to Background Execution mode in settings for cancellable commands.",
+		"prompt": "Prompt:",
+		"explicitApproval": "The model has determined this command requires explicit approval.",
+		"arguments": "Arguments",
+		"mcpNotification": "MCP Notification:",
+		"thinking": "Thinking",
+		"loadingMcpDoc": "Loading MCP documentation",
+		"generatingExplanation": "Generating explanation",
+		"failedToGenerateExplanation": "Failed to generate explanation",
+		"explanationCancelled": "Explanation cancelled",
+		"generatedExplanation": "Generated explanation",
+		"viewChanges": "View Changes",
+		"explainChanges": "Explain Changes",
+		"explaining": "Explaining...",
+		"shellIntegrationUnavailable": "Shell Integration Unavailable",
+		"shellIntegrationWarning": "Cline may have trouble viewing the command's output. Please update VSCode (CMD/CTRL + Shift + P → \"Update\") and make sure you're using a supported shell: zsh, bash, fish, or PowerShell (CMD/CTRL + Shift + P → \"Terminal: Select Default Profile\").",
+		"stillHavingTrouble": "Still having trouble?",
+		"autoRetryFailed": "Auto-Retry Failed",
+		"autoRetryInProgress": "Auto-Retry in Progress",
+		"autoRetryFailedAttempts": "Auto-retry failed after {{maxAttempts}} attempts. Manual intervention required.",
+		"autoRetryAttempt": "Attempt {{attempt}} of {{maxAttempts}} - Retrying in {{delaySeconds}} seconds...",
+		"shellIntegrationIssues": "Shell integration issues",
+		"shellIntegrationSuggestion": "Since you're experiencing repeated shell integration issues, we recommend switching to Background Terminal mode for better reliability.",
+		"backgroundTerminalEnabled": "Background Terminal Enabled",
+		"enableBackgroundTerminal": "Enable Background Terminal (Recommended)",
+		"wantsToStartNewTask": "Cline wants to start a new task:",
+		"wantsToCondense": "Cline wants to condense your conversation:",
+		"wantsToCreateGithubIssue": "Cline wants to create a Github issue:",
+		"wantsToUseSubagent": "Cline wants to use a subagent:",
+		"requestId": "Request ID: {{requestId}}",
+		"powershellIssues": "It seems like you're having Windows PowerShell issues, please see this",
+		"troubleshootingGuide": "troubleshooting guide",
+		"signInToCline": "Sign in to Cline",
+		"clickRetryBelow": "(Click \"Retry\" below)",
+		"diffErrorNoMatch": "The model used search patterns that don't match anything in the file. Retrying...",
+		"clineIgnoreError": "Cline tried to access {{path}} which is blocked by the .clineignore file.",
+		"restoreAll": "Restore All",
+		"restoreChat": "Restore Chat",
+		"restoreAllTooltip": "Restore both the chat and workspace files to this checkpoint and send your edited message",
+		"restoreChatTooltip": "Restore just the chat to this checkpoint and send your edited message"
+	},
 	"settings": {
 		"title": "Settings",
 		"done": "Done",
@@ -37,6 +124,379 @@
 			"general": "General",
 			"about": "About",
 			"debug": "Debug"
+		},
+		"general": {
+			"remoteConfigManaged": "This setting is managed by your organization's remote configuration",
+			"allowTelemetry": "Allow error and usage reporting",
+			"telemetryDescription": "Help improve Cline by sending usage data and error reports. No code, prompts, or personal information are ever sent. See our {{telemetryLink}} and {{privacyLink}} for more details.",
+			"telemetryOverview": "telemetry overview",
+			"privacyPolicy": "privacy policy",
+			"preferredLanguage": "Preferred Language",
+			"preferredLanguageDescription": "The language that Cline should use for communication."
+		},
+		"terminal": {
+			"defaultProfile": "Default Terminal Profile",
+			"defaultProfileDescription": "Select the default terminal Cline will use. 'Default' uses your VSCode global setting.",
+			"timeout": "Shell integration timeout (seconds)",
+			"timeoutPlaceholder": "Enter timeout in seconds",
+			"timeoutError": "Please enter a positive number",
+			"timeoutDescription": "Set how long Cline waits for shell integration to activate before executing commands. Increase this value if you experience terminal connection timeouts.",
+			"aggressiveReuse": "Enable aggressive terminal reuse",
+			"aggressiveReuseDescription": "When enabled, Cline will reuse existing terminal windows that aren't in the current working directory. Disable this if you experience issues with task lockout after a terminal command.",
+			"executionMode": "Terminal Execution Mode",
+			"executionModeDescription": "Choose whether Cline runs commands in the VS Code terminal or a background process.",
+			"vscodeTerminal": "VS Code Terminal",
+			"backgroundExec": "Background Exec",
+			"havingIssues": "Having terminal issues?",
+			"quickFixes": "Terminal Quick Fixes",
+			"troubleshootingGuide": "Complete Troubleshooting Guide",
+			"checkOur": "Check our",
+			"orThe": "or the",
+			"outputLimit": "Terminal output limit",
+			"outputLimitDescription": "Maximum number of lines to include in terminal output when executing commands. When exceeded, lines will be removed from the middle, saving tokens."
+		},
+		"browser": {
+			"disableToolUse": "Disable browser tool usage",
+			"disableToolUseDescription": "Prevent Cline from using browser actions (e.g. launch, click, type).",
+			"viewportSize": "Viewport size",
+			"viewportSizeDescription": "Set the size of the browser viewport for screenshots and interactions.",
+			"remoteConnection": "Use remote browser connection",
+			"remoteConnectionDescription": "Enable Cline to use your Chrome {{chromePathInfo}}. You can specify a custom path below. Using a remote browser connection requires starting Chrome in debug mode {{debugModeInfo}}.",
+			"chromeNotDetected": "(not detected on your machine)",
+			"debugModeManual": "manually (<code>--remote-debugging-port=9222</code>) or using the button below. Enter the host address or leave it blank for automatic discovery.",
+			"hostPlaceholder": "http://localhost:9222",
+			"launchingBrowser": "Launching Browser...",
+			"launchBrowserDebug": "Launch Browser with Debug Mode",
+			"chromeExecutablePath": "Chrome Executable Path (Optional)",
+			"chromePathPlaceholder": "e.g., /usr/bin/google-chrome or C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+			"chromePathDescription": "Leave blank to auto-detect.",
+			"customBrowserArgs": "Custom Browser Arguments (Optional)",
+			"customArgsPlaceholder": "e.g., --no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --no-zygote",
+			"customArgsDescription": "Space-separated arguments to pass to the browser executable.",
+			"checkingConnection": "Checking connection...",
+			"connected": "Connected",
+			"notConnected": "Not connected"
+		},
+		"features": {
+			"new": "NEW",
+			"subagentsDescription": "Cline for CLI is required for subagents. Install it with: {{installCmd}}, then run {{authCmd}} To authenticate with Cline or configure an API provider.",
+			"installNow": "Install Now",
+			"subagentsEnabled": "Subagents Enabled",
+			"enableSubagents": "Enable Subagents",
+			"experimental": "Experimental: ",
+			"subagentsExplanation": "Allows Cline to spawn subprocesses to handle focused tasks like exploring large codebases, keeping your main context clean.",
+			"enableCheckpoints": "Enable Checkpoints",
+			"checkpointsDescription": "Enables extension to save checkpoints of workspace throughout the task. Uses git under the hood which may not work well with large workspaces.",
+			"mcpDisplayMode": "MCP Display Mode",
+			"mcpDisplayModeDescription": "Controls how MCP responses are displayed: plain text, rich formatting with links/images, or markdown rendering.",
+			"collapseMcpResponses": "Collapse MCP Responses",
+			"collapseMcpResponsesDescription": "Sets the default display mode for MCP response panels",
+			"openaiReasoningEffort": "OpenAI Reasoning Effort",
+			"openaiReasoningEffortDescription": "Reasoning effort for the OpenAI family of models(applies to all OpenAI model providers)",
+			"openaiReasoningEffortOptions": {
+				"minimal": "Minimal",
+				"low": "Low",
+				"medium": "Medium",
+				"high": "High"
+			},
+			"strictPlanMode": "Enable strict plan mode",
+			"strictPlanModeDescription": "Enforces strict tool use while in plan mode, preventing file edits.",
+			"enableFocusChain": "Enable Focus Chain",
+			"focusChainDescription": "Enables enhanced task progress tracking and automatic focus chain list management throughout tasks.",
+			"focusChainReminderInterval": "Focus Chain Reminder Interval",
+			"focusChainReminderIntervalDescription": "Interval (in messages) to remind Cline about its focus chain checklist (1-100). Lower values provide more frequent reminders.",
+			"enableDictation": "Enable Dictation",
+			"dictationDescription": "Enables speech-to-text transcription using your Cline account. Uses the Aqua Voice's Avalon model, at $0.0065 credits per minute of audio processed. 5 minutes max per message.",
+			"enableAutoCompact": "Enable Auto Compact",
+			"autoCompactDescription": "Enables advanced context management system which uses LLM based condensing for next-gen models. {{learnMore}}",
+			"learnMore": "Learn more",
+			"enableWebTools": "Enable Cline Web Tools",
+			"webToolsDescription": "Enables websearch and webfetch tools while using the Cline provider.",
+			"nativeToolCall": "Enable Native Tool Call",
+			"nativeToolCallDescription": "Uses the model's native tool calling API instead of XML-based tool parsing. This will improve performance for supported models.",
+			"parallelToolCalling": "Enable Parallel Tool Calling",
+			"parallelToolCallingDescription": "Allows models to call multiple tools in a single response. Automatically enabled for GPT-5 models.",
+			"backgroundEdit": "Enable Background Edit",
+			"backgroundEditDescription": "Allows editing files in background without opening the diff view in editor.",
+			"multiRoot": "Enable Multi-Root Workspace",
+			"multiRootDescription": "Allows cline to work across multiple workspaces.",
+			"enableHooks": "Enable Hooks",
+			"hooksNotSupportedWindows": "Hooks are not yet supported on Windows. This feature is currently available on macOS and Linux only.",
+			"hooksDescription": "Allows execution of hooks from .clinerules/hooks/ directory.",
+			"enableYolo": "Enable YOLO Mode",
+			"yoloDescription": "EXPERIMENTAL & DANGEROUS: This mode disables safety checks and user confirmations. Cline will automatically approve all actions without asking. Use with extreme caution.",
+			"subagentOutputLimit": "Subagent output limit",
+			"subagentOutputLimitDescription": "Maximum number of lines to include in output from CLI subagents. Truncates middle to save tokens."
+		},
+		"about": {
+			"description": "An AI assistant that can use your CLI and Editor. Cline can handle complex software development tasks step-by-step with tools that let him create & edit files, explore large projects, use the browser, and execute terminal commands (after you grant permission).",
+			"communitySupport": "Community & Support",
+			"development": "Development",
+			"resources": "Resources",
+			"documentation": "Documentation",
+			"featureRequests": "Feature Requests"
+		},
+		"debug": {
+			"resetWorkspace": "Reset Workspace State",
+			"resetGlobal": "Reset Global State",
+			"resetGlobalDescription": "This will reset all global state and secret storage in the extension.",
+			"resetOnboarding": "Reset Onboarding State"
+		},
+		"apiConfig": {
+			"provider": "API Provider",
+			"remoteConfigManaged": "Provider options are managed by your organization's remote configuration",
+			"searchProvider": "Search and select provider...",
+			"planMode": "Plan Mode",
+			"actMode": "Act Mode",
+			"separateModels": "Use different models for Plan and Act modes",
+			"separateModelsDescription": "Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on."
+		},
+		"providers": {
+			"model": "Model",
+			"apiKey": "API Key",
+			"projectId": "Project ID",
+			"region": "Region",
+			"selectRegion": "Select a region...",
+			"thinkingLevel": "Thinking Level",
+			"thinkingBudget": "Thinking Budget",
+			"thinkingBudgetPlaceholder": "Enter thinking budget in tokens (max {{max}})",
+			"reasoningEffort": "Reasoning Effort",
+			"low": "Low",
+			"high": "High",
+			"minimal": "Minimal",
+			"medium": "Medium",
+			"vertexDescription": "To use Google Cloud Vertex AI, you need to {{step1}} and {{step2}}",
+			"vertexStep1": "1) create a Google Cloud account › enable the Vertex AI API › enable the desired Claude models,",
+			"vertexStep2": "2) install the Google Cloud CLI › configure Application Default Credentials."
+		}
+	},
+	"history": {
+		"title": "History",
+		"searchPlaceholder": "Fuzzy search history...",
+		"sort": {
+			"newest": "Newest",
+			"oldest": "Oldest",
+			"mostExpensive": "Most Expensive",
+			"mostTokens": "Most Tokens",
+			"mostRelevant": "Most Relevant"
+		},
+		"filter": {
+			"workspace": "Workspace",
+			"favorites": "Favorites"
+		},
+		"stats": {
+			"tokens": "Tokens:",
+			"cache": "Cache:",
+			"model": "Model:",
+			"apiCost": "API Cost:"
+		},
+		"actions": {
+			"export": "EXPORT",
+			"delete": "Delete",
+			"selectAll": "Select All",
+			"selectNone": "Select None",
+			"deleteSelected": "Delete {{count}} Selected",
+			"deleteAll": "Delete All History",
+			"addToFavorites": "Add to favorites",
+			"removeFromFavorites": "Remove from favorites"
+		}
+	},
+	"mcp": {
+		"title": "MCP Servers",
+		"tabs": {
+			"marketplace": "Marketplace",
+			"remoteServers": "Remote Servers",
+			"configure": "Configure"
+		},
+		"marketplace": {
+			"searchPlaceholder": "Search MCPs...",
+			"filter": "Filter:",
+			"allCategories": "All Categories",
+			"sort": "Sort:",
+			"sortOptions": {
+				"mostInstalls": "Most Installs",
+				"newest": "Newest",
+				"stars": "GitHub Stars",
+				"name": "Name"
+			},
+			"remoteConfigManaged": "Your organization has pre-configured the available MCP servers",
+			"noMatchingServers": "No matching MCP servers found",
+			"noServersFound": "No MCP servers found in the marketplace",
+			"failedToLoad": "Failed to load marketplace data",
+			"retry": "Retry",
+			"card": {
+				"installed": "Installed",
+				"installing": "Installing...",
+				"install": "Install",
+				"requiresApiKey": "Requires API key"
+			},
+			"submit": {
+				"title": "Submit MCP Server",
+				"description": "Help others discover great MCP servers by submitting an issue to "
+			}
+		},
+		"configure": {
+			"description": "The {{mcpLink}} enables communication with locally running MCP servers that provide additional tools and resources to extend Cline's capabilities. You can use {{communityServersLink}} or ask Cline to create new tools specific to your workflow (e.g., \"add a tool that gets the latest npm docs\").",
+			"seeDemo": "See a demo here.",
+			"configureServers": "Configure MCP Servers",
+			"advancedSettings": "Advanced MCP Settings"
+		},
+		"addLocalServer": {
+			"description": "Add a new local MCP server by providing a name, command, and its arguments. Learn more ",
+			"learnMore": "here.",
+			"serverName": "Server Name",
+			"command": "Command",
+			"args": "Args (comma separated)",
+			"addServer": "Add Server",
+			"adding": "Adding...",
+			"editConfig": "Edit Configuration",
+			"error": {
+				"nameRequired": "Server name is required",
+				"commandRequired": "Command is required",
+				"failed": "Failed to add server"
+			}
+		},
+		"addRemoteServer": {
+			"description": "Add a remote MCP server by providing a name and its URL endpoint. Learn more ",
+			"learnMore": "here.",
+			"serverName": "Server Name",
+			"serverUrl": "Server URL",
+			"transportType": "Transport Type",
+			"streamableHttp": "Streamable HTTP",
+			"sse": "SSE (Legacy)",
+			"addServer": "Add Server",
+			"connecting": "Connecting...",
+			"editConfig": "Edit Configuration",
+			"error": {
+				"nameRequired": "Server name is required",
+				"urlRequired": "Server URL is required",
+				"invalidUrl": "Invalid URL format",
+				"failed": "Failed to add server"
+			}
+		},
+		"resource": {
+			"noDescription": "No description",
+			"returns": "Returns ",
+			"unknown": "Unknown"
+		},
+		"tool": {
+			"autoApprove": "Auto-approve",
+			"parameters": "Parameters",
+			"noDescription": "No description"
+		},
+		"unknown": "unknown"
+	},
+	"onboarding": {
+		"userType": {
+			"title": "How will you use Cline?",
+			"description": "Select an option below to get started.",
+			"free": {
+				"title": "Absolutely Free",
+				"description": "Get started at no cost"
+			},
+			"power": {
+				"title": "Frontier Model",
+				"description": "Claude 4.5, GPT-5 Codex, etc"
+			},
+			"byok": {
+				"title": "Bring my own API key",
+				"description": "Use Cline with your provider of choice"
+			}
+		},
+		"step": {
+			"free": {
+				"title": "Select a free model"
+			},
+			"power": {
+				"title": "Select your model"
+			},
+			"byok": {
+				"title": "Configure your provider"
+			},
+			"almost": {
+				"title": "Almost there!",
+				"description": "Complete account creation in your browser. Then come back here to finish up."
+			}
+		},
+		"button": {
+			"continue": "Continue",
+			"login": "Login to Cline",
+			"createAccount": "Create my Account",
+			"back": "Back"
+		},
+		"footer": {
+			"changeLater": "You can change this later in settings"
+		},
+		"model": {
+			"support": "Support: ",
+			"overview": "Model Overview: ",
+			"speed": "Speed: ",
+			"context": "Context: ",
+			"otherOptions": "other options",
+			"searchPlaceholder": "Search model...",
+			"noResult": "No result found for \"{{searchTerm}}\"",
+			"capabilities": {
+				"images": "Images",
+				"promptCache": "Prompt Cache",
+				"tools": "Tools"
+			},
+			"overviewLabels": {
+				"topPerformer": "Top Performer",
+				"great": "Great",
+				"good": "Good",
+				"average": "Average",
+				"belowAverage": "Below Average"
+			},
+			"speedLabels": {
+				"instant": "Instant",
+				"fast": "Fast",
+				"slow": "Slow",
+				"average": "Average"
+			},
+			"priceRange": {
+				"free": "Free"
+			}
+		}
+	},
+	"account": {
+		"welcome": {
+			"description": "Sign up for an account to get access to the latest models, billing dashboard to view usage and credits, and more upcoming features.",
+			"signUp": "Sign up with Cline",
+			"tosAgreement": "By continuing, you agree to the ",
+			"tos": "Terms of Service",
+			"and": " and ",
+			"privacyPolicy": "Privacy Policy."
+		},
+		"view": {
+			"title": "Account",
+			"environment": " - {{environment}} environment",
+			"done": "Done",
+			"personal": "Personal",
+			"lockedByRemoteConfig": "This cannot be changed while your organization has remote configuration enabled.",
+			"role": "Role",
+			"dashboard": "Dashboard",
+			"logout": "Log out",
+			"clineEnvironment": "Cline Environment"
+		},
+		"creditBalance": {
+			"lastUpdated": "Last updated: {{time}}",
+			"currentBalance": "CURRENT BALANCE",
+			"addCredits": "Add Credits"
+		},
+		"creditsHistory": {
+			"usageHistoryTab": "USAGE HISTORY",
+			"paymentsHistoryTab": "PAYMENTS HISTORY",
+			"loading": "Loading...",
+			"date": "Date",
+			"model": "Model",
+			"creditsUsed": "Credits Used",
+			"totalCost": "Total Cost",
+			"credits": "Credits",
+			"noUsageHistory": "No usage history",
+			"noPaymentHistory": "No payment history",
+			"webSearch": "Web Search",
+			"webFetch": "Web Fetch",
+			"webFetchLlm": "Web Fetch (LLM)"
 		}
 	}
 }

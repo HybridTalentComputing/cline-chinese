@@ -1153,7 +1153,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			const { selectedProvider, selectedModelId } = normalizeApiConfiguration(apiConfiguration, mode)
 			const { vsCodeLmModelSelector, togetherModelId, lmStudioModelId, ollamaModelId, liteLlmModelId, requestyModelId } =
 				getModeSpecificFields(apiConfiguration, mode)
-			const unknownModel = "unknown"
+			const unknownModel = t("mcp.unknown")
 			if (!apiConfiguration) {
 				return unknownModel
 			}
@@ -1179,7 +1179,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				default:
 					return `${selectedProvider}:${selectedModelId}`
 			}
-		}, [apiConfiguration, mode])
+		}, [apiConfiguration, mode, t])
 
 		// Calculate arrow position and menu position based on button location
 		useEffect(() => {

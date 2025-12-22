@@ -1,5 +1,6 @@
 import type { OpenRouterModelInfo } from "@shared/proto/cline/models"
 import type { OnboardingModel, OnboardingModelGroup } from "@shared/proto/cline/state"
+import { TFunction } from "i18next"
 
 export interface OnboardingModelsByGroup {
 	free: ModelGroup[]
@@ -27,12 +28,12 @@ export function getClineUIOnboardingGroups(groupedModels: OnboardingModelGroup):
 	}
 }
 
-export function getPriceRange(modelInfo: OpenRouterModelInfo): string {
+export function getPriceRange(modelInfo: OpenRouterModelInfo, t: TFunction): string {
 	const prompt = Number(modelInfo.inputPrice ?? 0)
 	const completion = Number(modelInfo.outputPrice ?? 0)
 	const cost = prompt + completion
 	if (cost === 0) {
-		return "Free"
+		return t("onboarding.model.priceRange.free")
 	}
 	if (cost < 10) {
 		return "$"
@@ -43,47 +44,47 @@ export function getPriceRange(modelInfo: OpenRouterModelInfo): string {
 	return "$$"
 }
 
-export function getOverviewLabel(overview: number): string {
+export function getOverviewLabel(overview: number, t: TFunction): string {
 	if (overview >= 95) {
-		return "Top Performer"
+		return t("onboarding.model.overviewLabels.topPerformer")
 	}
 	if (overview >= 80) {
-		return "Great"
+		return t("onboarding.model.overviewLabels.great")
 	}
 	if (overview >= 60) {
-		return "Good"
+		return t("onboarding.model.overviewLabels.good")
 	}
 	if (overview >= 50) {
-		return "Average"
+		return t("onboarding.model.overviewLabels.average")
 	}
-	return "Below Average"
+	return t("onboarding.model.overviewLabels.belowAverage")
 }
 
-export function getCapabilities(modelInfo: OpenRouterModelInfo): string[] {
+export function getCapabilities(modelInfo: OpenRouterModelInfo, t: TFunction): string[] {
 	const capabilities = new Set<string>()
 	if (modelInfo.supportsImages) {
-		capabilities.add("Images")
+		capabilities.add(t("onboarding.model.capabilities.images"))
 	}
 	if (modelInfo.supportsPromptCache) {
-		capabilities.add("Prompt Cache")
+		capabilities.add(t("onboarding.model.capabilities.promptCache"))
 	}
-	capabilities.add("Tools")
+	capabilities.add(t("onboarding.model.capabilities.tools"))
 	return Array.from(capabilities)
 }
 
-export function getSpeedLabel(latency?: number): string {
+export function getSpeedLabel(t: TFunction, latency?: number): string {
 	if (!latency) {
-		return "Average"
+		return t("onboarding.model.speedLabels.average")
 	}
 	if (latency < 1) {
-		return "Instant"
+		return t("onboarding.model.speedLabels.instant")
 	}
 	if (latency < 2) {
-		return "Fast"
+		return t("onboarding.model.speedLabels.fast")
 	}
 	if (latency > 5) {
-		return "Slow"
+		return t("onboarding.model.speedLabels.slow")
 	}
 
-	return "Average"
+	return t("onboarding.model.speedLabels.average")
 }
