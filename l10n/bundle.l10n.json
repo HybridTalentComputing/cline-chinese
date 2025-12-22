@@ -1,0 +1,16 @@
+{
+	"codeAction.addToCline": "Add to Cline",
+	"codeAction.explainWithCline": "Explain with Cline",
+	"codeAction.improveWithCline": "Improve with Cline",
+	"codeAction.fixWithCline": "Fix with Cline",
+	"commit.gitExtensionNotFound": "Git extension not found",
+	"commit.noGitRepos": "No Git repositories available",
+	"commit.generationFailed": "[Commit Generation Failed] {0}",
+	"commit.noChangesFound": "No changes found in any workspace repositories",
+	"commit.generateForAll": "$(git-commit) Generate for all repositories with changes",
+	"commit.generateForCount": "Generate commit messages for {0} repositories",
+	"commit.selectRepo": "Select repository for commit message generation",
+	"commit.generatingFor": "Generating commit message for {0}...",
+	"commit.failed": "Failed to generate commit message: {0}"
+}
+

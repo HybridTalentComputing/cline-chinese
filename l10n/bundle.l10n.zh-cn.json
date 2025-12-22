@@ -1,0 +1,16 @@
+{
+	"codeAction.addToCline": "添加到 Cline",
+	"codeAction.explainWithCline": "使用 Cline 解释",
+	"codeAction.improveWithCline": "使用 Cline 改进",
+	"codeAction.fixWithCline": "使用 Cline 修复",
+	"commit.gitExtensionNotFound": "未找到 Git 扩展",
+	"commit.noGitRepos": "没有可用的 Git 仓库",
+	"commit.generationFailed": "[提交信息生成失败] {0}",
+	"commit.noChangesFound": "在任何工作区仓库中均未发现更改",
+	"commit.generateForAll": "$(git-commit) 为所有有更改的仓库生成",
+	"commit.generateForCount": "为 {0} 个仓库生成提交信息",
+	"commit.selectRepo": "选择要生成提交信息的仓库",
+	"commit.generatingFor": "正在为 {0} 生成提交信息...",
+	"commit.failed": "生成提交信息失败: {0}"
+}
+

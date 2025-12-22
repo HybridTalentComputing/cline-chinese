@@ -1,0 +1,42 @@
+{
+	"welcome": {
+		"title": "Hi, I'm Cline",
+		"description": "I can do all kinds of tasks thanks to breakthroughs in Claude 4 Sonnet's agentic coding capabilities and access to tools that let me create & edit files, explore complex projects, use a browser, and execute terminal commands (with your permission, of course). I can even use MCP to create new tools and extend my own capabilities.",
+		"subDescription": "Sign up for an account to get started for free, or use an API key that provides access to models like Claude Sonnet.",
+		"getStartedFree": "Get Started for Free",
+		"useOwnApiKey": "Use your own API key",
+		"letsGo": "Let's go!"
+	},
+	"chat": {
+		"placeholder": "Type a message...",
+		"placeholderTask": "Type your task here...",
+		"whatCanIDo": "What can I do for you?",
+		"takeATour": "Take a Tour",
+		"infoTooltip": "I can develop software step-by-step by editing files, exploring projects, running commands, and using browsers. I can even extend my capabilities with MCP tools to assist beyond basic code completion.",
+		"inputHint": "Type @ for context, / for slash commands & workflows, hold shift to drag in files/images",
+		"errorImageSize": "Image dimensions exceed 7500px",
+		"errorUnsupportedFile": "Files other than images are currently disabled",
+		"addContext": "Add Context",
+		"addFilesImages": "Add Files & Images",
+		"selectModel": "Select Model / API Provider",
+		"modeTooltip": "In {mode} mode, Cline will {action}",
+		"modeActionAct": "complete the task immediately",
+		"modeActionPlan": "gather information to architect a plan",
+		"toggleWith": "Toggle w/",
+		"plan": "Plan",
+		"act": "Act"
+	},
+	"settings": {
+		"title": "Settings",
+		"done": "Done",
+		"tabs": {
+			"apiConfig": "API Configuration",
+			"features": "Features",
+			"browser": "Browser",
+			"terminal": "Terminal",
+			"general": "General",
+			"about": "About",
+			"debug": "Debug"
+		}
+	}
+}

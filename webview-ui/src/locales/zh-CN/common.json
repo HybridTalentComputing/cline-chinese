@@ -1,0 +1,42 @@
+{
+	"welcome": {
+		"title": "您好，我是 Cline",
+		"description": "得益于 Claude 4 Sonnet 代理编码能力的突破，我可以完成各种任务。通过使用能够创建和编辑文件、探索复杂项目、使用浏览器以及执行终端命令（当然，需要您的许可）的工具，我甚至可以使用 MCP 来创建新工具并扩展我自己的能力。",
+		"subDescription": "注册账户即可免费开始使用，或者使用提供 Claude Sonnet 等模型访问权限的 API 密钥。",
+		"getStartedFree": "免费开始使用",
+		"useOwnApiKey": "使用您自己的 API 密钥",
+		"letsGo": "出发！"
+	},
+	"chat": {
+		"placeholder": "输入消息...",
+		"placeholderTask": "在此输入您的任务...",
+		"whatCanIDo": "我能为您做些什么？",
+		"takeATour": "开始游览",
+		"infoTooltip": "我可以步进式地开发软件，包括编辑文件、探索项目、运行命令以及使用浏览器。我甚至可以使用 MCP 工具扩展我的能力，提供超越基础代码补全的协助。",
+		"inputHint": "输入 @ 获取上下文，/ 获取快捷命令和工作流，按住 shift 拖入文件/图片",
+		"errorImageSize": "图片尺寸超过 7500px",
+		"errorUnsupportedFile": "目前仅支持图片文件",
+		"addContext": "添加上下文",
+		"addFilesImages": "添加文件和图片",
+		"selectModel": "选择模型 / API 提供商",
+		"modeTooltip": "在 {mode} 模式下，Cline 将 {action}",
+		"modeActionAct": "立即完成任务",
+		"modeActionPlan": "收集信息并制定计划",
+		"toggleWith": "切换快捷键：",
+		"plan": "计划",
+		"act": "执行"
+	},
+	"settings": {
+		"title": "设置",
+		"done": "完成",
+		"tabs": {
+			"apiConfig": "API 配置",
+			"features": "功能",
+			"browser": "浏览器",
+			"terminal": "终端",
+			"general": "常规",
+			"about": "关于",
+			"debug": "调试"
+		}
+	}
+}

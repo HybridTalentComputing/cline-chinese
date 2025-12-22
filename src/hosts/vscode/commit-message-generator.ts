@@ -28,12 +28,12 @@ export async function generateCommitMsg(stateManager: StateManager, scm?: vscode
 	try {
 		const gitExtension = vscode.extensions.getExtension("vscode.git")?.exports
 		if (!gitExtension) {
-			throw new Error("Git extension not found")
+			throw new Error(vscode.l10n.t("commit.gitExtensionNotFound"))
 		}
 
 		const git = gitExtension.getAPI(1)
 		if (git.repositories.length === 0) {
-			throw new Error("No Git repositories available")
+			throw new Error(vscode.l10n.t("commit.noGitRepos"))
 		}
 
 		// If scm is provided, then the user specified one repository by clicking the "Source Control" menu button
@@ -53,7 +53,7 @@ export async function generateCommitMsg(stateManager: StateManager, scm?: vscode
 		const errorMessage = error instanceof Error ? error.message : String(error)
 		HostProvider.window.showMessage({
 			type: ShowMessageType.ERROR,
-			message: `[Commit Generation Failed] ${errorMessage}`,
+			message: vscode.l10n.t("commit.generationFailed", errorMessage),
 		})
 	}
 }
@@ -64,7 +64,7 @@ async function orchestrateWorkspaceCommitMsgGeneration(stateManager: StateManage
 	if (reposWithChanges.length === 0) {
 		HostProvider.window.showMessage({
 			type: ShowMessageType.INFORMATION,
-			message: "No changes found in any workspace repositories",
+			message: vscode.l10n.t("commit.noChangesFound"),
 		})
 		return
 	}
@@ -124,13 +124,13 @@ async function promptRepoSelection(repos: any[]) {
 	}))
 
 	repoItems.unshift({
-		label: "$(git-commit) Generate for all repositories with changes",
-		description: `Generate commit messages for ${repos.length} repositories`,
+		label: vscode.l10n.t("commit.generateForAll"),
+		description: vscode.l10n.t("commit.generateForCount", repos.length),
 		repo: null as any,
 	})
 
 	return await vscode.window.showQuickPick(repoItems, {
-		placeHolder: "Select repository for commit message generation",
+		placeHolder: vscode.l10n.t("commit.selectRepo"),
 	})
 }
 
@@ -146,7 +146,7 @@ async function generateCommitMsgForRepository(stateManager: StateManager, reposi
 	await vscode.window.withProgress(
 		{
 			location: vscode.ProgressLocation.SourceControl,
-			title: `Generating commit message for ${repoPath.split(path.sep).pop() || "repository"}...`,
+			title: vscode.l10n.t("commit.generatingFor", repoPath.split(path.sep).pop() || "repository"),
 			cancellable: true,
 		},
 		() => performCommitMsgGeneration(stateManager, gitDiff, inputBox),
@@ -201,7 +201,7 @@ async function performCommitMsgGeneration(stateManager: StateManager, gitDiff: s
 		const errorMessage = error instanceof Error ? error.message : String(error)
 		HostProvider.window.showMessage({
 			type: ShowMessageType.ERROR,
-			message: `Failed to generate commit message: ${errorMessage}`,
+			message: vscode.l10n.t("commit.failed", errorMessage),
 		})
 	} finally {
 		vscode.commands.executeCommand("setContext", "cline.isGeneratingCommit", false)

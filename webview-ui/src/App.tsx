@@ -1,5 +1,6 @@
 import type { Boolean, EmptyRequest } from "@shared/proto/cline/common"
 import { useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import AccountView from "./components/account/AccountView"
 import ChatView from "./components/chat/ChatView"
 import HistoryView from "./components/history/HistoryView"
@@ -13,6 +14,7 @@ import { Providers } from "./Providers"
 import { UiServiceClient } from "./services/grpc-client"
 
 const AppContent = () => {
+	const { i18n } = useTranslation()
 	const {
 		didHydrateState,
 		showWelcome,
@@ -25,6 +27,7 @@ const AppContent = () => {
 		showAccount,
 		showAnnouncement,
 		onboardingModels,
+		preferredLanguage,
 		setShowAnnouncement,
 		setShouldShowAnnouncement,
 		closeMcpView,
@@ -51,6 +54,16 @@ const AppContent = () => {
 				})
 		}
 	}, [shouldShowAnnouncement, setShouldShowAnnouncement, setShowAnnouncement])
+
+	// Update i18n language when preferredLanguage changes
+	useEffect(() => {
+		if (preferredLanguage) {
+			const lang = preferredLanguage === "Simplified Chinese - 简体中文" ? "zh-CN" : "en"
+			if (i18n.language !== lang) {
+				i18n.changeLanguage(lang)
+			}
+		}
+	}, [preferredLanguage, i18n])
 
 	if (!didHydrateState) {
 		return null
