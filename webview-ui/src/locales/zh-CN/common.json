@@ -277,6 +277,7 @@
 			"editInSettings": "在设置中编辑",
 			"configureInSettings": "在设置中配置",
 			"noModelsFound": "未找到模型",
+			"projectIdPlaceholder": "输入项目 ID...",
 			"providerHelpText": {
 				"lmstudio": "启动 LM Studio 并加载模型以开始",
 				"ollama": "运行 `ollama serve` 并拉取模型",
@@ -306,7 +307,7 @@
 			"high": "高",
 			"minimal": "极小",
 			"medium": "中",
-			"vertexDescription": "要使用 Google Cloud Vertex AI，您需要 {{step1}} 以及 {{step2}}",
+			"vertexDescription": "要使用 Google Cloud Vertex AI，您需要 <step1></step1> 以及 <step2></step2>",
 			"vertexStep1": "1) 创建 Google Cloud 账号 › 启用 Vertex AI API › 启用所需的 Claude 模型，",
 			"vertexStep2": "2) 安装 Google Cloud CLI › 配置应用默认凭据 (Application Default Credentials)。",
 			"modelTabs": {
@@ -335,6 +336,33 @@
 			"contextWindowSwitcher": {
 				"switchTo1M": "切换到 1M 上下文窗口模型",
 				"switchTo200K": "切换到 200K 上下文窗口模型"
+			},
+			"advanced": {
+				"title": "高级",
+				"images": "图像",
+				"browser": "浏览器",
+				"promptCaching": "提示缓存",
+				"cacheReads": "缓存读取",
+				"cacheWrites": "缓存写入",
+				"tieredPricing": "分层定价：",
+				"input": "输入：",
+				"output": "输出：",
+				"context": "上下文：",
+				"yes": "是",
+				"no": "否",
+				"millionTokens": "百万 tokens",
+				"tokens": "tokens",
+				"providerRouting": {
+					"label": "提供商路由",
+					"default": "默认",
+					"price": "价格",
+					"throughput": "吞吐量",
+					"latency": "延迟",
+					"defaultDescription": "在提供商之间负载均衡（AWS、Google Vertex 等），优先考虑价格，同时考虑正常运行时间",
+					"priceDescription": "按价格排序，优先选择成本最低的提供商",
+					"throughputDescription": "按吞吐量排序，优先选择最高吞吐量（可能会增加成本）",
+					"latencyDescription": "按响应时间排序，优先选择最低延迟"
+				}
 			}
 		}
 	},

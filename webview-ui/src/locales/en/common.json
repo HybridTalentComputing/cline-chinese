@@ -277,6 +277,7 @@
 			"editInSettings": "Edit in settings",
 			"configureInSettings": "Configure in settings",
 			"noModelsFound": "No models found",
+			"projectIdPlaceholder": "Enter Project ID...",
 			"providerHelpText": {
 				"lmstudio": "Start LM Studio and load a model to begin",
 				"ollama": "Run `ollama serve` and pull a model",
@@ -306,7 +307,7 @@
 			"high": "High",
 			"minimal": "Minimal",
 			"medium": "Medium",
-			"vertexDescription": "To use Google Cloud Vertex AI, you need to {{step1}} and {{step2}}",
+			"vertexDescription": "To use Google Cloud Vertex AI, you need to <step1></step1> and <step2></step2>",
 			"vertexStep1": "1) create a Google Cloud account › enable the Vertex AI API › enable the desired Claude models,",
 			"vertexStep2": "2) install the Google Cloud CLI › configure Application Default Credentials.",
 			"modelTabs": {
@@ -335,6 +336,33 @@
 			"contextWindowSwitcher": {
 				"switchTo1M": "Switch to 1M context window model",
 				"switchTo200K": "Switch to 200K context window model"
+			},
+			"advanced": {
+				"title": "Advanced",
+				"images": "Images",
+				"browser": "Browser",
+				"promptCaching": "Prompt Caching",
+				"cacheReads": "Cache Reads",
+				"cacheWrites": "Cache Writes",
+				"tieredPricing": "Tiered Pricing:",
+				"input": "Input:",
+				"output": "Output:",
+				"context": "Context:",
+				"yes": "Yes",
+				"no": "No",
+				"millionTokens": "million tokens",
+				"tokens": "tokens",
+				"providerRouting": {
+					"label": "Provider Routing",
+					"default": "Default",
+					"price": "Price",
+					"throughput": "Throughput",
+					"latency": "Latency",
+					"defaultDescription": "Load balance across providers (AWS, Google Vertex, etc.), prioritizing price while considering uptime",
+					"priceDescription": "Sort by price, prioritizing the lowest cost provider",
+					"throughputDescription": "Sort by throughput, prioritizing highest throughput (may increase cost)",
+					"latencyDescription": "Sort by response time, prioritizing lowest latency"
+				}
 			}
 		}
 	},
