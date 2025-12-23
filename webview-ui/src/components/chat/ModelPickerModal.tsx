@@ -344,6 +344,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 			...m,
 			name: m.id.split("/").pop() || m.id,
 			provider: m.id.split("/")[0],
+			label: t(`settings.providers.modelLabels.${m.labelKey}`),
 		}))
 
 		// Filter out current model
@@ -355,7 +356,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 		}
 
 		return filtered
-	}, [selectedProvider, searchQuery, selectedModelId, matchesSearch])
+	}, [selectedProvider, searchQuery, selectedModelId, matchesSearch, t])
 
 	// Handle model selection - in split mode uses activeEditMode, otherwise closes modal
 	const handleSelectModel = useCallback(
@@ -759,6 +760,9 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 										const currentFeaturedModel = isClineProvider
 											? [...recommendedModels, ...freeModels].find((m) => m.id === selectedModelId)
 											: undefined
+										const currentLabel = currentFeaturedModel
+											? t(`settings.providers.modelLabels.${currentFeaturedModel.labelKey}`)
+											: undefined
 										return (
 											<CurrentModelRow onClick={() => onOpenChange(false)}>
 												<ModelInfoRow>
@@ -769,9 +773,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 															: selectedProvider}
 													</ModelProvider>
 												</ModelInfoRow>
-												{currentFeaturedModel?.label && (
-													<ModelLabel>{currentFeaturedModel.label}</ModelLabel>
-												)}
+												{currentLabel && <ModelLabel>{currentLabel}</ModelLabel>}
 												<Check
 													size={14}
 													style={{

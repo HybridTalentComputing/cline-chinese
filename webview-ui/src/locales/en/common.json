@@ -199,6 +199,8 @@
 		},
 		"features": {
 			"new": "NEW",
+			"enableThinking": "Enable Thinking",
+			"tokens": "tokens",
 			"subagentsDescription": "Cline for CLI is required for subagents. Install it with: {{installCmd}}, then run {{authCmd}} To authenticate with Cline or configure an API provider.",
 			"installNow": "Install Now",
 			"subagentsEnabled": "Subagents Enabled",
@@ -306,7 +308,34 @@
 			"medium": "Medium",
 			"vertexDescription": "To use Google Cloud Vertex AI, you need to {{step1}} and {{step2}}",
 			"vertexStep1": "1) create a Google Cloud account › enable the Vertex AI API › enable the desired Claude models,",
-			"vertexStep2": "2) install the Google Cloud CLI › configure Application Default Credentials."
+			"vertexStep2": "2) install the Google Cloud CLI › configure Application Default Credentials.",
+			"modelTabs": {
+				"recommended": "Recommended",
+				"free": "Free"
+			},
+			"modelLabels": {
+				"best": "BEST",
+				"new": "NEW",
+				"hot": "HOT",
+				"free": "FREE",
+				"oneMillionCtx": "1M CTX"
+			},
+			"modelDescriptions": {
+				"claudeSonnet45": "Best balance of speed, cost, and quality",
+				"gemini3Flash": "Intelligent model built for speed and price efficiency",
+				"claudeOpus45": "State-of-the-art for complex coding",
+				"gpt52": "OpenAI's latest with strong coding abilities",
+				"gemini3Pro": "1M context window for large codebases",
+				"grokCodeFast": "Fast inference with strong coding performance",
+				"minimaxM2": "Open source model with solid performance",
+				"glm46": "Zhipu AI's latest agentic coding model in GLM series",
+				"katCoderPro": "KwaiKAT's most advanced agentic coding model in the KAT-Coder series",
+				"devstral2512": "Mistral's latest model with strong coding abilities"
+			},
+			"contextWindowSwitcher": {
+				"switchTo1M": "Switch to 1M context window model",
+				"switchTo200K": "Switch to 200K context window model"
+			}
 		}
 	},
 	"history": {

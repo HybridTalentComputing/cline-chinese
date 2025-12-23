@@ -5,6 +5,7 @@ import { VSCodeDropdown, VSCodeLink, VSCodeOption, VSCodeTextField } from "@vsco
 import Fuse from "fuse.js"
 import type React from "react"
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -46,65 +47,67 @@ export interface OpenRouterModelPickerProps {
 }
 
 // Featured models for Cline provider organized by tabs
+// Note: These will be translated in the component using useTranslation hook
 export const recommendedModels = [
 	{
 		id: "anthropic/claude-sonnet-4.5",
-		description: "Best balance of speed, cost, and quality",
-		label: "BEST",
+		descriptionKey: "claudeSonnet45",
+		labelKey: "best",
 	},
 	{
 		id: "google/gemini-3-flash-preview",
-		description: "Intelligent model built for speed and price efficiency",
-		label: "NEW",
+		descriptionKey: "gemini3Flash",
+		labelKey: "new",
 	},
 	{
 		id: "anthropic/claude-opus-4.5",
-		description: "State-of-the-art for complex coding",
-		label: "HOT",
+		descriptionKey: "claudeOpus45",
+		labelKey: "hot",
 	},
 	{
 		id: "openai/gpt-5.2",
-		description: "OpenAI's latest with strong coding abilities",
-		label: "NEW",
+		descriptionKey: "gpt52",
+		labelKey: "new",
 	},
 	{
 		id: "google/gemini-3-pro-preview",
-		description: "1M context window for large codebases",
-		label: "1M CTX",
+		descriptionKey: "gemini3Pro",
+		labelKey: "oneMillionCtx",
 	},
 ]
 
 export const freeModels = [
 	{
 		id: "x-ai/grok-code-fast-1",
-		description: "Fast inference with strong coding performance",
-		label: "FREE",
+		descriptionKey: "grokCodeFast",
+		labelKey: "free",
 	},
 	{
 		id: "minimax/minimax-m2",
-		description: "Open source model with solid performance",
-		label: "FREE",
+		descriptionKey: "minimaxM2",
+		labelKey: "free",
 	},
 	{
 		id: "z-ai/glm-4.6",
-		description: "Zhipu AI's latest agentic coding model in GLM series",
-		label: "FREE",
+		descriptionKey: "glm46",
+		labelKey: "free",
 	},
 	{
 		id: "kwaipilot/kat-coder-pro:free",
-		description: "KwaiKAT's most advanced agentic coding model in the KAT-Coder series",
-		label: "FREE",
+		descriptionKey: "katCoderPro",
+		labelKey: "free",
 	},
 	{
 		id: "mistralai/devstral-2512:free",
-		description: "Mistral's latest model with strong coding abilities",
-		label: "FREE",
+		descriptionKey: "devstral2512",
+		labelKey: "free",
 	},
 ]
 
 const FREE_CLINE_MODELS = freeModels.map((m) => m.id)
 
 const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, currentMode, showProviderRouting }) => {
+	const { t } = useTranslation()
 	const { handleModeFieldChange, handleModeFieldsChange, handleFieldChange } = useApiConfigurationHandlers()
 	const { apiConfiguration, favoritedModelIds, openRouterModels, refreshOpenRouterModels } = useExtensionState()
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
@@ -314,7 +317,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 			</style>
 			<div style={{ display: "flex", flexDirection: "column" }}>
 				<label htmlFor="model-search">
-					<span style={{ fontWeight: 500 }}>Model</span>
+					<span style={{ fontWeight: 500 }}>{t("settings.providers.model")}</span>
 				</label>
 
 				{modeFields.apiProvider === "cline" && (
@@ -322,10 +325,10 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 						{/* Tabs */}
 						<TabsContainer style={{ marginTop: 4 }}>
 							<Tab active={activeTab === "recommended"} onClick={() => setActiveTab("recommended")}>
-								Recommended
+								{t("settings.providers.modelTabs.recommended")}
 							</Tab>
 							<Tab active={activeTab === "free"} onClick={() => setActiveTab("free")}>
-								Free
+								{t("settings.providers.modelTabs.free")}
 							</Tab>
 						</TabsContainer>
 
@@ -334,10 +337,10 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 							{activeTab === "recommended" &&
 								recommendedModels.map((model) => (
 									<FeaturedModelCard
-										description={model.description}
+										description={t(`settings.providers.modelDescriptions.${model.descriptionKey}`)}
 										isSelected={selectedModelId === model.id}
 										key={model.id}
-										label={model.label}
+										label={t(`settings.providers.modelLabels.${model.labelKey}`)}
 										modelId={model.id}
 										onClick={() => {
 											handleModelChange(model.id)
@@ -348,10 +351,10 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 							{activeTab === "free" &&
 								freeModels.map((model) => (
 									<FeaturedModelCard
-										description={model.description}
+										description={t(`settings.providers.modelDescriptions.${model.descriptionKey}`)}
 										isSelected={selectedModelId === model.id}
 										key={model.id}
-										label={model.label}
+										label={t(`settings.providers.modelLabels.${model.labelKey}`)}
 										modelId={model.id}
 										onClick={() => {
 											handleModelChange(model.id)

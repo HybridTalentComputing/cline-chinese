@@ -2,8 +2,8 @@ import { ANTHROPIC_MAX_THINKING_BUDGET, ANTHROPIC_MIN_THINKING_BUDGET } from "@s
 import { Mode } from "@shared/storage/types"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { memo, useCallback, useEffect, useState } from "react"
-import styled from "styled-components"
 import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { getModeSpecificFields } from "./utils/providerUtils"
 import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
@@ -122,7 +122,8 @@ const ThinkingBudgetSlider = ({ currentMode }: ThinkingBudgetSliderProps) => {
 	return (
 		<>
 			<VSCodeCheckbox checked={isEnabled} onClick={handleToggleChange}>
-				{t("settings.features.enableThinking")}{localValue && localValue > 0 ? ` (${localValue.toLocaleString()} tokens)` : ""}
+				{t("settings.features.enableThinking")}
+				{localValue && localValue > 0 ? ` (${localValue.toLocaleString()} ${t("settings.features.tokens")})` : ""}
 			</VSCodeCheckbox>
 
 			{isEnabled && (

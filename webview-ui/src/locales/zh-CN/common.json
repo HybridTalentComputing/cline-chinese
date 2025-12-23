@@ -199,6 +199,8 @@
 		},
 		"features": {
 			"new": "新",
+			"enableThinking": "启用思考",
+			"tokens": "tokens",
 			"subagentsDescription": "子代理需要安装 Cline CLI。请使用 {{installCmd}} 安装，然后运行 {{authCmd}} 以使用 Cline 进行身份验证或配置 API 提供商。",
 			"installNow": "立即安装",
 			"subagentsEnabled": "子代理已启用",
@@ -306,7 +308,34 @@
 			"medium": "中",
 			"vertexDescription": "要使用 Google Cloud Vertex AI，您需要 {{step1}} 以及 {{step2}}",
 			"vertexStep1": "1) 创建 Google Cloud 账号 › 启用 Vertex AI API › 启用所需的 Claude 模型，",
-			"vertexStep2": "2) 安装 Google Cloud CLI › 配置应用默认凭据 (Application Default Credentials)。"
+			"vertexStep2": "2) 安装 Google Cloud CLI › 配置应用默认凭据 (Application Default Credentials)。",
+			"modelTabs": {
+				"recommended": "推荐",
+				"free": "免费"
+			},
+			"modelLabels": {
+				"best": "最佳",
+				"new": "新",
+				"hot": "热门",
+				"free": "免费",
+				"oneMillionCtx": "1M 上下文"
+			},
+			"modelDescriptions": {
+				"claudeSonnet45": "速度、成本和质量的完美平衡",
+				"gemini3Flash": "专为速度和价格效率构建的智能模型",
+				"claudeOpus45": "复杂编码的最先进模型",
+				"gpt52": "OpenAI 最新模型，具有强大的编码能力",
+				"gemini3Pro": "适用于大型代码库的 1M 上下文窗口",
+				"grokCodeFast": "快速推理，具有强大的编码性能",
+				"minimaxM2": "具有稳定性能的开源模型",
+				"glm46": "智谱 AI GLM 系列最新的代理编码模型",
+				"katCoderPro": "KwaiKAT KAT-Coder 系列最先进的代理编码模型",
+				"devstral2512": "Mistral 最新模型，具有强大的编码能力"
+			},
+			"contextWindowSwitcher": {
+				"switchTo1M": "切换到 1M 上下文窗口模型",
+				"switchTo200K": "切换到 200K 上下文窗口模型"
+			}
 		}
 	},
 	"history": {
