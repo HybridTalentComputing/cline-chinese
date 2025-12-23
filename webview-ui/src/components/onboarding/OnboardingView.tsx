@@ -21,7 +21,7 @@ import {
 	getSpeedLabel,
 	type OnboardingModelsByGroup,
 } from "./data-models"
-import { NEW_USER_TYPE, STEP_CONFIG, USER_TYPE_SELECTIONS } from "./data-steps"
+import { NEW_USER_TYPE, STEP_CONFIG } from "./data-steps"
 
 type ModelSelectionProps = {
 	userType: NEW_USER_TYPE.FREE | NEW_USER_TYPE.POWER
@@ -397,17 +397,9 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 
 	const stepDisplayInfo = useMemo(() => {
 		const step = stepNumber === 0 || stepNumber === 2 ? STEP_CONFIG[stepNumber] : null
-		const title = step
-			? t(step.title)
-			: userType
-				? t(STEP_CONFIG[userType].title)
-				: t(STEP_CONFIG[0].title)
+		const title = step ? t(step.title) : userType ? t(STEP_CONFIG[userType].title) : t(STEP_CONFIG[0].title)
 		const description = step ? (step.description ? t(step.description) : null) : null
-		const buttons = step
-			? step.buttons
-			: userType
-				? STEP_CONFIG[userType].buttons
-				: STEP_CONFIG[0].buttons
+		const buttons = step ? step.buttons : userType ? STEP_CONFIG[userType].buttons : STEP_CONFIG[0].buttons
 		return { title, description, buttons }
 	}, [stepNumber, userType, t])
 

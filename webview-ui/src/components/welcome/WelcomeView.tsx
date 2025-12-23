@@ -1,5 +1,5 @@
 import { BooleanRequest, EmptyRequest } from "@shared/proto/cline/common"
-import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { memo, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ClineLogoWhite from "@/assets/ClineLogoWhite"
