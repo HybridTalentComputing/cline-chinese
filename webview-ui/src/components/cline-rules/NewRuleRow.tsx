@@ -1,6 +1,7 @@
 import { CreateHookRequest, RuleFileRequest } from "@shared/proto/index.cline"
 import { PlusIcon } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useClickAway } from "react-use"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -25,6 +26,7 @@ const HOOK_TYPES = [
 ]
 
 const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHooks = [], workspaceName }) => {
+	const { t } = useTranslation()
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [filename, setFilename] = useState("")
 	const inputRef = useRef<HTMLInputElement>(null)
@@ -86,7 +88,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 			const extension = getExtension(trimmedFilename)
 
 			if (!isValidExtension(extension)) {
-				setError("Only .md, .txt, or no file extension allowed")
+				setError(t("clineRules.newRuleRow.invalidExtension"))
 				return
 			}
 
@@ -139,15 +141,14 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 					{ruleType === "hook" ? (
 						<>
 							<label className="sr-only" htmlFor="hook-type-select">
-								Select hook type to create
+								{t("clineRules.hooks.selectHookType")}
 							</label>
 							<span className="sr-only" id="hook-select-description">
-								Choose a hook type to create. Hooks execute at specific points in Cline's lifecycle. Available:{" "}
-								{availableHookTypes.map((h) => h.name).join(", ")}
+								{t("clineRules.hooks.chooseHookType")} {availableHookTypes.map((h) => h.name).join(", ")}
 							</span>
 							<select
 								aria-describedby="hook-select-description"
-								aria-label="Select hook type to create"
+								aria-label={t("clineRules.hooks.selectHookType")}
 								className="flex-1 bg-input-background text-input-foreground border-0 outline-0 rounded focus:outline-none focus:ring-0 focus:border-transparent px-2 cursor-pointer"
 								disabled={availableHookTypes.length === 0}
 								id="hook-type-select"
@@ -168,7 +169,9 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 								}}
 								value="">
 								<option disabled value="">
-									{availableHookTypes.length === 0 ? "All hooks created" : "New hook..."}
+									{availableHookTypes.length === 0
+										? t("clineRules.hooks.allHooksCreated")
+										: t("clineRules.hooks.newHook")}
 								</option>
 								{availableHookTypes.map((hook) => (
 									<option key={hook.name} title={hook.description} value={hook.name}>
@@ -190,11 +193,11 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 								placeholder={
 									isExpanded
 										? ruleType === "workflow"
-											? "workflow-name (.md, .txt, or no extension)"
-											: "rule-name (.md, .txt, or no extension)"
+											? t("clineRules.newRuleRow.workflowPlaceholder")
+											: t("clineRules.newRuleRow.rulePlaceholder")
 										: ruleType === "workflow"
-											? "New workflow file..."
-											: "New rule file..."
+											? t("clineRules.newRuleRow.newWorkflowFile")
+											: t("clineRules.newRuleRow.newRuleFile")
 								}
 								ref={inputRef}
 								type="text"
@@ -204,10 +207,10 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 							<Button
 								aria-label={
 									isExpanded
-										? "Create file"
+										? t("clineRules.newRuleRow.createFile")
 										: ruleType === "workflow"
-											? "New workflow file..."
-											: "New rule file..."
+											? t("clineRules.newRuleRow.newWorkflowFile")
+											: t("clineRules.newRuleRow.newRuleFile")
 								}
 								className="mx-0.5"
 								onClick={(e) => {
@@ -217,7 +220,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 									}
 								}}
 								size="icon"
-								title={isExpanded ? "Create file" : "New file"}
+								title={isExpanded ? t("clineRules.newRuleRow.createFile") : t("clineRules.newRuleRow.newFile")}
 								type={isExpanded ? "submit" : "button"}
 								variant="icon">
 								<PlusIcon />

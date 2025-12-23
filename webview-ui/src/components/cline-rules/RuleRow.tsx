@@ -2,6 +2,7 @@ import { StringRequest } from "@shared/proto/cline/common"
 import { RuleFileRequest } from "@shared/proto/index.cline"
 import { REMOTE_URI_SCHEME } from "@shared/remote-config/constants"
 import { EyeIcon, InfoIcon, PenIcon, Trash2Icon } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -16,6 +17,7 @@ const RuleRow: React.FC<{
 	isRemote?: boolean
 	alwaysEnabled?: boolean
 }> = ({ rulePath, enabled, isGlobal, toggleRule, ruleType, isRemote = false, alwaysEnabled = false }) => {
+	const { t } = useTranslation()
 	// Check if the path type is Windows
 	const win32Path = /^[a-zA-Z]:\\/.test(rulePath)
 	// Get the filename from the path for display
@@ -109,9 +111,7 @@ const RuleRow: React.FC<{
 							<TooltipTrigger asChild className="cursor-help">
 								<InfoIcon className="ml-1.5 opacity-70 size-[0.85rem]" />
 							</TooltipTrigger>
-							<TooltipContent>
-								Searches recursively for all AGENTS.md files in the workspace when a top-level AGENTS.md exists
-							</TooltipContent>
+							<TooltipContent>{t("clineRules.hooks.agentsInfo")}</TooltipContent>
 						</Tooltip>
 					)}
 				</span>
@@ -124,22 +124,22 @@ const RuleRow: React.FC<{
 						disabled={isDisabled}
 						key={rulePath}
 						onClick={() => toggleRule(rulePath, !enabled)}
-						title={isDisabled ? "This rule is required and cannot be disabled" : undefined}
+						title={isDisabled ? t("clineRules.ruleRow.ruleRequired") : undefined}
 					/>
 					<Button
-						aria-label={isRemote ? "View rule file" : "Edit rule file"}
+						aria-label={isRemote ? t("clineRules.ruleRow.viewRuleFile") : t("clineRules.ruleRow.editRuleFile")}
 						onClick={handleEditClick}
 						size="xs"
-						title={isRemote ? "View rule file (read-only)" : "Edit rule file"}
+						title={isRemote ? t("clineRules.ruleRow.viewRuleFileReadOnly") : t("clineRules.ruleRow.editRuleFile")}
 						variant="icon">
 						{isRemote ? <EyeIcon /> : <PenIcon />}
 					</Button>
 					<Button
-						aria-label="Delete rule file"
+						aria-label={t("clineRules.ruleRow.deleteRuleFile")}
 						disabled={isRemote}
 						onClick={handleDeleteClick}
 						size="xs"
-						title="Delete rule file"
+						title={t("clineRules.ruleRow.deleteRuleFile")}
 						variant="icon">
 						<Trash2Icon />
 					</Button>

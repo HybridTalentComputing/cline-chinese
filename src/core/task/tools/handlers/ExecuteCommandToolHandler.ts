@@ -222,9 +222,16 @@ export class ExecuteCommandToolHandler implements IFullyManagedTool {
 		if (didAutoApprove && config.autoApprovalSettings.enableNotifications) {
 			// if the command was auto-approved, and it's long running we need to notify the user after some time has passed without proceeding
 			timeoutId = setTimeout(() => {
+				const preferredLanguage = config.services.stateManager.getGlobalSettingsKey("preferredLanguage")
+				const isChinese =
+					preferredLanguage === "Simplified Chinese - 简体中文" ||
+					preferredLanguage === "zh-CN" ||
+					preferredLanguage === "zh-TW"
 				showSystemNotification({
-					subtitle: "Command is still running",
-					message: "An auto-approved command has been running for 30s, and may need your attention.",
+					subtitle: isChinese ? "命令仍在运行" : "Command is still running",
+					message: isChinese
+						? "一个自动批准的命令已运行 30 秒，可能需要您的注意。"
+						: "An auto-approved command has been running for 30s, and may need your attention.",
 				})
 			}, 30_000)
 		}

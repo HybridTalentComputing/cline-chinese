@@ -1,4 +1,5 @@
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { ActionMetadata } from "./types"
 
@@ -29,7 +30,25 @@ const CheckboxWrapper = styled.div<{ $disabled: boolean }>`
 `
 
 const AutoApproveMenuItem = ({ action, isChecked, onToggle, showIcon = true, disabled = false }: AutoApproveMenuItemProps) => {
+	const { t } = useTranslation()
 	const checked = isChecked(action)
+
+	// 根据 action.id 获取翻译键
+	const getLabelTranslationKey = (id: string): string => {
+		const keyMap: Record<string, string> = {
+			readFiles: "autoApprove.actions.readProjectFiles",
+			readFilesExternally: "autoApprove.actions.readAllFiles",
+			editFiles: "autoApprove.actions.editProjectFiles",
+			editFilesExternally: "autoApprove.actions.editAllFiles",
+			executeSafeCommands: "autoApprove.actions.executeSafeCommands",
+			executeAllCommands: "autoApprove.actions.executeAllCommands",
+			useBrowser: "autoApprove.actions.useBrowser",
+			useMcp: "autoApprove.actions.useMcpServers",
+		}
+		return keyMap[id] || action.label
+	}
+
+	const translatedLabel = getLabelTranslationKey(action.id)
 
 	const onChange = async (e: React.MouseEvent) => {
 		if (disabled) {
@@ -45,7 +64,7 @@ const AutoApproveMenuItem = ({ action, isChecked, onToggle, showIcon = true, dis
 				<VSCodeCheckbox checked={checked} disabled={disabled}>
 					<div className="w-full flex text-sm items-center justify-start text-foreground gap-2">
 						{showIcon && <span className={`codicon ${action.icon} icon`}></span>}
-						<span className="label">{action.label}</span>
+						<span className="label">{t(translatedLabel, { defaultValue: action.label })}</span>
 					</div>
 				</VSCodeCheckbox>
 			</CheckboxWrapper>

@@ -13,7 +13,7 @@
 	"cline.walkthrough.step5.title": "您始终拥有控制权",
 	"cline.walkthrough.step5.description": "查看 Cline 的计划和差异。在更改发生前予以批准。没有意外。",
 	"cline.command.newTask": "新任务",
-	"cline.command.mcpServers": "MCP 服务端",
+	"cline.command.mcpServers": "MCP 服务器",
 	"cline.command.history": "历史记录",
 	"cline.command.account": "账户",
 	"cline.command.settings": "设置",
@@ -27,4 +27,3 @@
 	"cline.command.openWalkthrough": "打开入门教程",
 	"cline.command.reconstructTaskHistory": "重建任务历史"
 }
-

@@ -403,6 +403,27 @@
 			"parameters": "Parameters",
 			"noDescription": "No description"
 		},
+		"serversToggle": {
+			"manageServers": "Manage MCP Servers",
+			"hideServers": "Hide MCP Servers",
+			"showServers": "Show MCP Servers",
+			"goToSettings": "Go to MCP server settings",
+			"noServersInstalled": "No MCP servers installed"
+		},
+		"serverRow": {
+			"restartServer": "Restart Server",
+			"deleteServer": "Delete Server",
+			"retrying": "Retrying...",
+			"retryConnection": "Retry Connection",
+			"deleting": "Deleting...",
+			"restarting": "Restarting...",
+			"authenticate": "Authenticate",
+			"tools": "Tools",
+			"resources": "Resources",
+			"requestTimeout": "Request Timeout",
+			"noToolsFound": "No tools found",
+			"noResourcesFound": "No resources found"
+		},
 		"unknown": "unknown"
 	},
 	"onboarding": {
@@ -563,6 +584,107 @@
 			"subagentsWindowsTooltip": "Cline CLI & subagents are only available on macOS & Linux",
 			"copyCommand": "Copy command",
 			"copied": "Copied!"
+		}
+	},
+	"autoApprove": {
+		"bar": {
+			"title": "Auto-approve:",
+			"yoloTitle": "Auto-approve: YOLO",
+			"yoloDescription": "YOLO mode is enabled.",
+			"disableInSettings": "Disable it in Settings",
+			"openSettings": "Open auto-approve settings",
+			"closeSettings": "Close auto-approve settings",
+			"none": "None"
+		},
+		"modal": {
+			"description": "Let Cline take these actions without asking for approval.",
+			"docs": "Docs",
+			"enableNotifications": "Enable notifications"
+		},
+		"mcp": {
+			"allTools": "Auto-approve all tools"
+		},
+		"notification": {
+			"message": "An auto-approved command has been running for 30s, and may need your attention."
+		},
+		"actions": {
+			"readProjectFiles": "Read project files",
+			"readAllFiles": "Read all files",
+			"editProjectFiles": "Edit project files",
+			"editAllFiles": "Edit all files",
+			"executeSafeCommands": "Execute safe commands",
+			"executeAllCommands": "Execute all commands",
+			"useBrowser": "Use the browser",
+			"useMcpServers": "Use MCP servers",
+			"shortNames": {
+				"readFiles": "Read",
+				"readFilesExternally": "Read (all)",
+				"editFiles": "Edit",
+				"editFilesExternally": "Edit (all)",
+				"executeSafeCommands": "Safe Commands",
+				"executeAllCommands": "All Commands",
+				"useBrowser": "Browser",
+				"useMcp": "MCP"
+			}
+		}
+	},
+	"clineRules": {
+		"manageRulesAndWorkflows": "Manage Cline Rules & Workflows",
+		"hideRulesAndWorkflows": "Hide Cline Rules & Workflows",
+		"showRulesAndWorkflows": "Show Cline Rules & Workflows",
+		"tabs": {
+			"rules": "Rules",
+			"workflows": "Workflows",
+			"hooks": "Hooks"
+		},
+		"remoteBanner": {
+			"rules": "Your organization manages some rules",
+			"workflows": "Your organization manages some workflows"
+		},
+		"descriptions": {
+			"rules": "Rules allow you to provide Cline with system-level guidance. Think of them as a persistent way to include context and preferences for your projects or globally for every conversation.",
+			"workflows": "Workflows allow you to define a series of steps to guide Cline through a repetitive set of tasks, such as deploying a service or submitting a PR. To invoke a workflow, type",
+			"workflowsInvoke": "in the chat.",
+			"hooks": "Hooks allow you to execute custom scripts at specific points in Cline's execution lifecycle, enabling automation and integration with external tools.",
+			"hooksToggle": "Toggle to enable/disable (chmod +x/-x)."
+		},
+		"sections": {
+			"enterpriseRules": "Enterprise Rules",
+			"globalRules": "Global Rules",
+			"workspaceRules": "Workspace Rules",
+			"enterpriseWorkflows": "Enterprise Workflows",
+			"globalWorkflows": "Global Workflows",
+			"workspaceWorkflows": "Workspace Workflows",
+			"globalHooks": "Global Hooks",
+			"workspaceHooks": "Workspace Hooks"
+		},
+		"noRulesFound": "No rules found",
+		"noWorkflowsFound": "No workflows found",
+		"docs": "Docs",
+		"ruleRow": {
+			"viewRuleFile": "View rule file",
+			"editRuleFile": "Edit rule file",
+			"viewRuleFileReadOnly": "View rule file (read-only)",
+			"deleteRuleFile": "Delete rule file",
+			"ruleRequired": "This rule is required and cannot be disabled"
+		},
+		"hooks": {
+			"windowsWarning": "Hook toggling is not supported on Windows. Hooks can be created, edited, and deleted, but cannot be enabled/disabled and will not execute.",
+			"windowsTooltip": "Hook toggling not supported on Windows. Hooks can be edited and deleted, but won't execute.",
+			"chooseHookType": "Choose a hook type to create. Hooks execute at specific points in Cline's lifecycle. Available:",
+			"agentsInfo": "Searches recursively for all AGENTS.md files in the workspace when a top-level AGENTS.md exists",
+			"newHook": "New hook...",
+			"allHooksCreated": "All hooks created",
+			"selectHookType": "Select hook type to create"
+		},
+		"newRuleRow": {
+			"newWorkflowFile": "New workflow file...",
+			"newRuleFile": "New rule file...",
+			"createFile": "Create file",
+			"newFile": "New file",
+			"workflowPlaceholder": "workflow-name (.md, .txt, or no extension)",
+			"rulePlaceholder": "rule-name (.md, .txt, or no extension)",
+			"invalidExtension": "Only .md, .txt, or no file extension allowed"
 		}
 	}
 }

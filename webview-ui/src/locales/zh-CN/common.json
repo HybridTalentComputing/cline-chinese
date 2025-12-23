@@ -403,6 +403,27 @@
 			"parameters": "参数",
 			"noDescription": "无描述"
 		},
+		"serversToggle": {
+			"manageServers": "管理 MCP 服务器",
+			"hideServers": "隐藏 MCP 服务器",
+			"showServers": "显示 MCP 服务器",
+			"goToSettings": "转到 MCP 服务器设置",
+			"noServersInstalled": "未安装 MCP 服务器"
+		},
+		"serverRow": {
+			"restartServer": "重启服务器",
+			"deleteServer": "删除服务器",
+			"retrying": "重试中...",
+			"retryConnection": "重试连接",
+			"deleting": "删除中...",
+			"restarting": "重启中...",
+			"authenticate": "认证",
+			"tools": "工具",
+			"resources": "资源",
+			"requestTimeout": "请求超时",
+			"noToolsFound": "未找到工具",
+			"noResourcesFound": "未找到资源"
+		},
 		"unknown": "未知"
 	},
 	"onboarding": {
@@ -563,6 +584,107 @@
 			"subagentsWindowsTooltip": "Cline CLI 和子代理仅在 macOS 和 Linux 上可用",
 			"copyCommand": "复制命令",
 			"copied": "已复制！"
+		}
+	},
+	"autoApprove": {
+		"bar": {
+			"title": "自动批准：",
+			"yoloTitle": "自动批准：YOLO",
+			"yoloDescription": "YOLO 模式已启用。",
+			"disableInSettings": "在设置中禁用它",
+			"openSettings": "打开自动批准设置",
+			"closeSettings": "关闭自动批准设置",
+			"none": "无"
+		},
+		"modal": {
+			"description": "让 Cline 执行这些操作而无需请求批准。",
+			"docs": "文档",
+			"enableNotifications": "启用通知"
+		},
+		"mcp": {
+			"allTools": "自动批准所有工具"
+		},
+		"notification": {
+			"message": "一个自动批准的命令已运行 30 秒，可能需要您的注意。"
+		},
+		"actions": {
+			"readProjectFiles": "读取项目文件",
+			"readAllFiles": "读取所有文件",
+			"editProjectFiles": "编辑项目文件",
+			"editAllFiles": "编辑所有文件",
+			"executeSafeCommands": "执行安全命令",
+			"executeAllCommands": "执行所有命令",
+			"useBrowser": "使用浏览器",
+			"useMcpServers": "使用 MCP 服务器",
+			"shortNames": {
+				"readFiles": "读取",
+				"readFilesExternally": "读取（全部）",
+				"editFiles": "编辑",
+				"editFilesExternally": "编辑（全部）",
+				"executeSafeCommands": "安全命令",
+				"executeAllCommands": "所有命令",
+				"useBrowser": "浏览器",
+				"useMcp": "MCP"
+			}
+		}
+	},
+	"clineRules": {
+		"manageRulesAndWorkflows": "管理 Cline 规则和工作流",
+		"hideRulesAndWorkflows": "隐藏 Cline 规则和工作流",
+		"showRulesAndWorkflows": "显示 Cline 规则和工作流",
+		"tabs": {
+			"rules": "规则",
+			"workflows": "工作流",
+			"hooks": "钩子"
+		},
+		"remoteBanner": {
+			"rules": "您的组织管理部分规则",
+			"workflows": "您的组织管理部分工作流"
+		},
+		"descriptions": {
+			"rules": "规则允许您为 Cline 提供系统级指导。将它们视为一种持久的方式，用于为您的项目或全局的每次对话包含上下文和偏好。",
+			"workflows": "工作流允许您定义一系列步骤，引导 Cline 完成重复性任务，例如部署服务或提交 PR。要调用工作流，请在聊天中输入",
+			"workflowsInvoke": "。",
+			"hooks": "钩子允许您在 Cline 执行生命周期的特定点执行自定义脚本，实现自动化并与外部工具集成。",
+			"hooksToggle": "切换以启用/禁用 (chmod +x/-x)。"
+		},
+		"sections": {
+			"enterpriseRules": "企业规则",
+			"globalRules": "全局规则",
+			"workspaceRules": "工作区规则",
+			"enterpriseWorkflows": "企业工作流",
+			"globalWorkflows": "全局工作流",
+			"workspaceWorkflows": "工作区工作流",
+			"globalHooks": "全局钩子",
+			"workspaceHooks": "工作区钩子"
+		},
+		"noRulesFound": "未找到规则",
+		"noWorkflowsFound": "未找到工作流",
+		"docs": "文档",
+		"ruleRow": {
+			"viewRuleFile": "查看规则文件",
+			"editRuleFile": "编辑规则文件",
+			"viewRuleFileReadOnly": "查看规则文件（只读）",
+			"deleteRuleFile": "删除规则文件",
+			"ruleRequired": "此规则是必需的，无法禁用"
+		},
+		"hooks": {
+			"windowsWarning": "Windows 不支持钩子切换。可以创建、编辑和删除钩子，但无法启用/禁用，也不会执行。",
+			"windowsTooltip": "Windows 不支持钩子切换。可以编辑和删除钩子，但不会执行。",
+			"chooseHookType": "选择要创建的钩子类型。钩子在 Cline 生命周期的特定点执行。可用类型：",
+			"agentsInfo": "当存在顶级 AGENTS.md 文件时，递归搜索工作区中的所有 AGENTS.md 文件",
+			"newHook": "新建钩子...",
+			"allHooksCreated": "所有钩子已创建",
+			"selectHookType": "选择要创建的钩子类型"
+		},
+		"newRuleRow": {
+			"newWorkflowFile": "新建工作流文件...",
+			"newRuleFile": "新建规则文件...",
+			"createFile": "创建文件",
+			"newFile": "新建文件",
+			"workflowPlaceholder": "工作流名称 (.md, .txt 或无扩展名)",
+			"rulePlaceholder": "规则名称 (.md, .txt 或无扩展名)",
+			"invalidExtension": "仅允许 .md、.txt 或无文件扩展名"
 		}
 	}
 }

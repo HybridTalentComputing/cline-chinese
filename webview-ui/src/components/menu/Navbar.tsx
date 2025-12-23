@@ -1,5 +1,6 @@
 import { HistoryIcon, PlusIcon, SettingsIcon, UserCircleIcon } from "lucide-react"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { TaskServiceClient } from "@/services/grpc-client"
@@ -14,6 +15,7 @@ const McpServerIcon = ({ className, size }: { className?: string; size?: number 
 )
 
 export const Navbar = () => {
+	const { t } = useTranslation()
 	const { navigateToHistory, navigateToSettings, navigateToAccount, navigateToMcp, navigateToChat } = useExtensionState()
 
 	const SETTINGS_TABS = useMemo(
@@ -35,7 +37,7 @@ export const Navbar = () => {
 			{
 				id: "mcp",
 				name: "MCP",
-				tooltip: "MCP Servers",
+				tooltip: t("mcp.title"),
 				icon: McpServerIcon,
 				navigate: navigateToMcp,
 			},
