@@ -112,7 +112,7 @@ export class WebFetchToolHandler implements IFullyManagedTool {
 						undefined,
 						block.isNativeToolCall,
 					)
-					return formatResponse.toolDenied()
+					return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
 				} else {
 					telemetryService.captureToolUsage(
 						config.ulid,
@@ -134,7 +134,7 @@ export class WebFetchToolHandler implements IFullyManagedTool {
 			} catch (error) {
 				const { PreToolUseHookCancellationError } = await import("@core/hooks/PreToolUseHookCancellationError")
 				if (error instanceof PreToolUseHookCancellationError) {
-					return formatResponse.toolDenied()
+					return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
 				}
 				throw error
 			}

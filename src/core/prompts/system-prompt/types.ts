@@ -104,6 +104,7 @@ export interface SystemPromptContext {
 	readonly localWindsurfRulesFileInstructions?: string
 	readonly localAgentsRulesFileInstructions?: string
 	readonly clineIgnoreInstructions?: string
+	readonly preferredLanguage?: string
 	readonly preferredLanguageInstructions?: string
 	readonly browserSettings?: BrowserSettings
 	readonly isTesting?: boolean

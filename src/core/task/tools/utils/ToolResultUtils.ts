@@ -1,6 +1,6 @@
 import { ApiHandler } from "@core/api"
 import { ToolUse } from "@core/assistant-message"
-import { formatResponse } from "@core/prompts/responses"
+import { formatResponse, getT } from "@core/prompts/responses"
 import { ToolResponse } from "@core/task"
 import { processFilesIntoText } from "@/integrations/misc/extract-text"
 import { Logger } from "@/services/logging/Logger"
@@ -94,6 +94,7 @@ export class ToolResultUtils {
 		feedback?: string,
 		images?: string[],
 		fileContentString?: string,
+		language?: string,
 	): void {
 		// Check if we have any meaningful content to add
 		const hasMeaningfulFeedback = feedback && feedback.trim() !== ""
@@ -105,10 +106,12 @@ export class ToolResultUtils {
 			return
 		}
 
+		const t = getT(language)
+
 		// Build the feedback text only if we have meaningful feedback
 		const feedbackText = hasMeaningfulFeedback
-			? `The user provided the following feedback:\n<feedback>\n${feedback}\n</feedback>`
-			: "The user provided additional content:"
+			? t.responses.userFeedbackNotice(feedback)
+			: t.responses.userAdditionalContentNotice
 
 		const content = formatResponse.toolResult(feedbackText, images, hasMeaningfulFileContent ? fileContentString : undefined)
 		if (typeof content === "string") {
@@ -133,7 +136,13 @@ export class ToolResultUtils {
 				fileContentString = await processFilesIntoText(files)
 			}
 
-			ToolResultUtils.pushAdditionalToolFeedback(config.taskState.userMessageContent, text, images, fileContentString)
+			ToolResultUtils.pushAdditionalToolFeedback(
+				config.taskState.userMessageContent,
+				text,
+				images,
+				fileContentString,
+				config.stateManager.getGlobalState().settings.preferredLanguage,
+			)
 			await config.callbacks.say("user_feedback", text, images, files)
 		}
 

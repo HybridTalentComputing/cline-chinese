@@ -1,12 +1,7 @@
 import { SystemPromptSection } from "../templates/placeholders"
 import { TemplateEngine } from "../templates/TemplateEngine"
 import type { PromptVariant, SystemPromptContext } from "../types"
-
-const USER_CUSTOM_INSTRUCTIONS_TEMPLATE_TEXT = `USER'S CUSTOM INSTRUCTIONS
-
-The following additional instructions are provided by the user, and should be followed to the best of your ability without interfering with the TOOL USE guidelines.
-
-{{CUSTOM_INSTRUCTIONS}}`
+import { getPromptTranslation } from "../../i18n"
 
 export async function getUserInstructions(variant: PromptVariant, context: SystemPromptContext): Promise<string | undefined> {
 	const customInstructions = buildUserInstructions(
@@ -24,8 +19,8 @@ export async function getUserInstructions(variant: PromptVariant, context: Syste
 		return undefined
 	}
 
-	const template =
-		variant.componentOverrides?.[SystemPromptSection.USER_INSTRUCTIONS]?.template || USER_CUSTOM_INSTRUCTIONS_TEMPLATE_TEXT
+	const t = getPromptTranslation(context)
+	const template = variant.componentOverrides?.[SystemPromptSection.USER_INSTRUCTIONS]?.template || t.userInstructions.template
 
 	return new TemplateEngine().resolve(template, context, {
 		CUSTOM_INSTRUCTIONS: customInstructions,

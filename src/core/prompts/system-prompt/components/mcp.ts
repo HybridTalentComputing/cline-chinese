@@ -2,16 +2,7 @@ import type { McpServer } from "@/shared/mcp"
 import { SystemPromptSection } from "../templates/placeholders"
 import { TemplateEngine } from "../templates/TemplateEngine"
 import type { PromptVariant, SystemPromptContext } from "../types"
-
-const MCP_TEMPLATE_TEXT = `MCP SERVERS
-
-The Model Context Protocol (MCP) enables communication between the system and locally running MCP servers that provide additional tools and resources to extend your capabilities.
-
-# Connected MCP Servers
-
-When a server is connected, you can use the server's tools via the \`use_mcp_tool\` tool, and access the server's resources via the \`access_mcp_resource\` tool.
-
-{{MCP_SERVERS_LIST}}`
+import { getPromptTranslation } from "../../i18n"
 
 export async function getMcp(variant: PromptVariant, context: SystemPromptContext): Promise<string | undefined> {
 	const servers = context.mcpHub?.getServers() || []
@@ -23,22 +14,24 @@ export async function getMcp(variant: PromptVariant, context: SystemPromptContex
 }
 
 async function getMcpServers(servers: McpServer[], variant: PromptVariant, context: SystemPromptContext): Promise<string> {
-	const template = variant.componentOverrides?.[SystemPromptSection.MCP]?.template || MCP_TEMPLATE_TEXT
+	const t = getPromptTranslation(context)
+	const template = variant.componentOverrides?.[SystemPromptSection.MCP]?.template || t.mcp.template
 
-	const serversList = servers.length > 0 ? formatMcpServersList(servers) : "(No MCP servers currently connected)"
+	const serversList = servers.length > 0 ? formatMcpServersList(servers, context) : t.mcp.noServers
 	return new TemplateEngine().resolve(template, context, {
 		MCP_SERVERS_LIST: serversList,
 	})
 }
 
-function formatMcpServersList(servers: McpServer[]): string {
+function formatMcpServersList(servers: McpServer[], context: SystemPromptContext): string {
+	const t = getPromptTranslation(context)
 	return servers
 		.filter((server) => server.status === "connected")
 		.map((server) => {
 			const tools = server.tools
 				?.map((tool) => {
 					const schemaStr = tool.inputSchema
-						? `    Input Schema:
+						? `    ${t.mcp.inputSchema}
     ${JSON.stringify(tool.inputSchema, null, 2).split("\n").join("\n    ")}`
 						: ""
 
@@ -61,9 +54,9 @@ function formatMcpServersList(servers: McpServer[]): string {
 				(config.command
 					? ` (\`${config.command}${config.args && Array.isArray(config.args) ? ` ${config.args.join(" ")}` : ""}\`)`
 					: "") +
-				(tools ? `\n\n### Available Tools\n${tools}` : "") +
-				(templates ? `\n\n### Resource Templates\n${templates}` : "") +
-				(resources ? `\n\n### Direct Resources\n${resources}` : "")
+				(tools ? `\n\n### ${t.mcp.availableTools}\n${tools}` : "") +
+				(templates ? `\n\n### ${t.mcp.resourceTemplates}\n${templates}` : "") +
+				(resources ? `\n\n### ${t.mcp.directResources}\n${resources}` : "")
 			)
 		})
 		.join("\n\n")

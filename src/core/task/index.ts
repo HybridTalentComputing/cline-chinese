@@ -237,6 +237,10 @@ export class Task {
 	// Command executor for running shell commands (extracted from executeCommandTool)
 	private commandExecutor!: CommandExecutor
 
+	private get preferredLanguage() {
+		return this.stateManager.getGlobalState().settings.preferredLanguage
+	}
+
 	constructor(params: TaskParams) {
 		const {
 			controller,
@@ -810,7 +814,7 @@ export class Task {
 				relPath ? ` for '${relPath.toPosix()}'` : ""
 			} without value for required parameter '${paramName}'. Retrying...`,
 		)
-		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
+		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName, this.preferredLanguage), this.preferredLanguage)
 	}
 
 	async removeLastPartialMessageIfExistsWithType(type: "ask" | "say", askOrSay: ClineAsk | ClineSay) {
@@ -1247,6 +1251,7 @@ export class Task {
 			wasRecent,
 			responseText,
 			hasPendingFileContextWarnings,
+			this.preferredLanguage,
 		)
 
 		if (taskResumptionMessage !== "") {
@@ -1279,7 +1284,7 @@ export class Task {
 
 		// Inject file context warning if there were pending warnings from message editing
 		if (pendingContextWarning && pendingContextWarning.length > 0) {
-			const fileContextWarning = formatResponse.fileContextWarning(pendingContextWarning)
+			const fileContextWarning = formatResponse.fileContextWarning(pendingContextWarning, this.preferredLanguage)
 			newUserContent.push({
 				type: "text",
 				text: fileContextWarning,
@@ -1345,7 +1350,7 @@ export class Task {
 				nextUserContent = [
 					{
 						type: "text",
-						text: formatResponse.noToolsUsed(this.useNativeToolCalls),
+						text: formatResponse.noToolsUsed(this.useNativeToolCalls, this.preferredLanguage),
 					},
 				]
 				this.taskState.consecutiveMistakeCount++
@@ -1736,7 +1741,7 @@ export class Task {
 		const clineIgnoreContent = this.clineIgnoreController.clineIgnoreContent
 		let clineIgnoreInstructions: string | undefined
 		if (clineIgnoreContent) {
-			clineIgnoreInstructions = formatResponse.clineIgnoreInstructions(clineIgnoreContent)
+			clineIgnoreInstructions = formatResponse.clineIgnoreInstructions(clineIgnoreContent, this.preferredLanguage)
 		}
 
 		// Prepare multi-root workspace information if enabled
@@ -1770,6 +1775,7 @@ export class Task {
 			localWindsurfRulesFileInstructions,
 			localAgentsRulesFileInstructions,
 			clineIgnoreInstructions,
+			preferredLanguage,
 			preferredLanguageInstructions,
 			browserSettings: this.stateManager.getGlobalSettingsKey("browserSettings"),
 			yoloModeToggled: this.stateManager.getGlobalSettingsKey("yoloModeToggled"),
@@ -2161,7 +2167,7 @@ export class Task {
 				const feedbackUserContent: ClineUserContent[] = []
 				feedbackUserContent.push({
 					type: "text",
-					text: formatResponse.tooManyMistakes(text),
+					text: formatResponse.tooManyMistakes(text, this.preferredLanguage),
 				})
 				if (images && images.length > 0) {
 					feedbackUserContent.push(...formatResponse.imageBlocks(images))
@@ -2837,7 +2843,7 @@ export class Task {
 					// normal request where tool use is required
 					this.taskState.userMessageContent.push({
 						type: "text",
-						text: formatResponse.noToolsUsed(this.useNativeToolCalls),
+						text: formatResponse.noToolsUsed(this.useNativeToolCalls, this.preferredLanguage),
 					})
 					this.taskState.consecutiveMistakeCount++
 				}
@@ -3278,7 +3284,13 @@ export class Task {
 				details += "(Desktop files not shown automatically. Use list_files to explore if needed.)"
 			} else {
 				const [files, didHitLimit] = await listFiles(this.cwd, true, 200)
-				const result = formatResponse.formatFilesList(this.cwd, files, didHitLimit, this.clineIgnoreController)
+				const result = formatResponse.formatFilesList(
+					this.cwd,
+					files,
+					didHitLimit,
+					this.clineIgnoreController,
+					this.preferredLanguage,
+				)
 				details += result
 			}
 
@@ -3347,7 +3359,7 @@ export class Task {
 		details += "\n\n# Current Mode"
 		const mode = this.stateManager.getGlobalSettingsKey("mode")
 		if (mode === "plan") {
-			details += "\nPLAN MODE\n" + formatResponse.planModeInstructions()
+			details += "\nPLAN MODE\n" + formatResponse.planModeInstructions(this.preferredLanguage)
 		} else {
 			details += "\nACT MODE"
 		}

@@ -53,6 +53,10 @@ export class ToolExecutor {
 	private autoApprover: AutoApprove
 	private coordinator: ToolExecutorCoordinator
 
+	private get preferredLanguage() {
+		return this.stateManager.getGlobalState().settings.preferredLanguage
+	}
+
 	// Auto-approval methods using the AutoApprove class
 	private shouldAutoApproveTool(toolName: ClineDefaultTool): boolean | [boolean, boolean] {
 		return this.autoApprover.shouldAutoApproveTool(toolName)
@@ -267,7 +271,7 @@ export class ToolExecutor {
 		await this.say("error", errorString)
 
 		// Create error response for the tool
-		const errorResponse = formatResponse.toolError(errorString)
+		const errorResponse = formatResponse.toolError(errorString, this.preferredLanguage)
 		this.pushToolResult(errorResponse, block)
 	}
 
@@ -358,7 +362,7 @@ export class ToolExecutor {
 			if (!this.isParallelToolCallingEnabled() && this.taskState.didAlreadyUseTool) {
 				this.taskState.userMessageContent.push({
 					type: "text",
-					text: formatResponse.toolAlreadyUsed(block.name),
+					text: formatResponse.toolAlreadyUsed(block.name, this.preferredLanguage),
 				})
 				return true
 			}
@@ -372,7 +376,7 @@ export class ToolExecutor {
 			) {
 				const errorMessage = `Tool '${block.name}' is not available in PLAN MODE. This tool is restricted to ACT MODE for file modifications. Only use tools available for PLAN MODE when in that mode.`
 				await this.say("error", errorMessage)
-				this.pushToolResult(formatResponse.toolError(errorMessage), block)
+				this.pushToolResult(formatResponse.toolError(errorMessage, this.preferredLanguage), block)
 				return true
 			}
 
@@ -611,7 +615,7 @@ export class ToolExecutor {
 			}
 		} catch (error) {
 			executionSuccess = false
-			toolResult = formatResponse.toolError(`Tool execution failed: ${error}`)
+			toolResult = formatResponse.toolError(`Tool execution failed: ${error}`, this.preferredLanguage)
 
 			// Check abort before running PostToolUse hook (error path)
 			if (this.taskState.abort) {

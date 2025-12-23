@@ -101,7 +101,7 @@ export class BrowserToolHandler implements IFullyManagedTool {
 					await config.callbacks.removeLastPartialMessageIfExistsWithType("say", "browser_action_launch")
 					const didApprove = await ToolResultUtils.askApprovalAndPushFeedback("browser_action_launch", url, config)
 					if (!didApprove) {
-						return formatResponse.toolDenied()
+						return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
 					}
 				}
 
@@ -112,7 +112,7 @@ export class BrowserToolHandler implements IFullyManagedTool {
 				} catch (error) {
 					const { PreToolUseHookCancellationError } = await import("@core/hooks/PreToolUseHookCancellationError")
 					if (error instanceof PreToolUseHookCancellationError) {
-						return formatResponse.toolDenied()
+						return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
 					}
 					throw error
 				}

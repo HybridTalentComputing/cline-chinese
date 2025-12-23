@@ -3,6 +3,7 @@ import { ModelFamily } from "@/shared/prompts"
 import { ClineDefaultTool } from "@/shared/tools"
 import { type ClineToolSpec, toolSpecFunctionDeclarations, toolSpecFunctionDefinition, toolSpecInputSchema } from "../spec"
 import { PromptVariant, SystemPromptContext } from "../types"
+import { getPromptTranslation } from "../../i18n"
 
 export class ClineToolSet {
 	// A list of tools mapped by model group
@@ -101,7 +102,34 @@ export class ClineToolSet {
 			(tool) => !tool.config.contextRequirements || tool.config.contextRequirements(context),
 		)
 
-		return enabledTools
+		// Localize tool specifications
+		const t = getPromptTranslation(context)
+		return enabledTools.map((tool) => {
+			const toolTranslations = (t as any).tools?.[tool.config.name]
+			if (!toolTranslations) {
+				return tool
+			}
+
+			const localizedConfig = { ...tool.config }
+			if (toolTranslations.description) {
+				localizedConfig.description = toolTranslations.description
+			}
+
+			if (toolTranslations.parameters && localizedConfig.parameters) {
+				localizedConfig.parameters = localizedConfig.parameters.map((param) => {
+					const paramTranslation = toolTranslations.parameters[param.name]
+					if (paramTranslation?.instruction) {
+						return { ...param, instruction: paramTranslation.instruction }
+					}
+					return param
+				})
+			}
+
+			// Return a new object with localized config to avoid mutating shared state
+			return Object.create(tool, {
+				config: { value: localizedConfig, enumerable: true },
+			})
+		})
 	}
 
 	/**

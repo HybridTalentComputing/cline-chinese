@@ -30,6 +30,7 @@ export const getGlobalClineRules = async (globalClineRulesFilePath: string, togg
 
 	// 2. Append remote config rules
 	const stateManager = StateManager.get()
+	const { preferredLanguage } = stateManager.getSettings()
 	const remoteConfigSettings = stateManager.getRemoteConfigSettings()
 	const remoteRules = remoteConfigSettings.remoteGlobalRules || []
 	const remoteToggles = stateManager.getGlobalStateKey("remoteRulesToggles") || {}
@@ -48,13 +49,15 @@ export const getGlobalClineRules = async (globalClineRulesFilePath: string, togg
 
 	// 3. Return formatted instructions
 	if (combinedContent) {
-		return formatResponse.clineRulesGlobalDirectoryInstructions(globalClineRulesFilePath, combinedContent)
+		return formatResponse.clineRulesGlobalDirectoryInstructions(globalClineRulesFilePath, combinedContent, preferredLanguage)
 	}
 
 	return undefined
 }
 
 export const getLocalClineRules = async (cwd: string, toggles: ClineRulesToggles) => {
+	const stateManager = StateManager.get()
+	const { preferredLanguage } = stateManager.getSettings()
 	const clineRulesFilePath = path.resolve(cwd, GlobalFileNames.clineRules)
 
 	let clineRulesFileInstructions: string | undefined
@@ -69,7 +72,11 @@ export const getLocalClineRules = async (cwd: string, toggles: ClineRulesToggles
 
 				const rulesFilesTotalContent = await getRuleFilesTotalContent(rulesFilePaths, cwd, toggles)
 				if (rulesFilesTotalContent) {
-					clineRulesFileInstructions = formatResponse.clineRulesLocalDirectoryInstructions(cwd, rulesFilesTotalContent)
+					clineRulesFileInstructions = formatResponse.clineRulesLocalDirectoryInstructions(
+						cwd,
+						rulesFilesTotalContent,
+						preferredLanguage,
+					)
 				}
 			} catch {
 				console.error(`Failed to read .clinerules directory at ${clineRulesFilePath}`)
@@ -79,7 +86,11 @@ export const getLocalClineRules = async (cwd: string, toggles: ClineRulesToggles
 				if (clineRulesFilePath in toggles && toggles[clineRulesFilePath] !== false) {
 					const ruleFileContent = (await fs.readFile(clineRulesFilePath, "utf8")).trim()
 					if (ruleFileContent) {
-						clineRulesFileInstructions = formatResponse.clineRulesLocalFileInstructions(cwd, ruleFileContent)
+						clineRulesFileInstructions = formatResponse.clineRulesLocalFileInstructions(
+							cwd,
+							ruleFileContent,
+							preferredLanguage,
+						)
 					}
 				}
 			} catch {

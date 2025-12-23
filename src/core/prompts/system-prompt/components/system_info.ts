@@ -5,14 +5,7 @@ import { getWorkspacePaths } from "@/hosts/vscode/hostbridge/workspace/getWorksp
 import { SystemPromptSection } from "../templates/placeholders"
 import { TemplateEngine } from "../templates/TemplateEngine"
 import type { PromptVariant, SystemPromptContext } from "../types"
-
-const SYSTEM_INFO_TEMPLATE_TEXT = `SYSTEM INFORMATION
-
-Operating System: {{os}}
-IDE: {{ide}}
-Default Shell: {{shell}}
-Home Directory: {{homeDir}}
-{{WORKSPACE_TITLE}}: {{workingDir}}`
+import { getPromptTranslation } from "../../i18n"
 
 export async function getSystemEnv(context: SystemPromptContext, isTesting = false) {
 	const currentWorkDir = context.cwd || process.cwd()
@@ -38,6 +31,7 @@ export async function getSystemEnv(context: SystemPromptContext, isTesting = fal
 }
 
 export async function getSystemInfo(variant: PromptVariant, context: SystemPromptContext): Promise<string> {
+	const t = getPromptTranslation(context)
 	const testMode = !!process?.env?.CI || !!process?.env?.IS_TEST || context.isTesting || false
 	const info = await getSystemEnv(context, testMode)
 
@@ -49,21 +43,21 @@ export async function getSystemInfo(variant: PromptVariant, context: SystemPromp
 
 	if (isMultiRoot && context.workspaceRoots) {
 		// Multi-root workspace with feature flag enabled
-		WORKSPACE_TITLE = "Workspace Roots"
+		WORKSPACE_TITLE = t.systemInfo.workspaceRoots
 		const rootsInfo = context.workspaceRoots
 			.map((root) => {
 				const vcsInfo = root.vcs ? ` (${root.vcs})` : ""
 				return `\n  - ${root.name}: ${root.path}${vcsInfo}`
 			})
 			.join("")
-		workingDirInfo = rootsInfo + `\n\nPrimary Working Directory: ${context.cwd}`
+		workingDirInfo = rootsInfo + `\n\n${t.systemInfo.primaryWorkingDirectory}: ${context.cwd}`
 	} else {
 		// Single workspace
-		WORKSPACE_TITLE = "Current Working Directory"
+		WORKSPACE_TITLE = t.systemInfo.currentWorkingDirectory
 		workingDirInfo = info.workingDir
 	}
 
-	const template = variant.componentOverrides?.[SystemPromptSection.SYSTEM_INFO]?.template || SYSTEM_INFO_TEMPLATE_TEXT
+	const template = variant.componentOverrides?.[SystemPromptSection.SYSTEM_INFO]?.template || t.systemInfo.template
 
 	return new TemplateEngine().resolve(template, context, {
 		os: info.os,

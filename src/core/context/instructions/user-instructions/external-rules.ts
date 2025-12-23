@@ -6,6 +6,7 @@ import {
 } from "@core/context/instructions/user-instructions/rule-helpers"
 import { formatResponse } from "@core/prompts/responses"
 import { GlobalFileNames } from "@core/storage/disk"
+import { StateManager } from "@core/storage/StateManager"
 import { listFiles } from "@services/glob/list-files"
 import { ClineRulesToggles } from "@shared/cline-rules"
 import { fileExistsAtPath, isDirectory } from "@utils/fs"
@@ -61,6 +62,7 @@ export async function refreshExternalRulesToggles(
  * Gather formatted windsurf rules
  */
 export const getLocalWindsurfRules = async (cwd: string, toggles: ClineRulesToggles) => {
+	const { preferredLanguage } = StateManager.get().getSettings()
 	const windsurfRulesFilePath = path.resolve(cwd, GlobalFileNames.windsurfRules)
 
 	let windsurfRulesFileInstructions: string | undefined
@@ -71,7 +73,11 @@ export const getLocalWindsurfRules = async (cwd: string, toggles: ClineRulesTogg
 				if (windsurfRulesFilePath in toggles && toggles[windsurfRulesFilePath] !== false) {
 					const ruleFileContent = (await fs.readFile(windsurfRulesFilePath, "utf8")).trim()
 					if (ruleFileContent) {
-						windsurfRulesFileInstructions = formatResponse.windsurfRulesLocalFileInstructions(cwd, ruleFileContent)
+						windsurfRulesFileInstructions = formatResponse.windsurfRulesLocalFileInstructions(
+							cwd,
+							ruleFileContent,
+							preferredLanguage,
+						)
 					}
 				}
 			} catch {
@@ -87,6 +93,7 @@ export const getLocalWindsurfRules = async (cwd: string, toggles: ClineRulesTogg
  * Gather formatted cursor rules, which can come from two sources
  */
 export const getLocalCursorRules = async (cwd: string, toggles: ClineRulesToggles) => {
+	const { preferredLanguage } = StateManager.get().getSettings()
 	// we first check for the .cursorrules file
 	const cursorRulesFilePath = path.resolve(cwd, GlobalFileNames.cursorRulesFile)
 	let cursorRulesFileInstructions: string | undefined
@@ -97,7 +104,11 @@ export const getLocalCursorRules = async (cwd: string, toggles: ClineRulesToggle
 				if (cursorRulesFilePath in toggles && toggles[cursorRulesFilePath] !== false) {
 					const ruleFileContent = (await fs.readFile(cursorRulesFilePath, "utf8")).trim()
 					if (ruleFileContent) {
-						cursorRulesFileInstructions = formatResponse.cursorRulesLocalFileInstructions(cwd, ruleFileContent)
+						cursorRulesFileInstructions = formatResponse.cursorRulesLocalFileInstructions(
+							cwd,
+							ruleFileContent,
+							preferredLanguage,
+						)
 					}
 				}
 			} catch {
@@ -116,7 +127,11 @@ export const getLocalCursorRules = async (cwd: string, toggles: ClineRulesToggle
 				const rulesFilePaths = await readDirectoryRecursive(cursorRulesDirPath, ".mdc")
 				const rulesFilesTotalContent = await getRuleFilesTotalContent(rulesFilePaths, cwd, toggles)
 				if (rulesFilesTotalContent) {
-					cursorRulesDirInstructions = formatResponse.cursorRulesLocalDirectoryInstructions(cwd, rulesFilesTotalContent)
+					cursorRulesDirInstructions = formatResponse.cursorRulesLocalDirectoryInstructions(
+						cwd,
+						rulesFilesTotalContent,
+						preferredLanguage,
+					)
 				}
 			} catch {
 				console.error(`Failed to read .cursor/rules directory at ${cursorRulesDirPath}`)
@@ -158,6 +173,7 @@ async function findAgentsMdFiles(cwd: string): Promise<string[]> {
  * Gather formatted agents rules - searches recursively and combines all agents.md files
  */
 export const getLocalAgentsRules = async (cwd: string, toggles: ClineRulesToggles) => {
+	const { preferredLanguage } = StateManager.get().getSettings()
 	const agentsRulesFilePath = path.resolve(cwd, GlobalFileNames.agentsRulesFile)
 
 	// Check if the top-level agents.md file is enabled
@@ -191,7 +207,7 @@ export const getLocalAgentsRules = async (cwd: string, toggles: ClineRulesToggle
 		).then((contents) => contents.filter(Boolean).join("\n\n"))
 
 		if (combinedContent) {
-			return formatResponse.agentsRulesLocalFileInstructions(cwd, combinedContent)
+			return formatResponse.agentsRulesLocalFileInstructions(cwd, combinedContent, preferredLanguage)
 		}
 	} catch (error) {
 		console.error("Failed to read agents.md files:", error)

@@ -88,7 +88,10 @@ export class ListFilesToolHandler implements IFullyManagedTool {
 		const accessValidation = this.validator.checkClineIgnorePath(relDirPath!)
 		if (!accessValidation.ok) {
 			await config.callbacks.say("clineignore_error", relDirPath)
-			return formatResponse.toolError(formatResponse.clineIgnoreError(relDirPath!))
+			return formatResponse.toolError(
+				formatResponse.clineIgnoreError(relDirPath!, config.stateManager.getGlobalState().settings.preferredLanguage),
+				config.stateManager.getGlobalState().settings.preferredLanguage,
+			)
 		}
 
 		// Execute the actual list files operation
@@ -143,7 +146,7 @@ export class ListFilesToolHandler implements IFullyManagedTool {
 					workspaceContext,
 					block.isNativeToolCall,
 				)
-				return formatResponse.toolDenied()
+					return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
 			} else {
 				telemetryService.captureToolUsage(
 					config.ulid,
@@ -165,7 +168,7 @@ export class ListFilesToolHandler implements IFullyManagedTool {
 		} catch (error) {
 			const { PreToolUseHookCancellationError } = await import("@core/hooks/PreToolUseHookCancellationError")
 			if (error instanceof PreToolUseHookCancellationError) {
-				return formatResponse.toolDenied()
+					return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
 			}
 			throw error
 		}

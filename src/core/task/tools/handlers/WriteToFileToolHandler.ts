@@ -279,7 +279,7 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 				if (error instanceof PreToolUseHookCancellationError) {
 					await config.services.diffViewProvider.revertChanges()
 					await config.services.diffViewProvider.reset()
-					return formatResponse.toolDenied()
+					return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
 				}
 				throw error
 			}
@@ -316,9 +316,16 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 					autoFormattingEdits,
 					finalContent,
 					newProblemsMessage,
+					config.stateManager.getGlobalState().settings.preferredLanguage,
 				)
 			} else {
-				return formatResponse.fileEditWithoutUserChanges(relPath, autoFormattingEdits, finalContent, newProblemsMessage)
+				return formatResponse.fileEditWithoutUserChanges(
+					relPath,
+					autoFormattingEdits,
+					finalContent,
+					newProblemsMessage,
+					config.stateManager.getGlobalState().settings.preferredLanguage,
+				)
 			}
 		} catch (error) {
 			// Reset diff view on error
@@ -367,7 +374,10 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 			await config.callbacks.say("clineignore_error", resolvedPath)
 
 			// Push tool result and save checkpoint using existing utilities
-			const errorResponse = formatResponse.toolError(formatResponse.clineIgnoreError(resolvedPath))
+			const errorResponse = formatResponse.toolError(
+				formatResponse.clineIgnoreError(resolvedPath, config.stateManager.getGlobalState().settings.preferredLanguage),
+				config.stateManager.getGlobalState().settings.preferredLanguage,
+			)
 			ToolResultUtils.pushToolResult(
 				errorResponse,
 				block,
@@ -439,7 +449,12 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 				// Push tool result with detailed error using existing utilities
 				const errorResponse = formatResponse.toolError(
 					`${(error as Error)?.message}\n\n` +
-						formatResponse.diffError(relPath, config.services.diffViewProvider.originalContent),
+						formatResponse.diffError(
+							relPath,
+							config.services.diffViewProvider.originalContent,
+							config.stateManager.getGlobalState().settings.preferredLanguage,
+						),
+					config.stateManager.getGlobalState().settings.preferredLanguage,
 				)
 				ToolResultUtils.pushToolResult(
 					errorResponse,
