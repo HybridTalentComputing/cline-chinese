@@ -1,6 +1,7 @@
 import { geminiModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { BaseUrlField } from "../common/BaseUrlField"
@@ -31,6 +32,7 @@ interface GeminiProviderProps {
  * The Gemini provider configuration component
  */
 export const GeminiProvider = ({ showModelOptions, isPopup, currentMode }: GeminiProviderProps) => {
+	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -51,7 +53,6 @@ export const GeminiProvider = ({ showModelOptions, isPopup, currentMode }: Gemin
 
 			<BaseUrlField
 				initialValue={apiConfiguration?.geminiBaseUrl}
-				label="Use custom base URL"
 				onChange={(value) => handleFieldChange("geminiBaseUrl", value)}
 				placeholder="Default: https://generativelanguage.googleapis.com"
 			/>
@@ -59,7 +60,7 @@ export const GeminiProvider = ({ showModelOptions, isPopup, currentMode }: Gemin
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.providers.model")}
 						models={geminiModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(
@@ -83,7 +84,7 @@ export const GeminiProvider = ({ showModelOptions, isPopup, currentMode }: Gemin
 					{selectedModelInfo.thinkingConfig?.supportsThinkingLevel && (
 						<DropdownContainer className="dropdown-container" style={{ marginTop: "8px" }} zIndex={1}>
 							<label htmlFor="thinking-level">
-								<span className="font-medium">Thinking Level</span>
+								<span className="font-medium">{t("settings.apiConfig.thinkingLevel")}</span>
 							</label>
 							<VSCodeDropdown
 								className="w-full"
@@ -96,8 +97,8 @@ export const GeminiProvider = ({ showModelOptions, isPopup, currentMode }: Gemin
 									)
 								}
 								value={geminiThinkingLevel || "high"}>
-								<VSCodeOption value="low">Low</VSCodeOption>
-								<VSCodeOption value="high">High</VSCodeOption>
+								<VSCodeOption value="low">{t("settings.apiConfig.low")}</VSCodeOption>
+								<VSCodeOption value="high">{t("settings.apiConfig.high")}</VSCodeOption>
 							</VSCodeDropdown>
 						</DropdownContainer>
 					)}

@@ -1,11 +1,11 @@
 import { Mode } from "@shared/storage/types"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { DebouncedTextField } from "../common/DebouncedTextField"
 import { ModelInfoView } from "../common/ModelInfoView"
 import { normalizeApiConfiguration } from "../utils/providerUtils"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
-import { useDebouncedInput } from "../utils/useDebouncedInput"
 
 interface DifyProviderProps {
 	showModelOptions: boolean
@@ -14,17 +14,9 @@ interface DifyProviderProps {
 }
 
 export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyProviderProps) => {
+	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
-
-	// Use debounced input for proper state management
-	const [baseUrlValue, setBaseUrlValue] = useDebouncedInput(apiConfiguration?.difyBaseUrl || "", (value) =>
-		handleFieldChange("difyBaseUrl", value),
-	)
-
-	const [apiKeyValue, setApiKeyValue] = useDebouncedInput(apiConfiguration?.difyApiKey || "", (value) =>
-		handleFieldChange("difyApiKey", value),
-	)
 
 	// Get the normalized configuration
 	const { selectedModelId, selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, currentMode)
@@ -37,10 +29,10 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 					onChange={(value) => {
 						handleFieldChange("difyBaseUrl", value)
 					}}
-					placeholder={"Enter base URL..."}
+					placeholder={t("settings.apiConfig.enterBaseUrl")}
 					style={{ width: "100%", marginBottom: 10 }}
 					type="text">
-					<span style={{ fontWeight: 500 }}>Base URL</span>
+					<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.baseUrl")}</span>
 				</DebouncedTextField>
 
 				<ApiKeyField
@@ -52,12 +44,9 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 				/>
 
 				<div style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", marginTop: "5px" }}>
-					<p>
-						Dify is a platform that provides access to various AI models through a unified API. Configure your Dify
-						instance URL and API key to get started.
-					</p>
+					<p>{t("settings.apiConfig.difyDescription")}</p>
 					<p style={{ marginTop: "8px" }}>
-						<strong>Note:</strong> The model selection is handled within your Dify application configuration.
+						<strong>{t("settings.apiConfig.note")}</strong> {t("settings.apiConfig.difyNote")}
 					</p>
 				</div>
 			</div>

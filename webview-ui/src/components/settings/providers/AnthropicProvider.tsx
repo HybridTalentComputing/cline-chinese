@@ -1,5 +1,6 @@
 import { anthropicModels, CLAUDE_SONNET_1M_SUFFIX } from "@shared/api"
 import { Mode } from "@shared/storage/types"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { BaseUrlField } from "../common/BaseUrlField"
@@ -36,6 +37,7 @@ interface AnthropicProviderProps {
  * The Anthropic provider configuration component
  */
 export const AnthropicProvider = ({ showModelOptions, isPopup, currentMode }: AnthropicProviderProps) => {
+	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -58,7 +60,6 @@ export const AnthropicProvider = ({ showModelOptions, isPopup, currentMode }: An
 
 			<BaseUrlField
 				initialValue={apiConfiguration?.anthropicBaseUrl}
-				label="Use custom base URL"
 				onChange={(value) => handleFieldChange("anthropicBaseUrl", value)}
 				placeholder="Default: https://api.anthropic.com"
 			/>
@@ -66,7 +67,7 @@ export const AnthropicProvider = ({ showModelOptions, isPopup, currentMode }: An
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.providers.model")}
 						models={anthropicModels}
 						onChange={(e) =>
 							handleModeFieldChange(

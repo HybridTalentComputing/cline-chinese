@@ -1,4 +1,5 @@
 import { Mode } from "@shared/storage/types"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { DebouncedTextField } from "../common/DebouncedTextField"
 import HicapModelPicker from "../HicapModelPicker"
@@ -17,6 +18,7 @@ interface HicapProviderProps {
  * The Hicap provider configuration component
  */
 export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapProviderProps) => {
+	const { t } = useTranslation()
 	const { apiConfiguration, refreshHicapModels } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
@@ -31,7 +33,7 @@ export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapP
 							refreshHicapModels()
 						}
 					}}
-					placeholder="Enter API Key..."
+					placeholder={t("settings.apiConfig.apiKeyPlaceholder")}
 					style={{ width: "100%" }}
 					type="password">
 					<div
@@ -42,7 +44,7 @@ export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapP
 							width: "100%",
 							margin: "10px 0 0 0",
 						}}>
-						<span style={{ fontWeight: 500 }}>Hicap API Key</span>
+						<span style={{ fontWeight: 500 }}>Hicap {t("settings.providers.apiKey")}</span>
 					</div>
 				</DebouncedTextField>
 			</div>

@@ -1,5 +1,6 @@
 import { nebiusModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -20,6 +21,7 @@ interface NebiusProviderProps {
  * The Nebius AI Studio provider configuration component
  */
 export const NebiusProvider = ({ showModelOptions, isPopup, currentMode }: NebiusProviderProps) => {
+	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -28,7 +30,7 @@ export const NebiusProvider = ({ showModelOptions, isPopup, currentMode }: Nebiu
 	return (
 		<div>
 			<ApiKeyField
-				helpText="This key is stored locally and only used to make API requests from this extension. (Note: Cline uses complex prompts and works best with Claude models. Less capable models may not work as expected.)"
+				helpText={`${t("settings.apiConfig.apiKeyStoredLocally")} (${t("settings.apiConfig.note")} ${t("settings.apiConfig.clineBestWithClaude")})`}
 				initialValue={apiConfiguration?.nebiusApiKey || ""}
 				onChange={(value) => handleFieldChange("nebiusApiKey", value)}
 				providerName="Nebius"
@@ -38,7 +40,7 @@ export const NebiusProvider = ({ showModelOptions, isPopup, currentMode }: Nebiu
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.providers.model")}
 						models={nebiusModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(
