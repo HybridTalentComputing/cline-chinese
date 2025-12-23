@@ -517,5 +517,52 @@
 			"webFetch": "网页抓取",
 			"webFetchLlm": "网页抓取 (LLM)"
 		}
+	},
+	"banner": {
+		"infoBanner": {
+			"title": "💡 在右侧边栏使用 Cline",
+			"description": "与 Cline 聊天时保持文件可见。将 Cline 图标拖到右侧边栏面板以获得更好的体验。",
+			"seeHow": "查看方法 →"
+		},
+		"rightSidebar": {
+			"title": "在右侧边栏使用 Cline",
+			"description": "为了获得最佳体验，请将 Cline 图标拖到您的右侧边栏。这样可以在与 Cline 聊天时保持文件资源管理器和编辑器可见，使您更容易浏览代码库并实时查看更改。[查看方法 →](https://docs.cline.bot/features/customization/opening-cline-in-sidebar)"
+		},
+		"opus45ClineUsers": {
+			"title": "Claude Opus 4.5 现已推出",
+			"description": "最先进的性能，成本比 Opus 4.1 低 3 倍。现已在 Cline 提供商中可用。",
+			"tryNow": "立即试用"
+		},
+		"opus45NonClineUsers": {
+			"title": "Claude Opus 4.5 现已推出",
+			"description": "最先进的性能，成本比 Opus 4.1 低 3 倍。现已在 Cline 提供商中可用。",
+			"getStarted": "开始使用"
+		},
+		"cliInstallUnix": {
+			"title": "CLI 和子代理已推出",
+			"description": "在终端中使用 Cline 并启用子代理功能。[了解更多](https://docs.cline.bot/cline-cli/overview)",
+			"install": "安装",
+			"enableSubagents": "启用子代理"
+		},
+		"cliInfoWindows": {
+			"title": "Cline CLI 信息",
+			"description": "适用于 macOS 和 Linux。即将在其他平台上推出。[了解更多](https://docs.cline.bot/cline-cli/overview)"
+		},
+		"cliInstallBanner": {
+			"titleUnix": "Cline CLI 已推出！",
+			"titleWindows": "Cline CLI 信息",
+			"descriptionUnix": "安装后可直接在终端中使用 Cline 并启用子代理功能。Cline 可以生成 <code>cline</code> 命令来处理重点任务，如探索大型代码库以获取信息。这通过在不同的子进程中运行这些操作来保持主上下文窗口整洁。",
+			"descriptionWindows": "Cline CLI 适用于 macOS 和 Linux！即将在其他平台上推出。",
+			"learnMore": "了解更多",
+			"installed": "已安装",
+			"install": "安装",
+			"installCli": "安装 CLI",
+			"enableSubagents": "启用子代理",
+			"configureSubagents": "配置子代理",
+			"subagentsWindows": "子代理（Windows 即将推出）",
+			"subagentsWindowsTooltip": "Cline CLI 和子代理仅在 macOS 和 Linux 上可用",
+			"copyCommand": "复制命令",
+			"copied": "已复制！"
+		}
 	}
 }

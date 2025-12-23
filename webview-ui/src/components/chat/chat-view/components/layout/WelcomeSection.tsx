@@ -1,6 +1,7 @@
 import { BANNER_DATA, BannerAction, BannerActionType, BannerCardData } from "@shared/cline/banner"
 import { EmptyRequest, Int64Request } from "@shared/proto/index.cline"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import BannerCarousel from "@/components/common/BannerCarousel"
 import { CURRENT_CLI_BANNER_VERSION } from "@/components/common/CliInstallBanner"
 import { CURRENT_INFO_BANNER_VERSION } from "@/components/common/InfoBanner"
@@ -35,6 +36,7 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 	const [hasShownWhatsNewModal, setHasShownWhatsNewModal] = useState(false)
 	const [showWhatsNewModal, setShowWhatsNewModal] = useState(false)
 
+	const { t } = useTranslation()
 	const { clineUser } = useClineAuth()
 	const { openRouterModels, setShowChatModelSelector, navigateToSettings, subagentsEnabled } = useExtensionState()
 	const { handleFieldsChange } = useApiConfigurationHandlers()
@@ -79,7 +81,7 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 	 */
 	const bannerConfig = useMemo((): BannerCardData[] => {
 		// Filter banners based on version tracking and user status
-		return BANNER_DATA.filter((banner) => {
+		const filteredBanners = BANNER_DATA.filter((banner) => {
 			if (isBannerDismissed(banner.id)) {
 				return false
 			}
@@ -94,7 +96,61 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 
 			return true
 		})
-	}, [isBannerDismissed, clineUser])
+
+		// Apply translations to banner titles and descriptions
+		return filteredBanners.map((banner) => {
+			const translatedBanner = { ...banner }
+
+			// Translate based on banner ID
+			switch (banner.id) {
+				case "info-banner-v1":
+					translatedBanner.title = t("banner.rightSidebar.title")
+					translatedBanner.description = t("banner.rightSidebar.description")
+					break
+				case "new-model-opus-4-5-cline-users":
+					translatedBanner.title = t("banner.opus45ClineUsers.title")
+					translatedBanner.description = t("banner.opus45ClineUsers.description")
+					if (translatedBanner.actions) {
+						translatedBanner.actions = translatedBanner.actions.map((action) => ({
+							...action,
+							title: action.title === "Try Now" ? t("banner.opus45ClineUsers.tryNow") : action.title,
+						}))
+					}
+					break
+				case "new-model-opus-4-5-non-cline-users":
+					translatedBanner.title = t("banner.opus45NonClineUsers.title")
+					translatedBanner.description = t("banner.opus45NonClineUsers.description")
+					if (translatedBanner.actions) {
+						translatedBanner.actions = translatedBanner.actions.map((action) => ({
+							...action,
+							title: action.title === "Get Started" ? t("banner.opus45NonClineUsers.getStarted") : action.title,
+						}))
+					}
+					break
+				case "cli-install-unix-v1":
+					translatedBanner.title = t("banner.cliInstallUnix.title")
+					translatedBanner.description = t("banner.cliInstallUnix.description")
+					if (translatedBanner.actions) {
+						translatedBanner.actions = translatedBanner.actions.map((action) => {
+							if (action.title === "Install") {
+								return { ...action, title: t("banner.cliInstallUnix.install") }
+							}
+							if (action.title === "Enable Subagents") {
+								return { ...action, title: t("banner.cliInstallUnix.enableSubagents") }
+							}
+							return action
+						})
+					}
+					break
+				case "cli-info-windows-v1":
+					translatedBanner.title = t("banner.cliInfoWindows.title")
+					translatedBanner.description = t("banner.cliInfoWindows.description")
+					break
+			}
+
+			return translatedBanner
+		})
+	}, [isBannerDismissed, clineUser, t])
 
 	/**
 	 * Action handler - maps action types to actual implementations

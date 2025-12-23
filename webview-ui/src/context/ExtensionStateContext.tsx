@@ -199,7 +199,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		browserSettings: DEFAULT_BROWSER_SETTINGS,
 		dictationSettings: DEFAULT_DICTATION_SETTINGS,
 		focusChainSettings: DEFAULT_FOCUS_CHAIN_SETTINGS,
-		preferredLanguage: "English",
+		preferredLanguage: "Simplified Chinese - 简体中文",
 		openaiReasoningEffort: "medium",
 		mode: "act",
 		platform: DEFAULT_PLATFORM,

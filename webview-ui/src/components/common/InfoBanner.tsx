@@ -1,11 +1,13 @@
 import { XIcon } from "lucide-react"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { PlatformType } from "@/config/platform.config"
 import { usePlatform } from "@/context/PlatformContext"
 import { StateServiceClient } from "@/services/grpc-client"
 export const CURRENT_INFO_BANNER_VERSION = 1
 export const InfoBanner: React.FC = () => {
+	const { t } = useTranslation()
 	const handleClose = useCallback((e: React.MouseEvent) => {
 		e.preventDefault()
 		e.stopPropagation()
@@ -19,10 +21,10 @@ export const InfoBanner: React.FC = () => {
 				rel="noopener noreferrer"
 				style={{ color: "var(--vscode-foreground)", outline: "none" }}
 				target="_blank">
-				<h4 className="m-0">💡 Cline in the Right Sidebar</h4>
+				<h4 className="m-0">{t("banner.infoBanner.title")}</h4>
 				<p className="m-0">
-					Keep your files visible when chatting with Cline. Drag the Cline icon to the right sidebar panel for a better
-					experience. <span className="text-link cursor-pointer">See how →</span>
+					{t("banner.infoBanner.description")}{" "}
+					<span className="text-link cursor-pointer">{t("banner.infoBanner.seeHow")}</span>
 				</p>
 
 				{/* Close button */}
