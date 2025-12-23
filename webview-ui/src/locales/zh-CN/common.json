@@ -249,7 +249,26 @@
 			"planMode": "计划模式",
 			"actMode": "执行模式",
 			"separateModels": "为计划和执行模式使用不同的模型",
-			"separateModelsDescription": "在计划和执行模式之间切换时，将保留上一模式中使用的 API 和模型。例如，在使用强大的推理模型构建计划，并由较便宜的编码模型执行时，这会很有帮助。"
+			"separateModelsDescription": "在计划和执行模式之间切换时，将保留上一模式中使用的 API 和模型。例如，在使用强大的推理模型构建计划，并由较便宜的编码模型执行时，这会很有帮助。",
+			"currentModel": "当前模型：",
+			"endpoint": "端点：",
+			"editInSettings": "在设置中编辑",
+			"configureInSettings": "在设置中配置",
+			"noModelsFound": "未找到模型",
+			"providerHelpText": {
+				"lmstudio": "启动 LM Studio 并加载模型以开始",
+				"ollama": "运行 `ollama serve` 并拉取模型",
+				"litellm": "在设置中添加您的 LiteLLM 代理 URL",
+				"openai": "在设置中添加您的 OpenAI API 密钥和端点",
+				"vscode-lm": "在设置中选择 VS Code 语言模型",
+				"requesty": "在设置中添加您的 Requesty API 密钥",
+				"together": "在设置中添加您的 Together AI API 密钥",
+				"dify": "配置您的 Dify 工作流 URL 和 API 密钥",
+				"hicap": "在设置中添加您的 HiCap API 密钥",
+				"oca": "在设置中配置您的 OCA 端点",
+				"aihubmix": "在设置中添加您的 AIHubMix API 密钥",
+				"default": "在模型设置中配置此提供商"
+			}
 		},
 		"providers": {
 			"model": "模型",

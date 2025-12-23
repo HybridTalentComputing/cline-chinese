@@ -249,7 +249,26 @@
 			"planMode": "Plan Mode",
 			"actMode": "Act Mode",
 			"separateModels": "Use different models for Plan and Act modes",
-			"separateModelsDescription": "Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on."
+			"separateModelsDescription": "Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on.",
+			"currentModel": "Current model:",
+			"endpoint": "Endpoint:",
+			"editInSettings": "Edit in settings",
+			"configureInSettings": "Configure in settings",
+			"noModelsFound": "No models found",
+			"providerHelpText": {
+				"lmstudio": "Start LM Studio and load a model to begin",
+				"ollama": "Run `ollama serve` and pull a model",
+				"litellm": "Add your LiteLLM proxy URL in settings",
+				"openai": "Add your OpenAI API key and endpoint",
+				"vscode-lm": "Select a VS Code language model from settings",
+				"requesty": "Add your Requesty API key in settings",
+				"together": "Add your Together AI API key in settings",
+				"dify": "Configure your Dify workflow URL and API key",
+				"hicap": "Add your HiCap API key in settings",
+				"oca": "Configure your OCA endpoint in settings",
+				"aihubmix": "Add your AIHubMix API key in settings",
+				"default": "Configure this provider in model settings"
+			}
 		},
 		"providers": {
 			"model": "Model",

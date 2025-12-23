@@ -6,6 +6,7 @@ import { Mode } from "@shared/storage/types"
 import { ArrowLeftRight, Brain, Check, ChevronDownIcon, Search, Settings } from "lucide-react"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
+import { useTranslation } from "react-i18next"
 import { useWindowSize } from "react-use"
 import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
@@ -33,6 +34,7 @@ const getProviderInfo = (
 	provider: ApiProvider,
 	apiConfiguration: any,
 	effectiveMode: "plan" | "act",
+	t: (key: string) => string,
 ): { modelId?: string; baseUrl?: string; helpText: string } => {
 	switch (provider) {
 		case "lmstudio":
@@ -40,79 +42,79 @@ const getProviderInfo = (
 				modelId:
 					effectiveMode === "plan" ? apiConfiguration.planModeLmStudioModelId : apiConfiguration.actModeLmStudioModelId,
 				baseUrl: apiConfiguration.lmStudioBaseUrl,
-				helpText: "Start LM Studio and load a model to begin",
+				helpText: t("settings.apiConfig.providerHelpText.lmstudio"),
 			}
 		case "ollama":
 			return {
 				modelId:
 					effectiveMode === "plan" ? apiConfiguration.planModeOllamaModelId : apiConfiguration.actModeOllamaModelId,
 				baseUrl: apiConfiguration.ollamaBaseUrl,
-				helpText: "Run `ollama serve` and pull a model",
+				helpText: t("settings.apiConfig.providerHelpText.ollama"),
 			}
 		case "litellm":
 			return {
 				modelId:
 					effectiveMode === "plan" ? apiConfiguration.planModeLiteLlmModelId : apiConfiguration.actModeLiteLlmModelId,
 				baseUrl: apiConfiguration.liteLlmBaseUrl,
-				helpText: "Add your LiteLLM proxy URL in settings",
+				helpText: t("settings.apiConfig.providerHelpText.litellm"),
 			}
 		case "openai":
 			return {
 				modelId:
 					effectiveMode === "plan" ? apiConfiguration.planModeOpenAiModelId : apiConfiguration.actModeOpenAiModelId,
 				baseUrl: apiConfiguration.openAiBaseUrl,
-				helpText: "Add your OpenAI API key and endpoint",
+				helpText: t("settings.apiConfig.providerHelpText.openai"),
 			}
 		case "vscode-lm":
 			return {
 				modelId: undefined,
 				baseUrl: undefined,
-				helpText: "Select a VS Code language model from settings",
+				helpText: t("settings.apiConfig.providerHelpText.vscode-lm"),
 			}
 		case "requesty":
 			return {
 				modelId:
 					effectiveMode === "plan" ? apiConfiguration.planModeRequestyModelId : apiConfiguration.actModeRequestyModelId,
 				baseUrl: apiConfiguration.requestyBaseUrl,
-				helpText: "Add your Requesty API key in settings",
+				helpText: t("settings.apiConfig.providerHelpText.requesty"),
 			}
 		case "together":
 			return {
 				modelId:
 					effectiveMode === "plan" ? apiConfiguration.planModeTogetherModelId : apiConfiguration.actModeTogetherModelId,
 				baseUrl: undefined,
-				helpText: "Add your Together AI API key in settings",
+				helpText: t("settings.apiConfig.providerHelpText.together"),
 			}
 		case "dify":
 			return {
 				modelId: undefined,
 				baseUrl: apiConfiguration.difyBaseUrl,
-				helpText: "Configure your Dify workflow URL and API key",
+				helpText: t("settings.apiConfig.providerHelpText.dify"),
 			}
 		case "hicap":
 			return {
 				modelId: effectiveMode === "plan" ? apiConfiguration.planModeHicapModelId : apiConfiguration.actModeHicapModelId,
 				baseUrl: undefined,
-				helpText: "Add your HiCap API key in settings",
+				helpText: t("settings.apiConfig.providerHelpText.hicap"),
 			}
 		case "oca":
 			return {
 				modelId: effectiveMode === "plan" ? apiConfiguration.planModeOcaModelId : apiConfiguration.actModeOcaModelId,
 				baseUrl: apiConfiguration.ocaBaseUrl,
-				helpText: "Configure your OCA endpoint in settings",
+				helpText: t("settings.apiConfig.providerHelpText.oca"),
 			}
 		case "aihubmix":
 			return {
 				modelId:
 					effectiveMode === "plan" ? apiConfiguration.planModeAihubmixModelId : apiConfiguration.actModeAihubmixModelId,
 				baseUrl: apiConfiguration.aihubmixBaseUrl,
-				helpText: "Add your AIHubMix API key in settings",
+				helpText: t("settings.apiConfig.providerHelpText.aihubmix"),
 			}
 		default:
 			return {
 				modelId: undefined,
 				baseUrl: undefined,
-				helpText: "Configure this provider in model settings",
+				helpText: t("settings.apiConfig.providerHelpText.default"),
 			}
 	}
 }
@@ -173,6 +175,7 @@ const StarIcon = ({ isFavorite, onClick }: { isFavorite: boolean; onClick: (e: R
 }
 
 const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChange, currentMode, children }) => {
+	const { t } = useTranslation()
 	const {
 		apiConfiguration,
 		openRouterModels,
@@ -834,20 +837,24 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 								{/* Settings-only providers: show configured model info and help text */}
 								{SETTINGS_ONLY_PROVIDERS.includes(selectedProvider) &&
 									(() => {
-										const providerInfo = getProviderInfo(selectedProvider, apiConfiguration, effectiveMode)
+										const providerInfo = getProviderInfo(selectedProvider, apiConfiguration, effectiveMode, t)
 										return (
 											<SettingsOnlyContainer>
 												{/* Show configured model if exists */}
 												{providerInfo.modelId && (
 													<ConfiguredModelRow>
-														<ConfiguredModelLabel>Current model:</ConfiguredModelLabel>
+														<ConfiguredModelLabel>
+															{t("settings.apiConfig.currentModel")}
+														</ConfiguredModelLabel>
 														<ConfiguredModelName>{providerInfo.modelId}</ConfiguredModelName>
 													</ConfiguredModelRow>
 												)}
 												{/* Show base URL if configured */}
 												{providerInfo.baseUrl && (
 													<ConfiguredModelRow>
-														<ConfiguredModelLabel>Endpoint:</ConfiguredModelLabel>
+														<ConfiguredModelLabel>
+															{t("settings.apiConfig.endpoint")}
+														</ConfiguredModelLabel>
 														<ConfiguredModelUrl>{providerInfo.baseUrl}</ConfiguredModelUrl>
 													</ConfiguredModelRow>
 												)}
@@ -857,7 +864,9 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 												<SettingsOnlyLink onClick={handleConfigureClick}>
 													<Settings size={12} />
 													<span>
-														{providerInfo.modelId ? "Edit in settings" : "Configure in settings"}
+														{providerInfo.modelId
+															? t("settings.apiConfig.editInSettings")
+															: t("settings.apiConfig.configureInSettings")}
 													</span>
 												</SettingsOnlyLink>
 											</SettingsOnlyContainer>
@@ -869,7 +878,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 									filteredModels.length === 0 &&
 									featuredModels.length === 0 &&
 									!SETTINGS_ONLY_PROVIDERS.includes(selectedProvider) && (
-										<EmptyState>No models found</EmptyState>
+										<EmptyState>{t("settings.apiConfig.noModelsFound")}</EmptyState>
 									)}
 							</>
 						</ModelListContainer>
