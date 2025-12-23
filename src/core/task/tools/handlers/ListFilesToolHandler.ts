@@ -89,8 +89,11 @@ export class ListFilesToolHandler implements IFullyManagedTool {
 		if (!accessValidation.ok) {
 			await config.callbacks.say("clineignore_error", relDirPath)
 			return formatResponse.toolError(
-				formatResponse.clineIgnoreError(relDirPath!, config.stateManager.getGlobalState().settings.preferredLanguage),
-				config.stateManager.getGlobalState().settings.preferredLanguage,
+				formatResponse.clineIgnoreError(
+					relDirPath!,
+					config.services.stateManager.getGlobalSettingsKey("preferredLanguage"),
+				),
+				config.services.stateManager.getGlobalSettingsKey("preferredLanguage"),
 			)
 		}
 
@@ -146,7 +149,7 @@ export class ListFilesToolHandler implements IFullyManagedTool {
 					workspaceContext,
 					block.isNativeToolCall,
 				)
-					return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
+				return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
 			} else {
 				telemetryService.captureToolUsage(
 					config.ulid,
@@ -168,7 +171,7 @@ export class ListFilesToolHandler implements IFullyManagedTool {
 		} catch (error) {
 			const { PreToolUseHookCancellationError } = await import("@core/hooks/PreToolUseHookCancellationError")
 			if (error instanceof PreToolUseHookCancellationError) {
-					return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
+				return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
 			}
 			throw error
 		}

@@ -69,8 +69,8 @@ export class ReadFileToolHandler implements IFullyManagedTool {
 		if (!accessValidation.ok) {
 			await config.callbacks.say("clineignore_error", relPath)
 			return formatResponse.toolError(
-				formatResponse.clineIgnoreError(relPath!, config.stateManager.getGlobalState().settings.preferredLanguage),
-				config.stateManager.getGlobalState().settings.preferredLanguage,
+				formatResponse.clineIgnoreError(relPath!, config.services.stateManager.getGlobalSettingsKey("preferredLanguage")),
+				config.services.stateManager.getGlobalSettingsKey("preferredLanguage"),
 			)
 		}
 
@@ -137,7 +137,7 @@ export class ReadFileToolHandler implements IFullyManagedTool {
 					workspaceContext,
 					block.isNativeToolCall,
 				)
-					return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
+				return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
 			} else {
 				telemetryService.captureToolUsage(
 					config.ulid,
@@ -159,7 +159,7 @@ export class ReadFileToolHandler implements IFullyManagedTool {
 		} catch (error) {
 			const { PreToolUseHookCancellationError } = await import("@core/hooks/PreToolUseHookCancellationError")
 			if (error instanceof PreToolUseHookCancellationError) {
-					return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
+				return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
 			}
 			throw error
 		}

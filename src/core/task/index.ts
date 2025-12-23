@@ -238,7 +238,7 @@ export class Task {
 	private commandExecutor!: CommandExecutor
 
 	private get preferredLanguage() {
-		return this.stateManager.getGlobalState().settings.preferredLanguage
+		return this.stateManager.getGlobalSettingsKey("preferredLanguage")
 	}
 
 	constructor(params: TaskParams) {
@@ -814,7 +814,10 @@ export class Task {
 				relPath ? ` for '${relPath.toPosix()}'` : ""
 			} without value for required parameter '${paramName}'. Retrying...`,
 		)
-		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName, this.preferredLanguage), this.preferredLanguage)
+		return formatResponse.toolError(
+			formatResponse.missingToolParameterError(paramName, this.preferredLanguage),
+			this.preferredLanguage,
+		)
 	}
 
 	async removeLastPartialMessageIfExistsWithType(type: "ask" | "say", askOrSay: ClineAsk | ClineSay) {

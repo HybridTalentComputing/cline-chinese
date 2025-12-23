@@ -30,7 +30,7 @@ export const getGlobalClineRules = async (globalClineRulesFilePath: string, togg
 
 	// 2. Append remote config rules
 	const stateManager = StateManager.get()
-	const { preferredLanguage } = stateManager.getSettings()
+	const preferredLanguage = stateManager.getGlobalSettingsKey("preferredLanguage")
 	const remoteConfigSettings = stateManager.getRemoteConfigSettings()
 	const remoteRules = remoteConfigSettings.remoteGlobalRules || []
 	const remoteToggles = stateManager.getGlobalStateKey("remoteRulesToggles") || {}
@@ -57,7 +57,7 @@ export const getGlobalClineRules = async (globalClineRulesFilePath: string, togg
 
 export const getLocalClineRules = async (cwd: string, toggles: ClineRulesToggles) => {
 	const stateManager = StateManager.get()
-	const { preferredLanguage } = stateManager.getSettings()
+	const preferredLanguage = stateManager.getGlobalSettingsKey("preferredLanguage")
 	const clineRulesFilePath = path.resolve(cwd, GlobalFileNames.clineRules)
 
 	let clineRulesFileInstructions: string | undefined

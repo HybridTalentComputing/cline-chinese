@@ -54,7 +54,7 @@ export class ToolExecutor {
 	private coordinator: ToolExecutorCoordinator
 
 	private get preferredLanguage() {
-		return this.stateManager.getGlobalState().settings.preferredLanguage
+		return this.stateManager.getGlobalSettingsKey("preferredLanguage")
 	}
 
 	// Auto-approval methods using the AutoApprove class

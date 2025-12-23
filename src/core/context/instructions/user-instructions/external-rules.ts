@@ -62,7 +62,7 @@ export async function refreshExternalRulesToggles(
  * Gather formatted windsurf rules
  */
 export const getLocalWindsurfRules = async (cwd: string, toggles: ClineRulesToggles) => {
-	const { preferredLanguage } = StateManager.get().getSettings()
+	const preferredLanguage = StateManager.get().getGlobalSettingsKey("preferredLanguage")
 	const windsurfRulesFilePath = path.resolve(cwd, GlobalFileNames.windsurfRules)
 
 	let windsurfRulesFileInstructions: string | undefined
@@ -93,7 +93,7 @@ export const getLocalWindsurfRules = async (cwd: string, toggles: ClineRulesTogg
  * Gather formatted cursor rules, which can come from two sources
  */
 export const getLocalCursorRules = async (cwd: string, toggles: ClineRulesToggles) => {
-	const { preferredLanguage } = StateManager.get().getSettings()
+	const preferredLanguage = StateManager.get().getGlobalSettingsKey("preferredLanguage")
 	// we first check for the .cursorrules file
 	const cursorRulesFilePath = path.resolve(cwd, GlobalFileNames.cursorRulesFile)
 	let cursorRulesFileInstructions: string | undefined
@@ -173,7 +173,7 @@ async function findAgentsMdFiles(cwd: string): Promise<string[]> {
  * Gather formatted agents rules - searches recursively and combines all agents.md files
  */
 export const getLocalAgentsRules = async (cwd: string, toggles: ClineRulesToggles) => {
-	const { preferredLanguage } = StateManager.get().getSettings()
+	const preferredLanguage = StateManager.get().getGlobalSettingsKey("preferredLanguage")
 	const agentsRulesFilePath = path.resolve(cwd, GlobalFileNames.agentsRulesFile)
 
 	// Check if the top-level agents.md file is enabled

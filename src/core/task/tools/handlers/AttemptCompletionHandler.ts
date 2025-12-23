@@ -60,7 +60,7 @@ export class AttemptCompletionHandler implements IToolHandler, IPartialBlockHand
 		} catch (error) {
 			const { PreToolUseHookCancellationError } = await import("@core/hooks/PreToolUseHookCancellationError")
 			if (error instanceof PreToolUseHookCancellationError) {
-				return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
+				return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
 			}
 			throw error
 		}
@@ -132,7 +132,7 @@ export class AttemptCompletionHandler implements IToolHandler, IPartialBlockHand
 			// complete command message - need to ask for approval
 			const didApprove = await ToolResultUtils.askApprovalAndPushFeedback("command", command, config)
 			if (!didApprove) {
-				return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
+				return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
 			}
 
 			// User approved, execute the command
@@ -181,7 +181,7 @@ export class AttemptCompletionHandler implements IToolHandler, IPartialBlockHand
 			const hookResult = await config.callbacks.runUserPromptSubmitHook(userContentForHook, "feedback")
 
 			if (hookResult.cancel === true) {
-				return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
+				return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
 			}
 
 			// Capture hook context modification to add to tool results

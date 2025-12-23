@@ -141,7 +141,7 @@ export class ToolResultUtils {
 				text,
 				images,
 				fileContentString,
-				config.stateManager.getGlobalState().settings.preferredLanguage,
+				config.services.stateManager.getGlobalSettingsKey("preferredLanguage"),
 			)
 			await config.callbacks.say("user_feedback", text, images, files)
 		}

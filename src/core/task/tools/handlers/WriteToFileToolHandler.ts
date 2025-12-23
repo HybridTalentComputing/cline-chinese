@@ -279,7 +279,7 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 				if (error instanceof PreToolUseHookCancellationError) {
 					await config.services.diffViewProvider.revertChanges()
 					await config.services.diffViewProvider.reset()
-					return formatResponse.toolDenied(config.stateManager.getGlobalState().settings.preferredLanguage)
+					return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
 				}
 				throw error
 			}
@@ -316,7 +316,7 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 					autoFormattingEdits,
 					finalContent,
 					newProblemsMessage,
-					config.stateManager.getGlobalState().settings.preferredLanguage,
+					config.services.stateManager.getGlobalSettingsKey("preferredLanguage"),
 				)
 			} else {
 				return formatResponse.fileEditWithoutUserChanges(
@@ -324,7 +324,7 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 					autoFormattingEdits,
 					finalContent,
 					newProblemsMessage,
-					config.stateManager.getGlobalState().settings.preferredLanguage,
+					config.services.stateManager.getGlobalSettingsKey("preferredLanguage"),
 				)
 			}
 		} catch (error) {
@@ -375,8 +375,11 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 
 			// Push tool result and save checkpoint using existing utilities
 			const errorResponse = formatResponse.toolError(
-				formatResponse.clineIgnoreError(resolvedPath, config.stateManager.getGlobalState().settings.preferredLanguage),
-				config.stateManager.getGlobalState().settings.preferredLanguage,
+				formatResponse.clineIgnoreError(
+					resolvedPath,
+					config.services.stateManager.getGlobalSettingsKey("preferredLanguage"),
+				),
+				config.services.stateManager.getGlobalSettingsKey("preferredLanguage"),
 			)
 			ToolResultUtils.pushToolResult(
 				errorResponse,
@@ -452,9 +455,9 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 						formatResponse.diffError(
 							relPath,
 							config.services.diffViewProvider.originalContent,
-							config.stateManager.getGlobalState().settings.preferredLanguage,
+							config.services.stateManager.getGlobalSettingsKey("preferredLanguage"),
 						),
-					config.stateManager.getGlobalState().settings.preferredLanguage,
+					config.services.stateManager.getGlobalSettingsKey("preferredLanguage"),
 				)
 				ToolResultUtils.pushToolResult(
 					errorResponse,
