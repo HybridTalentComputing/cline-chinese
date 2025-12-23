@@ -1,5 +1,5 @@
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { useDebouncedInput } from "../utils/useDebouncedInput"
 
 /**
@@ -22,9 +22,7 @@ export const ApiKeyField = ({ initialValue, onChange, providerName, signupUrl, p
 	const [localValue, setLocalValue] = useDebouncedInput(initialValue, onChange)
 	const defaultPlaceholder = placeholder || t("settings.apiConfig.apiKeyPlaceholder")
 	const defaultHelpText = helpText || t("settings.apiConfig.apiKeyStoredLocally")
-	const getApiKeyText = /^[aeiou]/i.test(providerName)
-		? t("settings.apiConfig.getApiKeyAn", { providerName })
-		: t("settings.apiConfig.getApiKey", { providerName })
+	const getApiKeyKey = /^[aeiou]/i.test(providerName) ? "settings.apiConfig.getApiKeyAn" : "settings.apiConfig.getApiKey"
 
 	return (
 		<div>
@@ -47,15 +45,25 @@ export const ApiKeyField = ({ initialValue, onChange, providerName, signupUrl, p
 				}}>
 				{defaultHelpText}
 				{!localValue && signupUrl && (
-					<VSCodeLink
-						href={signupUrl}
-						style={{
-							display: "inline",
-							fontSize: "inherit",
-						}}>
+					<>
 						{" "}
-						{getApiKeyText}
-					</VSCodeLink>
+						<Trans
+							components={{
+								signupLink: (
+									<VSCodeLink
+										href={signupUrl}
+										style={{
+											display: "inline",
+											fontSize: "inherit",
+										}}>
+										{t("settings.apiConfig.signingUpHere")}
+									</VSCodeLink>
+								),
+							}}
+							i18nKey={getApiKeyKey}
+							values={{ providerName }}
+						/>
+					</>
 				)}
 			</p>
 		</div>
