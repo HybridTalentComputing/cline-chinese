@@ -78,7 +78,9 @@ const CreditsHistoryTable = memo(({ isLoading, usageData, paymentsData, showPaym
 								</VSCodeDataGrid>
 							) : (
 								<div className="flex justify-center items-center p-4">
-									<div className="text-(--vscode-descriptionForeground)">{t("account.creditsHistory.noUsageHistory")}</div>
+									<div className="text-(--vscode-descriptionForeground)">
+										{t("account.creditsHistory.noUsageHistory")}
+									</div>
 								</div>
 							))}
 
@@ -120,7 +122,5 @@ const CreditsHistoryTable = memo(({ isLoading, usageData, paymentsData, showPaym
 		</div>
 	)
 })
-
-export default CreditsHistoryTable
 
 export default CreditsHistoryTable

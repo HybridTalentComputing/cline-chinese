@@ -424,5 +424,3 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 }
 
 export default memo(AccountView)
-
-export default memo(AccountView)
