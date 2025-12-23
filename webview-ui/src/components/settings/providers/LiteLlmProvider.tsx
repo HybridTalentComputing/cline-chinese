@@ -2,6 +2,7 @@ import { UpdateApiConfigurationRequestNew } from "@shared/proto/index.cline"
 import { Mode } from "@shared/storage/types"
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useEffect } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ModelsServiceClient } from "@/services/grpc-client"
 import { DebouncedTextField } from "../common/DebouncedTextField"
@@ -21,6 +22,7 @@ interface LiteLlmProviderProps {
 }
 
 export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: LiteLlmProviderProps) => {
+	const { t } = useTranslation()
 	const { apiConfiguration, liteLlmModels, refreshLiteLlmModels } = useExtensionState()
 	const { handleModeFieldsChange } = useApiConfigurationHandlers()
 
@@ -68,10 +70,10 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 						}),
 					)
 				}}
-				placeholder={"Default: http://localhost:4000"}
+				placeholder={t("settings.apiConfig.liteLlmBaseUrlPlaceholder")}
 				style={{ width: "100%" }}
 				type="text">
-				<span style={{ fontWeight: 500 }}>Base URL (optional)</span>
+				<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.baseUrlOptional")}</span>
 			</DebouncedTextField>
 			<DebouncedTextField
 				initialValue={apiConfiguration?.liteLlmApiKey || ""}
@@ -87,15 +89,15 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 						}),
 					)
 				}}
-				placeholder="Default: noop"
+				placeholder={t("settings.apiConfig.liteLlmApiKeyPlaceholder")}
 				style={{ width: "100%" }}
 				type="password">
-				<span style={{ fontWeight: 500 }}>API Key</span>
+				<span style={{ fontWeight: 500 }}>{t("settings.providers.apiKey")}</span>
 			</DebouncedTextField>
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.providers.model")}
 						models={liteLlmModels}
 						onChange={handleModelChange}
 						selectedModelId={selectedModelId}
@@ -112,12 +114,18 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				Extended thinking is available for models such as Sonnet-4, o3-mini, Deepseek R1, etc. More info on{" "}
-				<VSCodeLink
-					href="https://docs.litellm.ai/docs/reasoning_content"
-					style={{ display: "inline", fontSize: "inherit" }}>
-					thinking mode configuration
-				</VSCodeLink>
+				<Trans
+					components={{
+						thinkingLink: (
+							<VSCodeLink
+								href="https://docs.litellm.ai/docs/reasoning_content"
+								style={{ display: "inline", fontSize: "inherit" }}>
+								{t("settings.apiConfig.thinkingModeConfiguration")}
+							</VSCodeLink>
+						),
+					}}
+					i18nKey="settings.apiConfig.liteLlmExtendedThinking"
+				/>
 			</p>
 
 			<p
@@ -126,11 +134,16 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				LiteLLM provides a unified interface to access various LLM providers' models. See their{" "}
-				<VSCodeLink href="https://docs.litellm.ai/docs/" style={{ display: "inline", fontSize: "inherit" }}>
-					quickstart guide
-				</VSCodeLink>{" "}
-				for more information.
+				<Trans
+					components={{
+						quickstartLink: (
+							<VSCodeLink href="https://docs.litellm.ai/docs/" style={{ display: "inline", fontSize: "inherit" }}>
+								{t("settings.apiConfig.quickstartGuide")}
+							</VSCodeLink>
+						),
+					}}
+					i18nKey="settings.apiConfig.liteLlmDescription"
+				/>
 			</p>
 		</div>
 	)

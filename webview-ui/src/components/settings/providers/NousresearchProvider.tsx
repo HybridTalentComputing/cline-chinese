@@ -1,5 +1,6 @@
 import { nousResearchModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -20,6 +21,7 @@ interface NousResearchProviderProps {
  * The NousResearch provider configuration component
  */
 export const NousResearchProvider = ({ showModelOptions, isPopup, currentMode }: NousResearchProviderProps) => {
+	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -37,7 +39,7 @@ export const NousResearchProvider = ({ showModelOptions, isPopup, currentMode }:
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.providers.model")}
 						models={nousResearchModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(
@@ -58,8 +60,8 @@ export const NousResearchProvider = ({ showModelOptions, isPopup, currentMode }:
 							color: "var(--vscode-descriptionForeground)",
 						}}>
 						<span style={{ color: "var(--vscode-errorForeground)" }}>
-							(<span style={{ fontWeight: 500 }}>Note:</span> Cline uses complex prompts and works best with Claude
-							models. Less capable models may not work as expected.)
+							(<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.note")}</span>{" "}
+							{t("settings.apiConfig.clineBestWithClaude")})
 						</span>
 					</p>
 				</>
