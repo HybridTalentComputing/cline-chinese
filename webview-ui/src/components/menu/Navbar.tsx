@@ -23,7 +23,7 @@ export const Navbar = () => {
 			{
 				id: "chat",
 				name: "Chat",
-				tooltip: "New Task",
+				tooltip: t("chat.newTask.newTask"),
 				icon: PlusIcon,
 				navigate: () => {
 					// Close the current task, then navigate to the chat view

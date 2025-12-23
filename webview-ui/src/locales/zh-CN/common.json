@@ -23,6 +23,12 @@
 		"takeATour": "开始游览",
 		"infoTooltip": "我可以步进式地开发软件，包括编辑文件、探索项目、运行命令以及使用浏览器。我甚至可以使用 MCP 工具扩展我的能力，提供超越基础代码补全的协助。",
 		"inputHint": "输入 @ 获取上下文，/ 获取快捷命令和工作流，按住 shift 拖入文件/图片",
+		"newTask": {
+			"newTask": "新任务",
+			"startNewTask": "开始新任务",
+			"startNewTaskWithContext": "使用上下文开始新任务",
+			"startANewTask": "开始新任务"
+		},
 		"errorImageSize": "图片尺寸超过 7500px",
 		"errorUnsupportedFile": "目前仅支持图片文件",
 		"addContext": "添加上下文",
@@ -59,6 +65,8 @@
 		"condensing": "Cline 正在压缩对话：",
 		"collapseSummary": "折叠摘要",
 		"expandSummary": "展开摘要",
+		"seeMore": "查看更多",
+		"seeLess": "收起",
 		"summary": "摘要：",
 		"urlExternal": "此 URL 是外部的",
 		"wantsToFetch": "Cline 想要从此 URL 获取内容：",
@@ -111,7 +119,17 @@
 		"restoreAll": "恢复全部",
 		"restoreChat": "恢复聊天",
 		"restoreAllTooltip": "将聊天和工作区文件恢复到此检查点，并发送您编辑后的消息",
-		"restoreChatTooltip": "仅将聊天恢复到此检查点，并发送您编辑后的消息"
+		"restoreChatTooltip": "仅将聊天恢复到此检查点，并发送您编辑后的消息",
+		"approve": "批准",
+		"reject": "拒绝",
+		"save": "保存",
+		"runCommand": "运行命令",
+		"resumeTask": "恢复任务",
+		"proceedAnyways": "继续执行",
+		"proceedWhileRunning": "运行时继续",
+		"condense": "压缩对话",
+		"reportBug": "报告 GitHub issue",
+		"retry": "重试"
 	},
 	"settings": {
 		"title": "设置",
@@ -584,6 +602,17 @@
 			"subagentsWindowsTooltip": "Cline CLI 和子代理仅在 macOS 和 Linux 上可用",
 			"copyCommand": "复制命令",
 			"copied": "已复制！"
+		},
+		"newModelBanner": {
+			"title": "Claude Opus 4.5",
+			"description": "Anthropic 的最新模型，具有最先进的性能，成本比 Opus 4.1 低 3 倍。",
+			"tryNewModel": "试用新模型",
+			"tryWithClineAccount": "使用 Cline 账户试用"
+		}
+	},
+	"models": {
+		"claudeSonnet45": {
+			"description": "Claude Sonnet 4.5 在编码、代理搜索和 AI 代理能力方面提供卓越的智能。它是代理编码的强大选择，可以完成整个软件开发生命周期中的任务——从初始规划到错误修复，从维护到大型重构。它在规划和解决复杂编码任务方面都表现出色，是支持端到端软件开发流程的理想选择。\n\n在[此处的博客文章](https://www.anthropic.com/claude/sonnet)中了解更多信息"
 		}
 	},
 	"autoApprove": {

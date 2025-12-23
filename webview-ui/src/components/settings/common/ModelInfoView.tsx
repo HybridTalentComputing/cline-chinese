@@ -1,6 +1,7 @@
-import { geminiModels, ModelInfo } from "@shared/api"
+import { geminiModels, ModelInfo, openRouterDefaultModelId } from "@shared/api"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { ModelDescriptionMarkdown } from "../ModelDescriptionMarkdown"
 import { formatPrice, hasThinkingBudget, supportsBrowserUse, supportsImages, supportsPromptCache } from "../utils/pricingUtils"
@@ -186,6 +187,7 @@ export const ModelInfoView = ({
 	onProviderSortingChange,
 	showProviderRouting,
 }: ModelInfoViewProps) => {
+	const { t } = useTranslation()
 	const [advancedExpanded, setAdvancedExpanded] = useState(false)
 
 	const isGemini = Object.keys(geminiModels).includes(selectedModelId)
@@ -200,11 +202,25 @@ export const ModelInfoView = ({
 	// Check if we have cache pricing to show in Advanced section
 	const hasCachePricing = modelInfo.supportsPromptCache && (modelInfo.cacheWritesPrice || modelInfo.cacheReadsPrice)
 
+	// 根据模型 ID 获取翻译后的描述
+	const getTranslatedDescription = (): string | undefined => {
+		if (!modelInfo.description) return undefined
+
+		// 如果是 Claude Sonnet 4.5，使用翻译
+		if (selectedModelId === openRouterDefaultModelId || selectedModelId === "anthropic/claude-sonnet-4.5") {
+			return t("models.claudeSonnet45.description", { defaultValue: modelInfo.description })
+		}
+
+		return modelInfo.description
+	}
+
+	const translatedDescription = getTranslatedDescription()
+
 	return (
 		<div style={{ marginTop: 4 }}>
 			{/* Description */}
-			{modelInfo.description && (
-				<ModelDescriptionMarkdown isPopup={isPopup} key="description" markdown={modelInfo.description} />
+			{translatedDescription && (
+				<ModelDescriptionMarkdown isPopup={isPopup} key="description" markdown={translatedDescription} />
 			)}
 
 			{/* Compact Info Row: Context, Input, Output */}

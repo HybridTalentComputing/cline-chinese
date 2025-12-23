@@ -3,6 +3,7 @@ import type { Mode } from "@shared/storage/types"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { VirtuosoHandle } from "react-virtuoso"
 import { ButtonActionType, getButtonConfig } from "../../shared/buttonConfig"
 import type { ChatState, MessageHandlers } from "../../types/chatTypes"
@@ -32,6 +33,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 	messageHandlers,
 	scrollBehavior,
 }) => {
+	const { t } = useTranslation()
 	const { inputValue, selectedImages, selectedFiles, setSendingDisabled } = chatState
 	const [isProcessing, setIsProcessing] = useState(false)
 
@@ -107,6 +109,30 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 	const isStreaming = task.partial === true
 	const canInteract = enableButtons && !isProcessing
 
+	// 翻译按钮文本
+	const translateButtonText = (text: string | undefined): string | undefined => {
+		if (!text) return undefined
+		const translationMap: Record<string, string> = {
+			"Start New Task": t("chat.newTask.startNewTask"),
+			"Start New Task with Context": t("chat.newTask.startNewTaskWithContext"),
+			"Resume Task": t("chatRow.resumeTask"),
+			Retry: t("chatRow.retry"),
+			"Proceed Anyways": t("chatRow.proceedAnyways"),
+			Approve: t("chatRow.approve"),
+			Reject: t("chatRow.reject"),
+			Save: t("chatRow.save"),
+			"Run Command": t("chatRow.runCommand"),
+			"Proceed While Running": t("chatRow.proceedWhileRunning"),
+			"Condense Conversation": t("chatRow.condense"),
+			"Report GitHub issue": t("chatRow.reportBug"),
+			Cancel: t("chatRow.cancel"),
+		}
+		return translationMap[text] || text
+	}
+
+	const translatedPrimaryText = translateButtonText(primaryText)
+	const translatedSecondaryText = translateButtonText(secondaryText)
+
 	// Early return for scroll button to avoid unnecessary computation
 	if (showScrollToBottom || !hasButtons) {
 		const handleScrollToBottom = () => {
@@ -161,22 +187,22 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 
 	return (
 		<div className="flex px-3.5" style={{ opacity }}>
-			{primaryText && primaryAction && (
+			{translatedPrimaryText && primaryAction && (
 				<VSCodeButton
 					appearance="primary"
-					className={secondaryText ? "flex-1 mr-[6px]" : "flex-2"}
+					className={translatedSecondaryText ? "flex-1 mr-[6px]" : "flex-2"}
 					disabled={!canInteract}
 					onClick={() => handleActionClick(primaryAction, inputValue, selectedImages, selectedFiles)}>
-					{primaryText}
+					{translatedPrimaryText}
 				</VSCodeButton>
 			)}
-			{secondaryText && secondaryAction && (
+			{translatedSecondaryText && secondaryAction && (
 				<VSCodeButton
 					appearance="secondary"
-					className={primaryText ? "flex-1" : "flex-2"}
+					className={translatedPrimaryText ? "flex-1" : "flex-2"}
 					disabled={!canInteract}
 					onClick={() => handleActionClick(secondaryAction, inputValue, selectedImages, selectedFiles)}>
-					{secondaryText}
+					{translatedSecondaryText}
 				</VSCodeButton>
 			)}
 		</div>
