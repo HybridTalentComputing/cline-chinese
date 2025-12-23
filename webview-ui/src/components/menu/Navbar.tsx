@@ -44,26 +44,26 @@ export const Navbar = () => {
 			{
 				id: "history",
 				name: "History",
-				tooltip: "History",
+				tooltip: t("history.title"),
 				icon: HistoryIcon,
 				navigate: navigateToHistory,
 			},
 			{
 				id: "account",
 				name: "Account",
-				tooltip: "Account",
+				tooltip: t("account.view.title"),
 				icon: UserCircleIcon,
 				navigate: navigateToAccount,
 			},
 			{
 				id: "settings",
 				name: "Settings",
-				tooltip: "Settings",
+				tooltip: t("settings.title"),
 				icon: SettingsIcon,
 				navigate: navigateToSettings,
 			},
 		],
-		[navigateToAccount, navigateToChat, navigateToHistory, navigateToMcp, navigateToSettings],
+		[navigateToAccount, navigateToChat, navigateToHistory, navigateToMcp, navigateToSettings, t],
 	)
 
 	return (

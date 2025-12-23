@@ -109,6 +109,8 @@
 		"wantsToCondense": "Cline wants to condense your conversation:",
 		"wantsToCreateGithubIssue": "Cline wants to create a Github issue:",
 		"wantsToUseSubagent": "Cline wants to use a subagent:",
+		"onThe": "on the",
+		"mcpServer": "MCP server:",
 		"requestId": "Request ID: {{requestId}}",
 		"powershellIssues": "It seems like you're having Windows PowerShell issues, please see this",
 		"troubleshootingGuide": "troubleshooting guide",
@@ -309,6 +311,11 @@
 	},
 	"history": {
 		"title": "History",
+		"preview": {
+			"recentTasks": "Recent Tasks",
+			"viewAll": "View All",
+			"noRecentTasks": "No recent tasks"
+		},
 		"searchPlaceholder": "Fuzzy search history...",
 		"sort": {
 			"newest": "Newest",
@@ -379,8 +386,9 @@
 			"advancedSettings": "Advanced MCP Settings"
 		},
 		"addLocalServer": {
-			"description": "Add a new local MCP server by providing a name, command, and its arguments. Learn more ",
+			"description": "Add a local MCP server by configuring it in <code>cline_mcp_settings.json</code>. You'll need to specify the server name, command, arguments, and any required environment variables in the JSON configuration. Learn more ",
 			"learnMore": "here.",
+			"openConfig": "Open cline_mcp_settings.json",
 			"serverName": "Server Name",
 			"command": "Command",
 			"args": "Args (comma separated)",
@@ -397,7 +405,9 @@
 			"description": "Add a remote MCP server by providing a name and its URL endpoint. Learn more ",
 			"learnMore": "here.",
 			"serverName": "Server Name",
+			"serverNamePlaceholder": "mcp-server",
 			"serverUrl": "Server URL",
+			"serverUrlPlaceholder": "https://example.com/mcp-server",
 			"transportType": "Transport Type",
 			"streamableHttp": "Streamable HTTP",
 			"sse": "SSE (Legacy)",

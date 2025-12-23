@@ -452,12 +452,14 @@ export const ChatRowContent = memo(
 						<span
 							className="ph-no-capture"
 							style={{ color: normalColor, fontWeight: "bold", wordBreak: "break-word" }}>
-							{mcpServerUse.type === "use_mcp_tool" ? t("chatRow.wantsToUseTool") : t("chatRow.wantsToAccessResource")}{" "}
-							on the{" "}
+							{mcpServerUse.type === "use_mcp_tool"
+								? t("chatRow.wantsToUseTool")
+								: t("chatRow.wantsToAccessResource")}{" "}
+							{t("chatRow.onThe")}{" "}
 							<code style={{ wordBreak: "break-all" }}>
 								{getMcpServerDisplayName(mcpServerUse.serverName, mcpMarketplaceCatalog)}
 							</code>{" "}
-							MCP server:
+							{t("chatRow.mcpServer")}
 						</span>,
 					]
 				case "completion_result":
@@ -551,9 +553,7 @@ export const ChatRowContent = memo(
 				case "editedExistingFile":
 					const content = tool?.content || ""
 					const isApplyingPatch = content?.startsWith("%%bash") && !content.endsWith("*** End Patch\nEOF")
-					const editToolTitle = isApplyingPatch
-						? t("chatRow.creatingPatches")
-						: t("chatRow.wantsToEdit")
+					const editToolTitle = isApplyingPatch ? t("chatRow.creatingPatches") : t("chatRow.wantsToEdit")
 					return (
 						<>
 							<div style={headerStyle}>
@@ -691,9 +691,7 @@ export const ChatRowContent = memo(
 								{tool.operationIsLocatedInWorkspace === false &&
 									toolIcon("sign-out", "yellow", -90, t("chatRow.outsideWorkspace"))}
 								<span style={{ fontWeight: "bold" }}>
-									{message.type === "ask"
-										? t("chatRow.wantsToViewTopLevel")
-										: t("chatRow.viewedTopLevel")}
+									{message.type === "ask" ? t("chatRow.wantsToViewTopLevel") : t("chatRow.viewedTopLevel")}
 								</span>
 							</div>
 							<CodeAccordian
@@ -713,9 +711,7 @@ export const ChatRowContent = memo(
 								{tool.operationIsLocatedInWorkspace === false &&
 									toolIcon("sign-out", "yellow", -90, t("chatRow.outsideWorkspace"))}
 								<span style={{ fontWeight: "bold" }}>
-									{message.type === "ask"
-										? t("chatRow.wantsToViewRecursive")
-										: t("chatRow.viewedRecursive")}
+									{message.type === "ask" ? t("chatRow.wantsToViewRecursive") : t("chatRow.viewedRecursive")}
 								</span>
 							</div>
 							<CodeAccordian
@@ -756,8 +752,7 @@ export const ChatRowContent = memo(
 								{tool.operationIsLocatedInWorkspace === false &&
 									toolIcon("sign-out", "yellow", -90, t("chatRow.outsideWorkspace"))}
 								<span style={{ fontWeight: "bold" }}>
-									{t("chatRow.wantsToSearch")}{" "}
-									<code style={{ wordBreak: "break-all" }}>{tool.regex}</code>:
+									{t("chatRow.wantsToSearch")} <code style={{ wordBreak: "break-all" }}>{tool.regex}</code>:
 								</span>
 							</div>
 							<SearchResultsDisplay
@@ -808,7 +803,9 @@ export const ChatRowContent = memo(
 									{isExpanded ? (
 										<div>
 											<div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-												<span style={{ fontWeight: "bold", marginRight: "4px" }}>{t("chatRow.summary")}</span>
+												<span style={{ fontWeight: "bold", marginRight: "4px" }}>
+													{t("chatRow.summary")}
+												</span>
 												<div style={{ flexGrow: 1 }}></div>
 												<span
 													className="codicon codicon-chevron-up"
@@ -865,9 +862,7 @@ export const ChatRowContent = memo(
 								{tool.operationIsLocatedInWorkspace === false &&
 									toolIcon("sign-out", "yellow", -90, t("chatRow.urlExternal"))}
 								<span style={{ fontWeight: "bold" }}>
-									{message.type === "ask"
-										? t("chatRow.wantsToFetch")
-										: t("chatRow.fetched")}
+									{message.type === "ask" ? t("chatRow.wantsToFetch") : t("chatRow.fetched")}
 								</span>
 							</div>
 							<div
@@ -920,9 +915,7 @@ export const ChatRowContent = memo(
 								{tool.operationIsLocatedInWorkspace === false &&
 									toolIcon("sign-out", "yellow", -90, t("chatRow.searchExternal"))}
 								<span style={{ fontWeight: "bold" }}>
-									{message.type === "ask"
-										? t("chatRow.wantsToSearchWeb")
-										: t("chatRow.searchedWeb")}
+									{message.type === "ask" ? t("chatRow.wantsToSearchWeb") : t("chatRow.searchedWeb")}
 								</span>
 							</div>
 							<div
@@ -1164,7 +1157,9 @@ export const ChatRowContent = memo(
 												cursor: "pointer",
 												fontFamily: "inherit",
 											}}>
-											{vscodeTerminalExecutionMode === "backgroundExec" ? t("chatRow.cancel") : t("chatRow.stop")}
+											{vscodeTerminalExecutionMode === "backgroundExec"
+												? t("chatRow.cancel")
+												: t("chatRow.stop")}
 										</button>
 									)}
 								</div>
@@ -1474,7 +1469,9 @@ export const ChatRowContent = memo(
 											</div>
 										) : (
 											<div style={{ display: "flex", alignItems: "center" }}>
-												<span style={{ fontWeight: "bold", marginRight: "4px" }}>{t("chatRow.thinking")}:</span>
+												<span style={{ fontWeight: "bold", marginRight: "4px" }}>
+													{t("chatRow.thinking")}:
+												</span>
 												<span
 													className="ph-no-capture"
 													style={{
@@ -1784,8 +1781,7 @@ export const ChatRowContent = memo(
 									</span>
 								</div>
 								<div style={{ color: "var(--vscode-foreground)", opacity: 0.8 }}>
-									{t("chatRow.shellIntegrationWarning")}
-									{" "}
+									{t("chatRow.shellIntegrationWarning")}{" "}
 									<a
 										href="https://github.com/cline/cline/wiki/Troubleshooting-%E2%80%90-Shell-Integration-Unavailable"
 										style={{
@@ -1835,11 +1831,9 @@ export const ChatRowContent = memo(
 										</span>
 									</div>
 									<div style={{ color: "var(--vscode-foreground)", opacity: 0.8 }}>
-										{isFailed ? (
-											t("chatRow.autoRetryFailedAttempts", { maxAttempts })
-										) : (
-											t("chatRow.autoRetryAttempt", { attempt, maxAttempts, delaySeconds })
-										)}
+										{isFailed
+											? t("chatRow.autoRetryFailedAttempts", { maxAttempts })
+											: t("chatRow.autoRetryAttempt", { attempt, maxAttempts, delaySeconds })}
 									</div>
 								</div>
 							)
@@ -2049,7 +2043,9 @@ export const ChatRowContent = memo(
 															cursor: explainChangesDisabled ? "wait" : "pointer",
 														}}
 													/>
-													{explainChangesDisabled ? t("chatRow.explaining") : t("chatRow.explainChanges")}
+													{explainChangesDisabled
+														? t("chatRow.explaining")
+														: t("chatRow.explainChanges")}
 												</SuccessButton>
 											)}
 										</div>
@@ -2136,9 +2132,7 @@ export const ChatRowContent = memo(
 											color: normalColor,
 											marginBottom: "-1.5px",
 										}}></span>
-									<span style={{ color: normalColor, fontWeight: "bold" }}>
-										{t("chatRow.wantsToCondense")}
-									</span>
+									<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chatRow.wantsToCondense")}</span>
 								</div>
 								<NewTaskPreview context={message.text || ""} />
 							</>
