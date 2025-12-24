@@ -1,151 +1,149 @@
-<div align="center"><sub>
-English | <a href="https://github.com/cline/cline/blob/main/locales/es/README.md" target="_blank">Español</a> | <a href="https://github.com/cline/cline/blob/main/locales/de/README.md" target="_blank">Deutsch</a> | <a href="https://github.com/cline/cline/blob/main/locales/ja/README.md" target="_blank">日本語</a> | <a href="https://github.com/cline/cline/blob/main/locales/zh-cn/README.md" target="_blank">简体中文</a> | <a href="https://github.com/cline/cline/blob/main/locales/zh-tw/README.md" target="_blank">繁體中文</a> | <a href="https://github.com/cline/cline/blob/main/locales/ko/README.md" target="_blank">한국어</a>
-</sub></div>
+# Cline-Chinese (Cline中文汉化版) 🌏
 
-# Cline
+> 🎉 截止到2025.12.24，Cline Chinese在VS Code插件市场的下载量突破157k啦！感谢大家的支持！
+
+
+
 
 <p align="center">
-  <img src="https://media.githubusercontent.com/media/cline/cline/main/assets/docs/demo.gif" width="100%" />
+
+[![MCP市场](https://img.shields.io/badge/MCP%E5%B8%82%E5%9C%BA-访问-blue)](https://www.mcp-home.com/) [![Cline Chinese文档](https://img.shields.io/badge/Cline%20Chinese-文档-blue)](https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/) [![Discord](https://img.shields.io/badge/Discord-加入讨论-7289DA)](https://discord.gg/fhj9hqy89t) [![Version](https://img.shields.io/visual-studio-marketplace/v/HybridTalentComputing.cline-chinese)](https://marketplace.visualstudio.com/items?itemName=HybridTalentComputing.cline-chinese) [![Downloads](https://img.shields.io/visual-studio-marketplace/d/HybridTalentComputing.cline-chinese)](https://marketplace.visualstudio.com/items?itemName=HybridTalentComputing.cline-chinese) [![Rating](https://img.shields.io/visual-studio-marketplace/r/HybridTalentComputing.cline-chinese)](https://marketplace.visualstudio.com/items?itemName=HybridTalentComputing.cline-chinese)
+
 </p>
 
+## 项目地址
+https://github.com/HybridTalentComputing/cline-chinese
+欢迎大家star，fork，提出issue，贡献代码，一起完善这个项目。
+
+## MCP市场（MCP信息以中文形式呈现）
+https://www.mcp-home.com/
+欢迎大家注册，收藏、上传自己喜欢的MCP Server/Client.
+
+## 文档地址(包括使用方法，MCP知识，常见问题解答等)
+https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/
+
+## 活动
+<a href="https://tcnqigfvmci2.feishu.cn/wiki/Qui5wMIbdit8Jskjtz3cybwknVd" target="_blank" rel="noopener noreferrer">
+  <img src="https://github.com/user-attachments/assets/b0c02959-60c6-45f6-8114-03b269710582" alt="微信图片_20251215141911_125_566">
+</a>
+
+
+
+## 赞助商
+<img width="100%" height="200" alt="胜算云" src="https://github.com/user-attachments/assets/5098e0e5-64e0-4184-b9bf-3f44da2f1f2c" />
+
+> 胜算云是获得长三角国家技术创新中心重大科研项目支持的 AI云平台，提供GPT-5, Claude Opus 4.1， Gemini 2.5Pro在内的顶尖编程模型，作为AmazonAWS、Microsoft Azure、Google Cloud 的官方授权合作商，因此速度更快、稳定性更高、命中缓存更便宜、TPM/RPM无限制
+可试用，注册后扫码添加客服享百万 Tokens 免费试用额度：[胜算云](https://www.shengsuanyun.com/?from=cline-chinese)
+
+
+## 功能展示
+
+<video width="100%" controls src="https://github.com/user-attachments/assets/a6db47a9-08d7-4d20-afa0-110d23b71a81"></video>
+
+### 一起薅羊毛：
+>🚀 推荐使用硅基流动，欢迎通过我的邀请链接：https://cloud.siliconflow.cn/i/BKtAlqbk ，或者注册的时候填写邀请码：BKtAlqbk，注册后双方均可获得2000万tokens的免费额度。
+
+> 🚀 推荐智谱 GLM Coding 超值订阅，邀你一起薅羊毛！Claude Code、Cline 等 10+ 大编程工具无缝支持，“码力”全开，越拼越爽！立即开拼，享限时惊喜价！
+      链接：(https://www.bigmodel.cn/claude-code?ic=FKYWQWPUMQ)
+
+
+## 安装使用
+Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下载体验。
+
+## 简介
+
+这个项目是基于 [Cline](https://github.com/cline/cline) 的汉化版本。旨在优化由于英文 prompt 导致 Cline 在中文输入下+国产大模型（如：deepseek）表现不佳的问题, 并提供更符合中文用户习惯的UI界面和功能。目前已测试[DeepSeek-R1/DeepSeek-V3](https://github.com/deepseek-ai/DeepSeek-R1)工作良好。
+
+日常使用cline等编程助手时发现使用某些模型推理速度较慢（如deepseek-R1, Claude-3.5-Sonnet），这个项目优先尝试在中文输入下，对轻量化LLM进行实验（如Deepseek-R1-Distill-Qwen-7B/14B），优化中文prompt, 以提升推理速度，大大减少等待的时间。
+
+
+
+## 背景
+
+本人是一名AI从业者+爱好者，在使用Cline时，发现Cline的UI界面和提示词均为英文，使用中文输入时，有时会出现奇奇怪怪的输出，影响体验。因此，决定自己动手，汉化Cline。
+另外，秉着学习的态度，未来将着手修改Cline的核心代码，增加新的功能，以提升体验。
+
+## 特色功能
+1. 支持Dify Provider（2025.08.25已下线，请使用Dify MCP以获得更好的体验，使用方法请参考： [dify mcp](https://dify.ai/blog/turn-your-dify-app-into-an-mcp-server)）。
+
+## 版本更新说明
+
+### 2025.08.25（ver.3.25.2）
+1. 同步近期cline更新。(上下文压缩，添加claude code provider)
+
+### 2025.06.17（ver.3.17.11）
+   1. 同步近期cline更新。
+   2. 接入胜算云.
+
+### 2025.05.19（ver.3.16.1）
+   1. 同步近期cline更新。
+
+
+### 2025.04.01（ver.3.8.4）
+
+    1. Cline Chinese特色功能：新增Dify Provider，感谢@lofyer，代码来自：https://github.com/lofyer/cline-dify/tree/main
+    2. 合入cline 3.8新增特性和问题修复：
+        关键特性：
+        1. 添加到 Cline：在任何文件或终端中右键单击选定的文本，以快速将上下文添加到您当前的任务中！此外，当您看到灯泡图标时，选择“使用Cline 修复”让 Cline 修复您代码中的错误。
+        2. 更快的推理：Cline/OpenRouter用户可以按吞吐量、价格和延迟对使用的底层提供商进行排序。按吞吐量排序将输出更快的生成结果（成本更高）。
+        3. 增强的 MCP 支持：支持 GIF 的动态图像加载，以及一个新的删除按钮来清理失败的服务器。
+        4. 近期新增模型支持，如gemini 2.5 pro, Deepseek-V3-0324，claude 3.7 sonnet-thinking.
+
+## 欢迎关注我的自媒体账号
+
+欢迎关注我的自媒体账号，获取更多AI开发和技术分享：
+
+- 知乎：[Leo聊AI](https://www.zhihu.com/people/HTCMAX)
+- B站：[Leo的AI世界](https://space.bilibili.com/23409884?spm_id_from=333.1007.0.0)
+- 头条号：Leo的AI世界
+- 小红书：Leo的AI世界
+- 公众号：Leo的AI世界
+
+## 加入社群
+
+感兴趣的可以扫码加入微信社群，一起交流学习AI（如果二维码失效，请查看github项目中的首页中，相同位置的群二维码, 或者加入Discord频道）：
+
 <div align="center">
-<table>
-<tbody>
-<td align="center">
-<a href="https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev" target="_blank"><strong>Download on VS Marketplace</strong></a>
-</td>
-<td align="center">
-<a href="https://discord.gg/cline" target="_blank"><strong>Discord</strong></a>
-</td>
-<td align="center">
-<a href="https://www.reddit.com/r/cline/" target="_blank"><strong>r/cline</strong></a>
-</td>
-<td align="center">
-<a href="https://github.com/cline/cline/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><strong>Feature Requests</strong></a>
-</td>
-<td align="center">
-<a href="https://docs.cline.bot/getting-started/for-new-coders" target="_blank"><strong>Getting Started</strong></a>
-</td>
-</tbody>
-</table>
+  <img src="https://github.com/user-attachments/assets/cc990e83-b1e5-47d5-a663-a1326e9720df" alt="微信群二维码" width="250" />
 </div>
 
-Meet Cline, an AI assistant that can use your **CLI** a**N**d **E**ditor.
+GitHub 项目地址：https://github.com/HybridTalentComputing/cline-chinese
 
-Thanks to [Claude Sonnet's agentic coding capabilities](https://www.anthropic.com/claude/sonnet), Cline can handle complex software development tasks step-by-step. With tools that let him create & edit files, explore large projects, use the browser, and execute terminal commands (after you grant permission), he can assist you in ways that go beyond code completion or tech support. Cline can even use the Model Context Protocol (MCP) to create new tools and extend his own capabilities. While autonomous AI scripts traditionally run in sandboxed environments, this extension provides a human-in-the-loop GUI to approve every file change and terminal command, providing a safe and accessible way to explore the potential of agentic AI.
+Discord 频道：https://discord.gg/fhj9hqy89t
 
-1. Enter your task and add images to convert mockups into functional apps or fix bugs with screenshots.
-2. Cline starts by analyzing your file structure & source code ASTs, running regex searches, and reading relevant files to get up to speed in existing projects. By carefully managing what information is added to context, Cline can provide valuable assistance even for large, complex projects without overwhelming the context window.
-3. Once Cline has the information he needs, he can:
-    - Create and edit files + monitor linter/compiler errors along the way, letting him proactively fix issues like missing imports and syntax errors on his own.
-    - Execute commands directly in your terminal and monitor their output as he works, letting him e.g., react to dev server issues after editing a file.
-    - For web development tasks, Cline can launch the site in a headless browser, click, type, scroll, and capture screenshots + console logs, allowing him to fix runtime errors and visual bugs.
-4. When a task is completed, Cline will present the result to you with a terminal command like `open -a "Google Chrome" index.html`, which you run with a click of a button.
 
-> [!TIP]
-> Follow [this guide](https://docs.cline.bot/features/customization/opening-cline-in-sidebar) to open Cline on the right side of your editor. This lets you use Cline side-by-side with your file explorer, and see how he changes your workspace more clearly.
+## 赞赏支持
 
+如果您觉得这个项目对您有帮助，欢迎赞赏支持，您的支持是我持续开发的动力 ☕
+
+<div align="center" style="display: flex; justify-content: center; gap: 20px;">
+
+  <img src="https://github.com/user-attachments/assets/f01e4514-e8ec-48de-883a-9f6fbd05c2a0" alt="支付宝赞赏" width="250" />
+  <img src="https://github.com/user-attachments/assets/f4ee93ba-2960-46be-96a7-faaff3a0c38c" alt="微信赞赏" width="250" />
+
+</div>
+
+## 免责声明
+
+1. **使用风险**：本项目是一个开源的VSCode插件，用户在使用过程中可能会遇到的任何问题或风险，开发者不承担任何责任。
+
+2. **数据安全**：本插件不会收集或存储任何用户数据。但在使用过程中，用户应注意保护自己的敏感信息和代码安全。
+
+3. **知识产权**：
+   - 本项目是基于Cline的汉化版本，原版权归属于Cline团队。
+   - 汉化部分的内容采用与原版Cline相同的Apache-2.0许可证。
+   - 用户在使用过程中应遵守相关的开源协议。
+
+4. **免责声明**：
+   - 本项目不提供任何明示或暗示的保证，包括但不限于适销性和特定用途适用性的保证。
+   - 开发者不对任何直接或间接损失负责，包括但不限于利润损失、数据丢失等。
+   - 用户使用本插件即表示同意承担使用过程中的所有风险。
+
+5. **更新和维护**：
+   - 开发者将努力维护本项目，但不保证及时更新或修复所有问题。
+   - 本项目可能随时变更或终止，会及时同步到本项目中。
 ---
 
-<img align="right" width="340" src="https://github.com/user-attachments/assets/3cf21e04-7ce9-4d22-a7b9-ba2c595e88a4">
-
-### Use any API and Model
-
-Cline supports API providers like OpenRouter, Anthropic, OpenAI, Google Gemini, AWS Bedrock, Azure, GCP Vertex, Cerebras and Groq. You can also configure any OpenAI compatible API, or use a local model through LM Studio/Ollama. If you're using OpenRouter, the extension fetches their latest model list, allowing you to use the newest models as soon as they're available.
-
-The extension also keeps track of total tokens and API usage cost for the entire task loop and individual requests, keeping you informed of spend every step of the way.
-
-<!-- Transparent pixel to create line break after floating image -->
-
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
-
-<img align="left" width="370" src="https://github.com/user-attachments/assets/81be79a8-1fdb-4028-9129-5fe055e01e76">
-
-### Run Commands in Terminal
-
-Thanks to the new [shell integration updates in VSCode v1.93](https://code.visualstudio.com/updates/v1_93#_terminal-shell-integration-api), Cline can execute commands directly in your terminal and receive the output. This allows him to perform a wide range of tasks, from installing packages and running build scripts to deploying applications, managing databases, and executing tests, all while adapting to your dev environment & toolchain to get the job done right.
-
-For long running processes like dev servers, use the "Proceed While Running" button to let Cline continue in the task while the command runs in the background. As Cline works he’ll be notified of any new terminal output along the way, letting him react to issues that may come up, such as compile-time errors when editing files.
-
-<!-- Transparent pixel to create line break after floating image -->
-
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
-
-<img align="right" width="400" src="https://github.com/user-attachments/assets/c5977833-d9b8-491e-90f9-05f9cd38c588">
-
-### Create and Edit Files
-
-Cline can create and edit files directly in your editor, presenting you a diff view of the changes. You can edit or revert Cline's changes directly in the diff view editor, or provide feedback in chat until you're satisfied with the result. Cline also monitors linter/compiler errors (missing imports, syntax errors, etc.) so he can fix issues that come up along the way on his own.
-
-All changes made by Cline are recorded in your file's Timeline, providing an easy way to track and revert modifications if needed.
-
-<!-- Transparent pixel to create line break after floating image -->
-
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
-
-<img align="left" width="370" src="https://github.com/user-attachments/assets/bc2e85ba-dfeb-4fe6-9942-7cfc4703cbe5">
-
-### Use the Browser
-
-With Claude Sonnet's new [Computer Use](https://www.anthropic.com/news/3-5-models-and-computer-use) capability, Cline can launch a browser, click elements, type text, and scroll, capturing screenshots and console logs at each step. This allows for interactive debugging, end-to-end testing, and even general web use! This gives him autonomy to fixing visual bugs and runtime issues without you needing to handhold and copy-pasting error logs yourself.
-
-Try asking Cline to "test the app", and watch as he runs a command like `npm run dev`, launches your locally running dev server in a browser, and performs a series of tests to confirm that everything works. [See a demo here.](https://x.com/sdrzn/status/1850880547825823989)
-
-<!-- Transparent pixel to create line break after floating image -->
-
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
-
-<img align="right" width="350" src="https://github.com/user-attachments/assets/ac0efa14-5c1f-4c26-a42d-9d7c56f5fadd">
-
-### "add a tool that..."
-
-Thanks to the [Model Context Protocol](https://github.com/modelcontextprotocol), Cline can extend his capabilities through custom tools. While you can use [community-made servers](https://github.com/modelcontextprotocol/servers), Cline can instead create and install tools tailored to your specific workflow. Just ask Cline to "add a tool" and he will handle everything, from creating a new MCP server to installing it into the extension. These custom tools then become part of Cline's toolkit, ready to use in future tasks.
-
--   "add a tool that fetches Jira tickets": Retrieve ticket ACs and put Cline to work
--   "add a tool that manages AWS EC2s": Check server metrics and scale instances up or down
--   "add a tool that pulls the latest PagerDuty incidents": Fetch details and ask Cline to fix bugs
-
-<!-- Transparent pixel to create line break after floating image -->
-
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
-
-<img align="left" width="360" src="https://github.com/user-attachments/assets/7fdf41e6-281a-4b4b-ac19-020b838b6970">
-
-### Add Context
-
-**`@url`:** Paste in a URL for the extension to fetch and convert to markdown, useful when you want to give Cline the latest docs
-
-**`@problems`:** Add workspace errors and warnings ('Problems' panel) for Cline to fix
-
-**`@file`:** Adds a file's contents so you don't have to waste API requests approving read file (+ type to search files)
-
-**`@folder`:** Adds folder's files all at once to speed up your workflow even more
-
-<!-- Transparent pixel to create line break after floating image -->
-
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
-
-<img align="right" width="350" src="https://github.com/user-attachments/assets/140c8606-d3bf-41b9-9a1f-4dbf0d4c90cb">
-
-### Checkpoints: Compare and Restore
-
-As Cline works through a task, the extension takes a snapshot of your workspace at each step. You can use the 'Compare' button to see a diff between the snapshot and your current workspace, and the 'Restore' button to roll back to that point.
-
-For example, when working with a local web server, you can use 'Restore Workspace Only' to quickly test different versions of your app, then use 'Restore Task and Workspace' when you find the version you want to continue building from. This lets you safely explore different approaches without losing progress.
-
-<!-- Transparent pixel to create line break after floating image -->
-
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
-
-## Contributing
-
-To contribute to the project, start with our [Contributing Guide](CONTRIBUTING.md) to learn the basics. You can also join our [Discord](https://discord.gg/cline) to chat with other contributors in the `#contributors` channel. If you're looking for full-time work, check out our open positions on our [careers page](https://cline.bot/join-us)!
-
-## Enterprise
-
-Get the same Cline experience with enterprise-grade controls: SSO (SAML/OIDC), global policies and configuration, observability with audit trails, private networking (VPC/private link), and self-hosted or on-prem deployments, and enterprise support. Learn more at our [enterprise page](https://cline.bot/enterprise) or [talk to us](https://cline.bot/contact-sales).
+> 注：本项目是个人维护的汉化版本，与原版 Cline 团队无关。如果您喜欢这个项目，也请给原版 [Cline](https://github.com/cline/cline) 一个 star ⭐️
 
 
-## License
-
-[Apache 2.0 © 2025 Cline Bot Inc.](./LICENSE)
