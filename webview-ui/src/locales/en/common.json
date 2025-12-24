@@ -201,7 +201,7 @@
 			"new": "NEW",
 			"enableThinking": "Enable Thinking",
 			"tokens": "tokens",
-			"subagentsDescription": "Cline for CLI is required for subagents. Install it with: <installCmd></installCmd>, then run <authCmd></authCmd> To authenticate with Cline or configure an API provider.",
+			"subagentsDescription": "Cline for CLI is required for subagents. Install it with: <installCmd>npm install -g cline</installCmd>, then run <authCmd>cline auth</authCmd> To authenticate with Cline or configure an API provider.",
 			"installNow": "Install Now",
 			"subagentsEnabled": "Subagents Enabled",
 			"enableSubagents": "Enable Subagents",

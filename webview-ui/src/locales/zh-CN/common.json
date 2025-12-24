@@ -201,7 +201,7 @@
 			"new": "新",
 			"enableThinking": "启用思考",
 			"tokens": "tokens",
-			"subagentsDescription": "子代理需要安装 Cline CLI。请使用 <installCmd></installCmd> 安装，然后运行 <authCmd></authCmd> 以使用 Cline 进行身份验证或配置 API 提供商。",
+			"subagentsDescription": "子代理需要安装 Cline CLI。请使用 <installCmd>npm install -g cline</installCmd> 安装，然后运行 <authCmd>cline auth</authCmd> 以使用 Cline 进行身份验证或配置 API 提供商。",
 			"installNow": "立即安装",
 			"subagentsEnabled": "子代理已启用",
 			"enableSubagents": "启用子代理",

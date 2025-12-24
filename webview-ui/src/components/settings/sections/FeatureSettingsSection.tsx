@@ -112,9 +112,8 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 															backgroundColor: "var(--vscode-editor-background)",
 															color: "var(--vscode-foreground)",
 															opacity: 0.9,
-														}}>
-														npm install -g cline
-													</code>
+														}}
+													/>
 												),
 												authCmd: (
 													<code
@@ -123,9 +122,8 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 															backgroundColor: "var(--vscode-editor-background)",
 															color: "var(--vscode-foreground)",
 															opacity: 0.9,
-														}}>
-														cline auth
-													</code>
+														}}
+													/>
 												),
 											}}
 										/>
