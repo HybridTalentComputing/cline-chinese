@@ -22,7 +22,7 @@ export const Navbar = () => {
 		() => [
 			{
 				id: "chat",
-				name: "Chat",
+				name: t("chat.newTask.newTask"),
 				tooltip: t("chat.newTask.newTask"),
 				icon: PlusIcon,
 				navigate: () => {
@@ -36,28 +36,28 @@ export const Navbar = () => {
 			},
 			{
 				id: "mcp",
-				name: "MCP",
+				name: t("mcp.title"),
 				tooltip: t("mcp.title"),
 				icon: McpServerIcon,
 				navigate: navigateToMcp,
 			},
 			{
 				id: "history",
-				name: "History",
+				name: t("history.title"),
 				tooltip: t("history.title"),
 				icon: HistoryIcon,
 				navigate: navigateToHistory,
 			},
 			{
 				id: "account",
-				name: "Account",
+				name: t("account.view.title"),
 				tooltip: t("account.view.title"),
 				icon: UserCircleIcon,
 				navigate: navigateToAccount,
 			},
 			{
 				id: "settings",
-				name: "Settings",
+				name: t("settings.title"),
 				tooltip: t("settings.title"),
 				icon: SettingsIcon,
 				navigate: navigateToSettings,
