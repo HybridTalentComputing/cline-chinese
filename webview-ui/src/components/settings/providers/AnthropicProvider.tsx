@@ -61,7 +61,7 @@ export const AnthropicProvider = ({ showModelOptions, isPopup, currentMode }: An
 			<BaseUrlField
 				initialValue={apiConfiguration?.anthropicBaseUrl}
 				onChange={(value) => handleFieldChange("anthropicBaseUrl", value)}
-				placeholder="Default: https://api.anthropic.com"
+				placeholder={t("settings.apiConfig.anthropicBaseUrlPlaceholder")}
 			/>
 
 			{showModelOptions && (

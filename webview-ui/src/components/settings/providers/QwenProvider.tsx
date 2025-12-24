@@ -70,7 +70,7 @@ export const QwenProvider = ({ showModelOptions, isPopup, currentMode }: QwenPro
 					value={apiConfiguration?.qwenApiLine || qwenApiOptions[0]}>
 					{qwenApiOptions.map((line) => (
 						<VSCodeOption key={line} value={line}>
-							{line.charAt(0).toUpperCase() + line.slice(1)} API
+							{line.charAt(0).toUpperCase() + line.slice(1)} {t("settings.apiConfig.api")}
 						</VSCodeOption>
 					))}
 				</VSCodeDropdown>

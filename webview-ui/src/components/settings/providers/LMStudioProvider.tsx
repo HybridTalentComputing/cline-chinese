@@ -99,7 +99,7 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 			<BaseUrlField
 				initialValue={apiConfiguration?.lmStudioBaseUrl}
 				onChange={(value) => handleFieldChange("lmStudioBaseUrl", value)}
-				placeholder="Default: http://localhost:1234"
+				placeholder={t("settings.apiConfig.lmStudioBaseUrlPlaceholder")}
 			/>
 
 			<div className="font-semibold">{t("settings.providers.model")}</div>
@@ -139,7 +139,7 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 							currentMode,
 						)
 					}
-					placeholder={"e.g. meta-llama-3.1-8b-instruct"}
+					placeholder={t("settings.apiConfig.lmStudioModelExample")}
 					style={{ width: "100%" }}
 				/>
 			)}

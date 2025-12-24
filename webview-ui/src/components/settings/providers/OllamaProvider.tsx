@@ -63,7 +63,7 @@ export const OllamaProvider = ({ showModelOptions, currentMode }: OllamaProvider
 			<BaseUrlField
 				initialValue={apiConfiguration?.ollamaBaseUrl}
 				onChange={(value) => handleFieldChange("ollamaBaseUrl", value)}
-				placeholder="Default: http://localhost:11434"
+				placeholder={t("settings.apiConfig.ollamaBaseUrlPlaceholder")}
 			/>
 
 			{apiConfiguration?.ollamaBaseUrl && (
@@ -99,7 +99,7 @@ export const OllamaProvider = ({ showModelOptions, currentMode }: OllamaProvider
 			<DebouncedTextField
 				initialValue={apiConfiguration?.ollamaApiOptionsCtxNum || "32768"}
 				onChange={(v) => handleFieldChange("ollamaApiOptionsCtxNum", v || undefined)}
-				placeholder={"e.g. 32768"}
+				placeholder={t("settings.apiConfig.modelContextWindowExample")}
 				style={{ width: "100%" }}>
 				<span className="font-semibold">{t("settings.apiConfig.modelContextWindow")}</span>
 			</DebouncedTextField>
@@ -115,7 +115,7 @@ export const OllamaProvider = ({ showModelOptions, currentMode }: OllamaProvider
 								handleFieldChange("requestTimeoutMs", numValue)
 							}
 						}}
-						placeholder="Default: 30000 (30 seconds)"
+						placeholder={t("settings.apiConfig.requestTimeoutPlaceholder")}
 						style={{ width: "100%" }}>
 						<span className="font-semibold">{t("settings.apiConfig.requestTimeout")}</span>
 					</DebouncedTextField>

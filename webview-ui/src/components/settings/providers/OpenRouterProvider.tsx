@@ -14,10 +14,11 @@ import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandler
  * Component to display OpenRouter balance information
  */
 const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
+	const { t } = useTranslation()
 	const { data: keyInfo, isLoading, error } = useOpenRouterKeyInfo(apiKey)
 
 	if (isLoading) {
-		return <span style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)" }}>Loading...</span>
+		return <span style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)" }}>{t("settings.apiConfig.openRouter.loading")}</span>
 	}
 
 	if (error || !keyInfo || keyInfo.limit === null) {
@@ -40,8 +41,12 @@ const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
 				paddingLeft: 4,
 				cursor: "pointer",
 			}}
-			title={`Remaining balance: ${formattedBalance}\nLimit: ${formatPrice(keyInfo.limit)}\nUsage: ${formatPrice(keyInfo.usage)}`}>
-			Balance: {formattedBalance}
+			title={t("settings.apiConfig.openRouter.balanceTooltip", {
+				balance: formattedBalance,
+				limit: formatPrice(keyInfo.limit),
+				usage: formatPrice(keyInfo.usage),
+			})}>
+			{t("settings.apiConfig.openRouter.balance", { balance: formattedBalance })}
 		</VSCodeLink>
 	)
 }

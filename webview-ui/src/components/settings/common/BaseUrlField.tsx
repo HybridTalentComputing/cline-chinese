@@ -29,7 +29,7 @@ export const BaseUrlField = ({
 }: BaseUrlFieldProps) => {
 	const { t } = useTranslation()
 	const defaultLabel = label || t("settings.apiConfig.useCustomBaseUrl")
-	const defaultPlaceholder = placeholder || "Default: https://api.example.com"
+	const defaultPlaceholder = placeholder || t("settings.apiConfig.defaultBaseUrlPlaceholder")
 	const [isEnabled, setIsEnabled] = useState(!!initialValue)
 	const [localValue, setLocalValue] = useDebouncedInput(initialValue || "", onChange)
 
