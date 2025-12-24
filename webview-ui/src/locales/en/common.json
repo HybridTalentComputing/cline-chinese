@@ -211,6 +211,11 @@
 			"checkpointsDescription": "Enables extension to save checkpoints of workspace throughout the task. Uses git under the hood which may not work well with large workspaces.",
 			"mcpDisplayMode": "MCP Display Mode",
 			"mcpDisplayModeDescription": "Controls how MCP responses are displayed: plain text, rich formatting with links/images, or markdown rendering.",
+			"mcpDisplayModeOptions": {
+				"plain": "Plain Text",
+				"rich": "Rich Display",
+				"markdown": "Markdown"
+			},
 			"collapseMcpResponses": "Collapse MCP Responses",
 			"collapseMcpResponsesDescription": "Sets the default display mode for MCP response panels",
 			"openaiReasoningEffort": "OpenAI Reasoning Effort",

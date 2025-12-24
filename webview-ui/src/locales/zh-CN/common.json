@@ -211,6 +211,11 @@
 			"checkpointsDescription": "允许扩展在整个任务过程中保存工作区的检查点。底层使用 git，在大型工作区中可能表现不佳。",
 			"mcpDisplayMode": "MCP 显示模式",
 			"mcpDisplayModeDescription": "控制 MCP 响应的显示方式：纯文本、带有链接/图片的富文本格式或 Markdown 渲染。",
+			"mcpDisplayModeOptions": {
+				"plain": "纯文本",
+				"rich": "富文本显示",
+				"markdown": "Markdown"
+			},
 			"collapseMcpResponses": "折叠 MCP 响应",
 			"collapseMcpResponsesDescription": "设置 MCP 响应面板的默认显示模式",
 			"openaiReasoningEffort": "OpenAI 推理强度",
