@@ -275,7 +275,7 @@
 			},
 			{
 				"command": "ClineShengsuan.reconstructTaskHistory",
-				"title": "Reconstruct Task History",
+				"title": "重建任务历史",
 				"category": "ClineShengsuan"
 			}
 		],
