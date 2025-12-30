@@ -1,4 +1,4 @@
-import { UserCreditsData } from "@shared/proto/cline/account"
+import { UserCreditsData, UserInfo } from "@shared/proto/cline/account"
 import axios, { AxiosRequestConfig } from "axios"
 
 export class SSYAccountService {
@@ -85,6 +85,25 @@ export class SSYAccountService {
 			})
 		} catch (error) {
 			console.error("Failed fetchUserDataRPC:", error)
+			throw error
+		}
+	}
+
+	async getUserInfo(): Promise<UserInfo> {
+		try {
+			const res = await this.authenticatedRequest<any>("/user/info")
+			if (!res.data || !res.data.data || res.data.code !== 0) {
+				throw new Error(`Invalid response from API`)
+			}
+			const user: UserInfo = {
+				displayName: res.data.data.Nickname || res.data.data.Username || undefined,
+				email: res.data.data.Email ?? undefined,
+				photoUrl: res.data.data.HeadImg ?? undefined,
+				uid: res.data.data.ID || undefined,
+			}
+			return user
+		} catch (error) {
+			console.error("Error signing in with custom token:", error)
 			throw error
 		}
 	}

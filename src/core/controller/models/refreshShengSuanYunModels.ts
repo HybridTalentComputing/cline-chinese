@@ -27,7 +27,7 @@ export async function refreshShengSuanYunModels(
 			const rawModels = response.data.data
 			const parsePrice = (price: any) => {
 				if (price) {
-					return parseInt(price) / 10000
+					return parseInt(price, 10) / 10000
 				}
 				return undefined
 			}

@@ -1,25 +1,36 @@
 import { HeroUIProvider } from "@heroui/react"
 import { DEFAULT_AUTO_APPROVAL_SETTINGS } from "@shared/AutoApprovalSettings"
-import type { ApiConfiguration } from "@shared/api"
-import type { ClineMessage } from "@shared/ExtensionMessage"
+import { type ApiConfiguration, bedrockModels } from "@shared/api"
+import { CLINE_ONBOARDING_MODELS } from "@shared/cline/onboarding"
+import type { ClineMessage, ClineSayTool } from "@shared/ExtensionMessage"
 import type { HistoryItem } from "@shared/HistoryItem"
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { expect, userEvent, within } from "storybook/test"
 import { ExtensionStateContext, useExtensionState } from "@/context/ExtensionStateContext"
 import ChatView from "./components/chat/ChatView"
+import OnboardingView from "./components/onboarding/OnboardingView"
 import WelcomeView from "./components/welcome/WelcomeView"
 
 // Mock component that mimics App behavior but works in Storybook
 const MockApp = () => {
-	const { showWelcome } = useExtensionState()
+	const { showWelcome, onboardingModels, showAnnouncement } = useExtensionState()
 
 	return (
 		<HeroUIProvider>
 			{showWelcome ? (
-				<WelcomeView />
+				onboardingModels ? (
+					<OnboardingView onboardingModels={onboardingModels} />
+				) : (
+					<WelcomeView />
+				)
 			) : (
-				<ChatView hideAnnouncement={() => {}} isHidden={false} showAnnouncement={false} showHistoryView={() => {}} />
+				<ChatView
+					hideAnnouncement={() => {}}
+					isHidden={false}
+					showAnnouncement={showAnnouncement}
+					showHistoryView={() => {}}
+				/>
 			)}
 		</HeroUIProvider>
 	)
@@ -61,7 +72,7 @@ The ChatView component is the main interface for interacting with Cline. It prov
 - Learning and exploration
 
 **Note**: In Storybook, some features like file operations, command execution, and API calls are mocked for demonstration purposes.
-        `,
+		`,
 			},
 		},
 	},
@@ -146,6 +157,21 @@ const createMessage = (
 	...overrides,
 })
 
+const createSayToolMessage = (
+	minutesAgo: number,
+	sayTool: ClineSayTool,
+	overrides: Partial<ClineMessage> = {},
+): ClineMessage => ({
+	ts: Date.now() - minutesAgo * 60000,
+	type: "say",
+	say: "tool",
+	text: JSON.stringify({
+		operationIsLocatedInWorkspace: true,
+		...sayTool,
+	}),
+	...overrides,
+})
+
 const createApiReqMessage = (minutesAgo: number, request: string, metrics: any = {}) =>
 	createMessage(
 		minutesAgo,
@@ -215,11 +241,16 @@ const createMockState = (overrides: any = {}) => ({
 	...useExtensionState(),
 	useAutoCondense: true,
 	autoCondenseThreshold: 0.5,
+	version: "0.0.1-stories",
 	welcomeViewCompleted: true,
 	showWelcome: false,
 	clineMessages: mockActiveMessages,
 	taskHistory: mockTaskHistory,
 	apiConfiguration: mockApiConfiguration,
+	onboardingModels: undefined,
+	openRouterModels: bedrockModels,
+	showAnnouncement: false,
+	backgroundEditEnabled: false,
 	...overrides,
 })
 
@@ -238,12 +269,12 @@ const createStoryDecorator =
 		)
 	}
 
-export const WelcomeScreen: Story = {
+export const Welcome: Story = {
 	decorators: [createStoryDecorator({ welcomeViewCompleted: false, showWelcome: true, clineMessages: [] })],
 	parameters: {
 		docs: {
 			description: {
-				story: "The welcome screen shown to new users or when no task is active. Displays quick start options and recent task history.",
+				story: "欢迎屏幕，显示给新用户或没有活动任务时。显示快速启动选项和最近任务历史记录。",
 			},
 		},
 	},
@@ -252,8 +283,8 @@ export const WelcomeScreen: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
 		// Button has vscode-button element name
-		const getStartedButton = canvas.getByText("Get Started for Free")
-		const byokButton = canvas.getByText("Use your own API key")
+		const getStartedButton = canvas.getByText("免费开始使用")
+		const byokButton = canvas.getByText("使用您自己的 API 密钥")
 		await expect(getStartedButton).toBeInTheDocument()
 		await expect(byokButton).toBeInTheDocument()
 		await userEvent.click(byokButton)
@@ -262,12 +293,126 @@ export const WelcomeScreen: Story = {
 	},
 }
 
+export const Onboarding: Story = {
+	decorators: [
+		createStoryDecorator({
+			welcomeViewCompleted: false,
+			showWelcome: true,
+			clineMessages: [],
+			onboardingModels: { models: CLINE_ONBOARDING_MODELS },
+		}),
+	],
+	parameters: {
+		docs: {
+			description: {
+				story: "The onboarding flow shown to new users, allowing them to select their preferred AI models and configure initial settings.",
+			},
+		},
+	},
+	args: {
+		onboardingModels: { models: CLINE_ONBOARDING_MODELS },
+	},
+	argTypes: {
+		onboardingModels: {
+			control: { type: "object" },
+		},
+	},
+	// More on component testing: https://storybook.js.org/docs/writing-tests/interaction-testing
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		// Step 0: User type selection should be visible
+		const title = canvas.getByText("你将如何使用 Cline?")
+		await expect(title).toBeInTheDocument()
+		const freeUserOption = canvas.getByText("完全免费")
+		const powerUserOption = canvas.getByText("前沿模型")
+		await expect(freeUserOption).toBeInTheDocument()
+		await expect(powerUserOption).toBeInTheDocument()
+
+		// Select "Free User" option
+		await userEvent.click(freeUserOption)
+
+		// Verify the next button appears
+		const nextButton = canvas.getByText("继续")
+		await expect(nextButton).toBeInTheDocument()
+
+		// Click next to go to model selection
+		await userEvent.click(nextButton)
+
+		// Step 1: Model selection should be visible
+		// Check for model group headers
+		const otherOptionsHeader = canvas.getByText("选择免费型号")
+
+		// At least one should be visible
+		await expect(otherOptionsHeader).toBeInTheDocument()
+
+		// Test search functionality
+		const searchInput = canvas.getByPlaceholderText("搜索模型...")
+		await expect(searchInput).toBeInTheDocument()
+
+		// Type in search box
+		await userEvent.type(searchInput, "claude")
+
+		// Verify search term is in the input
+		await expect(searchInput).toHaveValue("claude")
+
+		// Clear search
+		await userEvent.clear(searchInput)
+
+		// Verify sign in button appears after model selection
+		const signInButton = canvas.getByText("创建帐户")
+		await expect(signInButton).toBeInTheDocument()
+
+		// Test back navigation
+		const backButton = canvas.getByText("返回")
+		await expect(backButton).toBeInTheDocument()
+		await userEvent.click(backButton)
+
+		// Should be back to user type selection
+		await expect(canvas.getByText("你将如何使用 Cline?")).toBeInTheDocument()
+
+		// Test power user flow
+		await userEvent.click(powerUserOption)
+
+		const continueButton = canvas.getByText("继续")
+		await userEvent.click(continueButton)
+
+		// Should see model selection again
+		await expect(canvas.getByPlaceholderText("搜索模型...")).toBeInTheDocument()
+		await userEvent.click(canvas.getByText("返回"))
+	},
+}
+
+export const EmptyState: Story = {
+	decorators: [createStoryDecorator({ clineMessages: [], taskHistory: [], isNewUser: true, showAnnouncement: true })],
+	parameters: {
+		docs: {
+			description: {
+				story: "对于首次使用且没有对话记录或活动任务的用户，显示空白状态。",
+			},
+		},
+	},
+}
+
+export const ReturnUser: Story = {
+	decorators: [
+		createStoryDecorator({ clineMessages: [], taskHistory: mockTaskHistory, isNewUser: true, showAnnouncement: false }),
+	],
+	parameters: {
+		docs: {
+			description: {
+				story: "显示老用户的聊天记录主屏幕。",
+			},
+		},
+	},
+}
+
 export const ActiveConversation: Story = {
 	decorators: [createStoryDecorator({ task: mockTaskHistory[0], currentTaskItem: mockTaskHistory[0] })],
 	parameters: {
 		docs: {
 			description: {
-				story: "An active conversation showing a typical interaction with Cline, including task creation, tool usage, and AI responses.",
+				story: "一段生动的对话，展现了与 Cline 的典型互动，包括创建任务、使用工具和 AI 响应。",
 			},
 		},
 	},
@@ -278,19 +423,19 @@ export const StreamingResponse: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "Shows a streaming response in progress, demonstrating real-time AI response rendering.",
+				story: "显示正在进行中的流式响应，演示实时 AI 响应渲染。",
 			},
 		},
 	},
 }
 
 const createLongMessages = (): ClineMessage[] => [
-	createMessage(30, "say", "task", "Help me build a complete e-commerce application with React, Node.js, and MongoDB"),
+	createMessage(30, "say", "task", "请帮我使用 React、Node.js 和 MongoDB 构建一个完整的电子商务应用程序。"),
 	createMessage(
 		29.7,
 		"say",
 		"text",
-		"I'll help you build a complete e-commerce application. Let's start by setting up the project structure and implementing the core features step by step.",
+		"我将帮助你构建一个完整的电子商务应用程序。我们先从搭建项目结构开始，然后逐步实现核心功能。",
 	),
 	createMessage(
 		29.3,
@@ -302,7 +447,7 @@ const createLongMessages = (): ClineMessage[] => [
 		29,
 		"say",
 		"text",
-		"Great! I've set up the initial package.json. Now let's create the backend server with Express and MongoDB integration.",
+		"太好了！我已经配置好了初始的 package.json 文件。现在让我们来创建集成 Express 和 MongoDB 的后端服务器。",
 	),
 	createMessage(
 		28.7,
@@ -310,12 +455,7 @@ const createLongMessages = (): ClineMessage[] => [
 		"tool",
 		JSON.stringify({ tool: "newFileCreated", path: "server.js", content: "// Express server code..." }),
 	),
-	createMessage(
-		28.3,
-		"say",
-		"text",
-		"Perfect! The backend server is set up. Now let's create the product model and routes for handling product operations.",
-	),
+	createMessage(28.3, "say", "text", "完美！后端服务器已搭建完成。现在我们来创建产品模型和处理产品操作的路由。"),
 	createMessage(
 		28,
 		"say",
@@ -326,16 +466,11 @@ const createLongMessages = (): ClineMessage[] => [
 		27.7,
 		"say",
 		"text",
-		"Excellent! The Product model is ready with all necessary fields. Now let's create the React frontend with a modern component structure.",
+		"太棒了！产品模型已经准备就绪，所有必要的字段都已添加完毕。现在让我们用现代组件结构创建 React 前端。",
 	),
 	createMessage(27.3, "say", "command", "cd client && npx create-react-app . --template typescript"),
-	createMessage(27, "say", "command_output", "Creating a new React app... Success! Created client at /path/to/project/client"),
-	createMessage(
-		26.7,
-		"say",
-		"text",
-		"Great! The React frontend is set up with TypeScript. Now let's create the main components for our e-commerce application.",
-	),
+	createMessage(27, "say", "command_output", "创建新的 React 应用……成功！已创建客户端 /path/to/project/client"),
+	createMessage(26.7, "say", "text", "太棒了！React 前端已经用 TypeScript 配置好了。现在让我们来创建电商应用的主要组件。"),
 ]
 
 export const LongConversation: Story = {
@@ -343,7 +478,7 @@ export const LongConversation: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "A longer conversation showing multiple tool uses, file creation, and command execution in a complex development task.",
+				story: "一段较长的对话，展示了在复杂的开发任务中使用多种工具、创建文件和执行命令的过程。",
 			},
 		},
 	},
@@ -351,27 +486,17 @@ export const LongConversation: Story = {
 
 // Optimized message patterns for common scenarios
 const createErrorMessages = () => [
-	createMessage(5, "say", "task", "Help me fix the build errors in my React application"),
-	createMessage(
-		4.7,
-		"say",
-		"text",
-		"I'll help you fix the build errors. Let me first examine the current state of your application.",
-	),
+	createMessage(5, "say", "task", "请帮我修复 React 应用中的构建错误"),
+	createMessage(4.7, "say", "text", "我会帮你修复构建错误。首先让我检查一下你的应用程序目前的状态。"),
 	createMessage(4.3, "say", "command", "npm run build"),
-	createMessage(4, "say", "error", "Build failed with TypeScript errors in UserProfile.tsx and api.ts"),
-	createMessage(
-		3.7,
-		"say",
-		"text",
-		"I can see there are TypeScript errors in your code. Let me examine the files and fix these issues.",
-	),
+	createMessage(4, "say", "error", "构建失败，UserProfile.tsx 和 api.ts 中存在 TypeScript 错误。"),
+	createMessage(3.7, "say", "text", "我发现你的代码中存在 TypeScript 错误。让我检查一下文件并修复这些问题。"),
 	createMessage(3.3, "say", "tool", JSON.stringify({ tool: "readFile", path: "src/components/UserProfile.tsx" })),
 	createMessage(
 		3,
 		"say",
 		"text",
-		"I found the issue. The User type doesn't have a 'username' property. Let me fix this by updating the component to use the correct property name.",
+		"我找到问题所在了。“用户”类型没有“username”属性。我这就通过更新组件，使用正确的属性名称来修复这个问题。",
 	),
 ]
 
@@ -388,7 +513,7 @@ export const ErrorState: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "Shows how Cline handles and displays error messages, helping users understand and resolve issues.",
+				story: "展示了 Cline 如何处理和显示错误消息，帮助用户理解和解决问题。",
 			},
 		},
 	},
@@ -406,26 +531,23 @@ export const AutoApprovalEnabled: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "Shows the interface with auto-approval enabled, allowing Cline to execute certain actions automatically without user confirmation.",
+				story: "显示启用自动审批功能的界面，允许 Cline 在未经用户确认的情况下自动执行某些操作。",
 			},
 		},
 	},
 }
 
 const createPlanModeMessages = () => [
-	createMessage(5, "say", "task", "Help me refactor my React application to use TypeScript and improve performance"),
-	createApiReqMessage(4.9, "Planning analysis request", { tokensIn: 20000, tokensOut: 19500, cost: 0.065 }),
+	createMessage(5, "say", "task", "请帮我重构我的 React 应用，使其使用 TypeScript 并提升性能。"),
+	createApiReqMessage(4.9, "规划分析请求", { tokensIn: 20000, tokensOut: 19500, cost: 0.065 }),
 	createMessage(
 		4.7,
 		"say",
 		"text",
-		"I'll help you refactor your React application to use TypeScript and improve performance. Let me create a detailed plan for this migration.",
+		"我会帮助你重构 React 应用，使其使用 TypeScript 并提升性能。让我为你制定一个详细的迁移计划。",
 	),
 	createApiReqMessage(4.5, "Detailed planning request", { tokensIn: 20002, tokensOut: 12500, cost: 0.095 }),
-	createAskMessage(
-		"plan_mode_respond",
-		"Here's my comprehensive plan for refactoring your React application with TypeScript migration and performance optimization phases.",
-	),
+	createAskMessage("plan_mode_respond", "以下是我关于如何使用 TypeScript 迁移和性能优化阶段重构 React 应用程序的全面计划。"),
 ]
 
 export const PlanMode: Story = {
@@ -439,31 +561,15 @@ export const PlanMode: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "Shows Cline in Plan mode, where it focuses on creating detailed plans and discussing approaches before implementation.",
-			},
-		},
-	},
-}
-
-export const EmptyState: Story = {
-	decorators: [createStoryDecorator({ clineMessages: [], taskHistory: [], isNewUser: true })],
-	parameters: {
-		docs: {
-			description: {
-				story: "Shows the empty state for first-time users with no conversation history or active tasks.",
+				story: "在计划模式下显示 Cline，重点在于创建详细计划并在实施前讨论方法。",
 			},
 		},
 	},
 }
 
 const createBrowserMessages = () => [
-	createMessage(5, "say", "task", "Help me test the login functionality on my web application"),
-	createMessage(
-		4.7,
-		"say",
-		"text",
-		"I'll help you test the login functionality. Let me launch a browser and navigate to your application.",
-	),
+	createMessage(5, "say", "task", "请帮我测试一下我的Web应用程序的登录功能。"),
+	createMessage(4.7, "say", "text", "我会帮你测试登录功能。让我打开浏览器，访问你的应用程序。"),
 	createMessage(4.3, "say", "browser_action_launch", JSON.stringify({ action: "launch", url: "http://localhost:3000/login" })),
 	createMessage(
 		4,
@@ -471,12 +577,7 @@ const createBrowserMessages = () => [
 		"browser_action_result",
 		JSON.stringify({ currentUrl: "http://localhost:3000/login", logs: "Page loaded successfully" }),
 	),
-	createMessage(
-		3.7,
-		"say",
-		"text",
-		"Great! The browser has launched and navigated to your login page. Now let me test the login functionality.",
-	),
+	createMessage(3.7, "say", "text", "太好了！浏览器已启动并跳转到您的登录页面。现在让我测试一下登录功能。"),
 	createMessage(3.3, "say", "browser_action", JSON.stringify({ action: "click", coordinate: "400,200" })),
 	createMessage(3, "say", "browser_action", JSON.stringify({ action: "type", text: "test@example.com" })),
 ]
@@ -486,7 +587,7 @@ export const BrowserAutomation: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "Shows Cline performing browser automation tasks, including launching browsers, clicking elements, and testing web applications.",
+				story: "展示了 Cline 执行浏览器自动化任务，包括启动浏览器、点击元素和测试 Web 应用程序。",
 			},
 		},
 	},
@@ -494,8 +595,8 @@ export const BrowserAutomation: Story = {
 
 // Optimized stories using ask message pattern
 const createToolApprovalMessages = () => [
-	createMessage(5, "say", "task", "Help me read the configuration file"),
-	createMessage(4.7, "say", "text", "I need to read a file to understand your configuration."),
+	createMessage(5, "say", "task", "请帮我解读配置文件"),
+	createMessage(4.7, "say", "text", "我需要读取一个文件来了解您的配置。"),
 	createAskMessage("tool", JSON.stringify({ tool: "read_file", path: "config.json" })),
 ]
 
@@ -504,7 +605,7 @@ export const ToolApproval: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "Shows tool approval request with Approve/Reject buttons for file operations.",
+				story: "显示工具审批请求，并带有文件操作的批准/拒绝按钮。",
 			},
 		},
 	},
@@ -514,8 +615,8 @@ export const ToolSave: Story = {
 	decorators: [
 		createStoryDecorator({
 			clineMessages: [
-				createMessage(5, "say", "task", "Update the README file with new instructions"),
-				createMessage(4.7, "say", "text", "I'll update your README file with the new instructions."),
+				createMessage(5, "say", "task", "请更新 README 文件，添加新的说明。"),
+				createMessage(4.7, "say", "text", "我会将新的说明更新到您的 README 文件中。"),
 				createAskMessage("tool", JSON.stringify({ tool: "editedExistingFile", path: "README.md" })),
 			],
 		}),
@@ -523,7 +624,7 @@ export const ToolSave: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "Shows file save request with Save/Reject buttons for file editing operations.",
+				story: "显示文件保存请求，并带有“保存/拒绝”按钮，用于文件编辑操作。",
 			},
 		},
 	},
@@ -541,8 +642,8 @@ const quickStory = (
 		createStoryDecorator({
 			clineMessages: [
 				...createLongMessages(),
-				createMessage(6, "say", "task", `Help with ${name.toLowerCase()}`),
-				createMessage(4.7, "say", "text", `I'll help you with ${name.toLowerCase()}.`),
+				createMessage(6, "say", "task", `帮助 ${name.toLowerCase()}`),
+				createMessage(4.7, "say", "text", `我会帮你 ${name.toLowerCase()}.`),
 				createAskMessage(askType, text, streamingFailedMessage),
 			],
 		}),
@@ -554,7 +655,7 @@ export const CommandExecution: Story = quickStory(
 	"Command Execution",
 	"command",
 	"npm install",
-	"Shows command execution request with Run Command/Reject buttons.",
+	"显示命令执行请求，并带有“运行命令”/“拒绝”按钮。",
 )
 
 export const CommandOutput: Story = {
@@ -562,100 +663,442 @@ export const CommandOutput: Story = {
 		createStoryDecorator({
 			clineMessages: [
 				createAskMessage("command", "npm install"),
-				createAskMessage("command_output", "Installing packages... This may take a few minutes."),
+				createAskMessage("command_output", "正在安装软件包……这可能需要几分钟时间。"),
 			],
 		}),
 	],
 	parameters: {
 		docs: {
 			description: {
-				story: "Shows command output with Proceed While Running button during command execution.",
+				story: "命令执行期间，显示命令输出，并带有“边运行边继续”按钮。",
 			},
 		},
 	},
 }
-
-// Batch create remaining optimized stories
+// 批量创建剩余的优化后的 stories
 export const ApiRequestFailed = quickStory(
-	"API Request Failed",
+	"API 请求失败",
 	"api_req_failed",
-	"API request failed due to network timeout. Would you like to retry?",
-	"Shows error recovery options with Retry/Start New Task buttons when API requests fail.",
+	"由于网络超时，API 请求失败。您是否要重试？",
+	"当 API 请求失败时，显示带有“重试/开始新任务”按钮的错误恢复选项。",
 )
+
 export const MistakeLimitReached = quickStory(
-	"Mistake Limit",
+	"达到错误次数上限",
 	"mistake_limit_reached",
-	"I've made several attempts to fix this issue but haven't been successful.",
-	"Shows mistake limit reached state with Proceed Anyways/Start New Task options.",
+	"我已尝试多次修复此问题，但未能成功。",
+	"显示达到错误限制的状态，并提供“仍然继续/开始新任务”选项。",
 )
+
 export const CompletionResult = quickStory(
-	"Task Completion",
+	"任务完成",
 	"completion_result",
-	"Task completed successfully! I've implemented all the requested features.",
-	"Shows task completion state with Start New Task button.",
+	"任务成功完成！我已实现所有请求的功能。",
+	"显示任务完成状态及“开始新任务”按钮。",
 )
+
 export const BrowserActionLaunch = quickStory(
-	"Browser Launch",
+	"启动浏览器",
 	"browser_action_launch",
-	"Launch browser to test the website at http://localhost:3000",
-	"Shows browser action approval with Approve/Reject buttons for browser launch.",
+	"启动浏览器以测试网站：http://localhost:3000",
+	"显示浏览器操作审批界面，带有“批准/拒绝”按钮用于启动浏览器。",
 )
+
 export const McpServerUsage = quickStory(
-	"MCP Server",
+	"MCP 服务器使用",
 	"use_mcp_server",
 	JSON.stringify({ tool: "get_weather", location: "New York" }),
-	"Shows MCP server usage approval with Approve/Reject buttons for external tool usage.",
+	"显示 MCP 服务器使用审批界面，带有“批准/拒绝”按钮用于外部工具调用。",
 )
+
 export const Followup = quickStory(
-	"Follow-up",
+	"后续跟进",
 	"followup",
-	"What would you like me to work on next?",
-	"Shows followup question state where Cline asks for next steps.",
+	"接下来您想让我做什么？",
+	"显示后续提问状态，Cline 会在此询问下一步工作。",
 )
+
 export const ResumeTask = quickStory(
-	"Resume Task",
+	"恢复任务",
 	"resume_task",
-	"Would you like to resume the previous task?",
-	"Shows resume task option for continuing interrupted work.",
+	"您是否想要恢复之前的任务？",
+	"显示恢复任务选项，用于继续之前中断的工作。",
 )
+
 export const NewTaskWithContext = quickStory(
-	"New Task",
+	"新任务",
 	"new_task",
-	"Start a new task with the current conversation context",
-	"Shows new task creation with context preservation option.",
+	"在当前对话上下文中开始新任务",
+	"显示带有上下文保留选项的新任务创建界面。",
 )
 export const ApiRequestActive: Story = {
 	decorators: [
 		createStoryDecorator({
 			clineMessages: [
-				createMessage(5, "say", "text", "Processing your request...", { partial: true }),
-				createApiReqMessage(4.7, "Making API request to generate response", { partial: true }),
+				createMessage(5, "say", "text", "正在处理您的请求...", { partial: true }),
+				createApiReqMessage(4.7, "发出 API 请求以生成响应", { partial: true }),
 			],
 		}),
 	],
-	parameters: { docs: { description: { story: "Shows active API request state with Cancel button available." } } },
+	parameters: { docs: { description: { story: "显示处于活动状态的 API 请求，并提供取消按钮。" } } },
 }
 export const PlanModeResponse = quickStory(
-	"Plan Mode Response",
+	"计划模式响应",
 	"plan_mode_respond",
-	"Here's my detailed plan for creating a comprehensive testing strategy.",
-	"Shows plan mode response where Cline presents a detailed plan for user approval.",
+	"这是我为创建全面测试策略而制定的详细计划。",
+	"显示计划模式响应，Cline 在此展示详细计划供用户审批。",
 )
+
 export const CondenseConversation = quickStory(
-	"Condense Conversation",
+	"压缩对话",
 	"condense",
-	"Would you like me to condense the conversation to improve performance?",
-	"Shows utility action to condense conversation for better performance.",
+	"您是否希望我压缩对话内容以提高性能？",
+	"显示用于压缩对话以提升性能的实用操作选项。",
 )
+
 export const ReportBug = quickStory(
-	"Report Bug",
+	"报告错误",
 	"report_bug",
-	"Would you like to report this issue to help improve Cline?",
-	"Shows utility action to report bugs to the GitHub repository.",
+	"您是否愿意报告此问题以帮助改进 Cline？",
+	"显示用于向 GitHub 仓库报告错误的实用操作选项。",
 )
+
 export const ResumeCompletedTask = quickStory(
-	"Resume Completed Task type",
+	"恢复已完成任务类型",
 	"resume_completed_task",
-	"The previous task has been completed. Would you like to start a new task?",
-	"Shows Start New Task option for resume completed task.",
+	"之前的任务已完成。您想开始一个新任务吗？",
+	"为已完成的任务恢复状态显示“开始新任务”选项。",
 )
+
+// Diff Edit Stories - New Format
+const createNewFormatMultiFileMessages = () => [
+	createMessage(5, "say", "task", "请帮我重构身份验证模块"),
+	createMessage(4.7, "say", "text", "我会帮你重构身份验证模块。让我来做必要的修改。"),
+	createSayToolMessage(4.3, {
+		tool: "editedExistingFile",
+		path: "src/auth/types.ts",
+		content: `*** Begin Patch
+*** Add File: src/auth/types.ts
++export interface User {
++  id: string
++  email: string
++  role: 'admin' | 'user'
++}
++
++export interface AuthState {
++  user: User | null
++  isAuthenticated: boolean
++}
+
+*** Update File: src/auth/login.ts
+@@
+-function login(email, password) {
+-  return fetch('/api/login', {
++function login(email: string, password: string): Promise<AuthState> {
++  return fetch('/api/login', {
+	 method: 'POST',
+-    body: { email, password }
++    body: JSON.stringify({ email, password }),
++    headers: { 'Content-Type': 'application/json' }
+   })
+ }
+@@
+-export default login
++export { login }
+
+*** Delete File: src/auth/old-utils.js
+-function deprecatedHelper() {
+-  console.log('This is deprecated')
+-}
+-
+-module.exports = { deprecatedHelper }
+*** End Patch`,
+	}),
+	{ partial: false },
+]
+
+export const DiffEditNewFormat: Story = {
+	decorators: [createStoryDecorator({ backgroundEditEnabled: true, clineMessages: createNewFormatMultiFileMessages() })],
+	parameters: {
+		docs: {
+			description: {
+				story: "以清晰、可展开的视图显示新的差异编辑格式，其中包含多个文件操作（添加、更新、删除）。",
+			},
+		},
+	},
+}
+
+export const DiffEditNewFormatStreaming: Story = {
+	decorators: [
+		(Story) => {
+			const [messages, setMessages] = useState<ClineMessage[]>([
+				createMessage(5, "say", "task", "向用户模块添加 TypeScript 类型"),
+				createMessage(4.7, "say", "text", "我将添加 TypeScript 类型以提高类型安全性。"),
+			])
+			const mockState = useMemo(() => createMockState({ backgroundEditEnabled: true, clineMessages: messages }), [messages])
+
+			useEffect(() => {
+				// Simulate streaming: progressively add more content
+				const partialPatch = `*** Begin Patch
+*** Update File: src/user/profile.ts
+@@
+-interface UserProfile {
+-  name: string
++interface UserProfile {
++  id: string
++  name: string`
+
+				const morePatch =
+					partialPatch +
+					`
++  email: string
++  createdAt: Date`
+
+				const completePatch =
+					morePatch +
+					`
++}
+*** End Patch`
+
+				// Add initial partial message
+				const timer1 = setTimeout(() => {
+					setMessages((prev: ClineMessage[]) => [
+						...prev,
+						createSayToolMessage(
+							4.3,
+							{
+								tool: "editedExistingFile",
+								path: "src/user/profile.ts",
+								content: partialPatch,
+							},
+							{ partial: true },
+						),
+					])
+				}, 500)
+
+				// Add more content
+				const timer2 = setTimeout(() => {
+					setMessages((prev: ClineMessage[]) => {
+						const updated = [...prev]
+						updated[updated.length - 1] = createSayToolMessage(
+							4.3,
+							{
+								tool: "editedExistingFile",
+								path: "src/user/profile.ts",
+								content: morePatch,
+							},
+							{ partial: true },
+						)
+						return updated
+					})
+				}, 1500)
+
+				// Complete the patch
+				const timer3 = setTimeout(() => {
+					setMessages((prev: ClineMessage[]) => {
+						const updated = [...prev]
+						updated[updated.length - 1] = createSayToolMessage(
+							4.3,
+							{
+								tool: "editedExistingFile",
+								path: "src/user/profile.ts",
+								content: completePatch,
+							},
+							{ partial: false },
+						)
+						return updated
+					})
+				}, 2500)
+
+				return () => {
+					clearTimeout(timer1)
+					clearTimeout(timer2)
+					clearTimeout(timer3)
+				}
+			}, [])
+
+			return (
+				<ExtensionStateProviderMock value={mockState}>
+					<div className="w-full h-full flex justify-center items-center overflow-hidden">
+						<div className={SIDEBAR_CLASS}>
+							<Story />
+						</div>
+					</div>
+				</ExtensionStateProviderMock>
+			)
+		},
+	],
+	parameters: {
+		docs: {
+			description: {
+				story: "在流式传输时显示新的差异编辑格式（不完整的补丁，没有结束补丁标记）。",
+			},
+		},
+	},
+}
+
+// Diff Edit Stories - Replace Diff Edit Format
+const createReplaceDiffFormatPatchMessages = () => [
+	createMessage(5, "say", "task", "修复表单中的验证逻辑"),
+	createMessage(4.7, "say", "text", "我将使用更新后的模式修复验证逻辑。"),
+	createSayToolMessage(4.3, {
+		tool: "editedExistingFile",
+		path: "src/auth/types.ts",
+		content: `------- SEARCH
+function validateEmail(email) {
+  return email.includes('@')
+}
+=======
+function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/
+  return emailRegex.test(email)
+}
++++++++ REPLACE`,
+	}),
+]
+
+export const DiffEditReplaceDiffFormat: Story = {
+	decorators: [createStoryDecorator({ backgroundEditEnabled: true, clineMessages: createReplaceDiffFormatPatchMessages() })],
+	parameters: {
+		docs: {
+			description: {
+				story: "显示旧的搜索/替换差异格式（向后兼容），带有完整的标记，自动转换为新格式显示。",
+			},
+		},
+	},
+}
+
+export const DiffEditReplaceDiffFormatStreaming: Story = {
+	decorators: [
+		(Story) => {
+			const [messages, setMessages] = useState<ClineMessage[]>([
+				createMessage(5, "say", "task", "更新错误处理"),
+				createMessage(4.7, "say", "text", "我将改进 API 客户端中的错误处理机制。"),
+			])
+			const mockState = useMemo(() => createMockState({ backgroundEditEnabled: true, clineMessages: messages }), [messages])
+
+			useEffect(() => {
+				const completePatch = `------- SEARCH
+try {
+  const response = await fetch(url)
+  return response.json()
+} catch (error) {
+  console.error(error)
+}
+=======
+try {
+  const response = await fetch(url)
+  if (!response.ok) {
+	throw new Error(\`HTTP error! status: \${response.status}\`)
+  }
+  return response.json()
+} catch (error) {
+  console.error('API request failed:', error)
+  throw error
+}
++++++++ REPLACE`
+
+				const patchChunks = completePatch.split("\n")
+				let currentIndex = 0
+
+				const intervalId = setInterval(() => {
+					if (currentIndex >= patchChunks.length) {
+						clearInterval(intervalId)
+						return
+					}
+
+					setMessages((prev: ClineMessage[]) => {
+						const updated = [...prev]
+						updated[updated.length - 1] = createSayToolMessage(
+							4.3,
+							{
+								tool: "editedExistingFile",
+								path: "src/auth/types.ts",
+								content: patchChunks.slice(0, currentIndex + 1).join("\n"),
+							},
+							{ partial: currentIndex !== patchChunks.length - 1 },
+						)
+						return updated
+					})
+
+					currentIndex++
+				}, 500)
+
+				return () => clearInterval(intervalId)
+			}, [])
+
+			return (
+				<ExtensionStateProviderMock value={mockState}>
+					<div className="w-full h-full flex justify-center items-center overflow-hidden">
+						<div className={SIDEBAR_CLASS}>
+							<Story />
+						</div>
+					</div>
+				</ExtensionStateProviderMock>
+			)
+		},
+	],
+	parameters: {
+		docs: {
+			description: {
+				story: "在流式传输时显示旧的搜索/替换差异格式（不完整，缺少替换标记），演示了对部分内容的优雅处理。",
+			},
+		},
+	},
+}
+
+// Combined example showing both formats in one conversation
+const createMixedFormatMessages = () => [
+	createMessage(5, "say", "task", "重构整个身份验证系统"),
+	createMessage(4.7, "say", "text", "我将重构身份验证系统，首先从登录功能开始。"),
+	createSayToolMessage(4.5, {
+		tool: "editedExistingFile",
+		path: "src/auth/types.ts",
+		content: `------- SEARCH
+function login(username, password) {
+  return authenticateUser(username, password)
+}
+=======
+async function login(username: string, password: string): Promise<AuthResult> {
+  return await authenticateUser(username, password)
+}
++++++++ REPLACE`,
+	}),
+	createMessage(4.3, "say", "text", "太好了！现在让我添加类型定义并更新身份验证模块。"),
+	createSayToolMessage(4.0, {
+		tool: "editedExistingFile",
+		path: "src/auth/types.ts",
+		content: `*** Begin Patch
+*** Add File: src/auth/types.ts
++export interface AuthResult {
++  success: boolean
++  token?: string
++  error?: string
++}
++
++export interface LoginCredentials {
++  username: string
++  password: string
++}
+
+*** Update File: src/auth/authenticate.ts
+@@
+-function authenticateUser(username, password) {
++async function authenticateUser(username: string, password: string): Promise<AuthResult> {
+   // Authentication logic
++  return { success: true, token: 'mock-token' }
+ }
+*** End Patch`,
+	}),
+]
+
+export const DiffEditMixedFormats: Story = {
+	decorators: [createStoryDecorator({ clineMessages: createMixedFormatMessages() })],
+	parameters: {
+		docs: {
+			description: {
+				story: "展示了使用搜索/替换和应用补丁差异格式的对话，演示了无缝的向后兼容性和格式检测。",
+			},
+		},
+	},
+}

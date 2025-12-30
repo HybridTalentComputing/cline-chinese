@@ -1,4 +1,6 @@
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { Button } from "@/components/ui/button"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { StateServiceClient } from "@/services/grpc-client"
 import Section from "../Section"
 
 interface DebugSectionProps {
@@ -7,25 +9,31 @@ interface DebugSectionProps {
 }
 
 const DebugSection = ({ onResetState, renderSectionHeader }: DebugSectionProps) => {
+	const { setShowWelcome } = useExtensionState()
 	return (
 		<div>
 			{renderSectionHeader("debug")}
 			<Section>
-				<VSCodeButton
-					className="mt-[5px] w-auto"
-					onClick={() => onResetState()}
-					style={{ backgroundColor: "var(--vscode-errorForeground)", color: "black" }}>
-					重置工作区状态
-				</VSCodeButton>
-				<VSCodeButton
-					className="mt-[5px] w-auto"
-					onClick={() => onResetState(true)}
-					style={{ backgroundColor: "var(--vscode-errorForeground)", color: "black" }}>
-					重置全局状态
-				</VSCodeButton>
+				<Button onClick={() => onResetState()} variant="danger">
+					Reset Workspace State
+				</Button>
+				<Button onClick={() => onResetState(true)} variant="danger">
+					Reset Global State
+				</Button>
 				<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
 					这将重置扩展程序中的所有全局状态和密钥存储。
 				</p>
+			</Section>
+			<Section>
+				<Button
+					onClick={async () =>
+						await StateServiceClient.setWelcomeViewCompleted({ value: false })
+							.catch(() => {})
+							.finally(() => setShowWelcome(true))
+					}
+					variant="secondary">
+					Reset Onboarding State
+				</Button>
 			</Section>
 		</div>
 	)

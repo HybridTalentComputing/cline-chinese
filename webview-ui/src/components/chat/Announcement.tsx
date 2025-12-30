@@ -1,10 +1,13 @@
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { XIcon } from "lucide-react"
-import { CSSProperties, memo } from "react"
+import { CSSProperties, memo, useState } from "react"
 import { useMount } from "react-use"
 import { Button } from "@/components/ui/button"
+import { PLATFORM_CONFIG, PlatformType } from "@/config/platform.config"
+import { useClineAuth, useClineSignIn } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { getAsVar, VSC_DESCRIPTION_FOREGROUND, VSC_INACTIVE_SELECTION_BACKGROUND } from "@/utils/vscStyles"
+import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurationHandlers"
 
 interface AnnouncementProps {
 	version: string
@@ -19,7 +22,7 @@ const containerStyle: CSSProperties = {
 	position: "relative",
 	flexShrink: 0,
 }
-const h4TitleStyle: CSSProperties = { margin: "0 0 8px", fontWeight: "bold" }
+const h2TitleStyle: CSSProperties = { margin: "0 0 8px", fontWeight: "bold" }
 const ulStyle: CSSProperties = { margin: "0 0 8px", paddingLeft: "12px", listStyleType: "disc" }
 const _accountIconStyle: CSSProperties = { fontSize: 11 }
 const hrStyle: CSSProperties = {
@@ -37,10 +40,35 @@ The latestAnnouncementId is now automatically generated from the extension's pac
 Patch releases (3.19.1 → 3.19.2) will not trigger new announcements.
 */
 const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
-	const minorVersion = version.split(".").slice(0, 2).join(".") // 2.0.0 -> 2.0
-	const { refreshOpenRouterModels } = useExtensionState()
+	const { clineUser } = useClineAuth()
+	const { openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
+	const user = clineUser || undefined
+	const { handleFieldsChange } = useApiConfigurationHandlers()
+	const { isLoginLoading, handleSignIn } = useClineSignIn()
+
+	const [didClickDevstralButton, setDidClickDevstralButton] = useState(false)
 	// Need to get latest model list in case user hits shortcut button to set model
 	useMount(refreshOpenRouterModels)
+
+	const setDevstral = () => {
+		const modelId = "mistralai/devstral-2512"
+		// set both plan and act modes to use code-supernova-1-million
+		handleFieldsChange({
+			planModeOpenRouterModelId: modelId,
+			actModeOpenRouterModelId: modelId,
+			planModeOpenRouterModelInfo: openRouterModels[modelId],
+			actModeOpenRouterModelInfo: openRouterModels[modelId],
+			planModeApiProvider: "cline",
+			actModeApiProvider: "cline",
+		})
+
+		setTimeout(() => {
+			setDidClickDevstralButton(true)
+			setShowChatModelSelector(true)
+		}, 10)
+	}
+
+	const isVscode = PLATFORM_CONFIG.type === PlatformType.VSCODE
 
 	return (
 		<div style={containerStyle}>
@@ -52,9 +80,7 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 				variant="icon">
 				<XIcon />
 			</Button>
-			<h4 style={h4TitleStyle}>
-				🎉{"  "}新特性 v{minorVersion}
-			</h4>
+			<h4 style={{ fontWeight: 7 }}>🎉{"  "}新特性 v</h4>
 			<ul style={ulStyle}>
 				<li>
 					<strong>钩子</strong>允许您将自定义逻辑注入到 Cline 的工作流程中。&nbsp; (
@@ -72,6 +98,14 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 					)
 				</li>
 			</ul>
+			{isVscode && (
+				<p style={{ margin: "0" }}>
+					See a{" "}
+					<VSCodeLink href="https://x.com/sdrzn/status/1995840893816111246" style={linkStyle}>
+						demo of "Explain Changes"
+					</VSCodeLink>
+				</p>
+			)}
 			<div style={hrStyle} />
 			<p style={linkContainerStyle}>
 				加入我们{" "}

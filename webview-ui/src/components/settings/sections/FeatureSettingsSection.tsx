@@ -20,7 +20,6 @@ interface FeatureSettingsSectionProps {
 const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionProps) => {
 	const {
 		enableCheckpointsSetting,
-		mcpMarketplaceEnabled,
 		mcpDisplayMode,
 		mcpResponsesCollapsed,
 		openaiReasoningEffort,
@@ -28,12 +27,15 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 		yoloModeToggled,
 		dictationSettings,
 		useAutoCondense,
+		clineWebToolsEnabled,
 		focusChainSettings,
 		multiRootSetting,
 		hooksEnabled,
 		remoteConfigSettings,
 		subagentsEnabled,
 		nativeToolCallSetting,
+		enableParallelToolCalling,
+		backgroundEditEnabled,
 	} = useExtensionState()
 
 	const [isClineCliInstalled, setIsClineCliInstalled] = useState(false)
@@ -174,31 +176,6 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 						<p className="text-xs text-(--vscode-descriptionForeground)">
 							启用此扩展程序，以便在任务执行过程中保存工作区的检查点。底层使用 Git，但 Git 可能不适用于大型工作区。
 						</p>
-					</div>
-					<div style={{ marginTop: 10 }}>
-						<Tooltip>
-							<TooltipTrigger>
-								<div className="flex items-center gap-2">
-									<VSCodeCheckbox
-										checked={mcpMarketplaceEnabled}
-										disabled={remoteConfigSettings?.mcpMarketplaceEnabled !== undefined}
-										onChange={(e: any) => {
-											const checked = e.target.checked === true
-											updateSetting("mcpMarketplaceEnabled", checked)
-										}}>
-										启用 MCP 市场
-									</VSCodeCheckbox>
-									{remoteConfigSettings?.mcpMarketplaceEnabled !== undefined && (
-										<i className="codicon codicon-lock text-description text-sm" />
-									)}
-								</div>
-							</TooltipTrigger>
-							<TooltipContent hidden={remoteConfigSettings?.mcpMarketplaceEnabled === undefined}>
-								此设置由您所在组织的远程配置管理。
-							</TooltipContent>
-						</Tooltip>
-
-						<p className="text-xs text-description">启用 MCP Marketplace 选项卡，用于发现和安装 MCP 服务器。</p>
 					</div>
 					<div style={{ marginTop: 10 }}>
 						<label
@@ -344,6 +321,67 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							</a>
 						</p>
 					</div>
+					{clineWebToolsEnabled?.featureFlag && (
+						<div style={{ marginTop: 10 }}>
+							<VSCodeCheckbox
+								checked={clineWebToolsEnabled?.user}
+								onChange={(e: any) => {
+									const checked = e.target.checked === true
+									updateSetting("clineWebToolsEnabled", checked)
+								}}>
+								Enable Cline Web Tools
+							</VSCodeCheckbox>
+							<p className="text-xs text-(--vscode-descriptionForeground)">
+								Enables websearch and webfetch tools while using the Cline provider.
+							</p>
+						</div>
+					)}
+					<div className="mt-2.5">
+						<VSCodeCheckbox
+							checked={nativeToolCallSetting}
+							onChange={(e) => {
+								const enabled = (e?.target as HTMLInputElement).checked
+								updateSetting("nativeToolCallEnabled", enabled)
+							}}>
+							Enable Native Tool Call
+						</VSCodeCheckbox>
+						<p className="text-xs text-(--vscode-descriptionForeground)">
+							Uses the model's native tool calling API instead of XML-based tool parsing. This will improve
+							performance for supported models.
+						</p>
+					</div>
+					<div className="mt-2.5">
+						<VSCodeCheckbox
+							checked={enableParallelToolCalling}
+							onChange={(e) => {
+								const enabled = (e?.target as HTMLInputElement).checked
+								updateSetting("enableParallelToolCalling", enabled)
+							}}>
+							Enable Parallel Tool Calling
+						</VSCodeCheckbox>
+						<p className="text-xs">
+							<span className="text-(--vscode-errorForeground)">Experimental: </span>{" "}
+							<span className="text-description">
+								Allows models to call multiple tools in a single response. Automatically enabled for GPT-5 models.
+							</span>
+						</p>
+					</div>
+					<div className="mt-2.5">
+						<VSCodeCheckbox
+							checked={backgroundEditEnabled}
+							onChange={(e: any) => {
+								const checked = e.target.checked === true
+								updateSetting("backgroundEditEnabled", checked)
+							}}>
+							Enable Background Edit
+						</VSCodeCheckbox>
+						<p className="text-xs">
+							<span className="text-error">Experimental: </span>
+							<span className="text-description">
+								Allows editing files in background without opening the diff view in editor.
+							</span>
+						</p>
+					</div>
 					{multiRootSetting.featureFlag && (
 						<div className="mt-2.5">
 							<VSCodeCheckbox
@@ -355,14 +393,14 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								启用多根目录工作区
 							</VSCodeCheckbox>
 							<p className="text-xs">
-								<span className="text-(--vscode-errorForeground)">实验功能: </span>{" "}
+								<span className="text-error">实验功能: </span>{" "}
 								<span className="text-description">允许Cline 跨多个工作区</span>
 							</p>
 						</div>
 					)}
 					<div className="mt-2.5">
 						<VSCodeCheckbox
-							checked={hooksEnabled?.user}
+							checked={hooksEnabled}
 							disabled={!isMacOSOrLinux()}
 							onChange={(e: any) => {
 								const checked = e.target.checked === true
@@ -381,22 +419,6 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							</p>
 						)}
 					</div>
-					{nativeToolCallSetting?.featureFlag && (
-						<div className="mt-2.5">
-							<VSCodeCheckbox
-								checked={nativeToolCallSetting?.user}
-								onChange={(e) => {
-									const enabled = (e?.target as HTMLInputElement).checked
-									updateSetting("nativeToolCallEnabled", enabled)
-								}}>
-								启用本机工具调用
-							</VSCodeCheckbox>
-							<p className="text-xs">
-								<span className="text-[var(--vscode-errorForeground)]">实验功能: </span>{" "}
-								<span className="text-description">允许 Cline 通过原生 API 调用工具。</span>
-							</p>
-						</div>
-					)}
 					<div style={{ marginTop: 10 }}>
 						<Tooltip>
 							<TooltipTrigger asChild>

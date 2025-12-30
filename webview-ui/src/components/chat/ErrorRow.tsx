@@ -1,11 +1,10 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
-import { EmptyRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { memo } from "react"
+import CreditLimitError from "@/components/chat/CreditLimitError"
+import { useClineSignIn } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { AccountServiceClient } from "@/services/grpc-client"
 import { SSYError, SSYErrorType } from "../../../../src/services/error/SSYError"
-import CreditLimitErrorSSY from "./CreditLimitErrorSSY"
 
 const _errorColor = "var(--vscode-errorForeground)"
 
@@ -18,141 +17,88 @@ interface ErrorRowProps {
 
 const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStreamingFailedMessage }: ErrorRowProps) => {
 	const { userInfo } = useExtensionState()
+	const rawApiError = apiRequestFailedMessage || apiReqStreamingFailedMessage
+	const { isLoginLoading, handleSignIn } = useClineSignIn()
+
 	const renderErrorContent = () => {
 		switch (errorType) {
 			case "error":
 			case "mistake_limit_reached":
 				// Handle API request errors with special error parsing
-				if (apiRequestFailedMessage || apiReqStreamingFailedMessage) {
-					const ssyError = SSYError.parse(apiRequestFailedMessage || apiReqStreamingFailedMessage)
-					const ssyErrorMessage = ssyError?.message
+				if (rawApiError) {
+					// FIXME: ClineError parsing should not be applied to non-Cline providers, but it seems we're using clineErrorMessage below in the default error display
+					const ssyError = SSYError.parse(rawApiError)
+					const errorMessage = ssyError?._error?.message || ssyError?.message || rawApiError
 					const requestId = ssyError?._error?.request_id
-					const isSSYProvider = ssyError?.providerId === "shengsuanyun"
-					if (ssyError) {
-						if (ssyError.isErrorType(SSYErrorType.Balance)) {
-							const errorDetails = ssyError._error?.details
-							return (
-								<CreditLimitErrorSSY
-									bill={errorDetails?.bill}
-									currentBalance={errorDetails?.balance}
-									message={errorDetails?.message}
-									// buyCreditsUrl={errorDetails?.buy_credits_url}
-								/>
-							)
-						}
+					const providerId = ssyError?.providerId || ssyError?._error?.providerId
+					const isClineProvider = providerId === "cline"
+					const errorCode = ssyError?._error?.code
+
+					if (ssyError?.isErrorType(SSYErrorType.Balance)) {
+						const errorDetails = ssyError._error?.details
+						return (
+							<CreditLimitError
+								buyCreditsUrl={errorDetails?.buy_credits_url}
+								currentBalance={errorDetails?.current_balance}
+								message={errorDetails?.message}
+								totalPromotions={errorDetails?.total_promotions}
+								totalSpent={errorDetails?.total_spent}
+							/>
+						)
 					}
 
 					if (ssyError?.isErrorType(SSYErrorType.RateLimit)) {
 						return (
 							<p className="m-0 whitespace-pre-wrap text-(--vscode-errorForeground) wrap-anywhere">
-								{ssyErrorMessage}
+								{errorMessage}
 								{requestId && <div>请求 ID: {requestId}</div>}
 							</p>
 						)
 					}
 
-					if (ssyError?.isErrorType(SSYErrorType.QuotaExceeded)) {
-						return (
-							<>
-								<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
-									{ssyErrorMessage}
-									{requestId && <div>请求 ID: {requestId}</div>}
-								</p>
-								<p>
-									点击这里，在编辑 API Key 对话框中
-									<a className="underline text-inherit" href="https://console.shengsuanyun.com/user/keys">
-										配置 API Key 配额
-									</a>
-								</p>
-							</>
-						)
-					}
-
-					if (ssyError?.isErrorType(SSYErrorType.TpmLimitExceeded)) {
-						return (
-							<>
-								<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
-									{ssyErrorMessage}
-									{requestId && <div>请求 ID: {requestId}</div>}
-								</p>
-								<p>
-									<a className="underline text-inherit" href="https://console.shengsuanyun.com/user/keys">
-										在编辑 API Key 对话框中配置 API Key TPM
-									</a>
-								</p>
-								或
-								<p>
-									<a
-										className="underline text-inherit"
-										href="https://docs.router.shengsuanyun.com/6893249m0#1-tpm-tokens-per-minute-%E9%99%90%E5%88%B6%E8%B6%85%E5%87%BA">
-										了解更多关于TPM (Tokens Per Minute) 限制超出错误的说明
-									</a>
-								</p>
-							</>
-						)
-					}
-					if (ssyError?.isErrorType(SSYErrorType.RpmLimitExceeded)) {
-						return (
-							<>
-								<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
-									{ssyErrorMessage}
-									{requestId && <div>请求 ID: {requestId}</div>}
-								</p>
-								<p>
-									<a className="underline text-inherit" href="https://console.shengsuanyun.com/user/keys">
-										在编辑 API Key 对话框中配置 API Key RPM
-									</a>
-									或
-								</p>
-								<p>
-									<a
-										className="underline text-inherit"
-										href="https://docs.router.shengsuanyun.com/6893249m0#2-rpm-requests-per-minute-%E9%99%90%E5%88%B6%E8%B6%85%E5%87%BA">
-										了解更多关于RPM (Requests Per Minute) 限制超出错误的说明
-									</a>
-								</p>
-							</>
-						)
-					}
-
-					// Default error display
 					return (
-						<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
-							{ssyErrorMessage}
-							{requestId && <div>请求 ID: {requestId}</div>}
-							{ssyErrorMessage?.toLowerCase()?.includes("powershell") && (
-								<>
-									<br />
-									<br />
-									看起来您遇到了 Windows PowerShell 问题，请参阅此{" "}
+						<p className="m-0 whitespace-pre-wrap text-error wrap-anywhere flex flex-col gap-3">
+							{/* Display the well-formatted error extracted from the ClineError instance */}
+
+							<header>
+								{providerId && <span className="uppercase">[{providerId}] </span>}
+								{errorCode && <span>{errorCode}</span>}
+								{errorMessage}
+								{requestId && <div>Request ID: {requestId}</div>}
+							</header>
+
+							{/* Windows Powershell Issue */}
+							{errorMessage?.toLowerCase()?.includes("powershell") && (
+								<div>
+									It seems like you're having Windows PowerShell issues, please see this{" "}
 									<a
 										className="underline text-inherit"
 										href="https://github.com/cline/cline/wiki/TroubleShooting-%E2%80%90-%22PowerShell-is-not-recognized-as-an-internal-or-external-command%22">
 										故障排除指南
 									</a>
 									.
-								</>
+								</div>
 							)}
-							{ssyError?.isErrorType(SSYErrorType.Auth) && (
-								<>
-									<br />
-									<br />
-									{/* The user is signed in or not using cline provider */}
-									{userInfo ? (
-										<span className="mb-4 text-(--vscode-descriptionForeground)">(重试)</span>
-									) : (
-										<VSCodeButton
-											className="w-full mb-4"
-											onClick={() => {
-												AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create()).catch(
-													(err) => console.error("Failed to get login URL:", err),
-												)
-											}}>
-											登录 Cline 胜算云
-										</VSCodeButton>
-									)}
-								</>
-							)}
+
+							{/* Display raw API error if different from parsed error message */}
+							{errorMessage !== rawApiError && <div>{rawApiError}</div>}
+
+							{/* Display Login button for non-logged in users using the Cline provider */}
+							<div>
+								{/* The user is signed in or not using cline provider */}
+								{isClineProvider && !userInfo ? (
+									<VSCodeButton className="w-full mb-4" disabled={isLoginLoading} onClick={handleSignIn}>
+										Sign in to Cline
+										{isLoginLoading && (
+											<span className="ml-1 animate-spin">
+												<span className="codicon codicon-refresh"></span>
+											</span>
+										)}
+									</VSCodeButton>
+								) : (
+									<span className="mb-4 text-description">(Click "Retry" below)</span>
+								)}
+							</div>
 						</p>
 					)
 				}

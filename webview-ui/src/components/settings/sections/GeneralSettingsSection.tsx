@@ -1,5 +1,3 @@
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { updateAutoApproveSettings } from "@/components/chat/auto-approve-menu/AutoApproveSettingsAPI"
 import { Tooltip } from "@/components/ui/tooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import PreferredLanguageSetting from "../PreferredLanguageSetting"
@@ -10,32 +8,13 @@ interface GeneralSettingsSectionProps {
 }
 
 const GeneralSettingsSection = ({ renderSectionHeader }: GeneralSettingsSectionProps) => {
-	const { telemetrySetting, remoteConfigSettings, autoApprovalSettings } = useExtensionState()
+	const { telemetrySetting, remoteConfigSettings } = useExtensionState()
 
 	return (
 		<div>
 			{renderSectionHeader("general")}
 			<Section>
 				<PreferredLanguageSetting />
-
-				<div className="mb-[5px]" id="enable-notifications">
-					<VSCodeCheckbox
-						checked={autoApprovalSettings.enableNotifications}
-						onChange={async (e: any) => {
-							const checked = e.target.checked === true
-							await updateAutoApproveSettings({
-								...autoApprovalSettings,
-								version: (autoApprovalSettings.version ?? 1) + 1,
-								enableNotifications: checked,
-							})
-						}}>
-						启用通知
-					</VSCodeCheckbox>
-
-					<p className="text-sm mt-[5px] text-description">
-						当 Cline 需要获得批准才能继续执行或任务完成时，接收系统通知。
-					</p>
-				</div>
 
 				<div className="mb-[5px]">
 					<Tooltip>

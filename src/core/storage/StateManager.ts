@@ -1,4 +1,4 @@
-import { ApiConfiguration } from "@shared/api"
+import { ApiConfiguration, ModelInfo } from "@shared/api"
 import {
 	GlobalState,
 	GlobalStateAndSettings,
@@ -43,6 +43,30 @@ export class StateManager {
 	private workspaceStateCache: LocalState = {} as LocalState
 	private context: ExtensionContext
 	private isInitialized = false
+
+	// In-memory model info cache (not persisted to disk)
+	// These are for dynamic providers that fetch models from APIs
+	private modelInfoCache: {
+		openRouterModels: Record<string, ModelInfo> | null
+		groqModels: Record<string, ModelInfo> | null
+		basetenModels: Record<string, ModelInfo> | null
+		huggingFaceModels: Record<string, ModelInfo> | null
+		requestyModels: Record<string, ModelInfo> | null
+		huaweiCloudMaasModels: Record<string, ModelInfo> | null
+		hicapModels: Record<string, ModelInfo> | null
+		aihubmixModels: Record<string, ModelInfo> | null
+		liteLlmModels: Record<string, ModelInfo> | null
+	} = {
+		openRouterModels: null,
+		groqModels: null,
+		basetenModels: null,
+		huggingFaceModels: null,
+		requestyModels: null,
+		huaweiCloudMaasModels: null,
+		hicapModels: null,
+		aihubmixModels: null,
+		liteLlmModels: null,
+	}
 
 	// Debounced persistence state
 	private pendingGlobalState = new Set<GlobalStateAndSettingsKey>()
@@ -349,6 +373,46 @@ export class StateManager {
 	}
 
 	/**
+	 * Set models cache for a specific provider (in-memory only, not persisted)
+	 */
+	setModelsCache(
+		provider:
+			| "openRouter"
+			| "groq"
+			| "baseten"
+			| "huggingFace"
+			| "requesty"
+			| "huaweiCloudMaas"
+			| "hicap"
+			| "aihubmix"
+			| "liteLlm",
+		models: Record<string, ModelInfo>,
+	): void {
+		const cacheKey = `${provider}Models` as keyof typeof this.modelInfoCache
+		this.modelInfoCache[cacheKey] = models
+	}
+
+	/**
+	 * Get model info by provider and model ID (from in-memory cache)
+	 */
+	getModelInfo(
+		provider:
+			| "openRouter"
+			| "groq"
+			| "baseten"
+			| "huggingFace"
+			| "requesty"
+			| "huaweiCloudMaas"
+			| "hicap"
+			| "aihubmix"
+			| "liteLlm",
+		modelId: string,
+	): ModelInfo | undefined {
+		const cacheKey = `${provider}Models` as keyof typeof this.modelInfoCache
+		return this.modelInfoCache[cacheKey]?.[modelId]
+	}
+
+	/**
 	 * Initialize chokidar watcher for the taskHistory.json file
 	 * Updates in-memory cache on external changes without writing back to disk.
 	 */
@@ -492,6 +556,7 @@ export class StateManager {
 			zaiApiKey,
 			minimaxApiKey,
 			minimaxApiLine,
+			nousResearchApiKey,
 			requestTimeoutMs,
 			shengSuanYunApiKey,
 			shengSuanYunToken,
@@ -540,6 +605,8 @@ export class StateManager {
 			planModeHicapModelInfo,
 			planModeAihubmixModelId,
 			planModeAihubmixModelInfo,
+			planModeNousResearchModelId,
+			geminiPlanModeThinkingLevel,
 			// Act mode configurations
 			actModeApiProvider,
 			actModeApiModelId,
@@ -578,6 +645,8 @@ export class StateManager {
 			actModeHicapModelInfo,
 			actModeAihubmixModelId,
 			actModeAihubmixModelInfo,
+			actModeNousResearchModelId,
+			geminiActModeThinkingLevel,
 		} = apiConfiguration
 
 		// Batch update global state keys
@@ -620,6 +689,8 @@ export class StateManager {
 			planModeHicapModelInfo,
 			planModeAihubmixModelId,
 			planModeAihubmixModelInfo,
+			planModeNousResearchModelId,
+			geminiPlanModeThinkingLevel,
 
 			// Act mode configuration updates
 			actModeApiProvider,
@@ -659,6 +730,8 @@ export class StateManager {
 			actModeHicapModelInfo,
 			actModeAihubmixModelId,
 			actModeAihubmixModelInfo,
+			actModeNousResearchModelId,
+			geminiActModeThinkingLevel,
 
 			// Global state updates
 			awsRegion,
@@ -747,6 +820,7 @@ export class StateManager {
 			minimaxApiKey,
 			hicapApiKey,
 			aihubmixApiKey,
+			nousResearchApiKey,
 		})
 	}
 
@@ -849,6 +923,51 @@ export class StateManager {
 	}
 
 	/**
+	 * Private method to persist all pending state changes
+	 * Returns early if nothing is pending
+	 */
+	private async persistPendingState(): Promise<void> {
+		// Early return if nothing to persist
+		if (
+			this.pendingGlobalState.size === 0 &&
+			this.pendingSecrets.size === 0 &&
+			this.pendingWorkspaceState.size === 0 &&
+			this.pendingTaskState.size === 0
+		) {
+			return
+		}
+
+		// Execute all persistence operations in parallel
+		await Promise.all([
+			this.persistGlobalStateBatch(this.pendingGlobalState),
+			this.persistSecretsBatch(this.pendingSecrets),
+			this.persistWorkspaceStateBatch(this.pendingWorkspaceState),
+			this.persistTaskStateBatch(this.pendingTaskState),
+		])
+
+		// Clear pending sets after successful persistence
+		this.pendingGlobalState.clear()
+		this.pendingSecrets.clear()
+		this.pendingWorkspaceState.clear()
+		this.pendingTaskState.clear()
+	}
+
+	/**
+	 * Flush all pending state changes immediately to disk
+	 * Bypasses the debounced persistence and forces immediate writes
+	 */
+	public async flushPendingState(): Promise<void> {
+		// Cancel any pending timeout
+		if (this.persistenceTimeout) {
+			clearTimeout(this.persistenceTimeout)
+			this.persistenceTimeout = null
+		}
+
+		// Execute persistence immediately
+		await this.persistPendingState()
+	}
+
+	/**
 	 * Schedule debounced persistence - simple timeout-based persistence
 	 */
 	private scheduleDebouncedPersistence(): void {
@@ -860,18 +979,7 @@ export class StateManager {
 		// Schedule a new timeout to persist pending changes
 		this.persistenceTimeout = setTimeout(async () => {
 			try {
-				await Promise.all([
-					this.persistGlobalStateBatch(this.pendingGlobalState),
-					this.persistSecretsBatch(this.pendingSecrets),
-					this.persistWorkspaceStateBatch(this.pendingWorkspaceState),
-					this.persistTaskStateBatch(this.pendingTaskState),
-				])
-
-				// Clear pending sets on successful persistence
-				this.pendingGlobalState.clear()
-				this.pendingSecrets.clear()
-				this.pendingWorkspaceState.clear()
-				this.pendingTaskState.clear()
+				await this.persistPendingState()
 				this.persistenceTimeout = null
 			} catch (error) {
 				console.error("[StateManager] Failed to persist pending changes:", error)
@@ -1004,7 +1112,7 @@ export class StateManager {
 			qwenApiKey: this.secretsCache["qwenApiKey"],
 			doubaoApiKey: this.secretsCache["doubaoApiKey"],
 			mistralApiKey: this.secretsCache["mistralApiKey"],
-			liteLlmApiKey: this.secretsCache["liteLlmApiKey"],
+			liteLlmApiKey: this.secretsCache["remoteLiteLlmApiKey"] || this.secretsCache["liteLlmApiKey"],
 			fireworksApiKey: this.secretsCache["fireworksApiKey"],
 			asksageApiKey: this.secretsCache["asksageApiKey"],
 			xaiApiKey: this.secretsCache["xaiApiKey"],
@@ -1047,8 +1155,14 @@ export class StateManager {
 			awsProfile: this.taskStateCache["awsProfile"] || this.globalStateCache["awsProfile"],
 			awsUseProfile: this.taskStateCache["awsUseProfile"] || this.globalStateCache["awsUseProfile"],
 			awsAuthentication: this.taskStateCache["awsAuthentication"] || this.globalStateCache["awsAuthentication"],
-			vertexProjectId: this.taskStateCache["vertexProjectId"] || this.globalStateCache["vertexProjectId"],
-			vertexRegion: this.taskStateCache["vertexRegion"] || this.globalStateCache["vertexRegion"],
+			vertexProjectId:
+				this.remoteConfigCache["vertexProjectId"] ||
+				this.taskStateCache["vertexProjectId"] ||
+				this.globalStateCache["vertexProjectId"],
+			vertexRegion:
+				this.remoteConfigCache["vertexRegion"] ||
+				this.taskStateCache["vertexRegion"] ||
+				this.globalStateCache["vertexRegion"],
 			requestyBaseUrl: this.taskStateCache["requestyBaseUrl"] || this.globalStateCache["requestyBaseUrl"],
 			openAiBaseUrl:
 				this.remoteConfigCache["openAiBaseUrl"] ||
@@ -1072,7 +1186,10 @@ export class StateManager {
 				this.globalStateCache["azureApiVersion"],
 			openRouterProviderSorting:
 				this.taskStateCache["openRouterProviderSorting"] || this.globalStateCache["openRouterProviderSorting"],
-			liteLlmBaseUrl: this.taskStateCache["liteLlmBaseUrl"] || this.globalStateCache["liteLlmBaseUrl"],
+			liteLlmBaseUrl:
+				this.remoteConfigCache["liteLlmBaseUrl"] ||
+				this.taskStateCache["liteLlmBaseUrl"] ||
+				this.globalStateCache["liteLlmBaseUrl"],
 			liteLlmUsePromptCache: this.taskStateCache["liteLlmUsePromptCache"] || this.globalStateCache["liteLlmUsePromptCache"],
 			qwenApiLine: this.taskStateCache["qwenApiLine"] || this.globalStateCache["qwenApiLine"],
 			moonshotApiLine: this.taskStateCache["moonshotApiLine"] || this.globalStateCache["moonshotApiLine"],
@@ -1172,6 +1289,11 @@ export class StateManager {
 				this.taskStateCache["planModeShengSuanYunModelId"] || this.globalStateCache["planModeShengSuanYunModelId"],
 			planModeShengSuanYunModelInfo:
 				this.taskStateCache["planModeShengSuanYunModelInfo"] || this.globalStateCache["planModeShengSuanYunModelInfo"],
+			planModeNousResearchModelId:
+				this.taskStateCache["planModeNousResearchModelId"] || this.globalStateCache["planModeNousResearchModelId"],
+			geminiPlanModeThinkingLevel:
+				this.taskStateCache["geminiPlanModeThinkingLevel"] || this.globalStateCache["geminiPlanModeThinkingLevel"],
+
 			// Act mode configurations
 			actModeApiProvider:
 				this.remoteConfigCache["actModeApiProvider"] ||
@@ -1241,6 +1363,11 @@ export class StateManager {
 				this.taskStateCache["actModeShengSuanYunModelId"] || this.globalStateCache["actModeShengSuanYunModelId"],
 			actModeShengSuanYunModelInfo:
 				this.taskStateCache["actModeShengSuanYunModelInfo"] || this.globalStateCache["actModeShengSuanYunModelInfo"],
+			actModeNousResearchModelId:
+				this.taskStateCache["actModeNousResearchModelId"] || this.globalStateCache["actModeNousResearchModelId"],
+			geminiActModeThinkingLevel:
+				this.taskStateCache["geminiActModeThinkingLevel"] || this.globalStateCache["geminiActModeThinkingLevel"],
+			nousResearchApiKey: this.secretsCache["nousResearchApiKey"],
 		}
 	}
 }

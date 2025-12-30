@@ -1,13 +1,11 @@
 import { EmptyRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
-import { VSCodeButton, VSCodeCheckbox, VSCodeDropdown, VSCodeLink, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
-import { useState } from "react"
+import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { useOpenRouterKeyInfo } from "../../ui/hooks/useOpenRouterKeyInfo"
 import { DebouncedTextField } from "../common/DebouncedTextField"
-import { DropdownContainer } from "../common/ModelSelector"
-import OpenRouterModelPicker, { OPENROUTER_MODEL_PICKER_Z_INDEX } from "../OpenRouterModelPicker"
+import OpenRouterModelPicker from "../OpenRouterModelPicker"
 import { formatPrice } from "../utils/pricingUtils"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
 
@@ -63,8 +61,6 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: O
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
-	const [providerSortingSelected, setProviderSortingSelected] = useState(!!apiConfiguration?.openRouterProviderSorting)
-
 	return (
 		<div>
 			<div>
@@ -107,48 +103,7 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: O
 
 			{showModelOptions && (
 				<>
-					<VSCodeCheckbox
-						checked={providerSortingSelected}
-						onChange={(e: any) => {
-							const isChecked = e.target.checked === true
-							setProviderSortingSelected(isChecked)
-							if (!isChecked) {
-								handleFieldChange("openRouterProviderSorting", "")
-							}
-						}}
-						style={{ marginTop: -10 }}>
-						对底层提供商路由进行排序
-					</VSCodeCheckbox>
-
-					{providerSortingSelected && (
-						<div style={{ marginBottom: -6 }}>
-							<DropdownContainer className="dropdown-container" zIndex={OPENROUTER_MODEL_PICKER_Z_INDEX + 1}>
-								<VSCodeDropdown
-									onChange={(e: any) => {
-										handleFieldChange("openRouterProviderSorting", e.target.value)
-									}}
-									style={{ width: "100%", marginTop: 3 }}
-									value={apiConfiguration?.openRouterProviderSorting}>
-									<VSCodeOption value="">默认</VSCodeOption>
-									<VSCodeOption value="price">价格</VSCodeOption>
-									<VSCodeOption value="throughput">吞吐量</VSCodeOption>
-									<VSCodeOption value="latency">响应时间</VSCodeOption>
-								</VSCodeDropdown>
-							</DropdownContainer>
-							<p style={{ fontSize: "12px", marginTop: 3, color: "var(--vscode-descriptionForeground)" }}>
-								{!apiConfiguration?.openRouterProviderSorting &&
-									"默认行为是跨提供商（如 AWS、Google Vertex、Anthropic）对请求进行负载平衡，优先考虑价格，同时考虑提供商的正常运行时间"}
-								{apiConfiguration?.openRouterProviderSorting === "price" &&
-									"按价格对供应商进行排序，优先选择成本最低的供应商"}
-								{apiConfiguration?.openRouterProviderSorting === "throughput" &&
-									"按吞吐量对提供商进行排序，优先考虑吞吐量最高的提供商（可能会增加成本）"}
-								{apiConfiguration?.openRouterProviderSorting === "latency" &&
-									"按响应时间对提供商进行排序，优先选择延迟最低的提供商"}
-							</p>
-						</div>
-					)}
-
-					<OpenRouterModelPicker currentMode={currentMode} isPopup={isPopup} />
+					<OpenRouterModelPicker currentMode={currentMode} isPopup={isPopup} showProviderRouting={true} />
 				</>
 			)}
 		</div>

@@ -39,7 +39,7 @@ const AboutSection = ({ version, renderSectionHeader }: AboutSectionProps) => {
 
 					<h3 className="text-md font-semibold">资源</h3>
 					<p>
-						<VSCodeLink href="https://docs.cline.bot/getting-started/for-new-coders">文档</VSCodeLink>
+						<VSCodeLink href="https://docs.cline.bot/">文档</VSCodeLink>
 						{" • "}
 						<VSCodeLink href="https://router.shengsuanyun.com/model">胜算云</VSCodeLink>
 					</p>
