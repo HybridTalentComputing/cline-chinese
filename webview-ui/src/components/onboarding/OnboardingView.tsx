@@ -76,7 +76,7 @@ const ModelSelection = ({
 					</ItemTitle>
 					{isSelected && model.info && (
 						<ItemDescription>
-							<span className="text-foreground/70 text-sm">Support: </span>
+							<span className="text-foreground/70 text-sm">支持: </span>
 							<span className="text-foreground text-sm">{getCapabilities(model.info).join(", ")}</span>
 						</ItemDescription>
 					)}
@@ -87,21 +87,21 @@ const ModelSelection = ({
 							{model.score && (
 								<div className="inline-flex gap-1 [&_svg]:stroke-warning [&_svg]:size-3 items-center text-sm">
 									<StarIcon />
-									<span>Model Overview: </span>
+									<span>模型详情: </span>
 									<span className="text-foreground/70">{model.score}%</span>
 									<span className="text-foreground/70 hidden xs:block">{getOverviewLabel(model.score)}</span>
 								</div>
 							)}
 							<div className="inline-flex gap-1 [&_svg]:stroke-success [&_svg]:size-3 items-center text-sm">
 								<ZapIcon />
-								<span>Speed: </span>
+								<span>速度: </span>
 								<span className="text-foreground/70">{getSpeedLabel(model.latency)}</span>
 							</div>
 							{model.info && (
 								<div className="flex w-full justify-between">
 									<div className="inline-flex gap-1 [&_svg]:stroke-foreground [&_svg]:size-3 items-center text-sm">
 										<ListIcon />
-										<span>Context: </span>
+										<span>上下文: </span>
 										<span className="text-foreground/70">{(model?.info.contextWindow || 0) / 1000}k</span>
 									</div>
 									<Badge>{getPriceRange(model.info)}</Badge>
@@ -183,7 +183,7 @@ const ModelSelection = ({
 								return <ModelItem id={id} isSelected={isSelected} key={id} model={onboardingModel} />
 							})}
 						{searchTerm.length > 0 && searchedModels.length === 0 && (
-							<p className="px-1 mt-1 text-sm text-foreground/70">No result found for "{searchTerm}"</p>
+							<p className="px-1 mt-1 text-sm text-foreground/70">未找到 "{searchTerm}"</p>
 						)}
 					</div>
 				</div>
@@ -318,8 +318,8 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 					actModeOpenRouterModelId: selectedModelId,
 					planModeOpenRouterModelInfo: openRouterModels[selectedModelId],
 					actModeOpenRouterModelInfo: openRouterModels[selectedModelId],
-					planModeApiProvider: "cline",
-					actModeApiProvider: "cline",
+					planModeApiProvider: "shengsuanyun",
+					actModeApiProvider: "shengsuanyun",
 				})
 			}
 			hideAccount()
@@ -416,7 +416,7 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 
 					{stepNumber !== 2 && (
 						<div className="items-center justify-center flex text-sm text-foreground gap-2 mb-3 text-pretty">
-							<AlertCircleIcon className="shrink-0 size-2" /> You can change this later in settings
+							<AlertCircleIcon className="shrink-0 size-2" /> 您稍后可以在设置中更改此设置。
 						</div>
 					)}
 				</footer>

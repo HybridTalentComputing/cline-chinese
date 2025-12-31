@@ -306,7 +306,7 @@ func (h *SayHandler) handleErrorRetry(msg *types.ClineMessage, dc *DisplayContex
 		// Retry failed after max attempts
 		message := fmt.Sprintf("Auto-retry failed after %d attempts. Manual intervention required.", retryInfo.MaxAttempts)
 		if dc.SystemRenderer != nil {
-			return dc.SystemRenderer.RenderWarning("Auto-Retry Failed", message)
+			return dc.SystemRenderer.RenderWarning("自动重试失败", message)
 		}
 		return dc.Renderer.RenderMessage("WARNING", message, true)
 	}

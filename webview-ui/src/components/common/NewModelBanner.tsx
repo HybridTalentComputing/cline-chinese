@@ -3,7 +3,7 @@ import { Megaphone, XIcon } from "lucide-react"
 import { useCallback } from "react"
 import { useMount } from "react-use"
 import { Button } from "@/components/ui/button"
-import { useClineAuth } from "@/context/ClineAuthContext"
+// import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient, StateServiceClient } from "@/services/grpc-client"
 import { getAsVar, VSC_INACTIVE_SELECTION_BACKGROUND } from "@/utils/vscStyles"
@@ -12,9 +12,9 @@ import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurati
 export const CURRENT_MODEL_BANNER_VERSION = 3
 
 export const NewModelBanner: React.FC = () => {
-	const { clineUser } = useClineAuth()
-	const { openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
-	const user = clineUser || undefined
+	// const { clineUser } = useClineAuth()
+	const { openRouterModels, setShowChatModelSelector, refreshOpenRouterModels, userInfo } = useExtensionState()
+	const user = userInfo || undefined
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 
 	// Need to get latest model list in case user hits shortcut button to set model
@@ -77,8 +77,8 @@ export const NewModelBanner: React.FC = () => {
 				Claude Opus 4.5
 			</h4>
 			<p className="m-0">
-				Anthropic's latest model with SOTA performance at 3x lower cost than Opus 4.1.{" "}
-				<span className="text-link cursor-pointer">{user ? "Try new model" : "Try with Cline account"} →</span>
+				Anthropic 最新款产品，性能达到 SOTA 水平，价格比 Opus 4.1 低 3 倍。{" "}
+				<span className="text-link cursor-pointer">{user ? "尝试新模型" : "尝试使用Cline帐户"} →</span>
 			</p>
 
 			{/* Close button */}

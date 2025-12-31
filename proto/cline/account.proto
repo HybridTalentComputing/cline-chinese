@@ -32,15 +32,14 @@ service AccountService {
 
   // Fetches all user credits data
   // (balance, usage transactions, payment transactions)
-  rpc getUserCredits(EmptyRequest) returns (UserCreditsData);
+  // rpc getUserCredits(EmptyRequest) returns (UserCreditsData);
 
-  rpc getOrganizationCredits(GetOrganizationCreditsRequest) returns (OrganizationCreditsData);
-
+  // rpc getOrganizationCredits(GetOrganizationCreditsRequest) returns (OrganizationCreditsData);
   // Fetches all user organizations data
   // Returns a list of UserOrganization objects
-  rpc getUserOrganizations(EmptyRequest) returns (UserOrganizationsResponse);
+  // rpc getUserOrganizations(EmptyRequest) returns (UserOrganizationsResponse);
 
-  rpc setUserOrganization(UserOrganizationUpdateRequest) returns (Empty);
+  // rpc setUserOrganization(UserOrganizationUpdateRequest) returns (Empty);
 
   rpc openrouterAuthClicked(EmptyRequest) returns (Empty);
 

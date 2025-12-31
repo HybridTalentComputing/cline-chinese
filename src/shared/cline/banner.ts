@@ -95,20 +95,20 @@ export const BANNER_DATA: BannerCardData[] = [
 	{
 		id: "info-banner-v1",
 		icon: "lightbulb",
-		title: "Use Cline in Right Sidebar",
+		title: "在右侧边栏使用 Cline",
 		description:
-			"For the best experience, drag the Cline icon to your right sidebar. This keeps your file explorer and editor visible while you chat with Cline, making it easier to navigate your codebase and see changes in real-time. [See how →](https://docs.cline.bot/features/customization/opening-cline-in-sidebar)",
+			"为了获得最佳体验，请将 Cline 图标拖动到右侧边栏。这样在与 Cline 聊天时，您的文件资源管理器和编辑器仍然可见，从而更轻松地浏览代码库并实时查看更改。[查看如何操作 →](https://docs.cline.bot/features/customization/opening-cline-in-sidebar)",
 	},
 
 	// Announcement with conditional actions based on user auth state
 	{
 		id: "new-model-opus-4-5-cline-users",
 		icon: "megaphone",
-		title: "Claude Opus 4.5 Now Available",
-		description: "State-of-the-art performance at 3x lower cost than Opus 4.1. Available now in the Cline provider.",
+		title: "Claude Opus 4.5 现已推出",
+		description: "最先进的性能，成本比 Opus 4.1 低 3 倍。现已在 Cline 提供商中可用。",
 		actions: [
 			{
-				title: "Try Now",
+				title: "立即尝试",
 				action: BannerActionType.SetModel,
 				arg: "anthropic/claude-opus-4.5",
 			},
@@ -119,11 +119,11 @@ export const BANNER_DATA: BannerCardData[] = [
 	{
 		id: "new-model-opus-4-5-non-cline-users",
 		icon: "megaphone",
-		title: "Claude Opus 4.5 Now Available",
-		description: "State-of-the-art performance at 3x lower cost than Opus 4.1. Available now in the Cline provider.",
+		title: "Claude Opus 4.5 现已推出",
+		description: "最先进的性能，成本比 Opus 4.1 低 3 倍。现已在 Cline 提供商中可用。",
 		actions: [
 			{
-				title: "Get Started",
+				title: "开始使用",
 				action: BannerActionType.ShowAccount,
 			},
 		],
@@ -134,17 +134,16 @@ export const BANNER_DATA: BannerCardData[] = [
 	{
 		id: "cli-install-unix-v1",
 		icon: "terminal",
-		title: "CLI & Subagents Available",
+		title: "CLI 和子代理现已可用",
 		platforms: ["mac", "linux"] satisfies BannerCardData["platforms"],
-		description:
-			"Use Cline in your terminal and enable subagent capabilities. [Learn more](https://docs.cline.bot/cline-cli/overview)",
+		description: "在终端中使用 Cline 并启用子代理功能。[了解更多](https://docs.cline.bot/cline-cli/overview)",
 		actions: [
 			{
-				title: "Install",
+				title: "安装",
 				action: BannerActionType.InstallCli,
 			},
 			{
-				title: "Enable Subagents",
+				title: "启用子代理",
 				action: BannerActionType.ShowFeatureSettings,
 			},
 		],
@@ -154,9 +153,8 @@ export const BANNER_DATA: BannerCardData[] = [
 	{
 		id: "cli-info-windows-v1",
 		icon: "terminal",
-		title: "Cline CLI Info",
+		title: "Cline CLI 信息",
 		platforms: ["windows"] satisfies BannerCardData["platforms"],
-		description:
-			"Available for macOS and Linux. Coming soon to other platforms. [Learn more](https://docs.cline.bot/cline-cli/overview)",
+		description: "适用于 macOS 和 Linux。即将支持其他平台。[了解更多](https://docs.cline.bot/cline-cli/overview)",
 	},
 ]

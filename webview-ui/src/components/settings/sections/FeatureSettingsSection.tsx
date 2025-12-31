@@ -329,10 +329,10 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 									const checked = e.target.checked === true
 									updateSetting("clineWebToolsEnabled", checked)
 								}}>
-								Enable Cline Web Tools
+								启用 Cline Web Tools
 							</VSCodeCheckbox>
 							<p className="text-xs text-(--vscode-descriptionForeground)">
-								Enables websearch and webfetch tools while using the Cline provider.
+								在使用 Cline 提供商时启用网络搜索和网络获取工具。
 							</p>
 						</div>
 					)}
@@ -343,11 +343,10 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								const enabled = (e?.target as HTMLInputElement).checked
 								updateSetting("nativeToolCallEnabled", enabled)
 							}}>
-							Enable Native Tool Call
+							启用本机工具调用
 						</VSCodeCheckbox>
 						<p className="text-xs text-(--vscode-descriptionForeground)">
-							Uses the model's native tool calling API instead of XML-based tool parsing. This will improve
-							performance for supported models.
+							使用模型的原生工具调用 API，而非基于 XML 的工具解析。这将提升受支持模型的性能。
 						</p>
 					</div>
 					<div className="mt-2.5">
@@ -357,12 +356,12 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								const enabled = (e?.target as HTMLInputElement).checked
 								updateSetting("enableParallelToolCalling", enabled)
 							}}>
-							Enable Parallel Tool Calling
+							启用并行工具调用
 						</VSCodeCheckbox>
 						<p className="text-xs">
-							<span className="text-(--vscode-errorForeground)">Experimental: </span>{" "}
+							<span className="text-(--vscode-errorForeground)">实验功能: </span>{" "}
 							<span className="text-description">
-								Allows models to call multiple tools in a single response. Automatically enabled for GPT-5 models.
+								允许模型在单个响应中调用多个工具。GPT-5 模型已自动启用此功能。
 							</span>
 						</p>
 					</div>
@@ -373,13 +372,11 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								const checked = e.target.checked === true
 								updateSetting("backgroundEditEnabled", checked)
 							}}>
-							Enable Background Edit
+							启用后台编辑
 						</VSCodeCheckbox>
 						<p className="text-xs">
-							<span className="text-error">Experimental: </span>
-							<span className="text-description">
-								Allows editing files in background without opening the diff view in editor.
-							</span>
+							<span className="text-error">实验功能: </span>
+							<span className="text-description">允许在后台编辑文件，而无需在编辑器中打开差异视图。</span>
 						</p>
 					</div>
 					{multiRootSetting.featureFlag && (

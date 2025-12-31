@@ -3,7 +3,7 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import React, { useCallback, useRef } from "react"
 import { useMount } from "react-use"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { useClineAuth } from "@/context/ClineAuthContext"
+// import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurationHandlers"
@@ -15,8 +15,8 @@ interface WhatsNewModalProps {
 }
 
 export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, version }) => {
-	const { clineUser } = useClineAuth()
-	const { openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
+	// const { clineUser } = useClineAuth()
+	const { userInfo, openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 
 	const clickedModelsRef = useRef<Set<string>>(new Set())
@@ -62,7 +62,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 	}
 
 	const AuthButton: React.FC<{ children: React.ReactNode }> = ({ children }) =>
-		clineUser ? (
+		userInfo ? (
 			<div className="flex gap-2 flex-wrap">{children}</div>
 		) : (
 			<Button className="my-1" onClick={handleShowAccount} size="sm">

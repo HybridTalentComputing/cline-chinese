@@ -93,7 +93,7 @@ export class SSYAccountService {
 		try {
 			const res = await this.authenticatedRequest<any>("/user/info")
 			if (!res.data || !res.data.data || res.data.code !== 0) {
-				throw new Error(`Invalid response from API`)
+				throw new Error(`Invalid response from API: /user/info`)
 			}
 			const user: UserInfo = {
 				displayName: res.data.data.Nickname || res.data.data.Username || undefined,

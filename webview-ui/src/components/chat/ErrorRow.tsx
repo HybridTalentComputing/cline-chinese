@@ -1,12 +1,12 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { memo } from "react"
-import CreditLimitError from "@/components/chat/CreditLimitError"
+import CreditLimitErrorSSY from "@/components/chat/CreditLimitErrorSSY"
 import { useClineSignIn } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { SSYError, SSYErrorType } from "../../../../src/services/error/SSYError"
 
-const _errorColor = "var(--vscode-errorForeground)"
+// const _errorColor = "var(--vscode-errorForeground)"
 
 interface ErrorRowProps {
 	message: ClineMessage
@@ -37,12 +37,10 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 					if (ssyError?.isErrorType(SSYErrorType.Balance)) {
 						const errorDetails = ssyError._error?.details
 						return (
-							<CreditLimitError
+							<CreditLimitErrorSSY
 								buyCreditsUrl={errorDetails?.buy_credits_url}
 								currentBalance={errorDetails?.current_balance}
 								message={errorDetails?.message}
-								totalPromotions={errorDetails?.total_promotions}
-								totalSpent={errorDetails?.total_spent}
 							/>
 						)
 					}
@@ -64,13 +62,13 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 								{providerId && <span className="uppercase">[{providerId}] </span>}
 								{errorCode && <span>{errorCode}</span>}
 								{errorMessage}
-								{requestId && <div>Request ID: {requestId}</div>}
+								{requestId && <div>请求 ID: {requestId}</div>}
 							</header>
 
 							{/* Windows Powershell Issue */}
 							{errorMessage?.toLowerCase()?.includes("powershell") && (
 								<div>
-									It seems like you're having Windows PowerShell issues, please see this{" "}
+									看来您遇到了 Windows PowerShell 问题，请参阅此内容。{" "}
 									<a
 										className="underline text-inherit"
 										href="https://github.com/cline/cline/wiki/TroubleShooting-%E2%80%90-%22PowerShell-is-not-recognized-as-an-internal-or-external-command%22">
@@ -88,7 +86,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 								{/* The user is signed in or not using cline provider */}
 								{isClineProvider && !userInfo ? (
 									<VSCodeButton className="w-full mb-4" disabled={isLoginLoading} onClick={handleSignIn}>
-										Sign in to Cline
+										登录 Cline
 										{isLoginLoading && (
 											<span className="ml-1 animate-spin">
 												<span className="codicon codicon-refresh"></span>
@@ -96,7 +94,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 										)}
 									</VSCodeButton>
 								) : (
-									<span className="mb-4 text-description">(Click "Retry" below)</span>
+									<span className="mb-4 text-description">(点击下方“重试”按钮)</span>
 								)}
 							</div>
 						</p>

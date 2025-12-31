@@ -22,10 +22,10 @@ interface FocusChainProps {
 }
 
 // Static strings to avoid recreating them
-const COMPLETED_MESSAGE = "All tasks have been completed!"
-const TODO_LIST_LABEL = "To-Do list"
-const NEW_STEPS_MESSAGE = "New steps will be generated if you continue the task"
-const CLICK_TO_EDIT_TITLE = "Click to edit to-do list in file"
+const COMPLETED_MESSAGE = "所有任务均已完成!"
+const TODO_LIST_LABEL = "To-Do 列表"
+const NEW_STEPS_MESSAGE = "如果您继续执行任务，将会生成新的步骤。"
+const CLICK_TO_EDIT_TITLE = "点击编辑文件中的待办事项列表"
 
 // Optimized header component with minimal re-renders
 const ToDoListHeader = memo<{

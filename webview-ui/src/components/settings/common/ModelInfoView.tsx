@@ -100,7 +100,7 @@ const formatCompactPrice = (price: number | undefined): string => {
 		return "N/A"
 	}
 	if (price === 0) {
-		return "Free"
+		return "免费"
 	}
 	if (price < 0.01) {
 		return `$${price.toFixed(4)}/M`
@@ -211,19 +211,19 @@ export const ModelInfoView = ({
 			<InfoRow>
 				{modelInfo.contextWindow !== undefined && modelInfo.contextWindow > 0 && (
 					<InfoItem>
-						<InfoLabel>Context: </InfoLabel>
+						<InfoLabel>上下文: </InfoLabel>
 						<InfoValue>{formatCompactContext(modelInfo.contextWindow)}</InfoValue>
 					</InfoItem>
 				)}
 				{modelInfo.inputPrice !== undefined && (
 					<InfoItem>
-						<InfoLabel>Input: </InfoLabel>
+						<InfoLabel>输入: </InfoLabel>
 						<InfoValue>{formatCompactPrice(modelInfo.inputPrice)}</InfoValue>
 					</InfoItem>
 				)}
 				{modelInfo.outputPrice !== undefined && (
 					<InfoItem>
-						<InfoLabel>Output: </InfoLabel>
+						<InfoLabel>输出: </InfoLabel>
 						<InfoValue>
 							{hasThinkingConfig && modelInfo.thinkingConfig?.outputPrice !== undefined
 								? formatCompactPrice(modelInfo.thinkingConfig.outputPrice)
@@ -236,23 +236,23 @@ export const ModelInfoView = ({
 			{/* Collapsible Advanced Section */}
 			<CollapsibleHeader onClick={() => setAdvancedExpanded(!advancedExpanded)}>
 				<CollapsibleArrow $isExpanded={advancedExpanded}>▶</CollapsibleArrow>
-				Advanced
+				更多
 			</CollapsibleHeader>
 			<CollapsibleContent $isExpanded={advancedExpanded}>
 				<AdvancedSection>
 					{/* Capabilities */}
 					<AdvancedRow>
-						<AdvancedLabel>Images</AdvancedLabel>
-						<AdvancedValue>{hasImages ? "Yes" : "No"}</AdvancedValue>
+						<AdvancedLabel>图片</AdvancedLabel>
+						<AdvancedValue>{hasImages ? "是" : "否"}</AdvancedValue>
 					</AdvancedRow>
 					<AdvancedRow>
-						<AdvancedLabel>Browser</AdvancedLabel>
-						<AdvancedValue>{hasBrowser ? "Yes" : "No"}</AdvancedValue>
+						<AdvancedLabel>浏览器</AdvancedLabel>
+						<AdvancedValue>{hasBrowser ? "是" : "否"}</AdvancedValue>
 					</AdvancedRow>
 					{!isGemini && (
 						<AdvancedRow>
-							<AdvancedLabel>Prompt Caching</AdvancedLabel>
-							<AdvancedValue>{hasCaching ? "Yes" : "No"}</AdvancedValue>
+							<AdvancedLabel>缓存</AdvancedLabel>
+							<AdvancedValue>{hasCaching ? "是" : "否"}</AdvancedValue>
 						</AdvancedRow>
 					)}
 
@@ -261,13 +261,13 @@ export const ModelInfoView = ({
 						<>
 							{modelInfo.cacheReadsPrice !== undefined && (
 								<AdvancedRow>
-									<AdvancedLabel>Cache Reads</AdvancedLabel>
+									<AdvancedLabel>读缓存</AdvancedLabel>
 									<AdvancedValue>{formatCompactPrice(modelInfo.cacheReadsPrice)}</AdvancedValue>
 								</AdvancedRow>
 							)}
 							{modelInfo.cacheWritesPrice !== undefined && (
 								<AdvancedRow>
-									<AdvancedLabel>Cache Writes</AdvancedLabel>
+									<AdvancedLabel>写缓存</AdvancedLabel>
 									<AdvancedValue>{formatCompactPrice(modelInfo.cacheWritesPrice)}</AdvancedValue>
 								</AdvancedRow>
 							)}
@@ -277,16 +277,16 @@ export const ModelInfoView = ({
 					{/* Tiered Pricing */}
 					{hasTiers && (
 						<div style={{ marginTop: 8 }}>
-							<div style={{ fontWeight: 500, marginBottom: 4 }}>Tiered Pricing:</div>
+							<div style={{ fontWeight: 500, marginBottom: 4 }}>分级定价:</div>
 							{modelInfo.tiers && (
 								<>
 									<div>
-										<span style={{ fontWeight: 500 }}>Input:</span>
+										<span style={{ fontWeight: 500 }}>输入:</span>
 										<br />
 										{formatTiers(modelInfo.tiers, "inputPrice")}
 									</div>
 									<div style={{ marginTop: 4 }}>
-										<span style={{ fontWeight: 500 }}>Output:</span>
+										<span style={{ fontWeight: 500 }}>输出:</span>
 										<br />
 										{formatTiers(modelInfo.tiers, "outputPrice")}
 									</div>
@@ -298,15 +298,15 @@ export const ModelInfoView = ({
 					{/* Provider Routing */}
 					{showProviderRouting && onProviderSortingChange && (
 						<ProviderRoutingContainer>
-							<ProviderRoutingLabel>Provider Routing</ProviderRoutingLabel>
+							<ProviderRoutingLabel>提供商路由</ProviderRoutingLabel>
 							<VSCodeDropdown
 								onChange={(e: any) => onProviderSortingChange(e.target.value)}
 								style={{ width: "100%" }}
 								value={providerSorting || ""}>
-								<VSCodeOption value="">Default</VSCodeOption>
-								<VSCodeOption value="price">Price</VSCodeOption>
-								<VSCodeOption value="throughput">Throughput</VSCodeOption>
-								<VSCodeOption value="latency">Latency</VSCodeOption>
+								<VSCodeOption value="">默认</VSCodeOption>
+								<VSCodeOption value="price">价格</VSCodeOption>
+								<VSCodeOption value="throughput">推理</VSCodeOption>
+								<VSCodeOption value="latency">延时</VSCodeOption>
 							</VSCodeDropdown>
 							<p
 								style={{
@@ -316,11 +316,10 @@ export const ModelInfoView = ({
 									color: "var(--vscode-descriptionForeground)",
 								}}>
 								{!providerSorting &&
-									"Load balance across providers (AWS, Google Vertex, etc.), prioritizing price while considering uptime"}
-								{providerSorting === "price" && "Sort by price, prioritizing the lowest cost provider"}
-								{providerSorting === "throughput" &&
-									"Sort by throughput, prioritizing highest throughput (may increase cost)"}
-								{providerSorting === "latency" && "Sort by response time, prioritizing lowest latency"}
+									"跨服务提供商（AWS、Google Vertex 等）进行负载均衡，优先考虑价格，同时兼顾正常运行时间。"}
+								{providerSorting === "price" && "按价格排序，优先考虑价格最低的供应商"}
+								{providerSorting === "throughput" && "按吞吐量排序，优先考虑吞吐量最高的（可能会增加成本）"}
+								{providerSorting === "latency" && "按响应时间排序，优先考虑延迟最低的。"}
 							</p>
 						</ProviderRoutingContainer>
 					)}

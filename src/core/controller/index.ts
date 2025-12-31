@@ -5,7 +5,7 @@ import { detectWorkspaceRoots } from "@core/workspace/detection"
 import { setupWorkspaceManager } from "@core/workspace/setup"
 import type { WorkspaceRootManager } from "@core/workspace/WorkspaceRootManager"
 import { cleanupLegacyCheckpoints } from "@integrations/checkpoints/CheckpointMigration"
-import { ClineAccountService } from "@services/account/ClineAccountService"
+// import { ClineAccountService } from "@services/account/ClineAccountService"
 import { McpHub } from "@services/mcp/McpHub"
 import type { ApiProvider, ModelInfo } from "@shared/api"
 import type { ChatContent } from "@shared/ChatContent"
@@ -38,7 +38,7 @@ import { ShowMessageType } from "@/shared/proto/host/window"
 import { getLatestAnnouncementId } from "@/utils/announcements"
 import { getCwd, getDesktopDir } from "@/utils/path"
 import { SSYAccountService } from "../../services/account/SSYAccountService"
-import { BannerService } from "../../services/banner/BannerService"
+// import { BannerService } from "../../services/banner/BannerService"
 import { PromptRegistry } from "../prompts/system-prompt"
 import {
 	ensureCacheDirectoryExists,
@@ -47,7 +47,7 @@ import {
 	GlobalFileNames,
 	writeMcpMarketplaceCatalogToCache,
 } from "../storage/disk"
-import { fetchRemoteConfig } from "../storage/remote-config/fetch"
+// import { fetchRemoteConfig } from "../storage/remote-config/fetch.ts"
 import { type PersistenceErrorEvent, StateManager } from "../storage/StateManager"
 import { Task } from "../task"
 import { sendMcpMarketplaceCatalogEvent } from "./mcp/subscribeToMcpMarketplaceCatalog"
@@ -67,7 +67,7 @@ export class Controller {
 	task?: Task
 
 	mcpHub: McpHub
-	accountService: ClineAccountService
+	// accountService: ClineAccountService
 	accountServiceSSY: SSYAccountService
 	// authService: AuthService
 	// ocaAuthService: OcaAuthService
@@ -167,7 +167,7 @@ export class Controller {
 			console.log("[ Controller.accountServiceSSY ] :", apiConfiguration?.shengSuanYunToken)
 			return apiConfiguration?.shengSuanYunToken
 		})
-		this.accountService = ClineAccountService.getInstance()
+		// this.accountService = ClineAccountService.getInstance()
 
 		// Clean up legacy checkpoints
 		cleanupLegacyCheckpoints().catch((error) => {
@@ -241,11 +241,6 @@ export class Controller {
 		}
 	}
 
-	async setUserInfo() {
-		const ui = await this.accountServiceSSY.getUserInfo()
-		this.stateManager.setGlobalState("userInfo", ui)
-	}
-
 	async initTask(
 		task?: string,
 		images?: string[],
@@ -260,7 +255,7 @@ export class Controller {
 		// getGlobalSettingsKey() reads from remoteConfigCache on each call, so any updates
 		// will apply as soon as this fetch completes. The function also calls postStateToWebview()
 		// when done and catches all errors internally.
-		fetchRemoteConfig(this)
+		// fetchRemoteConfig(this)
 
 		await this.clearTask() // ensures that an existing task doesn't exist before starting a new one, although this shouldn't be possible since user must clear task before starting a new one
 
@@ -1068,61 +1063,61 @@ export class Controller {
 	/**
 	 * Initializes the BannerService if not already initialized
 	 */
-	private async ensureBannerService() {
-		if (!BannerService.isInitialized()) {
-			try {
-				BannerService.initialize(this)
-			} catch (error) {
-				console.error("Failed to initialize BannerService:", error)
-			}
-		}
-	}
+	// private async ensureBannerService() {
+	// 	if (!BannerService.isInitialized()) {
+	// 		try {
+	// 			BannerService.initialize(this)
+	// 		} catch (error) {
+	// 			console.error("Failed to initialize BannerService:", error)
+	// 		}
+	// 	}
+	// }
 
 	/**
 	 * Fetches non-dismissed banners for display
 	 * @returns Array of banners that haven't been dismissed
 	 */
-	async fetchBannersForDisplay(): Promise<any[]> {
-		try {
-			await this.ensureBannerService()
-			if (BannerService.isInitialized()) {
-				return await BannerService.get().getNonDismissedBanners()
-			}
-		} catch (error) {
-			console.error("Failed to fetch banners:", error)
-		}
-		return []
-	}
+	// async fetchBannersForDisplay(): Promise<any[]> {
+	// 	try {
+	// 		await this.ensureBannerService()
+	// 		if (BannerService.isInitialized()) {
+	// 			return await BannerService.get().getNonDismissedBanners()
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Failed to fetch banners:", error)
+	// 	}
+	// 	return []
+	// }
 
 	/**
 	 * Dismisses a banner and sends telemetry
 	 * @param bannerId The ID of the banner to dismiss
 	 */
-	async dismissBanner(bannerId: string): Promise<void> {
-		try {
-			await this.ensureBannerService()
-			if (BannerService.isInitialized()) {
-				await BannerService.get().dismissBanner(bannerId)
-				await this.postStateToWebview()
-			}
-		} catch (error) {
-			console.error("Failed to dismiss banner:", error)
-		}
-	}
+	// async dismissBanner(bannerId: string): Promise<void> {
+	// 	try {
+	// 		await this.ensureBannerService()
+	// 		if (BannerService.isInitialized()) {
+	// 			await BannerService.get().dismissBanner(bannerId)
+	// 			await this.postStateToWebview()
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Failed to dismiss banner:", error)
+	// 	}
+	// }
 
 	/**
 	 * Sends a banner event for telemetry tracking
 	 * @param bannerId The ID of the banner
 	 * @param eventType The type of event (seen, dismiss, click)
 	 */
-	async trackBannerEvent(bannerId: string, eventType: "dismiss"): Promise<void> {
-		try {
-			await this.ensureBannerService()
-			if (BannerService.isInitialized()) {
-				await BannerService.get().sendBannerEvent(bannerId, eventType)
-			}
-		} catch (error) {
-			console.error("Failed to track banner event:", error)
-		}
-	}
+	// async trackBannerEvent(bannerId: string, eventType: "dismiss"): Promise<void> {
+	// 	try {
+	// 		await this.ensureBannerService()
+	// 		if (BannerService.isInitialized()) {
+	// 			await BannerService.get().sendBannerEvent(bannerId, eventType)
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Failed to track banner event:", error)
+	// 	}
+	// }
 }

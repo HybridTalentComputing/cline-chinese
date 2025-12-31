@@ -102,7 +102,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 				</div>
 
 				<div className="mb-3">
-					<label className={`block text-sm font-medium mb-2 ${isSubmitting ? "opacity-50" : ""}`}>Transport Type</label>
+					<label className={`block text-sm font-medium mb-2 ${isSubmitting ? "opacity-50" : ""}`}>传输类型</label>
 					<VSCodeRadioGroup
 						disabled={isSubmitting}
 						onChange={(e) => {
@@ -111,10 +111,10 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 						}}
 						value={transportType}>
 						<VSCodeRadio checked={transportType === "streamableHttp"} value="streamableHttp">
-							Streamable HTTP
+							流式 HTTP
 						</VSCodeRadio>
 						<VSCodeRadio checked={transportType === "sse"} value="sse">
-							SSE (Legacy)
+							SSE (经典)
 						</VSCodeRadio>
 					</VSCodeRadioGroup>
 				</div>

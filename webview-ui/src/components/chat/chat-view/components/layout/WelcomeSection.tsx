@@ -10,7 +10,7 @@ import HistoryPreview from "@/components/history/HistoryPreview"
 import { useApiConfigurationHandlers } from "@/components/settings/utils/useApiConfigurationHandlers"
 import HomeHeader from "@/components/welcome/HomeHeader"
 import { SuggestedTasks } from "@/components/welcome/SuggestedTasks"
-import { useClineAuth } from "@/context/ClineAuthContext"
+// import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient, StateServiceClient } from "@/services/grpc-client"
 import { convertBannerData } from "@/utils/bannerUtils"
@@ -29,13 +29,14 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 	taskHistory,
 	shouldShowQuickWins,
 }) => {
-	const { lastDismissedInfoBannerVersion, lastDismissedCliBannerVersion, lastDismissedModelBannerVersion } = useExtensionState()
+	const { userInfo, lastDismissedInfoBannerVersion, lastDismissedCliBannerVersion, lastDismissedModelBannerVersion } =
+		useExtensionState()
 
 	// Track if we've shown the "What's New" modal this session
 	const [hasShownWhatsNewModal, setHasShownWhatsNewModal] = useState(false)
 	const [showWhatsNewModal, setShowWhatsNewModal] = useState(false)
 
-	const { clineUser } = useClineAuth()
+	// const { clineUser } = useClineAuth()
 	const { openRouterModels, setShowChatModelSelector, navigateToSettings, subagentsEnabled } = useExtensionState()
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 
@@ -85,7 +86,7 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 			}
 
 			if (banner.isClineUserOnly !== undefined) {
-				return banner.isClineUserOnly === !!clineUser
+				return banner.isClineUserOnly === !!userInfo
 			}
 
 			if (banner.platforms && !banner.platforms.includes(getCurrentPlatform())) {
@@ -94,7 +95,7 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 
 			return true
 		})
-	}, [isBannerDismissed, clineUser])
+	}, [isBannerDismissed, userInfo])
 
 	/**
 	 * Action handler - maps action types to actual implementations
@@ -113,8 +114,8 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 						actModeOpenRouterModelId: modelId,
 						planModeOpenRouterModelInfo: openRouterModels[modelId],
 						actModeOpenRouterModelInfo: openRouterModels[modelId],
-						planModeApiProvider: "cline",
-						actModeApiProvider: "cline",
+						planModeApiProvider: "shengsuanyun",
+						actModeApiProvider: "shengsuanyun",
 					})
 					setTimeout(() => setShowChatModelSelector(true), 10)
 					break
@@ -176,7 +177,7 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 				onDismiss: handleBannerDismiss,
 			}),
 		)
-	}, [bannerConfig, clineUser, subagentsEnabled, handleBannerAction, handleBannerDismiss])
+	}, [bannerConfig, userInfo, subagentsEnabled, handleBannerAction, handleBannerDismiss])
 
 	return (
 		<div className="flex flex-col flex-1 w-full h-full p-0 m-0">

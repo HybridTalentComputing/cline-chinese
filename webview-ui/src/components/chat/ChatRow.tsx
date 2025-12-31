@@ -582,10 +582,8 @@ export const ChatRowContent = memo(
 			switch (tool.tool) {
 				case "editedExistingFile":
 					const content = tool?.content || ""
-					const isApplyingPatch = content?.startsWith("%%bash") && !content.endsWith("*** End Patch\nEOF")
-					const editToolTitle = isApplyingPatch
-						? "Cline is creating patches to edit this file:"
-						: "Cline wants to edit this file:"
+					const isApplyingPatch = content?.startsWith("%%bash") && !content.endsWith("*** 结束补丁\nEOF")
+					const editToolTitle = isApplyingPatch ? "Cline正在创建补丁来编辑此文件:" : "Cline需要编辑这个文件："
 					return (
 						<>
 							<div style={headerStyle}>
@@ -613,8 +611,8 @@ export const ChatRowContent = memo(
 							<div style={headerStyle}>
 								{toolIcon("diff-removed")}
 								{tool.operationIsLocatedInWorkspace === false &&
-									toolIcon("sign-out", "yellow", -90, "This file is outside of your workspace")}
-								<span style={{ fontWeight: "bold" }}>Cline wants to delete this file:</span>
+									toolIcon("sign-out", "yellow", -90, "此文件位于您的工作区之外。")}
+								<span style={{ fontWeight: "bold" }}>Cline 需要删除文件:</span>
 							</div>
 							<CodeAccordian
 								// isLoading={message.partial}
@@ -1638,12 +1636,12 @@ export const ChatRowContent = memo(
 									)}
 									<span style={{ fontWeight: 500 }}>
 										{isGenerating
-											? "Generating explanation"
+											? "生成解释"
 											: isError
-												? "Failed to generate explanation"
+												? "未能生成解释"
 												: wasCancelled
-													? "Explanation cancelled"
-													: "Generated explanation"}
+													? "解释取消"
+													: "生成的解释"}
 									</span>
 								</div>
 								{isError && explanationInfo.error && (
@@ -1685,7 +1683,7 @@ export const ChatRowContent = memo(
 														padding: "2px 6px",
 														borderRadius: 3,
 													}}>
-													{explanationInfo.toRef || "working directory"}
+													{explanationInfo.toRef || "工作目录"}
 												</code>
 											</div>
 										)}
@@ -1749,7 +1747,7 @@ export const ChatRowContent = memo(
 												width: "100%",
 											}}>
 											<i className="codicon codicon-new-file" style={{ marginRight: 6 }} />
-											View Changes
+											查看变更
 										</SuccessButton>
 										{PLATFORM_CONFIG.type === PlatformType.VSCODE && (
 											<SuccessButton
@@ -1760,7 +1758,7 @@ export const ChatRowContent = memo(
 														metadata: {},
 														messageTs: message.ts,
 													}).catch((err) => {
-														console.error("Failed to explain changes:", err)
+														console.error("未能解释变更:", err)
 														setExplainChangesDisabled(false)
 													})
 												}}
@@ -1771,7 +1769,7 @@ export const ChatRowContent = memo(
 													borderColor: "var(--vscode-button-secondaryBackground)",
 												}}>
 												<i className="codicon codicon-comment-discussion" style={{ marginRight: 6 }} />
-												{explainChangesDisabled ? "Explaining..." : "Explain Changes"}
+												{explainChangesDisabled ? "解释..." : "解释变化"}
 											</SuccessButton>
 										)}
 									</div>
@@ -1807,21 +1805,20 @@ export const ChatRowContent = memo(
 											fontWeight: 500,
 											color: "var(--vscode-foreground)",
 										}}>
-										Shell Integration Unavailable
+										Shell 集成不可用
 									</span>
 								</div>
 								<div style={{ color: "var(--vscode-foreground)", opacity: 0.8 }}>
-									Cline may have trouble viewing the command's output. Please update VSCode (
-									<code>CMD/CTRL + Shift + P</code> → "Update") and make sure you're using a supported shell:
-									zsh, bash, fish, or PowerShell (<code>CMD/CTRL + Shift + P</code> → "Terminal: Select Default
-									Profile").{" "}
+									Cline 可能无法查看命令输出。请更新 VSCode。(
+									<code>CMD/CTRL + Shift + P</code> → "Update") 并确保您使用的是受支持的 shell: zsh、bash、fish
+									或 PowerShell (<code>CMD/CTRL + Shift + P</code> → "Terminal: Select Default Profile").{" "}
 									<a
 										href="https://github.com/cline/cline/wiki/Troubleshooting-%E2%80%90-Shell-Integration-Unavailable"
 										style={{
 											color: "inherit",
 											textDecoration: "underline",
 										}}>
-										Still having trouble?
+										仍有问题吗？
 									</a>
 								</div>
 							</div>
@@ -1860,19 +1857,18 @@ export const ChatRowContent = memo(
 												fontWeight: 500,
 												color: "var(--vscode-foreground)",
 											}}>
-											{isFailed ? "Auto-Retry Failed" : "Auto-Retry in Progress"}
+											{isFailed ? "自动重试失败" : "自动重试进行中"}
 										</span>
 									</div>
 									<div style={{ color: "var(--vscode-foreground)", opacity: 0.8 }}>
 										{isFailed ? (
 											<>
-												Auto-retry failed after <strong>{maxAttempts}</strong> attempts. Manual
-												intervention required.
+												自动重试失败<strong>{maxAttempts}</strong> 次。需要人工干预。需要人工干预。
 											</>
 										) : (
 											<>
-												Attempt <strong>{attempt}</strong> of <strong>{maxAttempts}</strong> - Retrying in{" "}
-												{delaySeconds} seconds...
+												尝试 <strong>{attempt}</strong> of <strong>{maxAttempts}</strong> - 重试{" "}
+												{delaySeconds} 秒...
 											</>
 										)}
 									</div>
@@ -1919,12 +1915,11 @@ export const ChatRowContent = memo(
 											fontWeight: 500,
 											color: "var(--vscode-foreground)",
 										}}>
-										Shell integration issues
+										Shell 集成问题
 									</span>
 								</div>
 								<div style={{ color: "var(--vscode-foreground)", opacity: 0.9, marginBottom: 8 }}>
-									Since you're experiencing repeated shell integration issues, we recommend switching to
-									Background Terminal mode for better reliability.
+									由于您反复遇到 shell 集成问题，我们建议您切换到后台终端模式以提高稳定性。
 								</div>
 								<button
 									disabled={isBackgroundModeEnabled}
@@ -1965,9 +1960,7 @@ export const ChatRowContent = memo(
 										opacity: isBackgroundModeEnabled ? 0.8 : 1,
 									}}>
 									<i className="codicon codicon-settings-gear"></i>
-									{isBackgroundModeEnabled
-										? "Background Terminal Enabled"
-										: "Enable Background Terminal (Recommended)"}
+									{isBackgroundModeEnabled ? "后台终端启用" : "启用后台终端（推荐）"}
 								</button>
 							</div>
 						)
@@ -2085,7 +2078,7 @@ export const ChatRowContent = memo(
 															cursor: explainChangesDisabled ? "wait" : "pointer",
 														}}
 													/>
-													{explainChangesDisabled ? "Explaining..." : "Explain Changes"}
+													{explainChangesDisabled ? "解释..." : "解释变化"}
 												</SuccessButton>
 											)}
 										</div>

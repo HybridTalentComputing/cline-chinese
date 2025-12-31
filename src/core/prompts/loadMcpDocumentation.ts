@@ -1,19 +1,19 @@
 import { McpHub } from "@services/mcp/McpHub"
 
 export async function loadMcpDocumentation(mcpHub: McpHub) {
-	return `## Creating an MCP Server
+	return `## 创建 MCP 服务器
 
-When creating MCP servers, it's important to understand that they operate in a non-interactive environment. The server cannot initiate OAuth flows, open browser windows, or prompt for user input during runtime. All credentials and authentication tokens must be provided upfront through environment variables in the MCP settings configuration. For example, Spotify's API uses OAuth to get a refresh token for the user, but the MCP server cannot initiate this flow. While you can walk the user through obtaining an application client ID and secret, you may have to create a separate one-time setup script (like get-refresh-token.js) that captures and logs the final piece of the puzzle: the user's refresh token (i.e. you might run the script using execute_command which would open a browser for authentication, and then log the refresh token so that you can see it in the command output for you to use in the MCP settings configuration).
+创建 MCP 服务器时，务必了解它们运行在非交互式环境中。服务器无法在运行时发起 OAuth 流程、打开浏览器窗口或提示用户输入。所有凭据和身份验证令牌必须预先通过 MCP 设置配置中的环境变量提供。例如，Spotify 的 API 使用 OAuth 获取用户的刷新令牌，但 MCP 服务器无法发起此流程。虽然您可以引导用户获取应用程序客户端 ID 和密钥，但您可能需要创建一个单独的一次性设置脚本（例如 get-refresh-token.js），用于捕获并记录最后一步：用户的刷新令牌（例如，您可以使用 execute_command 运行该脚本，这将打开浏览器进行身份验证，然后记录刷新令牌，以便您可以在命令输出中看到它，并在 MCP 设置配置中使用它）。
 
-Unless the user specifies otherwise, new MCP servers should be created in: ${await mcpHub.getMcpServersPath()}
+除非用户另有指定，否则新的 MCP 服务器应在以下位置创建： ${await mcpHub.getMcpServersPath()}
 
-### Example MCP Server
+### MCP 服务器示例
 
-For example, if the user wanted to give you the ability to retrieve weather information, you could create an MCP server that uses the OpenWeather API to get weather information, add it to the MCP settings configuration file, and then notice that you now have access to new tools and resources in the system prompt that you might use to show the user your new capabilities.
+例如，如果用户希望您能够获取天气信息，您可以创建一个使用 OpenWeather API 获取天气信息的 MCP 服务器，将其添加到 MCP 设置配置文件中。然后，您会发现系统提示符中出现了新的工具和资源，您可以使用它们向用户展示这些新功能。
 
-The following example demonstrates how to build an MCP server that provides weather data functionality. While this example shows how to implement resources, resource templates, and tools, in practice you should prefer using tools since they are more flexible and can handle dynamic parameters. The resource and resource template implementations are included here mainly for demonstration purposes of the different MCP capabilities, but a real weather server would likely just expose tools for fetching weather data. (The following steps are for macOS)
+以下示例演示了如何构建一个提供天气数据功能的 MCP 服务器。虽然此示例展示了如何实现资源、资源模板和工具，但在实践中，您应该优先使用工具，因为它们更灵活，可以处理动态参数。此处包含资源和资源模板的实现主要是为了演示不同的 MCP 功能，但实际的天气服务器可能只会公开用于获取天气数据的工具。（以下步骤适用于 macOS）
 
-1. Use the \`create-typescript-server\` tool to bootstrap a new project in the default MCP servers directory:
+1. 使用 'create-typescript-server' 工具在默认的 MCP 服务器目录中创建一个新项目：
 
 \`\`\`bash
 cd ${await mcpHub.getMcpServersPath()}
@@ -23,7 +23,7 @@ cd weather-server
 npm install axios
 \`\`\`
 
-This will create a new project with the following structure:
+这将创建一个具有以下结构的新项目：
 
 \`\`\`
 weather-server/
@@ -32,7 +32,7 @@ weather-server/
         ...
         "type": "module", // added by default, uses ES module syntax (import/export) rather than CommonJS (require/module.exports) (Important to know if you create additional scripts in this server repository like a get-refresh-token.js script)
         "scripts": {
-          "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+          "build": "tsc && node -e "require('fs').chmodSync('build/index.js', '755')"",
           ...
         }
         ...
@@ -157,7 +157,7 @@ class WeatherServer {
       ReadResourceRequestSchema,
       async (request) => {
         const match = request.params.uri.match(
-          /^weather:\/\/([^/]+)\/current$/
+          /^weather://([^/]+)/current$/
         );
         if (!match) {
           throw new McpError(
@@ -335,7 +335,7 @@ IMPORTANT: Regardless of what else you see in the MCP settings file, you must de
 }
 \`\`\`
 
-(Note: the user may also ask you to install the MCP server to the Claude desktop app, in which case you would read then modify \`~/Library/Application\ Support/Claude/claude_desktop_config.json\` on macOS for example. It follows the same format of a top level \`mcpServers\` object.)
+(Note: the user may also ask you to install the MCP server to the Claude desktop app, in which case you would read then modify \`~/Library/Application Support/Claude/claude_desktop_config.json\` on macOS for example. It follows the same format of a top level \`mcpServers\` object.)
 
 6. After you have edited the MCP settings configuration file, the system will automatically run all the servers and expose the available tools and resources in the 'Connected MCP Servers' section. (Note: If you encounter a 'not connected' error when testing a newly installed mcp server, a common cause is an incorrect build path in your MCP settings configuration. Since compiled JavaScript files are commonly output to either 'dist/' or 'build/' directories, double-check that the build path in your MCP settings matches where your files are actually being compiled. E.g. If you assumed 'build' as the folder, check tsconfig.json to see if it's using 'dist' instead.)
 
@@ -349,13 +349,13 @@ The user may ask to add tools or resources that may make sense to add to an exis
 			.filter((server) => server.status === "connected")
 			.map((server) => server.name)
 			.join(", ") || "(None running currently)"
-	}, e.g. if it would use the same API. This would be possible if you can locate the MCP server repository on the user's system by looking at the server arguments for a filepath. You might then use list_files and read_file to explore the files in the repository, and use replace_in_file to make changes to the files.
+	}, e.g. 如果它使用相同的 API。如果您可以通过查看服务器参数中的文件路径来定位用户系统上的 MCP 服务器仓库，那么就可以实现这一点。然后，您可以使用 list_files 和 read_file 来浏览仓库中的文件，并使用 replace_in_file 来修改文件。
 
-However some MCP servers may be running from installed packages rather than a local repository, in which case it may make more sense to create a new MCP server.
+但是，有些 MCP 服务器可能运行在已安装的软件包上，而不是本地仓库中，在这种情况下，创建一个新的 MCP 服务器可能更有意义。
 
-# MCP Servers Are Not Always Necessary
+# MCP 服务器并非总是必需的
 
-The user may not always request the use or creation of MCP servers. Instead, they might provide tasks that can be completed with existing tools. While using the MCP SDK to extend your capabilities can be useful, it's important to understand that this is just one specialized type of task you can accomplish. You should only implement MCP servers when the user explicitly requests it (e.g., "add a tool that...").
+用户并非总是请求使用或创建 MCP 服务器。相反，他们可能会提出一些可以使用现有工具完成的任务。虽然使用 MCP SDK 来扩展您的功能很有用，但重要的是要理解，这只是您可以完成的一种特定类型的任务。您应该仅在用户明确请求时才实现 MCP 服务器（例如，“添加一个可以……”的工具）。
 
-Remember: The MCP documentation and example provided above are to help you understand and work with existing MCP servers or create new ones when requested by the user. You already have access to tools and capabilities that can be used to accomplish a wide range of tasks.`
+请记住：以上提供的 MCP 文档和示例旨在帮助您理解和使用现有的 MCP 服务器，或根据用户请求创建新的服务器。您已经拥有可用于完成各种任务的工具和功能。`
 }
