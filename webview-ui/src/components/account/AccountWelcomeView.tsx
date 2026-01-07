@@ -3,9 +3,6 @@ import { useClineSignIn } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import ClineLogoVariable from "../../assets/ClineLogoVariable"
 
-// export const AccountWelcomeView = () => (
-// 	<div className="flex flex-col items-center pr-3 gap-2.5">
-// 		<ClineLogoWhite className="size-16 mb-4" />
 export const AccountWelcomeView = () => {
 	const { environment } = useExtensionState()
 	const { isLoginLoading, handleSignIn } = useClineSignIn()

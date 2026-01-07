@@ -18,7 +18,7 @@ const MockApp = () => {
 
 	return (
 		<HeroUIProvider>
-			{showWelcome ? (
+			{!showWelcome ? (
 				onboardingModels ? (
 					<OnboardingView onboardingModels={onboardingModels} />
 				) : (
