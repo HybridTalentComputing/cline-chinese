@@ -725,6 +725,7 @@ export class Controller {
 
 	// shengsuanyun Auth
 	async handleShengSuanYunCallback(code: string) {
+		// console.log("handleShengSuanYunCallback() with code:", code)
 		try {
 			let shengSuanYunApiKey: string
 			let shengSuanYunToken: string
@@ -732,16 +733,14 @@ export class Controller {
 				code: code,
 				callback_url: `vscode://shengsuan-cloud.cline-shengsuan/ssy`,
 			})
+			// console.log("https://api.shengsuanyun.com/auth/keys :", res.data)
 			if (res.data && res.data.data && res.data.data.api_key) {
 				shengSuanYunApiKey = res.data.data.api_key
 				shengSuanYunToken = res.data.data.jwt_token
-
-				const user: UserInfo = await this.accountServiceSSY.getUserInfo()
-				console.log("Controller.fetchUserCreditsData().user", user)
-				this.stateManager.setGlobalState("userInfo", user)
 			} else {
 				throw new Error("Invalid response from handleShengSuanYunCallback()", { cause: res })
 			}
+
 			// await this.accountServiceSSY.handleAuthCallback(customToken, provider ? provider : "google")
 			const shengsuanyun: ApiProvider = "shengsuanyun"
 			const currentMode = this.stateManager.getGlobalSettingsKey("mode")
@@ -759,6 +758,9 @@ export class Controller {
 			if (this.task) {
 				this.task.api = buildApiHandler({ ...updatedConfig, ulid: this.task.ulid }, currentMode)
 			}
+			const user: UserInfo = await this.accountServiceSSY.getUserInfo()
+			// console.log("Controller.fetchUserCreditsData().user", user)
+			this.stateManager.setGlobalState("userInfo", user)
 			await this.postStateToWebview()
 		} catch (error) {
 			console.error("Failed to handle auth callback:", error)

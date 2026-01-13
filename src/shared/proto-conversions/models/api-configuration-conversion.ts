@@ -248,6 +248,7 @@ function convertModelInfoToProtoShengSuanYun(info: ShengSuanYunModelInfo | undef
 		description: info.description,
 		thinkingConfig: convertThinkingConfigToProto(info.thinkingConfig),
 		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
+		endPoints: info.endPoints || [],
 	}
 }
 
@@ -269,6 +270,7 @@ function convertProtoToShengSuanYunModelInfo(info: ShengSuanYunModelInfo | undef
 		description: info.description,
 		thinkingConfig: convertProtoToThinkingConfig(info.thinkingConfig),
 		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
+		endPoints: info.endPoints,
 	}
 }
 // Convert application ApiProvider to proto ApiProvider

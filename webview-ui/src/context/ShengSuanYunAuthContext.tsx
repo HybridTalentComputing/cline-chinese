@@ -53,7 +53,8 @@ export const ShengSuanYunAuthProvider: React.FC<{ children: React.ReactNode }> =
 					console.error("Error updating auth state via gRPC:", error)
 				})
 		} catch (error) {
-			console.error("Error signing in with custom token:", error)
+			console.error("signInWithTokenSSY():", error)
+			console.log("signInWithTokenSSY(token):", token)
 			// throw error
 		}
 	}

@@ -103,7 +103,7 @@ export class SSYAccountService {
 			}
 			return user
 		} catch (error) {
-			console.error("Error signing in with custom token:", error)
+			console.error("getUserInfo():", error)
 			throw error
 		}
 	}

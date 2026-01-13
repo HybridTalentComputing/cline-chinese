@@ -1,10 +1,16 @@
 import { Anthropic } from "@anthropic-ai/sdk"
+import { ShengSuanYunModelInfo } from "@shared/proto/cline/models"
 import OpenAI from "openai"
+import type { ChatCompletionTool } from "openai/resources/chat/completions"
+import { Logger } from "@/services/logging/Logger"
+import { ClineStorageMessage } from "@/shared/messages"
+import { calculateApiCostOpenAI } from "@/utils/cost"
 // import * as vscode from "vscode"
 import { shouldSkipReasoningForModel } from "@/utils/model-utils"
-import { ModelInfo, shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "../../../shared/api"
+import { shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "../../../shared/api"
 import { ApiHandler, CommonApiHandlerOptions } from "../"
 import { withRetry } from "../retry"
+import { convertToOpenAIResponsesInput } from "../transform/openai-response-format"
 import { createOpenRouterStream } from "../transform/openrouter-stream"
 import { ApiStream } from "../transform/stream"
 import { OpenRouterErrorResponse } from "./types"
@@ -14,7 +20,7 @@ interface ShengSuanYunHandlerOptions extends CommonApiHandlerOptions {
 	reasoningEffort?: string
 	thinkingBudgetTokens?: number
 	shengSuanYunModelId?: string
-	shengSuanYunModelInfo?: ModelInfo
+	shengSuanYunModelInfo?: ShengSuanYunModelInfo
 }
 
 export class ShengSuanYunHandler implements ApiHandler {
@@ -48,7 +54,38 @@ export class ShengSuanYunHandler implements ApiHandler {
 	}
 
 	@withRetry()
-	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	async *createMessage(systemPrompt: string, messages: ClineStorageMessage[], tools?: ChatCompletionTool[]): ApiStream {
+		const model = this.getModel()
+		if (model?.info?.endPoints?.includes("/v1/chat/completions")) {
+			yield* this.createCompletionStream(systemPrompt, messages)
+		} else if (model?.info?.endPoints?.includes("/v1/responses")) {
+			// If tools is empty, create a default tool to prevent errors
+			const effectiveTools = tools?.length
+				? tools
+				: [
+						{
+							type: "function" as const,
+							function: {
+								name: "no_operation",
+								description:
+									"A placeholder function that performs no operation. Used when no tools are available.",
+								parameters: {
+									type: "object",
+									properties: {},
+									required: [],
+									additionalProperties: false,
+								},
+							},
+						},
+					]
+			yield* this.createResponseStream(systemPrompt, messages, effectiveTools)
+		} else {
+			console.error("Unsupported ShengSuanYun model endpoints:", model)
+			throw new Error("Unsupported ShengSuanYun model endpoints")
+		}
+	}
+
+	async *createCompletionStream(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		const client = this.ensureClient()
 		const model = this.getModel()
 		try {
@@ -150,12 +187,225 @@ export class ShengSuanYunHandler implements ApiHandler {
 		}
 	}
 
-	getModel(): { id: string; info: ModelInfo } {
+	private async *createResponseStream(
+		systemPrompt: string,
+		messages: ClineStorageMessage[],
+		tools: ChatCompletionTool[],
+	): ApiStream {
+		const client = this.ensureClient()
+		const model = this.getModel()
+
+		try {
+			// Convert messages to Responses API input format
+			const input = convertToOpenAIResponsesInput(messages)
+
+			// Convert ChatCompletion tools to Responses API format if provided
+			const responseTools = tools
+				?.filter((tool) => tool.type === "function")
+				.map((tool: any) => ({
+					type: "function" as const,
+					name: tool.function.name,
+					description: tool.function.description,
+					parameters: tool.function.parameters,
+					strict: tool.function.strict ?? true, // Responses API defaults to strict mode
+				}))
+
+			Logger.debug("OpenAI Responses Input: " + JSON.stringify(input))
+
+			// const lastAssistantMessage = [...messages].reverse().find((msg) => msg.role === "assistant" && msg.id)
+			// const previous_response_id = lastAssistantMessage?.id
+
+			// Create the response using Responses API
+			const stream = await client.responses.create({
+				model: model.id,
+				instructions: systemPrompt,
+				input,
+				stream: true,
+				tools: responseTools,
+				// previous_response_id,
+				// store: true,
+				reasoning: { effort: "medium", summary: "auto" },
+				// include: ["reasoning.encrypted_content"],
+			})
+
+			// Process the response stream
+			for await (const chunk of stream) {
+				Logger.debug("OpenAI Responses Chunk: " + JSON.stringify(chunk))
+
+				// Handle different event types from Responses API
+				if (chunk.type === "response.output_item.added") {
+					const item = chunk.item
+					if (item.type === "function_call" && item.id) {
+						yield {
+							type: "tool_calls",
+							id: item.id,
+							tool_call: {
+								call_id: item.call_id,
+								function: {
+									id: item.id,
+									name: item.name,
+									arguments: item.arguments,
+								},
+							},
+						}
+					}
+					if (item.type === "reasoning" && item.encrypted_content && item.id) {
+						yield {
+							type: "reasoning",
+							id: item.id,
+							reasoning: "",
+							redacted_data: item.encrypted_content,
+						}
+					}
+				}
+				if (chunk.type === "response.output_item.done") {
+					const item = chunk.item
+					if (item.type === "function_call") {
+						yield {
+							type: "tool_calls",
+							id: item.id || item.call_id,
+							tool_call: {
+								call_id: item.call_id,
+								function: {
+									id: item.id,
+									name: item.name,
+									arguments: item.arguments,
+								},
+							},
+						}
+					}
+					if (item.type === "reasoning") {
+						yield {
+							type: "reasoning",
+							id: item.id,
+							details: item.summary,
+							reasoning: "",
+						}
+					}
+				}
+				if (chunk.type === "response.reasoning_summary_part.added") {
+					yield {
+						type: "reasoning",
+						id: chunk.item_id,
+						reasoning: chunk.part.text,
+					}
+				}
+				if (chunk.type === "response.reasoning_summary_text.delta") {
+					yield {
+						type: "reasoning",
+						id: chunk.item_id,
+						reasoning: chunk.delta,
+					}
+				}
+				if (chunk.type === "response.reasoning_summary_part.done") {
+					yield {
+						type: "reasoning",
+						id: chunk.item_id,
+						details: chunk.part,
+						reasoning: "",
+					}
+				}
+				if (chunk.type === "response.output_text.delta") {
+					// Handle text content deltas
+					if (chunk.delta) {
+						yield {
+							id: chunk.item_id,
+							type: "text",
+							text: chunk.delta,
+						}
+					}
+				}
+				if (chunk.type === "response.reasoning_text.delta") {
+					// Handle reasoning content deltas
+					if (chunk.delta) {
+						yield {
+							id: chunk.item_id,
+							type: "reasoning",
+							reasoning: chunk.delta,
+						}
+					}
+				}
+				if (chunk.type === "response.function_call_arguments.delta") {
+					yield {
+						type: "tool_calls",
+						tool_call: {
+							function: {
+								id: chunk.item_id,
+								name: chunk.item_id,
+								arguments: chunk.delta,
+							},
+						},
+					}
+				}
+				if (chunk.type === "response.function_call_arguments.done") {
+					// Handle completed function call
+					if (chunk.item_id && chunk.name && chunk.arguments) {
+						yield {
+							type: "tool_calls",
+							tool_call: {
+								function: {
+									id: chunk.item_id,
+									name: chunk.name,
+									arguments: chunk.arguments,
+								},
+							},
+						}
+					}
+				}
+
+				if (
+					chunk.type === "response.incomplete" &&
+					chunk.response?.status === "incomplete" &&
+					chunk.response?.incomplete_details?.reason === "max_output_tokens"
+				) {
+					console.log("Ran out of tokens")
+					if (chunk.response?.output_text?.length > 0) {
+						console.log("Partial output:", chunk.response.output_text)
+					} else {
+						console.log("Ran out of tokens during reasoning")
+					}
+				}
+
+				if (chunk.type === "response.completed" && chunk.response?.usage) {
+					// Handle usage information when response is complete
+					const usage = chunk.response.usage
+					const inputTokens = usage.input_tokens || 0
+					const outputTokens = usage.output_tokens || 0
+					const cacheReadTokens = usage.output_tokens_details?.reasoning_tokens || 0
+					const cacheWriteTokens = usage.input_tokens_details?.cached_tokens || 0
+					const totalTokens = usage.total_tokens || 0
+					Logger.log(`Total tokens from Responses API usage: ${totalTokens}`)
+					const totalCost = calculateApiCostOpenAI(
+						model.info,
+						inputTokens,
+						outputTokens,
+						cacheWriteTokens,
+						cacheReadTokens,
+					)
+					const nonCachedInputTokens = Math.max(0, inputTokens - cacheReadTokens - cacheWriteTokens)
+					yield {
+						type: "usage",
+						inputTokens: nonCachedInputTokens,
+						outputTokens: outputTokens,
+						cacheWriteTokens: cacheWriteTokens,
+						cacheReadTokens: cacheReadTokens,
+						totalCost: totalCost,
+						id: chunk.response.id,
+					}
+				}
+			}
+		} catch (e) {
+			console.error("ShengSuanYun Responses API Error:", e)
+			throw e
+		}
+	}
+
+	getModel(): { id: string; info: ShengSuanYunModelInfo } {
 		const modelId = this.options.shengSuanYunModelId
 		const modelInfo = this.options.shengSuanYunModelInfo
 		if (modelId && modelInfo) {
 			return { id: modelId, info: modelInfo }
 		}
-		return { id: shengSuanYunDefaultModelId, info: shengSuanYunDefaultModelInfo as ModelInfo }
+		return { id: shengSuanYunDefaultModelId, info: shengSuanYunDefaultModelInfo as ShengSuanYunModelInfo }
 	}
 }

@@ -1,6 +1,6 @@
 import { GlobalFileNames } from "@core/storage/disk"
 import { EmptyRequest } from "@shared/proto/cline/common"
-import { OpenRouterCompatibleModelInfo, ShengSuanYunModelInfo } from "@shared/proto/cline/models"
+import { ShengSuanYunCompatibleModelInfo, ShengSuanYunModelInfo } from "@shared/proto/cline/models"
 import { fileExistsAtPath } from "@utils/fs"
 import axios from "axios"
 import fs from "fs/promises"
@@ -17,9 +17,8 @@ import { Controller } from ".."
 export async function refreshShengSuanYunModels(
 	controller: Controller,
 	_request: EmptyRequest,
-): Promise<OpenRouterCompatibleModelInfo> {
+): Promise<ShengSuanYunCompatibleModelInfo> {
 	const shengSuanYunModelsFilePath = path.join(await ensureCacheDirectoryExists(controller), GlobalFileNames.shengSuanYunModels)
-
 	let models: Record<string, Partial<ShengSuanYunModelInfo>> = {}
 	try {
 		const response = await axios.get("https://router.shengsuanyun.com/api/v1/models/")
@@ -42,6 +41,7 @@ export async function refreshShengSuanYunModels(
 					description: model.description,
 					cacheWritesPrice: 0,
 					cacheReadsPrice: parsePrice(model.pricing?.cache),
+					endPoints: model.support_apis || [],
 				}
 				models[model.api_name] = modelInfo
 			}
@@ -71,9 +71,10 @@ export async function refreshShengSuanYunModels(
 			cacheWritesPrice: model.cacheWritesPrice ?? 0,
 			cacheReadsPrice: model.cacheReadsPrice ?? 0,
 			description: model.description ?? "",
+			endPoints: model.endPoints ?? [],
 		}
 	}
-	return OpenRouterCompatibleModelInfo.create({ models: typedModels })
+	return ShengSuanYunCompatibleModelInfo.create({ models: typedModels })
 }
 
 /**
