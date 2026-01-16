@@ -131,7 +131,34 @@
 		"proceedWhileRunning": "Proceed While Running",
 		"condense": "Condense Conversation",
 		"reportBug": "Report GitHub issue",
-		"retry": "Retry"
+		"retry": "Retry",
+		"browseAction": "Browse Action",
+		"browserAction": {
+			"launch": "Launch browser at {{text}}",
+			"click": "Click ({{coordinate}})",
+			"type": "Type \"{{text}}\"",
+			"scrollDown": "Scroll down",
+			"scrollUp": "Scroll up",
+			"close": "Close browser"
+		},
+		"focusChain": {
+			"allTasksCompleted": "All tasks have been completed!",
+			"todoList": "To-Do list",
+			"newStepsMessage": "New steps will be generated if you continue the task",
+			"clickToEdit": "Click to edit to-do list in file"
+		},
+		"checkpoint": {
+			"label": "Checkpoint",
+			"labelRestored": "Checkpoint (restored)",
+			"compare": "Compare",
+			"restore": "Restore",
+			"restoreFiles": "Restore Files",
+			"restoreFilesDescription": "Restores your project's files back to a snapshot taken at this point (use \"Compare\" to see what will be reverted)",
+			"restoreTask": "Restore Task Only",
+			"restoreTaskDescription": "Deletes messages after this point (does not affect workspace files)",
+			"restoreBoth": "Restore Files & Task",
+			"restoreBothDescription": "Restores your project's files and deletes all messages after this point"
+		}
 	},
 	"settings": {
 		"title": "Settings",

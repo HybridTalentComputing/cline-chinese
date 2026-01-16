@@ -4,6 +4,7 @@ import { StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import deepEqual from "fast-deep-equal"
 import React, { CSSProperties, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useSize } from "react-use"
 import styled from "styled-components"
 import { BrowserSettingsMenu } from "@/components/browser/BrowserSettingsMenu"
@@ -570,20 +571,21 @@ const BrowserSessionRowContent = memo(
 )
 
 const BrowserActionBox = ({ action, coordinate, text }: { action: BrowserAction; coordinate?: string; text?: string }) => {
+	const { t } = useTranslation()
 	const getBrowserActionText = (action: BrowserAction, coordinate?: string, text?: string) => {
 		switch (action) {
 			case "launch":
-				return `Launch browser at ${text}`
+				return t("chatRow.browserAction.launch", { text })
 			case "click":
-				return `Click (${coordinate?.replace(",", ", ")})`
+				return t("chatRow.browserAction.click", { coordinate: coordinate?.replace(",", ", ") })
 			case "type":
-				return `Type "${text}"`
+				return t("chatRow.browserAction.type", { text })
 			case "scroll_down":
-				return "Scroll down"
+				return t("chatRow.browserAction.scrollDown")
 			case "scroll_up":
-				return "Scroll up"
+				return t("chatRow.browserAction.scrollUp")
 			case "close":
-				return "Close browser"
+				return t("chatRow.browserAction.close")
 			default:
 				return action
 		}
@@ -593,7 +595,7 @@ const BrowserActionBox = ({ action, coordinate, text }: { action: BrowserAction;
 			<div style={browserActionBoxContainerInnerStyle}>
 				<div style={browseActionRowContainerStyle}>
 					<span style={browseActionRowStyle}>
-						<span style={browseActionTextStyle}>Browse Action: </span>
+						<span style={browseActionTextStyle}>{t("chatRow.browseAction")}: </span>
 						{getBrowserActionText(action, coordinate, text)}
 					</span>
 				</div>

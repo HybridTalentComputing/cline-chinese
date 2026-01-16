@@ -131,7 +131,34 @@
 		"proceedWhileRunning": "运行时继续",
 		"condense": "压缩对话",
 		"reportBug": "报告 GitHub issue",
-		"retry": "重试"
+		"retry": "重试",
+		"browseAction": "浏览操作",
+		"browserAction": {
+			"launch": "在 {{text}} 启动浏览器",
+			"click": "点击 ({{coordinate}})",
+			"type": "输入 \"{{text}}\"",
+			"scrollDown": "向下滚动",
+			"scrollUp": "向上滚动",
+			"close": "关闭浏览器"
+		},
+		"focusChain": {
+			"allTasksCompleted": "所有任务已完成！",
+			"todoList": "待办清单",
+			"newStepsMessage": "如果继续任务，将生成新步骤",
+			"clickToEdit": "点击在文件中编辑待办清单"
+		},
+		"checkpoint": {
+			"label": "检查点",
+			"labelRestored": "检查点（已恢复）",
+			"compare": "比较",
+			"restore": "恢复",
+			"restoreFiles": "恢复文件",
+			"restoreFilesDescription": "将项目文件恢复到此时间点的快照（使用"比较"查看将被还原的内容）",
+			"restoreTask": "仅恢复任务",
+			"restoreTaskDescription": "删除此点之后的消息（不影响工作区文件）",
+			"restoreBoth": "恢复文件和任务",
+			"restoreBothDescription": "恢复项目文件并删除此点之后的所有消息"
+		}
 	},
 	"settings": {
 		"title": "设置",
