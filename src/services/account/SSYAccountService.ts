@@ -11,15 +11,16 @@ export class SSYAccountService {
 	private async authenticatedRequest<T>(endpoint: string, config: AxiosRequestConfig = {}): Promise<T> {
 		const ssyApiKey = await this.getSSYApiKey()
 		if (!ssyApiKey) {
-			throw new Error("未找到胜算云 Auth API")
+			throw new Error("未找到胜算云 Auth API Key")
 		}
 		const reqConfig: AxiosRequestConfig = {
 			...config,
 			headers: {
+				...config.headers,
 				"x-token": ssyApiKey,
 				"Content-Type": "application/json",
-				...config.headers,
 			},
+			timeout: 20000,
 		}
 		const url = `${this.baseUrl}${endpoint}`
 		// console.log("SSYAccountService.authenticatedRequest():", url, reqConfig)

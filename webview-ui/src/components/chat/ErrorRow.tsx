@@ -2,8 +2,8 @@ import { ClineMessage } from "@shared/ExtensionMessage"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { memo } from "react"
 import CreditLimitErrorSSY from "@/components/chat/CreditLimitErrorSSY"
-import { useClineSignIn } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSignIn } from "@/context/ShengSuanYunAuthContext"
 import { SSYError, SSYErrorType } from "../../../../src/services/error/SSYError"
 
 // const _errorColor = "var(--vscode-errorForeground)"
@@ -18,7 +18,7 @@ interface ErrorRowProps {
 const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStreamingFailedMessage }: ErrorRowProps) => {
 	const { userInfo } = useExtensionState()
 	const rawApiError = apiRequestFailedMessage || apiReqStreamingFailedMessage
-	const { isLoginLoading, handleSignIn } = useClineSignIn()
+	const { isLoginLoading, handleSignIn } = useSignIn()
 
 	const renderErrorContent = () => {
 		switch (errorType) {
