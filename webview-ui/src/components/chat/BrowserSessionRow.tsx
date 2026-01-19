@@ -347,7 +347,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	}, [messages])
 
 	// Calculate maxWidth
-	const maxWidth = browserSettings.viewport.width < BROWSER_VIEWPORT_PRESETS["Small Desktop (900x600)"].width ? 200 : undefined
+	const maxWidth = browserSettings.viewport.width < BROWSER_VIEWPORT_PRESETS["小型桌面 (900x600)"].width ? 200 : undefined
 
 	const [browserSessionRow, { height }] = useSize(
 		// We don't declare a constant for the inline style here because `useSize` will try to modify the style object
@@ -359,9 +359,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 				) : (
 					<span className="codicon codicon-inspect" style={browserIconStyle}></span>
 				)}
-				<span style={approveTextStyle}>
-					{isAutoApproved ? "Cline is using the browser:" : "Cline wants to use the browser:"}
-				</span>
+				<span style={approveTextStyle}>{isAutoApproved ? "Cline 正在使用浏览器:" : "Cline 想要使用浏览器:"}</span>
 			</div>
 			<div
 				style={{
@@ -440,7 +438,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 							padding: `9px 8px ${consoleLogsExpanded ? 0 : 8}px 8px`,
 						}}>
 						<span className={`codicon codicon-chevron-${consoleLogsExpanded ? "down" : "right"}`}></span>
-						<span style={consoleLogsTextStyle}>Console Logs</span>
+						<span style={consoleLogsTextStyle}>控制台日志</span>
 					</div>
 					{consoleLogsExpanded && (
 						<CodeBlock source={`${"```"}shell\n${displayState.consoleLogs || "(No new logs)"}\n${"```"}`} />
@@ -455,18 +453,18 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 			{pages.length > 1 && (
 				<div style={paginationContainerStyle}>
 					<div>
-						Step {currentPageIndex + 1} of {pages.length}
+						进度 {currentPageIndex + 1} / {pages.length}
 					</div>
 					<div style={paginationButtonGroupStyle}>
 						<VSCodeButton
 							disabled={currentPageIndex === 0 || isBrowsing}
 							onClick={() => setCurrentPageIndex((i) => i - 1)}>
-							Previous
+							上一步
 						</VSCodeButton>
 						<VSCodeButton
 							disabled={currentPageIndex === pages.length - 1 || isBrowsing}
 							onClick={() => setCurrentPageIndex((i) => i + 1)}>
-							Next
+							下一步
 						</VSCodeButton>
 					</div>
 				</div>
@@ -517,7 +515,7 @@ const BrowserSessionRowContent = memo(
 			return (
 				<>
 					<div style={headerStyle}>
-						<span style={browserSessionStartedTextStyle}>Browser Session Started</span>
+						<span style={browserSessionStartedTextStyle}>浏览器会话已经启动</span>
 					</div>
 					<div style={codeBlockContainerStyle}>
 						<CodeBlock forceWrap={true} source={`${"```"}shell\n${message.text}\n${"```"}`} />

@@ -43,7 +43,7 @@ export async function selectFiles(imagesAllowed: boolean): Promise<{ images: str
 					console.warn(`Image dimensions exceed 7500px, skipping: ${filePath}`)
 					HostProvider.window.showMessage({
 						type: ShowMessageType.ERROR,
-						message: `Image too large: ${path.basename(filePath)} was skipped (dimensions exceed 7500px).`,
+						message: `图片太大: ${path.basename(filePath)} 被忽略 (dimensions exceed 7500px).`,
 					})
 					return null
 				}
@@ -51,7 +51,7 @@ export async function selectFiles(imagesAllowed: boolean): Promise<{ images: str
 				console.error(`Error reading file or getting dimensions for ${filePath}:`, error)
 				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
-					message: `Could not read dimensions for ${path.basename(filePath)}, skipping.`,
+					message: `无法读取 ${path.basename(filePath)}, 被忽略.`,
 				})
 				return null
 			}
@@ -69,7 +69,7 @@ export async function selectFiles(imagesAllowed: boolean): Promise<{ images: str
 					console.warn(`File too large, skipping: ${filePath}`)
 					HostProvider.window.showMessage({
 						type: ShowMessageType.ERROR,
-						message: `File too large: ${path.basename(filePath)} was skipped (size exceeds 20MB).`,
+						message: `文件太大： ${path.basename(filePath)} 被忽略 (超过 20MB).`,
 					})
 					return null
 				}
@@ -77,7 +77,7 @@ export async function selectFiles(imagesAllowed: boolean): Promise<{ images: str
 				console.error(`Error checking file size for ${filePath}:`, error)
 				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
-					message: `Could not check file size for ${path.basename(filePath)}, skipping.`,
+					message: `无法检查文件大小 ${path.basename(filePath)}, 被忽略.`,
 				})
 				return null
 			}

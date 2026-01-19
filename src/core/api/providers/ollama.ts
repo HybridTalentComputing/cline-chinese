@@ -53,7 +53,6 @@ export class OllamaHandler implements ApiHandler {
 	async *createMessage(systemPrompt: string, messages: ClineStorageMessage[]): ApiStream {
 		const client = this.ensureClient()
 		const ollamaMessages: Message[] = [{ role: "system", content: systemPrompt }, ...convertToOllamaMessages(messages)]
-
 		try {
 			// Create a promise that rejects after timeout
 			const timeoutMs = this.options.requestTimeoutMs || 30000
@@ -106,9 +105,7 @@ export class OllamaHandler implements ApiHandler {
 			// Enhance error reporting
 			const statusCode = error.status || error.statusCode
 			const errorMessage = error.message || "Unknown error"
-
 			console.error(`Ollama API error (${statusCode || "unknown"}): ${errorMessage}`)
-			throw error
 		}
 	}
 

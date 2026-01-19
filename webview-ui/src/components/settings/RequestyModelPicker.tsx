@@ -172,6 +172,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 	}, [selectedIndex])
 
 	const showBudgetSlider = useMemo(() => {
+		setSearchTerm(selectedModelId)
 		return selectedModelId?.includes("claude-3-7-sonnet")
 	}, [selectedModelId])
 
@@ -187,7 +188,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 			</style>
 			<div style={{ display: "flex", flexDirection: "column" }}>
 				<label htmlFor="model-search">
-					<span style={{ fontWeight: 500 }}>Model</span>
+					<span style={{ fontWeight: 500 }}>模型</span>
 				</label>
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField
@@ -198,7 +199,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder="Search and select a model..."
+						placeholder="选择模型..."
 						style={{
 							width: "100%",
 							zIndex: REQUESTY_MODEL_PICKER_Z_INDEX,
@@ -207,7 +208,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 						value={searchTerm}>
 						{searchTerm && (
 							<div
-								aria-label="Clear search"
+								aria-label="清除"
 								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									handleModelChange("")
@@ -258,11 +259,11 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					<>
-						The extension automatically fetches the latest list of models available on{" "}
+						插件从{" "}
 						<VSCodeLink href={requestyModelListUrl?.toString()} style={{ display: "inline", fontSize: "inherit" }}>
 							Requesty.
 						</VSCodeLink>
-						If you're unsure which model to choose, Cline works best with{" "}
+						自动获取最新的模型列表 如果你不确定使用哪个模型, Cline 可以使用{" "}
 						<VSCodeLink
 							onClick={() => handleModelChange("anthropic/claude-3-7-sonnet-latest")}
 							style={{ display: "inline", fontSize: "inherit" }}>

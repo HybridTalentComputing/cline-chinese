@@ -5,7 +5,7 @@ import { Controller } from "@/core/controller"
 import { getRequestRegistry, type StreamingResponseHandler } from "@/core/controller/grpc-handler"
 import { setWelcomeViewCompleted } from "@/core/controller/state/setWelcomeViewCompleted"
 import { HostProvider } from "@/hosts/host-provider"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { openExternal } from "@/utils/env"
 import { AuthInvalidTokenError, AuthNetworkError } from "../error/ClineError"
 import { featureFlagsService } from "../feature-flags"
@@ -181,7 +181,7 @@ export class AuthService {
 							Logger.error("Token is invalid or expired:", error)
 							this._clineAuthInfo = null
 							this._authenticated = false
-							telemetryService.captureAuthLoggedOut(this._provider?.name, LogoutReason.ERROR_RECOVERY)
+							// telemetryService.captureAuthLoggedOut(this._provider?.name, LogoutReason.ERROR_RECOVERY)
 							authStatusChanged = true
 						} else if (error instanceof AuthNetworkError) {
 							Logger.error("Network error refreshing token", error)
@@ -268,7 +268,7 @@ export class AuthService {
 		const authUrlString = authUrl.toString()
 
 		await openExternal(authUrlString)
-		telemetryService.captureAuthStarted(this._provider.name)
+		// telemetryService.captureAuthStarted(this._provider.name)
 		return String.create({ value: authUrlString })
 	}
 
@@ -278,7 +278,7 @@ export class AuthService {
 		}
 
 		try {
-			telemetryService.captureAuthLoggedOut(this._provider.name, reason)
+			// telemetryService.captureAuthLoggedOut(this._provider.name, reason)
 			this._clineAuthInfo = null
 			this._authenticated = false
 			this.destroyTokens()
@@ -298,11 +298,11 @@ export class AuthService {
 			this._clineAuthInfo = await this._provider.signIn(this._controller, authorizationCode, provider)
 			this._authenticated = this._clineAuthInfo?.idToken !== undefined
 
-			telemetryService.captureAuthSucceeded(this._provider.name)
+			// telemetryService.captureAuthSucceeded(this._provider.name)
 			await setWelcomeViewCompleted(this._controller, { value: true })
 		} catch (error) {
 			console.error("Error signing in with custom token:", error)
-			telemetryService.captureAuthFailed(this._provider.name)
+			// telemetryService.captureAuthFailed(this._provider.name)
 			throw error
 		} finally {
 			await this.sendAuthStatusUpdate()
@@ -336,13 +336,13 @@ export class AuthService {
 				console.warn("No user found after restoring auth token")
 				this._authenticated = false
 				this._clineAuthInfo = null
-				telemetryService.captureAuthLoggedOut(this._provider?.name, LogoutReason.ERROR_RECOVERY)
+				// telemetryService.captureAuthLoggedOut(this._provider?.name, LogoutReason.ERROR_RECOVERY)
 			}
 		} catch (error) {
 			console.error("Error restoring auth token:", error)
 			this._authenticated = false
 			this._clineAuthInfo = null
-			telemetryService.captureAuthLoggedOut(this._provider?.name, LogoutReason.ERROR_RECOVERY)
+			// telemetryService.captureAuthLoggedOut(this._provider?.name, LogoutReason.ERROR_RECOVERY)
 			return
 		}
 	}
@@ -428,7 +428,7 @@ export class AuthService {
 		await Promise.all(streamSends)
 		// Identify the user in telemetry if available
 		if (this._clineAuthInfo?.userInfo?.id) {
-			telemetryService.identifyAccount(this._clineAuthInfo.userInfo)
+			// telemetryService.identifyAccount(this._clineAuthInfo.userInfo)
 			// Poll feature flags immediately for authenticated users to ensure cache is populated
 			await featureFlagsService.poll(this._clineAuthInfo?.userInfo?.id)
 		} else {

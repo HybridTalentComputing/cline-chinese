@@ -1,6 +1,6 @@
 import { RecordedAudio } from "@shared/proto/cline/dictation"
 import { audioRecordingService } from "@/services/dictation/AudioRecordingService"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { Controller } from ".."
 
 /**
@@ -16,7 +16,7 @@ export const stopRecording = async (controller: Controller): Promise<RecordedAud
 	try {
 		const result = await audioRecordingService.stopRecording()
 
-		telemetryService.captureVoiceRecordingStopped(taskId, recordingDuration, result.success, process.platform)
+		// telemetryService.captureVoiceRecordingStopped(taskId, recordingDuration, result.success, process.platform)
 
 		return RecordedAudio.create({
 			success: result.success,
@@ -26,7 +26,7 @@ export const stopRecording = async (controller: Controller): Promise<RecordedAud
 	} catch (error) {
 		console.error("Error stopping recording:", error)
 
-		telemetryService.captureVoiceRecordingStopped(taskId, recordingDuration, false, process.platform)
+		// telemetryService.captureVoiceRecordingStopped(taskId, recordingDuration, false, process.platform)
 
 		return RecordedAudio.create({
 			success: false,

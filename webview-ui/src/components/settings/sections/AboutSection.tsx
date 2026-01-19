@@ -14,9 +14,7 @@ const AboutSection = ({ version, renderSectionHeader }: AboutSectionProps) => {
 			<Section>
 				<div className="flex px-4 flex-col gap-2">
 					<h2 className="text-lg font-semibold">Cline v{version}</h2>
-					<p>
-						{t("settings.about.description")}
-					</p>
+					<p>{t("settings.about.description")}</p>
 
 					<h3 className="text-md font-semibold">{t("settings.about.communitySupport")}</h3>
 					<p>
@@ -41,9 +39,11 @@ const AboutSection = ({ version, renderSectionHeader }: AboutSectionProps) => {
 
 					<h3 className="text-md font-semibold">{t("settings.about.resources")}</h3>
 					<p>
-						<VSCodeLink href="https://docs.cline.bot/getting-started/for-new-coders">{t("settings.about.documentation")}</VSCodeLink>
+						<VSCodeLink href="https://docs.cline.bot/getting-started/for-new-coders">
+							{t("settings.about.documentation")}
+						</VSCodeLink>
 						{" • "}
-						<VSCodeLink href="https://cline.bot/">https://cline.bot</VSCodeLink>
+						<VSCodeLink href="https://router.shengsuanyun.com/model">胜算云</VSCodeLink>
 					</p>
 				</div>
 			</Section>

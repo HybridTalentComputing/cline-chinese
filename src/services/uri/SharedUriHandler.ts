@@ -90,6 +90,15 @@ export class SharedUriHandler {
 					Logger.warn("SharedUriHandler: Missing prompt parameter for task creation")
 					return false
 				}
+				case "/ssy":
+				case "shengsuanyun": {
+					const code = query.get("code")
+					if (code) {
+						await visibleWebview?.controller.handleShengSuanYunCallback(code)
+						return true
+					}
+					return false
+				}
 				// Match /mcp-auth/callback/{hash}
 				case path.match(/^\/mcp-auth\/callback\/[^/]+$/)?.input: {
 					const serverHash = path.split("/").pop()

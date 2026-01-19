@@ -274,11 +274,11 @@ const BasetenModelPicker: React.FC<BasetenModelPickerProps> = ({ isPopup, curren
 				<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
 			) : (
 				<p className="text-xs mt-0 text-(--vscode-descriptionForeground)">
-					The extension automatically fetches the latest list of models available on{" "}
+					该扩展自动获取最新模型列表{" "}
 					<VSCodeLink className="inline text-inherit" href="https://www.baseten.co/products/model-apis/">
 						Baseten.
 					</VSCodeLink>
-					If you're unsure which model to choose, Cline works best with{" "}
+					如果你不确定选择哪种型号，推荐你选择{" "}
 					<VSCodeLink className="inline text-inherit" onClick={() => handleModelChange("moonshotai/Kimi-K2-Instruct")}>
 						moonshotai/Kimi-K2-Instruct.
 					</VSCodeLink>

@@ -93,7 +93,7 @@ export class OcaAuthProvider {
 		// Otherwise, try to refresh using the refresh token
 		const userRefreshToken = controller.stateManager.getSecretKey("ocaRefreshToken")
 		if (!userRefreshToken) {
-			console.error("No stored authentication credential found.")
+			console.error("[OcaAuthProvider] No stored authentication credential found.")
 			return null
 		}
 		try {

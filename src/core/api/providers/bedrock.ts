@@ -502,7 +502,7 @@ export class AwsBedrockHandler implements ApiHandler {
 				} else {
 					// Extract text content from message parts
 					content = message.content
-						.filter((part) => part.type === "text")
+						.filter((part): part is { type: "text"; text: string } => part.type === "text")
 						.map((part) => part.text)
 						.join("\n")
 				}
@@ -784,7 +784,12 @@ export class AwsBedrockHandler implements ApiHandler {
 		const formattedMessages = this.formatMessagesForConverseAPI(messages)
 
 		// Get model info and message indices for caching
-		const userMsgIndices = messages.reduce((acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc), [] as number[])
+		const userMsgIndices = messages.reduce((acc, msg, index) => {
+			if (msg.role === "user") {
+				acc.push(index)
+			}
+			return acc
+		}, [] as number[])
 		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
 		const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
@@ -969,7 +974,12 @@ export class AwsBedrockHandler implements ApiHandler {
 		const formattedMessages = this.formatMessagesForConverseAPI(messages)
 
 		// Get model info and message indices for caching (for Nova models that support it)
-		const userMsgIndices = messages.reduce((acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc), [] as number[])
+		const userMsgIndices = messages.reduce((acc, msg, index) => {
+			if (msg.role === "user") {
+				acc.push(index)
+			}
+			return acc
+		}, [] as number[])
 		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
 		const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 

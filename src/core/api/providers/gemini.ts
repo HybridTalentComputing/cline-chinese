@@ -9,7 +9,7 @@ import {
 	ThinkingLevel,
 } from "@google/genai"
 import { GeminiModelId, geminiDefaultModelId, geminiModels, ModelInfo } from "@shared/api"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { ClineStorageMessage } from "@/shared/messages/content"
 import { ApiHandler, CommonApiHandlerOptions } from "../"
 import { RetriableError, withRetry } from "../retry"
@@ -158,9 +158,9 @@ export class GeminiHandler implements ApiHandler {
 		const sdkCallStartTime = Date.now()
 		let responseId: string | undefined
 		let sdkFirstChunkTime: number | undefined
-		let ttftSdkMs: number | undefined
-		let apiSuccess = false
-		let apiError: string | undefined
+		let _ttftSdkMs: number | undefined
+		let _apiSuccess = false
+		let _apiError: string | undefined
 		let promptTokens = 0
 		let outputTokens = 0
 		let cacheReadTokens = 0
@@ -191,7 +191,7 @@ export class GeminiHandler implements ApiHandler {
 			for await (const chunk of result) {
 				if (isFirstSdkChunk) {
 					sdkFirstChunkTime = Date.now()
-					ttftSdkMs = sdkFirstChunkTime - sdkCallStartTime
+					_ttftSdkMs = sdkFirstChunkTime - sdkCallStartTime
 					isFirstSdkChunk = false
 				}
 
@@ -242,7 +242,7 @@ export class GeminiHandler implements ApiHandler {
 					cacheReadTokens = lastUsageMetadata.cachedContentTokenCount ?? cacheReadTokens
 				}
 			}
-			apiSuccess = true
+			_apiSuccess = true
 
 			if (lastUsageMetadata) {
 				const totalCost = this.calculateCost({
@@ -264,11 +264,11 @@ export class GeminiHandler implements ApiHandler {
 				}
 			}
 		} catch (error) {
-			apiSuccess = false
+			_apiSuccess = false
 			// Let the error propagate to be handled by withRetry or Task.ts
 			// Telemetry will be sent in the finally block.
 			if (error instanceof Error) {
-				apiError = error.message
+				_apiError = error.message
 
 				if (error instanceof ApiError) {
 					if (error.status === 429) {
@@ -285,7 +285,7 @@ export class GeminiHandler implements ApiHandler {
 								)
 
 								const detailedError = new RetriableError(
-									apiError,
+									_apiError,
 									this.parseRetryDelay(detail?.retryDelay) || undefined,
 									{
 										cause: error,
@@ -295,42 +295,42 @@ export class GeminiHandler implements ApiHandler {
 							}
 						}
 
-						throw new RetriableError(apiError, undefined, { cause: error })
+						throw new RetriableError(_apiError, undefined, { cause: error })
 					}
 
 					// Fallback in case Gemini throws a rate limit error without a 429 status code
 					// https://github.com/cline/cline/pull/5205#discussion_r2311761559
 					const isRateLimit = rateLimitPatterns.some((pattern) => pattern.test(error.message))
 					if (isRateLimit) {
-						throw new RetriableError(apiError, undefined, { cause: error })
+						throw new RetriableError(_apiError, undefined, { cause: error })
 					}
 				}
 			} else {
-				apiError = String(error)
+				_apiError = String(error)
 			}
 
 			throw error
 		} finally {
 			const sdkCallEndTime = Date.now()
 			const totalDurationSdkMs = sdkCallEndTime - sdkCallStartTime
-			const cacheHit = cacheReadTokens > 0
-			const cacheHitPercentage = promptTokens > 0 ? (cacheReadTokens / promptTokens) * 100 : undefined
-			const throughputTokensPerSecSdk =
+			const _cacheHit = cacheReadTokens > 0
+			const _cacheHitPercentage = promptTokens > 0 ? (cacheReadTokens / promptTokens) * 100 : undefined
+			const _throughputTokensPerSecSdk =
 				totalDurationSdkMs > 0 && outputTokens > 0 ? outputTokens / (totalDurationSdkMs / 1000) : undefined
 
 			if (this.options.ulid) {
-				telemetryService.captureGeminiApiPerformance(this.options.ulid, modelId, {
-					ttftSec: ttftSdkMs !== undefined ? ttftSdkMs / 1000 : undefined,
-					totalDurationSec: totalDurationSdkMs / 1000,
-					promptTokens,
-					outputTokens,
-					cacheReadTokens,
-					cacheHit,
-					cacheHitPercentage,
-					apiSuccess,
-					apiError,
-					throughputTokensPerSec: throughputTokensPerSecSdk,
-				})
+				// telemetryService.captureGeminiApiPerformance(this.options.ulid, modelId, {
+				// 	ttftSec: ttftSdkMs !== undefined ? ttftSdkMs / 1000 : undefined,
+				// 	totalDurationSec: totalDurationSdkMs / 1000,
+				// 	promptTokens,
+				// 	outputTokens,
+				// 	cacheReadTokens,
+				// 	cacheHit,
+				// 	cacheHitPercentage,
+				// 	apiSuccess,
+				// 	apiError,
+				// 	throughputTokensPerSec: throughputTokensPerSecSdk,
+				// })
 			} else {
 				console.warn("GeminiHandler: ulid not available for telemetry in createMessage.")
 			}

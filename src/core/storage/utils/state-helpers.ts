@@ -13,6 +13,7 @@ import { OpenaiReasoningEffort } from "@/shared/storage/types"
 import { readTaskHistoryFromState } from "../disk"
 export async function readSecretsFromDisk(context: ExtensionContext): Promise<Secrets> {
 	const [
+		shengSuanYunApiKey,
 		apiKey,
 		openRouterApiKey,
 		firebaseClineAccountId,
@@ -58,6 +59,7 @@ export async function readSecretsFromDisk(context: ExtensionContext): Promise<Se
 		mcpOAuthSecrets,
 		nousResearchApiKey,
 	] = await Promise.all([
+		context.secrets.get("shengSuanYunApiKey") as Promise<Secrets["shengSuanYunApiKey"]>,
 		context.secrets.get("apiKey") as Promise<Secrets["apiKey"]>,
 		context.secrets.get("openRouterApiKey") as Promise<Secrets["openRouterApiKey"]>,
 		context.secrets.get("clineAccountId") as Promise<Secrets["clineAccountId"]>,
@@ -142,6 +144,7 @@ export async function readSecretsFromDisk(context: ExtensionContext): Promise<Se
 		awsAccessKey,
 		awsSecretKey,
 		awsSessionToken,
+		shengSuanYunApiKey,
 		ocaApiKey,
 		ocaRefreshToken,
 		minimaxApiKey,
@@ -226,6 +229,7 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 		const minimaxApiLine = context.globalState.get<GlobalStateAndSettings["minimaxApiLine"]>("minimaxApiLine")
 		const telemetrySetting = context.globalState.get<GlobalStateAndSettings["telemetrySetting"]>("telemetrySetting")
 		const asksageApiUrl = context.globalState.get<GlobalStateAndSettings["asksageApiUrl"]>("asksageApiUrl")
+		const shengSuanYunToken = context.globalState.get<GlobalStateAndSettings["shengSuanYunToken"]>("shengSuanYunToken")
 		const planActSeparateModelsSettingRaw =
 			context.globalState.get<GlobalStateAndSettings["planActSeparateModelsSetting"]>("planActSeparateModelsSetting")
 		const favoritedModelIds = context.globalState.get<GlobalStateAndSettings["favoritedModelIds"]>("favoritedModelIds")
@@ -399,6 +403,10 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 			context.globalState.get<GlobalStateAndSettings["planModeAihubmixModelId"]>("planModeAihubmixModelId")
 		const planModeAihubmixModelInfo =
 			context.globalState.get<GlobalStateAndSettings["planModeAihubmixModelInfo"]>("planModeAihubmixModelInfo")
+		const planModeShengSuanYunModelId =
+			context.globalState.get<GlobalStateAndSettings["planModeShengSuanYunModelId"]>("planModeShengSuanYunModelId")
+		const planModeShengSuanYunModelInfo =
+			context.globalState.get<GlobalStateAndSettings["planModeShengSuanYunModelInfo"]>("planModeShengSuanYunModelInfo")
 		const planModeNousResearchModelId =
 			context.globalState.get<GlobalStateAndSettings["planModeNousResearchModelId"]>("planModeNousResearchModelId")
 		// Act mode configurations
@@ -475,13 +483,16 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 			context.globalState.get<GlobalStateAndSettings["actModeAihubmixModelId"]>("actModeAihubmixModelId")
 		const actModeAihubmixModelInfo =
 			context.globalState.get<GlobalStateAndSettings["actModeAihubmixModelInfo"]>("actModeAihubmixModelInfo")
-
+		const actModeShengSuanYunModelId =
+			context.globalState.get<GlobalStateAndSettings["actModeShengSuanYunModelId"]>("actModeShengSuanYunModelId")
+		const actModeShengSuanYunModelInfo =
+			context.globalState.get<GlobalStateAndSettings["actModeShengSuanYunModelInfo"]>("actModeShengSuanYunModelInfo")
 		let apiProvider: ApiProvider
 		if (planModeApiProvider) {
 			apiProvider = planModeApiProvider
 		} else {
 			// New users should default to openrouter, since they've opted to use an API key instead of signing in
-			apiProvider = "openrouter"
+			apiProvider = "shengsuanyun"
 		}
 
 		const mcpResponsesCollapsed = mcpResponsesCollapsedRaw ?? false
@@ -570,6 +581,7 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 			hicapModelId,
 			aihubmixBaseUrl,
 			aihubmixAppCode,
+			shengSuanYunToken,
 			// Plan mode configurations
 			planModeApiProvider: planModeApiProvider || apiProvider,
 			planModeApiModelId,
@@ -602,6 +614,8 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 			planModeHuaweiCloudMaasModelInfo,
 			planModeBasetenModelId,
 			planModeBasetenModelInfo,
+			planModeShengSuanYunModelId,
+			planModeShengSuanYunModelInfo,
 			planModeOcaModelId,
 			planModeOcaModelInfo,
 			planModeHicapModelId,
@@ -640,6 +654,8 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 			actModeHuaweiCloudMaasModelInfo,
 			actModeBasetenModelId,
 			actModeBasetenModelInfo,
+			actModeShengSuanYunModelId,
+			actModeShengSuanYunModelInfo,
 			actModeOcaModelId,
 			actModeOcaModelInfo,
 			actModeHicapModelId,
@@ -766,6 +782,7 @@ export async function resetGlobalState(controller: Controller) {
 		"basetenApiKey",
 		"moonshotApiKey",
 		"nebiusApiKey",
+		"shengSuanYunApiKey",
 		"huggingFaceApiKey",
 		"huaweiCloudMaasApiKey",
 		"vercelAiGatewayApiKey",

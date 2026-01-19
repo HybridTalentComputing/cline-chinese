@@ -138,7 +138,7 @@ export function registerTaskCommands(controller: Controller): vscode.Disposable[
 					// Update the UI to show the new tasks
 					await controller.postStateToWebview()
 
-					const message = `Created ${tasksCount} test tasks`
+					const message = `创建 ${tasksCount} 测试任务`
 					HostProvider.window.showMessage({
 						type: ShowMessageType.INFORMATION,
 						message,

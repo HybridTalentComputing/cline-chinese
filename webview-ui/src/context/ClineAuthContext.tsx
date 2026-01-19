@@ -1,6 +1,6 @@
 import type { UserOrganization } from "@shared/proto/cline/account"
 import { EmptyRequest } from "@shared/proto/cline/common"
-import deepEqual from "fast-deep-equal"
+// import deepEqual from "fast-deep-equal"
 import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { AccountServiceClient } from "@/services/grpc-client"
@@ -27,14 +27,14 @@ export const ClineAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	const [userOrganizations, setUserOrganizations] = useState<UserOrganization[] | null>(null)
 
 	const getUserOrganizations = useCallback(async () => {
-		try {
-			const response = await AccountServiceClient.getUserOrganizations(EmptyRequest.create())
-			if (!deepEqual(response.organizations, userOrganizations)) {
-				setUserOrganizations(response.organizations)
-			}
-		} catch (error) {
-			console.error("Failed to fetch user organizations:", error)
-		}
+		// try {
+		// const response = await AccountServiceClient.getUserOrganizations(EmptyRequest.create())
+		// if (!deepEqual(response.organizations, userOrganizations)) {
+		// 	setUserOrganizations(response.organizations)
+		// }
+		// } catch (error) {
+		// 	console.error("Failed to fetch user organizations:", error)
+		// }
 	}, [])
 
 	const activeOrganization = useMemo(() => {

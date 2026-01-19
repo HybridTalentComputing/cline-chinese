@@ -8,37 +8,37 @@ export interface SlashCommand {
 export const BASE_SLASH_COMMANDS: SlashCommand[] = [
 	{
 		name: "newtask",
-		description: "Create a new task with context from the current task",
+		description: "根据当前任务的上下文创建一个新任务",
 		section: "default",
 		cliCompatible: true,
 	},
 	{
 		name: "smol",
-		description: "Condenses your current context window",
+		description: "缩小当前上下文窗口",
 		section: "default",
 		cliCompatible: true,
 	},
 	{
 		name: "newrule",
-		description: "Create a new Cline rule based on your conversation",
+		description: "根据您的对话创建新的 Cline 规则",
 		section: "default",
 		cliCompatible: true,
 	},
 	{
 		name: "reportbug",
-		description: "Create a Github issue with Cline",
+		description: "创建一个 Github issue",
 		section: "default",
 		cliCompatible: true,
 	},
 	{
 		name: "deep-planning",
-		description: "Create a comprehensive implementation plan before coding",
+		description: "在编写代码之前，制定一份全面的实施计划。",
 		section: "default",
 		cliCompatible: true,
 	},
 	{
 		name: "subagent",
-		description: "Invoke a Cline CLI subagent for focused research tasks",
+		description: "调用 Cline CLI 子代理执行特定研究任务",
 		section: "default",
 		cliCompatible: true,
 	},
@@ -48,7 +48,7 @@ export const BASE_SLASH_COMMANDS: SlashCommand[] = [
 export const VSCODE_ONLY_COMMANDS: SlashCommand[] = [
 	{
 		name: "explain-changes",
-		description: "Explain code changes between git refs (PRs, commits, branches, etc.)",
+		description: "解释 Git 引用（PR、提交、分支等）之间的代码变更。",
 		section: "default",
 	},
 ]

@@ -32,11 +32,11 @@ const ActModeHighlight: React.FC = () => {
 					)
 				}
 			}}
-			title={mode === "plan" ? "Click to toggle to Act Mode" : "Already in Act Mode"}>
+			title={mode === "plan" ? "点击切换到执行模式" : "已经在执行模式"}>
 			<div className="p-1 rounded-[12px] bg-(--vscode-editor-background) flex items-center justify-end w-4 border border-(--vscode-input-border)">
 				<div className="rounded-full bg-(--vscode-textLink-foreground) w-2 h-2" />
 			</div>
-			Act Mode (⌘⇧A)
+			执行模式 (⌘⇧A)
 		</span>
 	)
 }

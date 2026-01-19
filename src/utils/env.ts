@@ -41,4 +41,11 @@ export async function readTextFromClipboard(): Promise<string> {
 export async function openExternal(url: string): Promise<void> {
 	console.log("Opening browser:", url)
 	await open(url)
+	// if(!ourl.connected){
+	// 	const chrome = await open(url, {app: {name: 'google chrome', arguments: ['--incognito']}})
+	// 	if(!chrome.connected){
+	// 		const firefox = await open(url, {app: {name: 'firefox'}})
+	// 		console.log("Bowser handler: failed ", firefox)
+	// 	}
+	// }
 }

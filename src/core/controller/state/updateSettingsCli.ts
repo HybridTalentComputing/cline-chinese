@@ -13,7 +13,7 @@ import { ClineEnv } from "@/config"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { Mode, OpenaiReasoningEffort } from "@/shared/storage/types"
-import { telemetryService } from "../../../services/telemetry"
+// import { telemetryService } from "../../../services/telemetry"
 import { Controller } from ".."
 import { accountLogoutClicked } from "../account/accountLogoutClicked"
 
@@ -141,36 +141,36 @@ export async function updateSettingsCli(controller: Controller, request: UpdateS
 
 			// Update yolo mode setting (requires telemetry)
 			if (yoloModeToggled !== undefined) {
-				if (controller.task) {
-					telemetryService.captureYoloModeToggle(controller.task.ulid, yoloModeToggled)
-				}
+				// if (controller.task) {
+				// 	telemetryService.captureYoloModeToggle(controller.task.ulid, yoloModeToggled)
+				// }
 				controller.stateManager.setGlobalState("yoloModeToggled", yoloModeToggled)
 			}
 
 			// Update auto-condense setting (requires telemetry)
 			if (useAutoCondense !== undefined) {
-				if (controller.task) {
-					telemetryService.captureAutoCondenseToggle(
-						controller.task.ulid,
-						useAutoCondense,
-						controller.task.api.getModel().id,
-					)
-				}
+				// if (controller.task) {
+				// 	telemetryService.captureAutoCondenseToggle(
+				// 		controller.task.ulid,
+				// 		useAutoCondense,
+				// 		controller.task.api.getModel().id,
+				// 	)
+				// }
 				controller.stateManager.setGlobalState("useAutoCondense", useAutoCondense)
 			}
 
 			// Update Cline web tools setting (requires telemetry)
 			if (clineWebToolsEnabled !== undefined) {
-				if (controller.task) {
-					telemetryService.captureClineWebToolsToggle(controller.task.ulid, clineWebToolsEnabled)
-				}
+				// if (controller.task) {
+				// 	telemetryService.captureClineWebToolsToggle(controller.task.ulid, clineWebToolsEnabled)
+				// }
 				controller.stateManager.setGlobalState("clineWebToolsEnabled", clineWebToolsEnabled)
 			}
 
 			// Update focus chain settings (requires telemetry on state change)
 			if (focusChainSettings !== undefined) {
 				const currentSettings = controller.stateManager.getGlobalSettingsKey("focusChainSettings")
-				const wasEnabled = currentSettings?.enabled ?? false
+				const _wasEnabled = currentSettings?.enabled ?? false
 				const isEnabled = focusChainSettings.enabled
 
 				const newFocusChainSettings = {
@@ -180,9 +180,9 @@ export async function updateSettingsCli(controller: Controller, request: UpdateS
 				controller.stateManager.setGlobalState("focusChainSettings", newFocusChainSettings)
 
 				// Capture telemetry when setting changes
-				if (wasEnabled !== isEnabled) {
-					telemetryService.captureFocusChainToggle(isEnabled)
-				}
+				// if (wasEnabled !== isEnabled) {
+				// 	// telemetryService.captureFocusChainToggle(isEnabled)
+				// }
 			}
 
 			// Update browser settings (requires careful merging to avoid protobuf defaults)

@@ -61,6 +61,8 @@ import {
 	sambanovaModels,
 	sapAiCoreDefaultModelId,
 	sapAiCoreModels,
+	shengSuanYunDefaultModelId,
+	shengSuanYunDefaultModelInfo,
 	vertexDefaultModelId,
 	vertexModels,
 	xaiDefaultModelId,
@@ -168,7 +170,7 @@ export function normalizeApiConfiguration(
 	liteLlmModels?: Record<string, ModelInfo>,
 ): NormalizedApiConfig {
 	const provider =
-		(currentMode === "plan" ? apiConfiguration?.planModeApiProvider : apiConfiguration?.actModeApiProvider) || "anthropic"
+		(currentMode === "plan" ? apiConfiguration?.planModeApiProvider : apiConfiguration?.actModeApiProvider) || "shengsuanyun"
 
 	const modelId = currentMode === "plan" ? apiConfiguration?.planModeApiModelId : apiConfiguration?.actModeApiModelId
 
@@ -385,6 +387,20 @@ export function normalizeApiConfiguration(
 			}
 		case "sapaicore":
 			return getProviderData(sapAiCoreModels, sapAiCoreDefaultModelId)
+		case "shengsuanyun":
+			const shengSuanYunModelId =
+				currentMode === "plan"
+					? apiConfiguration?.planModeShengSuanYunModelId
+					: apiConfiguration?.actModeShengSuanYunModelId
+			const shengSuanYunModelInfo =
+				currentMode === "plan"
+					? apiConfiguration?.planModeShengSuanYunModelInfo
+					: apiConfiguration?.actModeShengSuanYunModelInfo
+			return {
+				selectedProvider: provider,
+				selectedModelId: shengSuanYunModelId || shengSuanYunDefaultModelId,
+				selectedModelInfo: shengSuanYunModelInfo || shengSuanYunDefaultModelInfo,
+			}
 		case "huawei-cloud-maas":
 			const huaweiCloudMaasModelId =
 				currentMode === "plan"
@@ -506,6 +522,7 @@ export function getModeSpecificFields(apiConfiguration: ApiConfiguration | undef
 			groqModelId: undefined,
 			basetenModelId: undefined,
 			huggingFaceModelId: undefined,
+			shengSuanYunModelId: undefined,
 			huaweiCloudMaasModelId: undefined,
 			hicapModelId: undefined,
 			aihubmixModelId: undefined,
@@ -520,6 +537,7 @@ export function getModeSpecificFields(apiConfiguration: ApiConfiguration | undef
 			basetenModelInfo: undefined,
 			huggingFaceModelInfo: undefined,
 			vsCodeLmModelSelector: undefined,
+			shengSuanYunModelInfo: undefined,
 			aihubmixModelInfo: undefined,
 
 			// AWS Bedrock fields
@@ -554,6 +572,8 @@ export function getModeSpecificFields(apiConfiguration: ApiConfiguration | undef
 		basetenModelId: mode === "plan" ? apiConfiguration.planModeBasetenModelId : apiConfiguration.actModeBasetenModelId,
 		huggingFaceModelId:
 			mode === "plan" ? apiConfiguration.planModeHuggingFaceModelId : apiConfiguration.actModeHuggingFaceModelId,
+		shengSuanYunModelId:
+			mode === "plan" ? apiConfiguration.planModeShengSuanYunModelId : apiConfiguration.actModeShengSuanYunModelId,
 		huaweiCloudMaasModelId:
 			mode === "plan" ? apiConfiguration.planModeHuaweiCloudMaasModelId : apiConfiguration.actModeHuaweiCloudMaasModelId,
 		ocaModelId: mode === "plan" ? apiConfiguration.planModeOcaModelId : apiConfiguration.actModeOcaModelId,
@@ -575,6 +595,8 @@ export function getModeSpecificFields(apiConfiguration: ApiConfiguration | undef
 			mode === "plan" ? apiConfiguration.planModeHuggingFaceModelInfo : apiConfiguration.actModeHuggingFaceModelInfo,
 		vsCodeLmModelSelector:
 			mode === "plan" ? apiConfiguration.planModeVsCodeLmModelSelector : apiConfiguration.actModeVsCodeLmModelSelector,
+		shengSuanYunModelInfo:
+			mode === "plan" ? apiConfiguration.planModeShengSuanYunModelInfo : apiConfiguration.actModeShengSuanYunModelInfo,
 		hicapModelInfo: mode === "plan" ? apiConfiguration.planModeHicapModelInfo : apiConfiguration.actModeHicapModelInfo,
 		aihubmixModelInfo:
 			mode === "plan" ? apiConfiguration.planModeAihubmixModelInfo : apiConfiguration.actModeAihubmixModelInfo,
@@ -650,6 +672,13 @@ export async function syncModeConfigurations(
 			updates.actModeRequestyModelId = sourceFields.requestyModelId
 			updates.planModeRequestyModelInfo = sourceFields.requestyModelInfo
 			updates.actModeRequestyModelInfo = sourceFields.requestyModelInfo
+			break
+
+		case "shengsuanyun":
+			updates.planModeShengSuanYunModelId = sourceFields.shengSuanYunModelId
+			updates.actModeShengSuanYunModelId = sourceFields.shengSuanYunModelId
+			updates.planModeShengSuanYunModelInfo = sourceFields.shengSuanYunModelInfo
+			updates.actModeShengSuanYunModelInfo = sourceFields.shengSuanYunModelInfo
 			break
 
 		case "openai":

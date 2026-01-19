@@ -35,7 +35,7 @@ declare module "vscode" {
 		justification?: string
 		modelOptions?: { [name: string]: any }
 		tools?: LanguageModelChatTool[]
-		toolMode?: LanguageModelChatToolMode
+		toolMode?: LanguageModelChatTool
 	}
 	class LanguageModelTextPart {
 		value: string
@@ -48,7 +48,7 @@ declare module "vscode" {
 		constructor(callId: string, name: string, input: object)
 	}
 	interface LanguageModelChatResponse {
-		stream: AsyncIterable<LanguageModelTextPart | LanguageModelToolCallPart | unknown>
+		stream: AsyncIterable<LanguageModelChat | LanguageModelChat | unknown>
 		text: AsyncIterable<string>
 	}
 	interface LanguageModelChat {
@@ -72,8 +72,8 @@ declare module "vscode" {
 	}
 	class LanguageModelToolResultPart {
 		callId: string
-		content: Array<LanguageModelTextPart | LanguageModelPromptTsxPart | unknown>
-		constructor(callId: string, content: Array<LanguageModelTextPart | LanguageModelPromptTsxPart | unknown>)
+		content: Array<LanguageModelChat | LanguageModelPromptTsxPart | unknown>
+		constructor(callId: string, content: Array<LanguageModelChat | LanguageModelPromptTsxPart | unknown>)
 	}
 	class LanguageModelChatMessage {
 		static User(
@@ -379,7 +379,7 @@ export class VsCodeLmHandler implements ApiHandler, SingleCompletionHandler {
 		}))
 
 		// Convert Anthropic messages to VS Code LM messages
-		const vsCodeLmMessages: vscode.LanguageModelChatMessage[] = [
+		const vsCodeLmMessages: InstanceType<typeof vscode.LanguageModelChatMessage>[] = [
 			vscode.LanguageModelChatMessage.Assistant(cleanedSystemPrompt),
 			...convertToVsCodeLmMessages(cleanedMessages),
 		]

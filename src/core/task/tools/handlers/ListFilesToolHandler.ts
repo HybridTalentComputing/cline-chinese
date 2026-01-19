@@ -118,16 +118,16 @@ export class ListFilesToolHandler implements IFullyManagedTool {
 			await config.callbacks.say("tool", completeMessage, undefined, undefined, false)
 
 			// Capture telemetry
-			telemetryService.captureToolUsage(
-				config.ulid,
-				block.name,
-				config.api.getModel().id,
-				provider,
-				true,
-				true,
-				workspaceContext,
-				block.isNativeToolCall,
-			)
+			// telemetryService.captureToolUsage(
+			// 	config.ulid,
+			// 	block.name,
+			// 	config.api.getModel().id,
+			// 	provider,
+			// 	true,
+			// 	true,
+			// 	workspaceContext,
+			// 	block.isNativeToolCall,
+			// )
 		} else {
 			// Manual approval flow
 			const notificationMessage = `Cline wants to view directory ${getWorkspaceBasename(absolutePath, "ListFilesToolHandler.notification")}/`

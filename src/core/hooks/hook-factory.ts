@@ -343,7 +343,7 @@ class StdioHookRunner<Name extends HookName> extends HookRunner<Name> {
 					// Try to extract JSON from stdout (it might have debug output before/after)
 					// Scan from the end to find the last complete JSON object
 					// This handles cases where hooks output debug info before the actual JSON response
-
+					console.log(parseError)
 					const lines = stdout.split("\n")
 					let jsonCandidate = ""
 					let braceCount = 0

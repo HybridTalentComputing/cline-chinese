@@ -56,12 +56,12 @@ describe("convertToVsCodeLmMessages", () => {
 		result.should.have.length(2)
 		result[0].role.should.equal(vscode.LanguageModelChatMessageRole.User)
 		result[0].content[0].should.be.instanceof(vscode.LanguageModelTextPart)
-		const textPart0 = result[0].content[0] as vscode.LanguageModelTextPart
+		const textPart0 = result[0].content[0] as unknown as vscode.LanguageModelTextPart
 		textPart0.should.have.property("value", "Hello")
 
 		result[1].role.should.equal(vscode.LanguageModelChatMessageRole.Assistant)
 		result[1].content[0].should.be.instanceof(vscode.LanguageModelTextPart)
-		const textPart1 = result[1].content[0] as vscode.LanguageModelTextPart
+		const textPart1 = result[1].content[0] as unknown as vscode.LanguageModelTextPart
 		textPart1.should.have.property("value", "Hi there")
 	})
 
@@ -96,7 +96,7 @@ describe("convertToVsCodeLmMessages", () => {
 
 		// Check the second content part is a TextPart
 		result[0].content[1].should.be.instanceof(vscode.LanguageModelTextPart)
-		const textPart = result[0].content[1] as vscode.LanguageModelTextPart
+		const textPart = result[0].content[1] as unknown as vscode.LanguageModelTextPart
 		textPart.should.have.property("value", "User text")
 	})
 
@@ -123,14 +123,14 @@ describe("convertToVsCodeLmMessages", () => {
 		result[0].content.should.have.length(2)
 
 		result[0].content[0].should.be.instanceof(vscode.LanguageModelToolCallPart)
-		const toolCallPart = result[0].content[0] as vscode.LanguageModelToolCallPart
+		const toolCallPart = result[0].content[0] as unknown as vscode.LanguageModelToolCallPart
 		toolCallPart.should.have.property("callId", "tool-123")
 		toolCallPart.should.have.property("name", "testTool")
 		toolCallPart.should.have.property("input")
 		toolCallPart.input.should.deepEqual({ param: "value" })
 
 		result[0].content[1].should.be.instanceof(vscode.LanguageModelTextPart)
-		const textPart = result[0].content[1] as vscode.LanguageModelTextPart
+		const textPart = result[0].content[1] as unknown as vscode.LanguageModelTextPart
 		textPart.should.have.property("value", "Assistant text")
 	})
 
@@ -155,7 +155,7 @@ describe("convertToVsCodeLmMessages", () => {
 
 		result.should.have.length(1)
 		result[0].content[0].should.be.instanceof(vscode.LanguageModelTextPart)
-		const textPart = result[0].content[0] as vscode.LanguageModelTextPart
+		const textPart = result[0].content[0] as unknown as vscode.LanguageModelTextPart
 		textPart.should.have.property("value")
 		textPart.value.should.match(/Image \(base64\): image\/jpeg not supported by VSCode LM API/)
 	})

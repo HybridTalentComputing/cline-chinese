@@ -207,7 +207,6 @@ export function convertToO1Messages(
 		} as OpenAI.Chat.ChatCompletionUserMessageParam,
 		...toolsReplaced,
 	]
-
 	// If there's an assistant message, insert the system prompt after it
 	// if (lastAssistantIndex !== -1) {
 	// 	const insertIndex = lastAssistantIndex + 1
@@ -224,7 +223,6 @@ export function convertToO1Messages(
 	// 		content: o1SystemPrompt(systemPrompt),
 	// 	})
 	// }
-
 	return messagesWithSystemPrompt
 }
 

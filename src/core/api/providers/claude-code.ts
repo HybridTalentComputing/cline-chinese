@@ -81,10 +81,9 @@ export class ClaudeCodeHandler implements ApiHandler {
 							throw new Error(content.text)
 						}
 
-						if (error.error.message.includes("Invalid model name")) {
+						if (error.error.message.includes("型号名称无效")) {
 							throw new Error(
-								content.text +
-									`\n\nAPI keys and subscription plans allow different models. Make sure the selected model is included in your plan.`,
+								content.text + `\n\nAPI 密钥和订阅计划支持不同的模型。请确保所选模型包含在您的计划中。`,
 							)
 						}
 

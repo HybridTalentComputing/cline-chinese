@@ -4,8 +4,8 @@ import { Mode } from "@shared/storage/types"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import { KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useInterval } from "react-use"
 import { useTranslation } from "react-i18next"
+import { useInterval } from "react-use"
 import styled from "styled-components"
 import { normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -20,7 +20,7 @@ import { BasetenProvider } from "./providers/BasetenProvider"
 import { BedrockProvider } from "./providers/BedrockProvider"
 import { CerebrasProvider } from "./providers/CerebrasProvider"
 import { ClaudeCodeProvider } from "./providers/ClaudeCodeProvider"
-import { ClineProvider } from "./providers/ClineProvider"
+// import { ClineProvider } from "./providers/ClineProvider"
 import { DeepSeekProvider } from "./providers/DeepSeekProvider"
 import { DifyProvider } from "./providers/DifyProvider"
 import { DoubaoProvider } from "./providers/DoubaoProvider"
@@ -47,6 +47,7 @@ import { QwenProvider } from "./providers/QwenProvider"
 import { RequestyProvider } from "./providers/RequestyProvider"
 import { SambanovaProvider } from "./providers/SambanovaProvider"
 import { SapAiCoreProvider } from "./providers/SapAiCoreProvider"
+import { ShengSuanYunProvider } from "./providers/ShengSuanYunProvider"
 import { TogetherProvider } from "./providers/TogetherProvider"
 import { VercelAIGatewayProvider } from "./providers/VercelAIGatewayProvider"
 import { VertexProvider } from "./providers/VertexProvider"
@@ -191,7 +192,6 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 		if (!isDropdownVisible) {
 			return
 		}
-
 		switch (event.key) {
 			case "ArrowDown":
 				event.preventDefault()
@@ -348,10 +348,12 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 				<HicapProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
 			)}
 
-			{apiConfiguration && selectedProvider === "cline" && (
+			{/* {apiConfiguration && selectedProvider === "cline" && (
 				<ClineProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
+			)} */}
+			{selectedProvider === "shengsuanyun" && (
+				<ShengSuanYunProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
 			)}
-
 			{apiConfiguration && selectedProvider === "asksage" && (
 				<AskSageProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
 			)}

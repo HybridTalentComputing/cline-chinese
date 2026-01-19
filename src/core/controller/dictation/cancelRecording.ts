@@ -1,6 +1,6 @@
 import { RecordingResult } from "@shared/proto/cline/dictation"
 import { audioRecordingService } from "@/services/dictation/AudioRecordingService"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { Controller } from ".."
 
 /**
@@ -24,7 +24,7 @@ export const cancelRecording = async (controller: Controller): Promise<Recording
 		errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
 	}
 
-	telemetryService.captureVoiceRecordingStopped(taskId, recordingDuration, false, process.platform)
+	// telemetryService.captureVoiceRecordingStopped(taskId, recordingDuration, false, process.platform)
 	return RecordingResult.create({
 		success: isSuccess,
 		error: errorMessage ?? "",

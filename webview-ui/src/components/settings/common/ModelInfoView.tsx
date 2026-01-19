@@ -101,7 +101,7 @@ const formatCompactPrice = (price: number | undefined): string => {
 		return "N/A"
 	}
 	if (price === 0) {
-		return "Free"
+		return "免费"
 	}
 	if (price < 0.01) {
 		return `$${price.toFixed(4)}/M`

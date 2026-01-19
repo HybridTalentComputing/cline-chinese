@@ -3,7 +3,7 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import React, { useCallback, useRef } from "react"
 import { useMount } from "react-use"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { useClineAuth } from "@/context/ClineAuthContext"
+// import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurationHandlers"
@@ -15,8 +15,8 @@ interface WhatsNewModalProps {
 }
 
 export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, version }) => {
-	const { clineUser } = useClineAuth()
-	const { openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
+	// const { clineUser } = useClineAuth()
+	const { userInfo, openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 
 	const clickedModelsRef = useRef<Set<string>>(new Set())
@@ -31,8 +31,8 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 				actModeOpenRouterModelId: modelId,
 				planModeOpenRouterModelInfo: openRouterModels[modelId],
 				actModeOpenRouterModelInfo: openRouterModels[modelId],
-				planModeApiProvider: "cline",
-				actModeApiProvider: "cline",
+				planModeApiProvider: "shengsuanyun",
+				actModeApiProvider: "shengsuanyun",
 			})
 
 			clickedModelsRef.current.add(modelId)
@@ -43,7 +43,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 	)
 
 	const handleShowAccount = useCallback(() => {
-		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
+		AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create()).catch((err) =>
 			console.error("Failed to get login URL:", err),
 		)
 	}, [])
@@ -62,11 +62,11 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 	}
 
 	const AuthButton: React.FC<{ children: React.ReactNode }> = ({ children }) =>
-		clineUser ? (
+		userInfo ? (
 			<div className="flex gap-2 flex-wrap">{children}</div>
 		) : (
 			<Button className="my-1" onClick={handleShowAccount} size="sm">
-				Sign Up with Cline
+				注册 Cline 中文版
 			</Button>
 		)
 
@@ -81,30 +81,30 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 						className="text-lg font-semibold mb-3 pr-6"
 						id="whats-new-title"
 						style={{ color: "var(--vscode-editor-foreground)" }}>
-						🎉 New in v{version}
+						🎉 v{version} 新功能
 					</h2>
 
 					{/* Description */}
 					<ul className="text-sm pl-3 list-disc" style={{ color: "var(--vscode-descriptionForeground)" }}>
 						<li className="mb-2">
-							<strong>Cline provider</strong> now runs on the Vercel AI Gateway for better latency and fewer errors.
+							<strong>新增供应商</strong> 现在运行在 Vercel AI 网关上，延迟更低，错误更少。
 						</li>
-						<li className="mb-2">
-							To celebrate, we're offering free <strong>GLM-4.6</strong> for a limited time!
+						<li>
+							<strong>GLM 4.7</strong> 现在可用！
 							<br />
 							<AuthButton>
-								<ModelButton label="Try GLM-4.6" modelId="z-ai/glm-4.6" />
+								<ModelButton label="Try GLM 4.7" modelId="z-ai/glm-4.7" />
 							</AuthButton>
 						</li>
 						<li>
-							<strong>Kat-Coder Pro</strong>, free for a limited time!
+							<strong>MiMo V2 Flash</strong>, 限时免费!
 							<br />
 							<AuthButton>
-								<ModelButton label="Try Kat-Coder Pro" modelId="kwaipilot/kat-coder-pro:free" />
+								<ModelButton label="Try Kat-Coder Pro" modelId="xiaomi/mimo-v2-flash" />
 							</AuthButton>
 						</li>
 						<li>
-							<strong>Gemini 3 Flash Preview</strong> now available!
+							<strong>Gemini 3 Flash Preview</strong> 现在可用！
 							<br />
 							<AuthButton>
 								<ModelButton label="Try Gemini 3 Flash Preview" modelId="google/gemini-3-flash-preview" />

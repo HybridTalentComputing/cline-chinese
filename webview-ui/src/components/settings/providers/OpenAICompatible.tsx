@@ -106,7 +106,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 					handleFieldChange("openAiApiKey", value)
 					debouncedRefreshOpenAiModels(apiConfiguration?.openAiBaseUrl, value)
 				}}
-				providerName="OpenAI Compatible"
+				providerName="OpenAI 兼容"
 			/>
 
 			<DebouncedTextField
@@ -129,7 +129,9 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 							<Tooltip>
 								<TooltipTrigger>
 									<div className="flex items-center gap-2">
-										<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.openAiCompatible.customHeaders")}</span>
+										<span style={{ fontWeight: 500 }}>
+											{t("settings.apiConfig.openAiCompatible.customHeaders")}
+										</span>
 										{remoteConfigSettings?.openAiHeaders !== undefined && (
 											<i className="codicon codicon-lock text-description text-sm" />
 										)}
@@ -207,7 +209,9 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 							initialValue={apiConfiguration?.azureApiVersion}
 							label={t("settings.apiConfig.openAiCompatible.setAzureApiVersion")}
 							onChange={(value) => handleFieldChange("azureApiVersion", value)}
-							placeholder={t("settings.apiConfig.azureApiVersionPlaceholder", { version: azureOpenAiDefaultApiVersion })}
+							placeholder={t("settings.apiConfig.azureApiVersionPlaceholder", {
+								version: azureOpenAiDefaultApiVersion,
+							})}
 							showLockIcon={true}
 						/>
 					</TooltipTrigger>

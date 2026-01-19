@@ -75,7 +75,7 @@ export function convertToOllamaMessages(anthropicMessages: Omit<ClineStorageMess
 					})
 				}
 			} else if (anthropicMessage.role === "assistant") {
-				const { nonToolMessages, toolMessages } = anthropicMessage.content.reduce<{
+				const { nonToolMessages } = anthropicMessage.content.reduce<{
 					nonToolMessages: (ClineTextContentBlock | ClineImageContentBlock)[]
 					toolMessages: ClineAssistantToolUseBlock[]
 				}>(

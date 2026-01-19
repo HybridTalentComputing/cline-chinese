@@ -7,7 +7,7 @@ import { StateManager } from "@core/storage/StateManager"
 import { resolveWorkspacePath } from "@core/workspace"
 import { extractFileContent } from "@integrations/misc/extract-file-content"
 import { ClineSayTool } from "@shared/ExtensionMessage"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
 import type { IPartialBlockHandler, IToolHandler } from "../ToolExecutorCoordinator"
@@ -243,20 +243,20 @@ export class SummarizeTaskHandler implements IToolHandler, IPartialBlockHandler 
 				config.taskState.lastAutoCompactTriggerIndex,
 			)
 
-			if (telemetryData) {
-				// Extract provider information for telemetry
-				const apiConfig = config.services.stateManager.getApiConfiguration()
-				const currentMode = config.services.stateManager.getGlobalSettingsKey("mode")
-				const provider = (currentMode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider) as string
+			// if (telemetryData) {
+			// 	// Extract provider information for telemetry
+			// 	const apiConfig = config.services.stateManager.getApiConfiguration()
+			// 	const currentMode = config.services.stateManager.getGlobalSettingsKey("mode")
+			// 	const provider = (currentMode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider) as string
 
-				telemetryService.captureSummarizeTask(
-					config.ulid,
-					config.api.getModel().id,
-					provider,
-					telemetryData.tokensUsed,
-					telemetryData.maxContextWindow,
-				)
-			}
+			// 	telemetryService.captureSummarizeTask(
+			// 		config.ulid,
+			// 		config.api.getModel().id,
+			// 		provider,
+			// 		telemetryData.tokensUsed,
+			// 		telemetryData.maxContextWindow,
+			// 	)
+			// }
 
 			return toolResult
 		} catch (error) {

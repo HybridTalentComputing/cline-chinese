@@ -6,10 +6,10 @@ description: "Set up AWS Bedrock with Cline using Bedrock API Keys. Simplest set
 
 ### Overview
 
--   **AWS Bedrock:** A fully managed service that offers access to leading generative AI models (e.g., Anthropic Claude, Amazon Nova) through AWS.\
-    [Learn more about AWS Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html).
--   **Cline:** A VS Code extension that acts as a coding assistant by integrating with AI models—empowering developers to generate code, debug, and analyze data.
--   **Developer Focus:** This guide is tailored for individual developers that want to enable access to frontier models via AWS Bedrock with a simplified setup using API Keys.
+- **AWS Bedrock:** A fully managed service that offers access to leading generative AI models (e.g., Anthropic Claude, Amazon Nova) through AWS.\
+  [Learn more about AWS Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html).
+- **Cline:** A VS Code extension that acts as a coding assistant by integrating with AI models—empowering developers to generate code, debug, and analyze data.
+- **Developer Focus:** This guide is tailored for individual developers that want to enable access to frontier models via AWS Bedrock with a simplified setup using API Keys.
 
 ---
 
@@ -30,9 +30,9 @@ For more detailed instructions check the [documentation](https://docs.aws.amazon
 
 To ensure Cline can interact with AWS Bedrock, your IAM user or role needs specific permissions. While the `AmazonBedrockLimitedAccess` managed policy provides comprehensive access, for a more restricted and secure setup adhering to the principle of least privilege, the following minimal permissions are sufficient for Cline's core model invocation functionality:
 
--   `bedrock:InvokeModel`
--   `bedrock:InvokeModelWithResponseStream`
--   `bedrock:CallWithBearerToken`
+- `bedrock:InvokeModel`
+- `bedrock:InvokeModelWithResponseStream`
+- `bedrock:CallWithBearerToken`
 
 You can create a custom IAM policy with these permissions and attach it to your IAM user or role.
 
@@ -54,8 +54,8 @@ You can create a custom IAM policy with these permissions and attach it to your 
 
 **Important Considerations:**
 
--   **Model Listing in Cline:** The minimal permissions (`bedrock:InvokeModel`, `bedrock:InvokeModelWithResponseStream`) are sufficient for Cline to _use_ a model if you specify the model ID directly in Cline's settings. If you rely on Cline to dynamically list available Bedrock models, you might need additional permissions like `bedrock:ListFoundationModels`.
--   **AWS Marketplace Subscriptions:** For third-party models (e.g., Anthropic Claude), the **`AmazonBedrockLimitedAccess`** policy grants you the necessary permissions to subscribe via the AWS Marketplace. There is no explicit access to be enabled. For Anthropic models you are still required to submit a First Time Use (FTU) form via the Console. If you get the following message in the Cline chat `[ERROR] Failed to process response: Model use case details have not been submitted for this account. Fill out the Anthropic use case details form before using the model.` then open the [Playground in the AWS Bedrock Console](https://console.aws.amazon.com/bedrock/home?#/text-generation-playground), select any Anthropic model and fill in the form (you might need to send a prompt first)
+- **Model Listing in Cline:** The minimal permissions (`bedrock:InvokeModel`, `bedrock:InvokeModelWithResponseStream`) are sufficient for Cline to _use_ a model if you specify the model ID directly in Cline's settings. If you rely on Cline to dynamically list available Bedrock models, you might need additional permissions like `bedrock:ListFoundationModels`.
+- **AWS Marketplace Subscriptions:** For third-party models (e.g., Anthropic Claude), the **`AmazonBedrockLimitedAccess`** policy grants you the necessary permissions to subscribe via the AWS Marketplace. There is no explicit access to be enabled. For Anthropic models you are still required to submit a First Time Use (FTU) form via the Console. If you get the following message in the Cline chat `[ERROR] Failed to process response: Model use case details have not been submitted for this account. Fill out the Anthropic use case details form before using the model.` then open the [Playground in the AWS Bedrock Console](https://console.aws.amazon.com/bedrock/home?#/text-generation-playground), select any Anthropic model and fill in the form (you might need to send a prompt first)
 
 ---
 

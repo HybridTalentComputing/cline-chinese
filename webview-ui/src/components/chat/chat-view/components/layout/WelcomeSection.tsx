@@ -11,7 +11,7 @@ import HistoryPreview from "@/components/history/HistoryPreview"
 import { useApiConfigurationHandlers } from "@/components/settings/utils/useApiConfigurationHandlers"
 import HomeHeader from "@/components/welcome/HomeHeader"
 import { SuggestedTasks } from "@/components/welcome/SuggestedTasks"
-import { useClineAuth } from "@/context/ClineAuthContext"
+// import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient, StateServiceClient } from "@/services/grpc-client"
 import { convertBannerData } from "@/utils/bannerUtils"
@@ -30,14 +30,15 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 	taskHistory,
 	shouldShowQuickWins,
 }) => {
-	const { lastDismissedInfoBannerVersion, lastDismissedCliBannerVersion, lastDismissedModelBannerVersion } = useExtensionState()
+	const { userInfo, lastDismissedInfoBannerVersion, lastDismissedCliBannerVersion, lastDismissedModelBannerVersion } =
+		useExtensionState()
 
 	// Track if we've shown the "What's New" modal this session
 	const [hasShownWhatsNewModal, setHasShownWhatsNewModal] = useState(false)
 	const [showWhatsNewModal, setShowWhatsNewModal] = useState(false)
 
 	const { t } = useTranslation()
-	const { clineUser } = useClineAuth()
+	// const { clineUser } = useClineAuth()
 	const { openRouterModels, setShowChatModelSelector, navigateToSettings, subagentsEnabled } = useExtensionState()
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 
@@ -87,7 +88,7 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 			}
 
 			if (banner.isClineUserOnly !== undefined) {
-				return banner.isClineUserOnly === !!clineUser
+				return banner.isClineUserOnly === !!userInfo
 			}
 
 			if (banner.platforms && !banner.platforms.includes(getCurrentPlatform())) {
@@ -97,60 +98,8 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 			return true
 		})
 
-		// Apply translations to banner titles and descriptions
-		return filteredBanners.map((banner) => {
-			const translatedBanner = { ...banner }
-
-			// Translate based on banner ID
-			switch (banner.id) {
-				case "info-banner-v1":
-					translatedBanner.title = t("banner.rightSidebar.title")
-					translatedBanner.description = t("banner.rightSidebar.description")
-					break
-				case "new-model-opus-4-5-cline-users":
-					translatedBanner.title = t("banner.opus45ClineUsers.title")
-					translatedBanner.description = t("banner.opus45ClineUsers.description")
-					if (translatedBanner.actions) {
-						translatedBanner.actions = translatedBanner.actions.map((action) => ({
-							...action,
-							title: action.title === "Try Now" ? t("banner.opus45ClineUsers.tryNow") : action.title,
-						}))
-					}
-					break
-				case "new-model-opus-4-5-non-cline-users":
-					translatedBanner.title = t("banner.opus45NonClineUsers.title")
-					translatedBanner.description = t("banner.opus45NonClineUsers.description")
-					if (translatedBanner.actions) {
-						translatedBanner.actions = translatedBanner.actions.map((action) => ({
-							...action,
-							title: action.title === "Get Started" ? t("banner.opus45NonClineUsers.getStarted") : action.title,
-						}))
-					}
-					break
-				case "cli-install-unix-v1":
-					translatedBanner.title = t("banner.cliInstallUnix.title")
-					translatedBanner.description = t("banner.cliInstallUnix.description")
-					if (translatedBanner.actions) {
-						translatedBanner.actions = translatedBanner.actions.map((action) => {
-							if (action.title === "Install") {
-								return { ...action, title: t("banner.cliInstallUnix.install") }
-							}
-							if (action.title === "Enable Subagents") {
-								return { ...action, title: t("banner.cliInstallUnix.enableSubagents") }
-							}
-							return action
-						})
-					}
-					break
-				case "cli-info-windows-v1":
-					translatedBanner.title = t("banner.cliInfoWindows.title")
-					translatedBanner.description = t("banner.cliInfoWindows.description")
-					break
-			}
-
-			return translatedBanner
-		})
-	}, [isBannerDismissed, clineUser, t])
+		return filteredBanners
+	}, [isBannerDismissed, userInfo])
 
 	/**
 	 * Action handler - maps action types to actual implementations
@@ -169,8 +118,8 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 						actModeOpenRouterModelId: modelId,
 						planModeOpenRouterModelInfo: openRouterModels[modelId],
 						actModeOpenRouterModelInfo: openRouterModels[modelId],
-						planModeApiProvider: "cline",
-						actModeApiProvider: "cline",
+						planModeApiProvider: "shengsuanyun",
+						actModeApiProvider: "shengsuanyun",
 					})
 					setTimeout(() => setShowChatModelSelector(true), 10)
 					break
@@ -232,7 +181,7 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 				onDismiss: handleBannerDismiss,
 			}),
 		)
-	}, [bannerConfig, clineUser, subagentsEnabled, handleBannerAction, handleBannerDismiss])
+	}, [bannerConfig, userInfo, subagentsEnabled, handleBannerAction, handleBannerDismiss])
 
 	return (
 		<div className="flex flex-col flex-1 w-full h-full p-0 m-0">

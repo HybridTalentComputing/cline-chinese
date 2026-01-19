@@ -88,11 +88,6 @@ export const freeModels = [
 		labelKey: "free",
 	},
 	{
-		id: "z-ai/glm-4.6",
-		descriptionKey: "glm46",
-		labelKey: "free",
-	},
-	{
 		id: "kwaipilot/kat-coder-pro:free",
 		descriptionKey: "katCoderPro",
 		labelKey: "free",
@@ -283,6 +278,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 	}, [selectedIndex])
 
 	const showBudgetSlider = useMemo(() => {
+		setSearchTerm(selectedModelId)
 		return (
 			Object.entries(openRouterModels)?.some(([id, m]) => id === selectedModelId && m.thinkingConfig) ||
 			selectedModelId?.toLowerCase().includes("claude-haiku-4.5") ||
@@ -380,7 +376,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder="Search and select a model..."
+						placeholder="选择模型..."
 						style={{
 							width: "100%",
 							zIndex: OPENROUTER_MODEL_PICKER_Z_INDEX,
@@ -389,7 +385,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 						value={searchTerm}>
 						{searchTerm && (
 							<div
-								aria-label="Clear search"
+								aria-label="清除"
 								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									setSearchTerm("")
@@ -511,18 +507,17 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 						marginTop: 0,
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					The extension automatically fetches the latest list of models available on{" "}
+					该扩展程序会自动获取{" "}
 					<VSCodeLink href="https://openrouter.ai/models" style={{ display: "inline", fontSize: "inherit" }}>
 						OpenRouter.
 					</VSCodeLink>
-					If you're unsure which model to choose, Cline works best with{" "}
+					如果你不确定选择哪种型号，Cline 最适合{" "}
 					<VSCodeLink
 						onClick={() => handleModelChange("anthropic/claude-sonnet-4.5")}
 						style={{ display: "inline", fontSize: "inherit" }}>
 						anthropic/claude-sonnet-4.5.
 					</VSCodeLink>
-					You can also try searching "free" for no-cost options currently available. OpenRouter presets can be used by
-					entering @preset/your-preset-name
+					您还可以尝试搜索“免费”以查找当前可用的免费模型。OpenRouter 预设可以通过以下方式使用：输入 @preset/您的预设名称
 				</p>
 			)}
 		</div>

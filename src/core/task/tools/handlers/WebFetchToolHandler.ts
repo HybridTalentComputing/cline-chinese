@@ -82,16 +82,16 @@ export class WebFetchToolHandler implements IFullyManagedTool {
 				// Auto-approve flow
 				await config.callbacks.removeLastPartialMessageIfExistsWithType("ask", "tool")
 				await config.callbacks.say("tool", completeMessage, undefined, undefined, false)
-				telemetryService.captureToolUsage(
-					config.ulid,
-					"web_fetch",
-					config.api.getModel().id,
-					provider,
-					true,
-					true,
-					undefined,
-					block.isNativeToolCall,
-				)
+				// telemetryService.captureToolUsage(
+				// 	config.ulid,
+				// 	"web_fetch",
+				// 	config.api.getModel().id,
+				// 	provider,
+				// 	true,
+				// 	true,
+				// 	undefined,
+				// 	block.isNativeToolCall,
+				// )
 			} else {
 				// Manual approval flow
 				showNotificationForApproval(

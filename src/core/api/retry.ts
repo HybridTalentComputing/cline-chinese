@@ -31,15 +31,20 @@ export function withRetry(options: RetryOptions = {}) {
 		const originalMethod = descriptor.value
 
 		descriptor.value = async function* (...args: any[]) {
-			for (let attempt = 0; attempt < maxRetries; attempt++) {
+			let lastError: any
+
+			// maxRetries + 1 to include the initial attempt
+			for (let attempt = 0; attempt <= maxRetries; attempt++) {
 				try {
 					yield* originalMethod.apply(this, args)
 					return
 				} catch (error: any) {
+					lastError = error
 					const isRateLimit = error?.status === 429 || error instanceof RetriableError
-					const isLastAttempt = attempt === maxRetries - 1
+					const isLastAttempt = attempt === maxRetries
 
-					if ((!isRateLimit && !retryAllErrors) || isLastAttempt) {
+					// If it's the last attempt, or if we shouldn't retry this error type, throw
+					if (isLastAttempt || (!isRateLimit && !retryAllErrors)) {
 						throw error
 					}
 
@@ -62,10 +67,14 @@ export function withRetry(options: RetryOptions = {}) {
 							// Delta seconds
 							delay = retryValue * 1000
 						}
+						// Ensure delay is within bounds
+						delay = Math.max(0, Math.min(maxDelay, delay))
 					} else {
 						// Use exponential backoff if no header
 						delay = Math.min(maxDelay, baseDelay * 2 ** attempt)
 					}
+
+					console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms delay for error:`, error.message)
 
 					const handlerInstance = this as any
 					if (handlerInstance.options?.onRetryAttempt) {
@@ -79,6 +88,9 @@ export function withRetry(options: RetryOptions = {}) {
 					await new Promise((resolve) => setTimeout(resolve, delay))
 				}
 			}
+
+			// This should never be reached, but just in case
+			throw lastError
 		}
 
 		return descriptor

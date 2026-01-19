@@ -72,7 +72,7 @@ const ServersToggleModal: React.FC = () => {
 
 			{isVisible && (
 				<PopupModalContainer $arrowPosition={arrowPosition} $menuPosition={menuPosition}>
-					<div className="flex-shrink-0 px-3 pt-2">
+					<div className="shrink-0 px-3 pt-2">
 						<div className="flex justify-between items-center mb-2.5">
 							<div className="m-0 text-sm font-medium">{t("mcp.title")}</div>
 							<VSCodeButton

@@ -42,7 +42,7 @@ export const StickyUserMessage: React.FC<StickyUserMessageProps> = memo(
 
 		return (
 			<div
-				aria-label={`Scroll to your message: ${messageText}`}
+				aria-label={`滚动至您的消息: ${messageText}`}
 				className={cn(
 					"relative flex items-center px-2.5 pt-2 pb-2 cursor-pointer select-none",
 					"backdrop-blur-sm",
@@ -56,7 +56,7 @@ export const StickyUserMessage: React.FC<StickyUserMessageProps> = memo(
 					borderRadius: "3px",
 				}}
 				tabIndex={0}
-				title="Click to scroll to your message">
+				title="点击滚动至您的消息">
 				{/* Message text (truncated via CSS text-ellipsis) */}
 				<div
 					className={cn(

@@ -8,6 +8,7 @@ import { DEFAULT_MCP_DISPLAY_MODE } from "@shared/McpDisplayMode"
 import type { UserInfo } from "@shared/proto/cline/account"
 import { EmptyRequest } from "@shared/proto/cline/common"
 import type { OpenRouterCompatibleModelInfo } from "@shared/proto/cline/models"
+import { ShengSuanYunModelInfo } from "@shared/proto/cline/models"
 import { OnboardingModelGroup, type TerminalProfile } from "@shared/proto/cline/state"
 import { convertProtoToClineMessage } from "@shared/proto-conversions/cline-message"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
@@ -25,6 +26,8 @@ import {
 	openRouterDefaultModelInfo,
 	requestyDefaultModelId,
 	requestyDefaultModelInfo,
+	shengSuanYunDefaultModelId,
+	shengSuanYunDefaultModelInfo,
 } from "../../../src/shared/api"
 import type { McpMarketplaceCatalog, McpServer, McpViewTab } from "../../../src/shared/mcp"
 import { McpServiceClient, ModelsServiceClient, StateServiceClient, UiServiceClient } from "../services/grpc-client"
@@ -38,6 +41,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	liteLlmModels: Record<string, ModelInfo>
 	openAiModels: string[]
 	requestyModels: Record<string, ModelInfo>
+	shengSuanYunModels: Record<string, ShengSuanYunModelInfo>
 	groqModels: Record<string, ModelInfo>
 	basetenModels: Record<string, ModelInfo>
 	huggingFaceModels: Record<string, ModelInfo>
@@ -66,6 +70,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setShouldShowAnnouncement: (value: boolean) => void
 	setMcpServers: (value: McpServer[]) => void
 	setRequestyModels: (value: Record<string, ModelInfo>) => void
+	setShengSuanYunModels: (value: Record<string, ShengSuanYunModelInfo>) => void
 	setGroqModels: (value: Record<string, ModelInfo>) => void
 	setBasetenModels: (value: Record<string, ModelInfo>) => void
 	setHuggingFaceModels: (value: Record<string, ModelInfo>) => void
@@ -269,6 +274,9 @@ export const ExtensionStateContextProvider: React.FC<{
 	const [openAiModels, _setOpenAiModels] = useState<string[]>([])
 	const [requestyModels, setRequestyModels] = useState<Record<string, ModelInfo>>({
 		[requestyDefaultModelId]: requestyDefaultModelInfo,
+	})
+	const [shengSuanYunModels, setShengSuanYunModels] = useState<Record<string, ShengSuanYunModelInfo>>({
+		[shengSuanYunDefaultModelId]: shengSuanYunDefaultModelInfo,
 	})
 	const [groqModelsState, setGroqModels] = useState<Record<string, ModelInfo>>({
 		[groqDefaultModelId]: groqModels[groqDefaultModelId],
@@ -705,6 +713,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		liteLlmModels,
 		openAiModels,
 		requestyModels,
+		shengSuanYunModels,
 		groqModels: groqModelsState,
 		basetenModels: basetenModelsState,
 		huggingFaceModels,
@@ -756,6 +765,7 @@ export const ExtensionStateContextProvider: React.FC<{
 			})),
 		setMcpServers: (mcpServers: McpServer[]) => setMcpServers(mcpServers),
 		setRequestyModels: (models: Record<string, ModelInfo>) => setRequestyModels(models),
+		setShengSuanYunModels: (models: Record<string, ShengSuanYunModelInfo>) => setShengSuanYunModels(models),
 		setGroqModels: (models: Record<string, ModelInfo>) => setGroqModels(models),
 		setBasetenModels: (models: Record<string, ModelInfo>) => setBasetenModels(models),
 		setHuggingFaceModels: (models: Record<string, ModelInfo>) => setHuggingFaceModels(models),

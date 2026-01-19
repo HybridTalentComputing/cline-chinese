@@ -141,33 +141,33 @@ export class ExecuteCommandToolHandler implements IFullyManagedTool {
 		}
 
 		// Capture workspace path resolution telemetry
-		if (config.isMultiRootEnabled && config.workspaceManager) {
-			telemetryService.captureWorkspacePathResolved(
-				config.ulid,
-				"ExecuteCommandToolHandler",
-				workspaceHintUsed ? "hint_provided" : "fallback_to_primary",
-				workspaceHintUsed ? "workspace_name" : undefined,
-				resolvedToNonPrimary, // resolution success = resolved to different workspace
-				undefined, // TODO: could calculate workspace index if needed
-				true,
-			)
-		}
+		// if (config.isMultiRootEnabled && config.workspaceManager) {
+		// 	telemetryService.captureWorkspacePathResolved(
+		// 		config.ulid,
+		// 		"ExecuteCommandToolHandler",
+		// 		workspaceHintUsed ? "hint_provided" : "fallback_to_primary",
+		// 		workspaceHintUsed ? "workspace_name" : undefined,
+		// 		resolvedToNonPrimary, // resolution success = resolved to different workspace
+		// 		undefined, // TODO: could calculate workspace index if needed
+		// 		true,
+		// 	)
+		// }
 
 		if ((!requiresApprovalPerLLM && autoApproveSafe) || (requiresApprovalPerLLM && autoApproveSafe && autoApproveAll)) {
 			// Auto-approve flow
 			await config.callbacks.removeLastPartialMessageIfExistsWithType("ask", "command")
 			await config.callbacks.say("command", actualCommand, undefined, undefined, false)
 			didAutoApprove = true
-			telemetryService.captureToolUsage(
-				config.ulid,
-				block.name,
-				config.api.getModel().id,
-				provider,
-				true,
-				true,
-				workspaceContext,
-				block.isNativeToolCall,
-			)
+			// telemetryService.captureToolUsage(
+			// 	config.ulid,
+			// 	block.name,
+			// 	config.api.getModel().id,
+			// 	provider,
+			// 	true,
+			// 	true,
+			// 	workspaceContext,
+			// 	block.isNativeToolCall,
+			// )
 		} else {
 			// Manual approval flow
 			showNotificationForApproval(

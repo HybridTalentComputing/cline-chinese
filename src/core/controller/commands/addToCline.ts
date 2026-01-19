@@ -1,13 +1,13 @@
 import { getFileMentionFromPath } from "@/core/mentions"
 import { singleFileDiagnosticsToProblemsString } from "@/integrations/diagnostics"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { CommandContext, Empty } from "@/shared/proto/index.cline"
 import { Controller } from "../index"
 import { sendAddToInputEvent } from "../ui/subscribeToAddToInput"
 
 // 'Add to Cline' context menu in editor and code action
 // Inserts the selected code into the chat.
-export async function addToCline(controller: Controller, request: CommandContext): Promise<Empty> {
+export async function addToCline(_controller: Controller, request: CommandContext): Promise<Empty> {
 	if (!request.selectedText) {
 		return {}
 	}
@@ -24,7 +24,7 @@ export async function addToCline(controller: Controller, request: CommandContext
 	await sendAddToInputEvent(input)
 
 	console.log("addToCline", request.selectedText, filePath, request.language)
-	telemetryService.captureButtonClick("codeAction_addToChat", controller.task?.ulid)
+	// telemetryService.captureButtonClick("codeAction_addToChat", controller.task?.ulid)
 
 	return {}
 }

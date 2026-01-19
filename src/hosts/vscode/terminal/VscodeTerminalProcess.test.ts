@@ -8,14 +8,14 @@ import { TerminalRegistry } from "./VscodeTerminalRegistry"
 
 declare module "vscode" {
 	// https://github.com/microsoft/vscode/blob/f0417069c62e20f3667506f4b7e53ca0004b4e3e/src/vscode-dts/vscode.d.ts#L7442
-	interface Terminal {
-		shellIntegration?: {
-			cwd?: vscode.Uri
-			executeCommand?: (command: string) => {
-				read: () => AsyncIterable<string>
-			}
-		}
-	}
+	// interface Terminal {
+	// 	shellIntegration?: {
+	// 		cwd?: vscode.Uri
+	// 		executeCommand?: (command: string) => {
+	// 			read: () => AsyncIterable<string>
+	// 		}
+	// 	}
+	// }
 }
 
 // Create a mock stream for simulating terminal output - this is only used for tests
@@ -47,7 +47,9 @@ describe("TerminalProcess (Integration Tests)", () => {
 		// Remove any event listeners left on the TerminalProcess
 		process.removeAllListeners()
 		// Dispose all terminals created during the test
-		createdTerminals.forEach((t) => t.dispose())
+		createdTerminals.forEach((t) => {
+			t.dispose()
+		})
 		createdTerminals = []
 	})
 

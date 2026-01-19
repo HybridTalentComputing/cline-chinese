@@ -67,6 +67,7 @@ export interface ExtensionState {
 	maxConsecutiveMistakes: number
 	subagentTerminalOutputLineLimit: number
 	defaultTerminalProfile?: string
+	uriScheme?: string
 	vscodeTerminalExecutionMode: string
 	backgroundCommandRunning?: boolean
 	backgroundCommandTaskId?: string

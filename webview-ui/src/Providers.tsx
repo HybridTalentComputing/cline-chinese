@@ -2,11 +2,11 @@ import { HeroUIProvider } from "@heroui/react"
 import { type ReactNode } from "react"
 import { I18nextProvider } from "react-i18next"
 import "./i18n/config" // 导入 i18n 配置
-import i18n from "./i18n/config"
 import { CustomPostHogProvider } from "./CustomPostHogProvider"
-import { ClineAuthProvider } from "./context/ClineAuthContext"
+// import { ClineAuthProvider } from "./context/ClineAuthContext"
 import { ExtensionStateContextProvider } from "./context/ExtensionStateContext"
 import { PlatformProvider } from "./context/PlatformContext"
+import i18n from "./i18n/config"
 
 export function Providers({ children }: { children: ReactNode }) {
 	return (
@@ -14,9 +14,9 @@ export function Providers({ children }: { children: ReactNode }) {
 			<PlatformProvider>
 				<ExtensionStateContextProvider>
 					<CustomPostHogProvider>
-						<ClineAuthProvider>
-							<HeroUIProvider>{children}</HeroUIProvider>
-						</ClineAuthProvider>
+						{/* <ClineAuthProvider> */}
+						<HeroUIProvider>{children}</HeroUIProvider>
+						{/* </ClineAuthProvider> */}
 					</CustomPostHogProvider>
 				</ExtensionStateContextProvider>
 			</PlatformProvider>

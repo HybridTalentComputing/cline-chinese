@@ -18,12 +18,12 @@ const meta: Meta<typeof TaskHeader> = {
 	},
 	decorators: [createStorybookDecorator()],
 	argTypes: {
-		tokensIn: { control: "number", description: "Input tokens used" },
-		tokensOut: { control: "number", description: "Output tokens used" },
-		cacheWrites: { control: "number", description: "Cache write tokens" },
-		cacheReads: { control: "number", description: "Cache read tokens" },
-		totalCost: { control: "number", description: "Total cost in USD" },
-		doesModelSupportPromptCache: { control: "boolean", description: "Whether model supports prompt caching" },
+		tokensIn: { control: "number", description: "输入 tokens" },
+		tokensOut: { control: "number", description: "输出 tokens" },
+		cacheWrites: { control: "number", description: "写缓存 tokens" },
+		cacheReads: { control: "number", description: "读缓存 tokens" },
+		totalCost: { control: "number", description: "总费用 USD" },
+		doesModelSupportPromptCache: { control: "boolean", description: "模型是否支持提示缓存" },
 	},
 }
 
@@ -46,13 +46,13 @@ const createMessages = (): ClineMessage[] => [
 		ts: Date.now() - 300000,
 		type: "say",
 		say: "task",
-		text: "Create a React component",
+		text: "创建一个 React 组件",
 	},
 	{
 		ts: Date.now() - 240000,
 		type: "say",
 		say: "text",
-		text: "I'll help you create a React component.",
+		text: "我会帮助你创建一个 React 组件。",
 	},
 	{
 		ts: Date.now() - 180000,
@@ -64,13 +64,13 @@ const createMessages = (): ClineMessage[] => [
 		ts: Date.now() - 120000,
 		type: "say",
 		say: "text",
-		text: "Component created successfully.",
+		text: "组件创建成功。",
 	},
 ]
 
 export const Collapsed: Story = {
 	args: {
-		task: createTask("Create a responsive navigation component for a React application"),
+		task: createTask("为 React 应用程序创建响应式导航组件"),
 		tokensIn: 2500,
 		tokensOut: 1200,
 		cacheWrites: 350,
@@ -92,7 +92,7 @@ export const Collapsed: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "TaskHeader in collapsed state showing task title, cost, and new task button.",
+				story: "任务标题栏处于折叠状态，显示任务标题、费用和新建任务按钮。",
 			},
 		},
 	},
@@ -100,7 +100,7 @@ export const Collapsed: Story = {
 
 export const Expanded: Story = {
 	args: {
-		task: createTask("Create a responsive navigation component for a React application"),
+		task: createTask("为 React 应用程序创建响应式导航组件"),
 		tokensIn: 2500,
 		tokensOut: 1200,
 		cacheWrites: 350,
@@ -122,7 +122,7 @@ export const Expanded: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "TaskHeader in expanded state showing full task details, context window, and timeline.",
+				story: "任务标题展开状态，显示完整的任务详情、上下文窗口和时间线。",
 			},
 		},
 	},
@@ -156,7 +156,7 @@ export const WithImages: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "TaskHeader with attached images displayed as thumbnails.",
+				story: "任务标题，附带的图片以缩略图形式显示。",
 			},
 		},
 	},
@@ -164,11 +164,7 @@ export const WithImages: Story = {
 
 export const WithFiles: Story = {
 	args: {
-		task: createTask("Review these configuration files and suggest improvements", undefined, [
-			"package.json",
-			"tsconfig.json",
-			"vite.config.ts",
-		]),
+		task: createTask("请检查这些配置文件并提出改进建议。", undefined, ["package.json", "tsconfig.json", "vite.config.ts"]),
 		tokensIn: 4500,
 		tokensOut: 2400,
 		cacheWrites: 680,

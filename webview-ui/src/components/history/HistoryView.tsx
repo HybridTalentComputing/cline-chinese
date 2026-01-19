@@ -315,7 +315,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								}}></div>
 							{searchQuery && (
 								<div
-									aria-label="Clear search"
+									aria-label="清除"
 									className="input-icon-button codicon codicon-close"
 									onClick={() => setSearchQuery("")}
 									slot="end"
@@ -339,6 +339,8 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							<VSCodeRadio disabled={!searchQuery} style={{ opacity: searchQuery ? 1 : 0.5 }} value="mostRelevant">
 								{t("history.sort.mostRelevant")}
 							</VSCodeRadio>
+						</VSCodeRadioGroup>
+						<div className="flex flex-wrap" style={{ marginTop: -8 }}>
 							<VSCodeRadio
 								checked={showCurrentWorkspaceOnly}
 								onClick={() => setShowCurrentWorkspaceOnly(!showCurrentWorkspaceOnly)}>
@@ -353,7 +355,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 									{t("history.filter.favorites")}
 								</span>
 							</VSCodeRadio>
-						</VSCodeRadioGroup>
+						</div>
 					</div>
 				</div>
 				<div style={{ flexGrow: 1, overflowY: "auto", margin: 0 }}>
@@ -789,7 +791,6 @@ export const highlight = (fuseSearchResult: FuseResult<any>[], highlightClassNam
 		.filter(({ matches }) => matches && matches.length)
 		.map(({ item, matches }) => {
 			const highlightedItem = { ...item }
-
 			matches?.forEach((match) => {
 				if (match.key && typeof match.value === "string" && match.indices) {
 					// Merge overlapping regions before generating highlighted text

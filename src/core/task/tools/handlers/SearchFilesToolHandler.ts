@@ -255,15 +255,15 @@ export class SearchFilesToolHandler implements IFullyManagedTool {
 				: searchPaths.length > 1
 					? "cross_workspace_search"
 					: "fallback_to_primary"
-			telemetryService.captureWorkspacePathResolved(
-				config.ulid,
-				"SearchFilesToolHandler",
-				resolutionType,
-				workspaceHint ? "workspace_name" : undefined,
-				searchPaths.length > 0, // resolution success = found paths to search
-				undefined, // TODO: could calculate primary workspace index
-				true,
-			)
+			// telemetryService.captureWorkspacePathResolved(
+			// 	config.ulid,
+			// 	"SearchFilesToolHandler",
+			// 	resolutionType,
+			// 	workspaceHint ? "workspace_name" : undefined,
+			// 	searchPaths.length > 0, // resolution success = found paths to search
+			// 	undefined, // TODO: could calculate primary workspace index
+			// 	true,
+			// )
 		}
 
 		// Execute searches in all relevant workspaces in parallel
@@ -284,14 +284,14 @@ export class SearchFilesToolHandler implements IFullyManagedTool {
 			const searchType = workspaceHint ? "targeted" : searchPaths.length > 1 ? "cross_workspace" : "primary_only"
 			const resultsFound = searchResults.some((result) => result.resultCount > 0)
 
-			telemetryService.captureWorkspaceSearchPattern(
-				config.ulid,
-				searchType,
-				searchPaths.length,
-				!!workspaceHint,
-				resultsFound,
-				searchDurationMs,
-			)
+			// telemetryService.captureWorkspaceSearchPattern(
+			// 	config.ulid,
+			// 	searchType,
+			// 	searchPaths.length,
+			// 	!!workspaceHint,
+			// 	resultsFound,
+			// 	searchDurationMs,
+			// )
 		}
 
 		const sharedMessageProps = {
@@ -311,16 +311,16 @@ export class SearchFilesToolHandler implements IFullyManagedTool {
 			await config.callbacks.say("tool", completeMessage, undefined, undefined, false)
 
 			// Capture telemetry
-			telemetryService.captureToolUsage(
-				config.ulid,
-				block.name,
-				config.api.getModel().id,
-				provider,
-				true,
-				true,
-				workspaceContext,
-				block.isNativeToolCall,
-			)
+			// telemetryService.captureToolUsage(
+			// 	config.ulid,
+			// 	block.name,
+			// 	config.api.getModel().id,
+			// 	provider,
+			// 	true,
+			// 	true,
+			// 	workspaceContext,
+			// 	block.isNativeToolCall,
+			// )
 		} else {
 			// Manual approval flow
 			const notificationMessage = `Cline wants to search files for ${regex}`

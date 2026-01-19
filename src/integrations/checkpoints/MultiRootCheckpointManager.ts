@@ -24,7 +24,7 @@
 import { MessageStateHandler } from "@core/task/message-state"
 import { showChangedFilesDiff } from "@core/task/multifile-diff"
 import { WorkspaceRootManager } from "@core/workspace"
-import { telemetryService } from "@services/telemetry"
+// import { telemetryService } from "@services/telemetry"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import CheckpointTracker from "./CheckpointTracker"
@@ -106,14 +106,14 @@ export class MultiRootCheckpointManager implements ICheckpointManager {
 		console.log(`[MultiRootCheckpointManager] Initialization complete. Active trackers: ${this.trackers.size}`)
 
 		// TELEMETRY: Track multi-root checkpoint initialization
-		telemetryService.captureMultiRootCheckpoint(
-			this.taskId,
-			"initialized",
-			roots.length,
-			successCount,
-			failureCount,
-			performance.now() - startTime,
-		)
+		// telemetryService.captureMultiRootCheckpoint(
+		// 	this.taskId,
+		// 	"initialized",
+		// 	roots.length,
+		// 	successCount,
+		// 	failureCount,
+		// 	performance.now() - startTime,
+		// )
 	}
 
 	/**
@@ -158,14 +158,14 @@ export class MultiRootCheckpointManager implements ICheckpointManager {
 				console.log(`[MultiRootCheckpointManager] Checkpoint complete: ${successful}/${results.length} successful`)
 
 				// TELEMETRY: Track checkpoint commits
-				telemetryService.captureMultiRootCheckpoint(
-					this.taskId,
-					"committed",
-					results.length,
-					successful,
-					failed,
-					performance.now() - startTime,
-				)
+				// telemetryService.captureMultiRootCheckpoint(
+				// 	this.taskId,
+				// 	"committed",
+				// 	results.length,
+				// 	successful,
+				// 	failed,
+				// 	performance.now() - startTime,
+				// )
 			})
 			.catch((error) => {
 				console.error("[MultiRootCheckpointManager] Unexpected error during checkpoint:", error)

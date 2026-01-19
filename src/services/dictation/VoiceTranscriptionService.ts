@@ -114,14 +114,14 @@ export class VoiceTranscriptionService {
 			Logger.info("Transcription successful")
 
 			// Capture telemetry with account type - use dynamic import to avoid circular dependency
-			const { telemetryService } = await import("@/services/telemetry")
-			telemetryService.captureVoiceTranscriptionCompleted(
-				undefined, // taskId
-				result.text?.length,
-				undefined, // duration
-				language,
-				isOrgAccount,
-			)
+			// const { telemetryService } = await import("@/services/telemetry")
+			// telemetryService.captureVoiceTranscriptionCompleted(
+			// 	undefined, // taskId
+			// 	result.text?.length,
+			// 	undefined, // duration
+			// 	language,
+			// 	isOrgAccount,
+			// )
 
 			return { text: result.text }
 		} catch (error) {

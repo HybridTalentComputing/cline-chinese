@@ -114,6 +114,7 @@ func (r *ProviderListResult) GetAllReadyProviders() []*ProviderDisplay {
 		cline.ApiProvider_NOUSRESEARCH,
 		cline.ApiProvider_OCA,
 		cline.ApiProvider_HICAP,
+		cline.ApiProvider_SSY,
 	}
 
 	// Check each provider to see if it's ready to use
@@ -242,6 +243,8 @@ func mapProviderStringToEnum(providerStr string) (cline.ApiProvider, bool) {
 		return cline.ApiProvider_OCA, true
 	case "hicap":
 		return cline.ApiProvider_HICAP, true
+	case "shengsuanyun":
+		return cline.ApiProvider_SSY, true
 	case "nousResearch":
 		return cline.ApiProvider_NOUSRESEARCH, true
 	default:
@@ -277,6 +280,8 @@ func GetProviderIDForEnum(provider cline.ApiProvider) string {
 		return "oca"
 	case cline.ApiProvider_HICAP:
 		return "hicap"
+	case cline.ApiProvider_SSY:
+		return "shengsuanyun"
 	case cline.ApiProvider_NOUSRESEARCH:
 		return "nousResearch"
 	default:
@@ -362,6 +367,8 @@ func GetProviderDisplayName(provider cline.ApiProvider) string {
 		return "Oracle Code Assist"
 	case cline.ApiProvider_HICAP:
 		return "Hicap"
+	case cline.ApiProvider_SSY:
+		return "胜算云"
 	case cline.ApiProvider_NOUSRESEARCH:
 		return "NousResearch"
 	default:

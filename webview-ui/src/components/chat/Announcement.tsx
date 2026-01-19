@@ -1,13 +1,14 @@
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { XIcon } from "lucide-react"
-import { CSSProperties, memo, useState } from "react"
+import { CSSProperties, memo } from "react"
 import { useMount } from "react-use"
 import { Button } from "@/components/ui/button"
 import { PLATFORM_CONFIG, PlatformType } from "@/config/platform.config"
-import { useClineAuth, useClineSignIn } from "@/context/ClineAuthContext"
+// import { useClineAuth, useClineSignIn } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { getAsVar, VSC_DESCRIPTION_FOREGROUND, VSC_INACTIVE_SELECTION_BACKGROUND } from "@/utils/vscStyles"
-import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurationHandlers"
+
+// import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurationHandlers"
 
 interface AnnouncementProps {
 	version: string
@@ -22,9 +23,9 @@ const containerStyle: CSSProperties = {
 	position: "relative",
 	flexShrink: 0,
 }
-const h2TitleStyle: CSSProperties = { margin: "0 0 8px", fontWeight: "bold" }
+// const h2TitleStyle: CSSProperties = { margin: "0 0 8px", fontWeight: "bold" }
 const ulStyle: CSSProperties = { margin: "0 0 8px", paddingLeft: "12px", listStyleType: "disc" }
-const _accountIconStyle: CSSProperties = { fontSize: 11 }
+// const _accountIconStyle: CSSProperties = { fontSize: 11 }
 const hrStyle: CSSProperties = {
 	height: "1px",
 	background: getAsVar(VSC_DESCRIPTION_FOREGROUND),
@@ -40,33 +41,33 @@ The latestAnnouncementId is now automatically generated from the extension's pac
 Patch releases (3.19.1 → 3.19.2) will not trigger new announcements.
 */
 const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
-	const { clineUser } = useClineAuth()
-	const { openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
-	const user = clineUser || undefined
-	const { handleFieldsChange } = useApiConfigurationHandlers()
-	const { isLoginLoading, handleSignIn } = useClineSignIn()
+	// const { clineUser } = useClineAuth()
+	const { refreshOpenRouterModels } = useExtensionState()
+	// const user = clineUser || undefined
+	// const { handleFieldsChange } = useApiConfigurationHandlers()
+	// const { isLoginLoading, handleSignIn } = useClineSignIn()
 
-	const [didClickDevstralButton, setDidClickDevstralButton] = useState(false)
+	// const [didClickDevstralButton, setDidClickDevstralButton] = useState(false)
 	// Need to get latest model list in case user hits shortcut button to set model
 	useMount(refreshOpenRouterModels)
 
-	const setDevstral = () => {
-		const modelId = "mistralai/devstral-2512"
-		// set both plan and act modes to use code-supernova-1-million
-		handleFieldsChange({
-			planModeOpenRouterModelId: modelId,
-			actModeOpenRouterModelId: modelId,
-			planModeOpenRouterModelInfo: openRouterModels[modelId],
-			actModeOpenRouterModelInfo: openRouterModels[modelId],
-			planModeApiProvider: "cline",
-			actModeApiProvider: "cline",
-		})
+	// const setDevstral = () => {
+	// 	const modelId = "mistralai/devstral-2512"
+	// 	// set both plan and act modes to use code-supernova-1-million
+	// 	handleFieldsChange({
+	// 		planModeOpenRouterModelId: modelId,
+	// 		actModeOpenRouterModelId: modelId,
+	// 		planModeOpenRouterModelInfo: openRouterModels[modelId],
+	// 		actModeOpenRouterModelInfo: openRouterModels[modelId],
+	// 		planModeApiProvider: "cline",
+	// 		actModeApiProvider: "cline",
+	// 	})
 
-		setTimeout(() => {
-			setDidClickDevstralButton(true)
-			setShowChatModelSelector(true)
-		}, 10)
-	}
+	// 	setTimeout(() => {
+	// 		setDidClickDevstralButton(true)
+	// 		setShowChatModelSelector(true)
+	// 	}, 10)
+	// }
 
 	const isVscode = PLATFORM_CONFIG.type === PlatformType.VSCODE
 
@@ -80,30 +81,25 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 				variant="icon">
 				<XIcon />
 			</Button>
-			<h2 style={h2TitleStyle}>
-				🎉{"  "}New in v{version}
-			</h2>
+			<h4 style={{ fontWeight: 7 }}>
+				🎉{"  "}新特性 v{version}
+			</h4>
 			<ul style={ulStyle}>
-				{isVscode && (
-					<>
-						<li>
-							New{" "}
-							<VSCodeLink href="https://docs.cline.bot/features/explain-changes" style={linkStyle}>
-								Explain Changes
-							</VSCodeLink>{" "}
-							button when Cline completes a task to help review code with inline chat. You can reply to comments, or
-							send the chat as context back to Cline.
-						</li>
-						<li>
-							Use the new{" "}
-							<VSCodeLink href="https://docs.cline.bot/features/slash-commands/explain-changes" style={linkStyle}>
-								/explain-changes
-							</VSCodeLink>{" "}
-							slash command to explain the changes in branches, commits, etc. (Try asking Cline to explain a PR you
-							need to review!)
-						</li>
-					</>
-				)}
+				<li>
+					<strong>钩子</strong>允许您将自定义逻辑注入到 Cline 的工作流程中。&nbsp; (
+					<a href="https://docs.cline.bot/features/hooks" style={linkStyle}>
+						钩子文档
+					</a>
+					)
+				</li>
+				<li>
+					错误修复和改进，包括对以下功能的支持 <code>&lt;think&gt;</code> 标签，更好地兼容开源模型，改进 GLM-4.6
+					系统提示符，更新 CLI 身份验证和提供程序，并修复 OpenAI 兼容提供程序的问题。&nbsp; (
+					<a href="https://github.com/cline/cline/blob/main/CHANGELOG.md" style={linkStyle}>
+						查看完整的变更日志
+					</a>
+					)
+				</li>
 			</ul>
 			{isVscode && (
 				<p style={{ margin: "0" }}>
@@ -115,7 +111,7 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 			)}
 			<div style={hrStyle} />
 			<p style={linkContainerStyle}>
-				Join us on{" "}
+				加入我们{" "}
 				<VSCodeLink href="https://x.com/cline" style={linkStyle}>
 					X,
 				</VSCodeLink>{" "}
@@ -126,7 +122,7 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 				<VSCodeLink href="https://www.reddit.com/r/cline/" style={linkStyle}>
 					r/cline
 				</VSCodeLink>
-				for more updates!
+				关注更新!
 			</p>
 		</div>
 	)

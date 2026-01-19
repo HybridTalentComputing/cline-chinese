@@ -2,11 +2,12 @@ import { ClineMessage } from "@shared/ExtensionMessage"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { memo } from "react"
 import { useTranslation } from "react-i18next"
-import CreditLimitError from "@/components/chat/CreditLimitError"
-import { useClineAuth, useClineSignIn } from "@/context/ClineAuthContext"
-import { ClineError, ClineErrorType } from "../../../../src/services/error/ClineError"
+import CreditLimitErrorSSY from "@/components/chat/CreditLimitErrorSSY"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSignIn } from "@/context/ShengSuanYunAuthContext"
+import { SSYError, SSYErrorType } from "../../../../src/services/error/SSYError"
 
-const _errorColor = "var(--vscode-errorForeground)"
+// const _errorColor = "var(--vscode-errorForeground)"
 
 interface ErrorRowProps {
 	message: ClineMessage
@@ -17,10 +18,9 @@ interface ErrorRowProps {
 
 const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStreamingFailedMessage }: ErrorRowProps) => {
 	const { t } = useTranslation()
-	const { clineUser } = useClineAuth()
+	const { userInfo } = useExtensionState()
 	const rawApiError = apiRequestFailedMessage || apiReqStreamingFailedMessage
-
-	const { isLoginLoading, handleSignIn } = useClineSignIn()
+	const { isLoginLoading, handleSignIn } = useSignIn()
 
 	const renderErrorContent = () => {
 		switch (errorType) {
@@ -29,27 +29,25 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 				// Handle API request errors with special error parsing
 				if (rawApiError) {
 					// FIXME: ClineError parsing should not be applied to non-Cline providers, but it seems we're using clineErrorMessage below in the default error display
-					const clineError = ClineError.parse(rawApiError)
-					const errorMessage = clineError?._error?.message || clineError?.message || rawApiError
-					const requestId = clineError?._error?.request_id
-					const providerId = clineError?.providerId || clineError?._error?.providerId
+					const ssyError = SSYError.parse(rawApiError)
+					const errorMessage = ssyError?._error?.message || ssyError?.message || rawApiError
+					const requestId = ssyError?._error?.request_id
+					const providerId = ssyError?.providerId || ssyError?._error?.providerId
 					const isClineProvider = providerId === "cline"
-					const errorCode = clineError?._error?.code
+					const errorCode = ssyError?._error?.code
 
-					if (clineError?.isErrorType(ClineErrorType.Balance)) {
-						const errorDetails = clineError._error?.details
+					if (ssyError?.isErrorType(SSYErrorType.Balance)) {
+						const errorDetails = ssyError._error?.details
 						return (
-							<CreditLimitError
+							<CreditLimitErrorSSY
 								buyCreditsUrl={errorDetails?.buy_credits_url}
 								currentBalance={errorDetails?.current_balance}
 								message={errorDetails?.message}
-								totalPromotions={errorDetails?.total_promotions}
-								totalSpent={errorDetails?.total_spent}
 							/>
 						)
 					}
 
-					if (clineError?.isErrorType(ClineErrorType.RateLimit)) {
+					if (ssyError?.isErrorType(SSYErrorType.RateLimit)) {
 						return (
 							<p className="m-0 whitespace-pre-wrap text-(--vscode-errorForeground) wrap-anywhere">
 								{errorMessage}
@@ -88,7 +86,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 							{/* Display Login button for non-logged in users using the Cline provider */}
 							<div>
 								{/* The user is signed in or not using cline provider */}
-								{isClineProvider && !clineUser ? (
+								{isClineProvider && !userInfo ? (
 									<VSCodeButton className="w-full mb-4" disabled={isLoginLoading} onClick={handleSignIn}>
 										{t("chatRow.signInToCline")}
 										{isLoginLoading && (
@@ -118,9 +116,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 			case "clineignore_error":
 				return (
 					<div className="flex flex-col p-2 rounded text-xs bg-(--vscode-textBlockQuote-background) text-(--vscode-foreground) opacity-80">
-						<div>
-							{t("chatRow.clineIgnoreError", { path: message.text })}
-						</div>
+						<div>{t("chatRow.clineIgnoreError", { path: message.text })}</div>
 					</div>
 				)
 

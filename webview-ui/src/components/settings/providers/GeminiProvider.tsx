@@ -53,6 +53,7 @@ export const GeminiProvider = ({ showModelOptions, isPopup, currentMode }: Gemin
 
 			<BaseUrlField
 				initialValue={apiConfiguration?.geminiBaseUrl}
+				label="自定义 base URL"
 				onChange={(value) => handleFieldChange("geminiBaseUrl", value)}
 				placeholder={t("settings.apiConfig.geminiBaseUrlPlaceholder")}
 			/>

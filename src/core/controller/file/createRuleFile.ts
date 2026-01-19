@@ -59,7 +59,7 @@ export async function createRuleFile(controller: Controller, request: RuleFileRe
 
 		await openFile(controller, { value: filePath })
 
-		const message = `Created new ${request.isGlobal ? "global" : "workspace"} ${fileTypeName} file: ${request.filename}`
+		const message = `新建 ${request.isGlobal ? "全局" : "工作区"} ${fileTypeName} 文件: ${request.filename}`
 		HostProvider.window.showMessage({
 			type: ShowMessageType.INFORMATION,
 			message,

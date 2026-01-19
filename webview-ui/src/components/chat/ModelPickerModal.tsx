@@ -640,7 +640,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 												setIsProviderExpanded(!isProviderExpanded)
 											}}
 											ref={providerRowRef}>
-											<ProviderLabel>Provider:</ProviderLabel>
+											<ProviderLabel>供应商:</ProviderLabel>
 											<span style={{ fontSize: 11, color: "var(--vscode-foreground)" }}>
 												{getProviderLabel(selectedProvider)}
 											</span>
@@ -649,7 +649,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 									</TooltipTrigger>
 									{!isProviderExpanded && (
 										<TooltipContent side="top" style={{ zIndex: 9999 }}>
-											Configured providers
+											配置供应商
 										</TooltipContent>
 									)}
 								</Tooltip>
@@ -670,10 +670,10 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 										</TooltipTrigger>
 										<TooltipContent side="top" style={{ zIndex: 9999 }}>
 											{!supportsThinking
-												? "Thinking not supported by this model"
+												? "该模型不支持思考"
 												: thinkingEnabled
-													? "Extended thinking enabled"
-													: "Enable extended thinking for enhanced reasoning"}
+													? "启用强思考"
+													: "培养拓展思维能力，以增强推理能力"}
 										</TooltipContent>
 									</Tooltip>
 									<Tooltip>
@@ -688,7 +688,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 											</IconToggle>
 										</TooltipTrigger>
 										<TooltipContent side="top" style={{ zIndex: 9999 }}>
-											Use different models for Plan vs Act
+											计划和执行模式使用不同模型
 										</TooltipContent>
 									</Tooltip>
 								</IconToggles>
@@ -697,7 +697,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 							{supportsThinking && (
 								<ThinkingSliderRow $isDisabled={!thinkingEnabled} onClick={(e) => e.stopPropagation()}>
 									<ThinkingSliderLabel>
-										Thinking ({(thinkingEnabled ? thinkingBudget : 0).toLocaleString()} tokens)
+										思考 ({(thinkingEnabled ? thinkingBudget : 0).toLocaleString()} tokens)
 									</ThinkingSliderLabel>
 									<ThinkingSlider
 										disabled={!thinkingEnabled}
@@ -728,12 +728,12 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 													onClick={() => setActiveEditMode("plan")}>
 													<SplitModeLabel $mode="plan">P</SplitModeLabel>
 													<SplitModeModel>
-														{planModel.selectedModelId?.split("/").pop() || "Not set"}
+														{planModel.selectedModelId?.split("/").pop() || "未设置"}
 													</SplitModeModel>
 												</SplitModeCell>
 											</TooltipTrigger>
 											<TooltipContent side="top" style={{ zIndex: 9999 }}>
-												Plan mode
+												计划模式
 											</TooltipContent>
 										</Tooltip>
 										<Tooltip>
@@ -743,12 +743,12 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 													onClick={() => setActiveEditMode("act")}>
 													<SplitModeLabel $mode="act">A</SplitModeLabel>
 													<SplitModeModel>
-														{actModel.selectedModelId?.split("/").pop() || "Not set"}
+														{actModel.selectedModelId?.split("/").pop() || "未设置"}
 													</SplitModeModel>
 												</SplitModeCell>
 											</TooltipTrigger>
 											<TooltipContent side="top" style={{ zIndex: 9999 }}>
-												Act mode
+												执行模式
 											</TooltipContent>
 										</Tooltip>
 									</SplitModeRow>
@@ -911,7 +911,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 							</ProviderDropdownItem>
 						))}
 						<ProviderDropdownItem $isSelected={false} onClick={handleConfigureClick}>
-							<span style={{ color: "var(--vscode-textLink-foreground)" }}>+ Add provider</span>
+							<span style={{ color: "var(--vscode-textLink-foreground)" }}>+ 添加供应商</span>
 						</ProviderDropdownItem>
 					</ProviderDropdownPortal>,
 					document.body,

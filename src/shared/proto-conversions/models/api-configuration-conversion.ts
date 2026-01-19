@@ -5,6 +5,7 @@ import {
 	ModelsApiConfiguration as ProtoApiConfiguration,
 	ApiProvider as ProtoApiProvider,
 	OcaModelInfo as ProtoOcaModelInfo,
+	ShengSuanYunModelInfo,
 	ThinkingConfig,
 } from "@shared/proto/cline/models"
 import {
@@ -31,7 +32,7 @@ function convertThinkingConfigToProto(config: ModelInfo["thinkingConfig"]): Thin
 }
 
 // Convert proto ThinkingConfig to application ThinkingConfig
-function convertProtoToThinkingConfig(config: ThinkingConfig | undefined): ModelInfo["thinkingConfig"] | undefined {
+function convertProtoToThinkingConfig(config: ThinkingConfig | undefined): ThinkingConfig | undefined {
 	if (!config) {
 		return undefined
 	}
@@ -39,8 +40,8 @@ function convertProtoToThinkingConfig(config: ThinkingConfig | undefined): Model
 	return {
 		maxBudget: config.maxBudget,
 		outputPrice: config.outputPrice,
-		outputPriceTiers: config.outputPriceTiers.length > 0 ? config.outputPriceTiers : undefined,
-	}
+		outputPriceTiers: config.outputPriceTiers || [], // Provide empty array if undefined
+	} as ThinkingConfig
 }
 
 // Convert application ModelInfo to proto OpenRouterModelInfo
@@ -231,7 +232,47 @@ function convertProtoToOpenAiCompatibleModelInfo(
 		isR1FormatRequired: info.isR1FormatRequired,
 	}
 }
+function convertModelInfoToProtoShengSuanYun(info: ShengSuanYunModelInfo | undefined): ShengSuanYunModelInfo | undefined {
+	if (!info) {
+		return undefined
+	}
+	return {
+		maxTokens: info.maxTokens,
+		contextWindow: info.contextWindow,
+		supportsImages: info.supportsImages,
+		supportsPromptCache: info.supportsPromptCache ?? false,
+		inputPrice: info.inputPrice,
+		outputPrice: info.outputPrice,
+		cacheWritesPrice: info.cacheWritesPrice,
+		cacheReadsPrice: info.cacheReadsPrice,
+		description: info.description,
+		thinkingConfig: convertThinkingConfigToProto(info.thinkingConfig),
+		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
+		endPoints: info.endPoints || [],
+	}
+}
 
+// Convert proto ShengSuanYunModelInfo to application ModelInfo
+function convertProtoToShengSuanYunModelInfo(info: ShengSuanYunModelInfo | undefined): ShengSuanYunModelInfo | undefined {
+	if (!info) {
+		return undefined
+	}
+
+	return {
+		maxTokens: info.maxTokens,
+		contextWindow: info.contextWindow,
+		supportsImages: info.supportsImages,
+		supportsPromptCache: info.supportsPromptCache,
+		inputPrice: info.inputPrice,
+		outputPrice: info.outputPrice,
+		cacheWritesPrice: info.cacheWritesPrice,
+		cacheReadsPrice: info.cacheReadsPrice,
+		description: info.description,
+		thinkingConfig: convertProtoToThinkingConfig(info.thinkingConfig),
+		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
+		endPoints: info.endPoints,
+	}
+}
 // Convert application ApiProvider to proto ApiProvider
 function convertApiProviderToProto(provider: string | undefined): ProtoApiProvider {
 	switch (provider) {
@@ -297,6 +338,8 @@ function convertApiProviderToProto(provider: string | undefined): ProtoApiProvid
 			return ProtoApiProvider.SAPAICORE
 		case "claude-code":
 			return ProtoApiProvider.CLAUDE_CODE
+		case "shengsuanyun":
+			return ProtoApiProvider.SHENG_SUAN_YUN
 		case "huawei-cloud-maas":
 			return ProtoApiProvider.HUAWEI_CLOUD_MAAS
 		case "vercel-ai-gateway":
@@ -316,7 +359,7 @@ function convertApiProviderToProto(provider: string | undefined): ProtoApiProvid
 		case "nousResearch":
 			return ProtoApiProvider.NOUSRESEARCH
 		default:
-			return ProtoApiProvider.ANTHROPIC
+			return ProtoApiProvider.SHENG_SUAN_YUN
 	}
 }
 
@@ -385,6 +428,8 @@ export function convertProtoToApiProvider(provider: ProtoApiProvider): ApiProvid
 			return "sapaicore"
 		case ProtoApiProvider.CLAUDE_CODE:
 			return "claude-code"
+		case ProtoApiProvider.SHENG_SUAN_YUN:
+			return "shengsuanyun"
 		case ProtoApiProvider.HUAWEI_CLOUD_MAAS:
 			return "huawei-cloud-maas"
 		case ProtoApiProvider.VERCEL_AI_GATEWAY:
@@ -404,7 +449,7 @@ export function convertProtoToApiProvider(provider: ProtoApiProvider): ApiProvid
 		case ProtoApiProvider.NOUSRESEARCH:
 			return "nousResearch"
 		default:
-			return "anthropic"
+			return "shengsuanyun"
 	}
 }
 
@@ -478,6 +523,8 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		sapAiResourceGroup: config.sapAiResourceGroup,
 		sapAiCoreTokenUrl: config.sapAiCoreTokenUrl,
 		sapAiCoreBaseUrl: config.sapAiCoreBaseUrl,
+		shengSuanYunApiKey: config.shengSuanYunApiKey,
+		shengSuanYunToken: config.shengSuanYunToken,
 		sapAiCoreUseOrchestrationMode: config.sapAiCoreUseOrchestrationMode,
 		huaweiCloudMaasApiKey: config.huaweiCloudMaasApiKey,
 		zaiApiLine: config.zaiApiLine,
@@ -523,6 +570,8 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		planModeHuggingFaceModelId: config.planModeHuggingFaceModelId,
 		planModeHuggingFaceModelInfo: convertModelInfoToProtoOpenRouter(config.planModeHuggingFaceModelInfo),
 		planModeSapAiCoreModelId: config.planModeSapAiCoreModelId,
+		planModeShengSuanYunModelId: config.planModeShengSuanYunModelId,
+		planModeShengSuanYunModelInfo: convertModelInfoToProtoShengSuanYun(config.planModeShengSuanYunModelInfo),
 		planModeHuaweiCloudMaasModelId: config.planModeHuaweiCloudMaasModelId,
 		planModeHuaweiCloudMaasModelInfo: convertModelInfoToProtoOpenRouter(config.planModeHuaweiCloudMaasModelInfo),
 		planModeSapAiCoreDeploymentId: config.planModeSapAiCoreDeploymentId,
@@ -562,6 +611,8 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		actModeHuggingFaceModelId: config.actModeHuggingFaceModelId,
 		actModeHuggingFaceModelInfo: convertModelInfoToProtoOpenRouter(config.actModeHuggingFaceModelInfo),
 		actModeSapAiCoreModelId: config.actModeSapAiCoreModelId,
+		actModeShengSuanYunModelId: config.actModeShengSuanYunModelId,
+		actModeShengSuanYunModelInfo: convertModelInfoToProtoShengSuanYun(config.actModeShengSuanYunModelInfo),
 		actModeHuaweiCloudMaasModelId: config.actModeHuaweiCloudMaasModelId,
 		actModeHuaweiCloudMaasModelInfo: convertModelInfoToProtoOpenRouter(config.actModeHuaweiCloudMaasModelInfo),
 		actModeSapAiCoreDeploymentId: config.actModeSapAiCoreDeploymentId,
@@ -645,6 +696,8 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		sapAiResourceGroup: protoConfig.sapAiResourceGroup,
 		sapAiCoreTokenUrl: protoConfig.sapAiCoreTokenUrl,
 		sapAiCoreBaseUrl: protoConfig.sapAiCoreBaseUrl,
+		shengSuanYunToken: protoConfig.shengSuanYunToken,
+		shengSuanYunApiKey: protoConfig.shengSuanYunApiKey,
 		sapAiCoreUseOrchestrationMode: protoConfig.sapAiCoreUseOrchestrationMode,
 		huaweiCloudMaasApiKey: protoConfig.huaweiCloudMaasApiKey,
 		zaiApiLine: protoConfig.zaiApiLine,
@@ -693,6 +746,8 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		planModeHuggingFaceModelId: protoConfig.planModeHuggingFaceModelId,
 		planModeHuggingFaceModelInfo: convertProtoToModelInfo(protoConfig.planModeHuggingFaceModelInfo),
 		planModeSapAiCoreModelId: protoConfig.planModeSapAiCoreModelId,
+		planModeShengSuanYunModelId: protoConfig.planModeShengSuanYunModelId,
+		planModeShengSuanYunModelInfo: convertProtoToShengSuanYunModelInfo(protoConfig.planModeShengSuanYunModelInfo),
 		planModeHuaweiCloudMaasModelId: protoConfig.planModeHuaweiCloudMaasModelId,
 		planModeHuaweiCloudMaasModelInfo: convertProtoToModelInfo(protoConfig.planModeHuaweiCloudMaasModelInfo),
 		planModeSapAiCoreDeploymentId: protoConfig.planModeSapAiCoreDeploymentId,
@@ -733,6 +788,8 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		actModeHuggingFaceModelId: protoConfig.actModeHuggingFaceModelId,
 		actModeHuggingFaceModelInfo: convertProtoToModelInfo(protoConfig.actModeHuggingFaceModelInfo),
 		actModeSapAiCoreModelId: protoConfig.actModeSapAiCoreModelId,
+		actModeShengSuanYunModelId: protoConfig.actModeShengSuanYunModelId,
+		actModeShengSuanYunModelInfo: convertProtoToShengSuanYunModelInfo(protoConfig.actModeShengSuanYunModelInfo),
 		actModeHuaweiCloudMaasModelId: protoConfig.actModeHuaweiCloudMaasModelId,
 		actModeHuaweiCloudMaasModelInfo: convertProtoToModelInfo(protoConfig.actModeHuaweiCloudMaasModelInfo),
 		actModeSapAiCoreDeploymentId: protoConfig.actModeSapAiCoreDeploymentId,

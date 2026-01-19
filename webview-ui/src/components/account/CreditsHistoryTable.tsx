@@ -2,7 +2,7 @@ import type { PaymentTransaction, UsageTransaction } from "@shared/ClineAccount"
 import { VSCodeDataGrid, VSCodeDataGridCell, VSCodeDataGridRow } from "@vscode/webview-ui-toolkit/react"
 import { memo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { formatDollars, formatTimestamp } from "@/utils/format"
+import { formatTimestamp } from "@/utils/format"
 import { TabButton } from "../mcp/configuration/McpConfigurationView"
 
 interface CreditsHistoryTableProps {
@@ -15,7 +15,6 @@ interface CreditsHistoryTableProps {
 const CreditsHistoryTable = memo(({ isLoading, usageData, paymentsData, showPayments }: CreditsHistoryTableProps) => {
 	const { t } = useTranslation()
 	const [activeTab, setActiveTab] = useState<"usage" | "payments">("usage")
-
 	return (
 		<div className="flex flex-col grow h-full">
 			{/* Tabs container */}
@@ -39,7 +38,7 @@ const CreditsHistoryTable = memo(({ isLoading, usageData, paymentsData, showPaym
 				) : (
 					<>
 						{activeTab === "usage" &&
-							(usageData.length > 0 ? (
+							(usageData && usageData.length > 0 ? (
 								<VSCodeDataGrid>
 									<VSCodeDataGridRow row-type="header">
 										<VSCodeDataGridCell cell-type="columnheader" grid-column="1">
@@ -48,19 +47,19 @@ const CreditsHistoryTable = memo(({ isLoading, usageData, paymentsData, showPaym
 										<VSCodeDataGridCell cell-type="columnheader" grid-column="2">
 											{t("account.creditsHistory.model")}
 										</VSCodeDataGridCell>
-										{/* <VSCodeDataGridCell cell-type="columnheader" grid-column="3">
-												Tokens Used
-											</VSCodeDataGridCell> */}
 										<VSCodeDataGridCell cell-type="columnheader" grid-column="3">
 											{t("account.creditsHistory.creditsUsed")}
 										</VSCodeDataGridCell>
 									</VSCodeDataGridRow>
 
 									{usageData.map((row, index) => (
-										// biome-ignore lint/suspicious/noArrayIndexKey: use index as key
 										<VSCodeDataGridRow key={index}>
 											<VSCodeDataGridCell grid-column="1">
-												{formatTimestamp(row.createdAt)}
+												{formatTimestamp(row.spentAt || "", "zh-CN")}
+											</VSCodeDataGridCell>
+											<VSCodeDataGridCell grid-column="2">{`${row.model}`}</VSCodeDataGridCell>
+											<VSCodeDataGridCell grid-column="3">
+												{Number(row.credits).toFixed(4)}
 											</VSCodeDataGridCell>
 											<VSCodeDataGridCell grid-column="2">
 												{row.operation === "web_search"
@@ -86,7 +85,7 @@ const CreditsHistoryTable = memo(({ isLoading, usageData, paymentsData, showPaym
 
 						{showPayments &&
 							activeTab === "payments" &&
-							(paymentsData.length > 0 ? (
+							(paymentsData && paymentsData.length > 0 ? (
 								<VSCodeDataGrid>
 									<VSCodeDataGridRow row-type="header">
 										<VSCodeDataGridCell cell-type="columnheader" grid-column="1">
@@ -103,9 +102,11 @@ const CreditsHistoryTable = memo(({ isLoading, usageData, paymentsData, showPaym
 									{paymentsData.map((row, index) => (
 										// biome-ignore lint/suspicious/noArrayIndexKey: use index as key
 										<VSCodeDataGridRow key={index}>
-											<VSCodeDataGridCell grid-column="1">{formatTimestamp(row.paidAt)}</VSCodeDataGridCell>
-											<VSCodeDataGridCell grid-column="2">{`$${formatDollars(row.amountCents)}`}</VSCodeDataGridCell>
-											<VSCodeDataGridCell grid-column="3">{`${row.credits}`}</VSCodeDataGridCell>
+											<VSCodeDataGridCell grid-column="1">
+												{formatTimestamp(row.paidAt, "zh-CN")}
+											</VSCodeDataGridCell>
+											<VSCodeDataGridCell grid-column="2">{`$${Number(row.amountCents || "0").toFixed(2)}`}</VSCodeDataGridCell>
+											<VSCodeDataGridCell grid-column="3">{`${row.credits || ""}`}</VSCodeDataGridCell>
 										</VSCodeDataGridRow>
 									))}
 								</VSCodeDataGrid>

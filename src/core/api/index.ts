@@ -9,7 +9,7 @@ import { BasetenHandler } from "./providers/baseten"
 import { AwsBedrockHandler } from "./providers/bedrock"
 import { CerebrasHandler } from "./providers/cerebras"
 import { ClaudeCodeHandler } from "./providers/claude-code"
-import { ClineHandler } from "./providers/cline"
+// import { ClineHandler } from "./providers/cline"
 import { DeepSeekHandler } from "./providers/deepseek"
 import { DifyHandler } from "./providers/dify"
 import { DoubaoHandler } from "./providers/doubao"
@@ -36,6 +36,7 @@ import { QwenCodeHandler } from "./providers/qwen-code"
 import { RequestyHandler } from "./providers/requesty"
 import { SambanovaHandler } from "./providers/sambanova"
 import { SapAiCoreHandler } from "./providers/sapaicore"
+import { ShengSuanYunHandler } from "./providers/shengsuanyun"
 import { TogetherHandler } from "./providers/together"
 import { VercelAIGatewayHandler } from "./providers/vercel-ai-gateway"
 import { VertexHandler } from "./providers/vertex"
@@ -246,19 +247,19 @@ function createHandlerForProvider(
 				vsCodeLmModelSelector:
 					mode === "plan" ? options.planModeVsCodeLmModelSelector : options.actModeVsCodeLmModelSelector,
 			})
-		case "cline":
-			return new ClineHandler({
-				onRetryAttempt: options.onRetryAttempt,
-				clineAccountId: options.clineAccountId,
-				ulid: options.ulid,
-				reasoningEffort: mode === "plan" ? options.planModeReasoningEffort : options.actModeReasoningEffort,
-				thinkingBudgetTokens:
-					mode === "plan" ? options.planModeThinkingBudgetTokens : options.actModeThinkingBudgetTokens,
-				openRouterProviderSorting: options.openRouterProviderSorting,
-				openRouterModelId: mode === "plan" ? options.planModeOpenRouterModelId : options.actModeOpenRouterModelId,
-				openRouterModelInfo: mode === "plan" ? options.planModeOpenRouterModelInfo : options.actModeOpenRouterModelInfo,
-				geminiThinkingLevel: mode === "plan" ? options.geminiPlanModeThinkingLevel : options.geminiActModeThinkingLevel,
-			})
+		// case "cline":
+		// 	return new ClineHandler({
+		// 		onRetryAttempt: options.onRetryAttempt,
+		// 		clineAccountId: options.clineAccountId,
+		// 		ulid: options.ulid,
+		// 		reasoningEffort: mode === "plan" ? options.planModeReasoningEffort : options.actModeReasoningEffort,
+		// 		thinkingBudgetTokens:
+		// 			mode === "plan" ? options.planModeThinkingBudgetTokens : options.actModeThinkingBudgetTokens,
+		// 		openRouterProviderSorting: options.openRouterProviderSorting,
+		// 		openRouterModelId: mode === "plan" ? options.planModeOpenRouterModelId : options.actModeOpenRouterModelId,
+		// 		openRouterModelInfo: mode === "plan" ? options.planModeOpenRouterModelInfo : options.actModeOpenRouterModelInfo,
+		// 		geminiThinkingLevel: mode === "plan" ? options.geminiPlanModeThinkingLevel : options.geminiActModeThinkingLevel,
+		// 	})
 		case "litellm":
 			return new LiteLlmHandler({
 				onRetryAttempt: options.onRetryAttempt,
@@ -311,6 +312,17 @@ function createHandlerForProvider(
 				onRetryAttempt: options.onRetryAttempt,
 				sambanovaApiKey: options.sambanovaApiKey,
 				apiModelId: mode === "plan" ? options.planModeApiModelId : options.actModeApiModelId,
+			})
+		case "shengsuanyun":
+			return new ShengSuanYunHandler({
+				onRetryAttempt: options.onRetryAttempt,
+				shengSuanYunApiKey: options.shengSuanYunApiKey,
+				shengSuanYunModelId: mode === "plan" ? options.planModeShengSuanYunModelId : options.actModeShengSuanYunModelId,
+				shengSuanYunModelInfo:
+					mode === "plan" ? options.planModeShengSuanYunModelInfo : options.actModeShengSuanYunModelInfo,
+				reasoningEffort: mode === "plan" ? options.planModeReasoningEffort : options.actModeReasoningEffort,
+				thinkingBudgetTokens:
+					mode === "plan" ? options.planModeThinkingBudgetTokens : options.actModeThinkingBudgetTokens,
 			})
 		case "cerebras":
 			return new CerebrasHandler({
