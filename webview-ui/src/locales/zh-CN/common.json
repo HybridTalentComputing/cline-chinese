@@ -153,7 +153,7 @@
 			"compare": "比较",
 			"restore": "恢复",
 			"restoreFiles": "恢复文件",
-			"restoreFilesDescription": "将项目文件恢复到此时间点的快照（使用"比较"查看将被还原的内容）",
+			"restoreFilesDescription": "将项目文件恢复到此时间点的快照（使用\"比较\"查看将被还原的内容）",
 			"restoreTask": "仅恢复任务",
 			"restoreTaskDescription": "删除此点之后的消息（不影响工作区文件）",
 			"restoreBoth": "恢复文件和任务",
