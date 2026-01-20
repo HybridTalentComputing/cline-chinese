@@ -32,34 +32,34 @@ You can also have Cline create a rule for you by using the [`/newrule` slash com
 
 ## Documentation Requirements
 
-- Update relevant documentation in /docs when modifying features
-- Keep README.md in sync with new capabilities
-- Maintain changelog entries in CHANGELOG.md
+-   Update relevant documentation in /docs when modifying features
+-   Keep README.md in sync with new capabilities
+-   Maintain changelog entries in CHANGELOG.md
 
 ## Architecture Decision Records
 
 Create ADRs in /docs/adr for:
 
-- Major dependency changes
-- Architectural pattern changes
-- New integration patterns
-- Database schema changes
-  Follow template in /docs/adr/template.md
+-   Major dependency changes
+-   Architectural pattern changes
+-   New integration patterns
+-   Database schema changes
+    Follow template in /docs/adr/template.md
 
 ## Code Style & Patterns
 
-- Generate API clients using OpenAPI Generator
-- Use TypeScript axios template
-- Place generated code in /src/generated
-- Prefer composition over inheritance
-- Use repository pattern for data access
-- Follow error handling pattern in /src/utils/errors.ts
+-   Generate API clients using OpenAPI Generator
+-   Use TypeScript axios template
+-   Place generated code in /src/generated
+-   Prefer composition over inheritance
+-   Use repository pattern for data access
+-   Follow error handling pattern in /src/utils/errors.ts
 
 ## Testing Standards
 
-- Unit tests required for business logic
-- Integration tests for API endpoints
-- E2E tests for critical user flows
+-   Unit tests required for business logic
+-   Integration tests for API endpoints
+-   E2E tests for critical user flows
 ```
 
 ### Key Benefits
@@ -97,9 +97,9 @@ your-project/
 
 ### Tips for Writing Effective Cline Rules
 
-- Be Clear and Concise: Use simple language and avoid ambiguity.
-- Focus on Desired Outcomes: Describe the results you want, not the specific steps.
-- Test and Iterate: Experiment to find what works best for your workflow.
+-   Be Clear and Concise: Use simple language and avoid ambiguity.
+-   Focus on Desired Outcomes: Describe the results you want, not the specific steps.
+-   Test and Iterate: Experiment to find what works best for your workflow.
 
 ### .clinerules/ Folder System
 
@@ -164,10 +164,10 @@ cp clinerules-bank/frameworks/react.md .clinerules/
 
 #### Implementation Tips
 
-- Keep individual rule files focused on specific concerns
-- Use descriptive filenames that clearly indicate the rule's purpose
-- Consider git-ignoring the active `.clinerules/` folder while tracking the `clinerules-bank/`
-- Create team scripts to quickly activate common rule combinations
+-   Keep individual rule files focused on specific concerns
+-   Use descriptive filenames that clearly indicate the rule's purpose
+-   Consider git-ignoring the active `.clinerules/` folder while tracking the `clinerules-bank/`
+-   Create team scripts to quickly activate common rule combinations
 
 The folder system transforms your Cline rules from a static document into a dynamic knowledge system that adapts to your team's changing contexts and requirements.
 
@@ -177,9 +177,9 @@ To make managing both single `.clinerules` files and the folder system even easi
 
 Located conveniently under the chat input field, this popover allows you to:
 
-- **Instantly See Active Rules:** View which global rules (from your user settings) and workspace rules (`.clinerules` file or folder contents) are currently active.
-- **Quickly Toggle Rules:** Enable or disable specific rule files within your workspace `.clinerules/` folder with a single click. This is perfect for activating context-specific rules (like `react-rules.md` or `memory-bank.md`) only when needed.
-- **Easily Add/Manage Rules:** Quickly create a workspace `.clinerules` file or folder if one doesn't exist, or add new rule files to an existing folder.
+-   **Instantly See Active Rules:** View which global rules (from your user settings) and workspace rules (`.clinerules` file or folder contents) are currently active.
+-   **Quickly Toggle Rules:** Enable or disable specific rule files within your workspace `.clinerules/` folder with a single click. This is perfect for activating context-specific rules (like `react-rules.md` or `memory-bank.md`) only when needed.
+-   **Easily Add/Manage Rules:** Quickly create a workspace `.clinerules` file or folder if one doesn't exist, or add new rule files to an existing folder.
 
 This UI significantly simplifies switching contexts and managing different sets of instructions without needing to manually edit files or configurations during a conversation.
 

@@ -21,15 +21,15 @@ When you right-click on selected code, you'll see:
 
 The "Add to Cline" command sends your selected code to the Cline chat panel. This is perfect for:
 
-- Asking questions about specific code snippets
-- Requesting improvements or optimizations
-- Getting explanations of complex logic
+-   Asking questions about specific code snippets
+-   Requesting improvements or optimizations
+-   Getting explanations of complex logic
 
 When you use this command, Cline automatically includes:
 
-- The file path (as a file mention)
-- The selected code with proper formatting
-- The programming language for accurate syntax highlighting
+-   The file path (as a file mention)
+-   The selected code with proper formatting
+-   The programming language for accurate syntax highlighting
 
 ### Lightbulb Menu (Code Actions)
 
@@ -89,9 +89,9 @@ Using Cline's code commands is simple:
 
 After using any command, you can:
 
-- Ask follow-up questions
-- Request modifications to the solution
-- Apply the changes back to your code
+-   Ask follow-up questions
+-   Request modifications to the solution
+-   Apply the changes back to your code
 
 ## How It Works Under the Hood
 
@@ -99,12 +99,14 @@ When you use a code command, here's what happens behind the scenes:
 
 1. **Code Selection**: The extension captures your selected code and its context
 2. **Metadata Collection**: Cline gathers important metadata:
+
     - File path and name
     - Programming language
     - Any associated diagnostics (errors/warnings)
     - Surrounding code context when relevant
 
 3. **Command Processing**:
+
     - For "Add to Cline," the code is formatted and sent to the chat panel
     - For "Fix with Cline," the code and diagnostics are analyzed and a fix is generated
     - For "Explain with Cline," the code is analyzed to provide a clear explanation
@@ -119,9 +121,9 @@ This seamless integration between your editor and Cline's AI capabilities makes 
 
 ## Tips for Effective Use
 
-- **Select complete logical units**: When possible, select entire functions, classes, or modules to give Cline complete context
-- **Include imports**: For language-specific help, include relevant imports so Cline understands dependencies
-- **Combine with @ mentions**: For complex issues, use code commands along with file or problem mentions for more context
-- **Use keyboard shortcuts**: Speed up your workflow by [assigning keyboard shortcuts](/features/commands-and-shortcuts/keyboard-shortcuts) to common code commands
+-   **Select complete logical units**: When possible, select entire functions, classes, or modules to give Cline complete context
+-   **Include imports**: For language-specific help, include relevant imports so Cline understands dependencies
+-   **Combine with @ mentions**: For complex issues, use code commands along with file or problem mentions for more context
+-   **Use keyboard shortcuts**: Speed up your workflow by [assigning keyboard shortcuts](/features/commands-and-shortcuts/keyboard-shortcuts) to common code commands
 
 Next time you're struggling with a piece of code, try using Cline's code commands instead of switching to a separate chat interface. You'll be amazed at how much more efficient your workflow becomes when AI assistance is integrated directly into your editor.

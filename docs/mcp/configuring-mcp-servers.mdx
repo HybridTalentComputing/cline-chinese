@@ -89,11 +89,11 @@ MCP supports two transport types for server communication:
 
 Used for local servers running on your machine:
 
-- Communicates via standard input/output streams
-- Lower latency (no network overhead)
-- Better security (no network exposure)
-- Simpler setup (no HTTP server needed)
-- Runs as a child process on your machine
+-   Communicates via standard input/output streams
+-   Lower latency (no network overhead)
+-   Better security (no network exposure)
+-   Simpler setup (no HTTP server needed)
+-   Runs as a child process on your machine
 
 For more in-depth information about how STDIO transport works, see [MCP Transport Mechanisms](/mcp/mcp-transport-mechanisms).
 
@@ -119,11 +119,11 @@ STDIO configuration example:
 
 Used for remote servers accessed over HTTP/HTTPS:
 
-- Communicates via Server-Sent Events protocol
-- Can be hosted on a different machine
-- Supports multiple client connections
-- Requires network access
-- Allows centralized deployment and management
+-   Communicates via Server-Sent Events protocol
+-   Can be hosted on a different machine
+-   Supports multiple client connections
+-   Requires network access
+-   Allows centralized deployment and management
 
 For more in-depth information about how SSE transport works, see [MCP Transport Mechanisms](/mcp/mcp-transport-mechanisms).
 
@@ -160,7 +160,7 @@ Example: "Analyze the performance of my API" might use an MCP tool that tests AP
 
 Common issues and solutions:
 
-- **Server Not Responding:** Check if the server process is running and verify network connectivity
-- **Permission Errors:** Ensure proper API keys and credentials are configured in your `mcp_settings.json` file
-- **Tool Not Available:** Confirm the server is properly implementing the tool and it's not disabled in settings
-- **Slow Performance:** Try adjusting the network timeout value for the specific MCP server
+-   **Server Not Responding:** Check if the server process is running and verify network connectivity
+-   **Permission Errors:** Ensure proper API keys and credentials are configured in your `mcp_settings.json` file
+-   **Tool Not Available:** Confirm the server is properly implementing the tool and it's not disabled in settings
+-   **Slow Performance:** Try adjusting the network timeout value for the specific MCP server

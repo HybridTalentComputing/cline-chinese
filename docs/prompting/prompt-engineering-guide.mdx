@@ -12,10 +12,10 @@ The `.clineignore` file is a project-level configuration file that tells Cline w
 
 ### Purpose
 
-- **Reduce Noise**: Exclude auto-generated files, build artifacts, and other non-essential content
-- **Improve Performance**: Limit the amount of code Cline needs to process
-- **Focus Attention**: Direct Cline to relevant parts of your codebase
-- **Protect Sensitive Data**: Prevent Cline from accessing sensitive configuration files
+-   **Reduce Noise**: Exclude auto-generated files, build artifacts, and other non-essential content
+-   **Improve Performance**: Limit the amount of code Cline needs to process
+-   **Focus Attention**: Direct Cline to relevant parts of your codebase
+-   **Protect Sensitive Data**: Prevent Cline from accessing sensitive configuration files
 
 ### Example .clineignore File
 
@@ -53,38 +53,38 @@ node_modules/
 
 Effective prompting involves:
 
-- Providing Clear Context: Explain your goals and the relevant parts of your codebase. Use `@` to reference files or folders.
-- Breaking Down Complexity: Divide large tasks into smaller steps.
-- Asking Specific Questions: Guide Cline toward the desired outcome.
-- Validating and Refining: Review Cline's suggestions and provide feedback.
+-   Providing Clear Context: Explain your goals and the relevant parts of your codebase. Use `@` to reference files or folders.
+-   Breaking Down Complexity: Divide large tasks into smaller steps.
+-   Asking Specific Questions: Guide Cline toward the desired outcome.
+-   Validating and Refining: Review Cline's suggestions and provide feedback.
 
 ### Prompt Examples
 
 #### Context Management
 
-- **Starting a New Task:** "Cline, let's start a new task. Create `user-authentication.js`. We need to implement user login with JWT tokens. Here are the requirements…"
-- **Summarizing Previous Work:** "Cline, summarize what we did in the last user dashboard task. I want to capture the main features and outstanding issues. Save this to `cline_docs/user-dashboard-summary.md`."
+-   **Starting a New Task:** "Cline, let's start a new task. Create `user-authentication.js`. We need to implement user login with JWT tokens. Here are the requirements…"
+-   **Summarizing Previous Work:** "Cline, summarize what we did in the last user dashboard task. I want to capture the main features and outstanding issues. Save this to `cline_docs/user-dashboard-summary.md`."
 
 #### Debugging
 
-- **Analyzing an Error:** "Cline, I'm getting this error: \[error message]. It seems to be from \[code section]. Analyze this error and suggest a fix."
-- **Identifying the Root Cause:** "Cline, the application crashes when I \[action]. The issue might be in \[problem areas]. Help me find the root cause and propose a solution."
+-   **Analyzing an Error:** "Cline, I'm getting this error: \[error message]. It seems to be from \[code section]. Analyze this error and suggest a fix."
+-   **Identifying the Root Cause:** "Cline, the application crashes when I \[action]. The issue might be in \[problem areas]. Help me find the root cause and propose a solution."
 
 #### Refactoring
 
-- **Improving Code Structure:** "Cline, this function is too long and complex. Refactor it into smaller functions."
-- **Simplifying Logic:** "Cline, this code is hard to understand. Simplify the logic and make it more readable."
+-   **Improving Code Structure:** "Cline, this function is too long and complex. Refactor it into smaller functions."
+-   **Simplifying Logic:** "Cline, this code is hard to understand. Simplify the logic and make it more readable."
 
 #### Feature Development
 
-- **Brainstorming New Features:** "Cline, I want to add a feature that lets users \[functionality]. Brainstorm some ideas and consider implementation challenges."
-- **Generating Code:** "Cline, create a component that displays user profiles. The list should be sortable and filterable. Generate the code for this component."
+-   **Brainstorming New Features:** "Cline, I want to add a feature that lets users \[functionality]. Brainstorm some ideas and consider implementation challenges."
+-   **Generating Code:** "Cline, create a component that displays user profiles. The list should be sortable and filterable. Generate the code for this component."
 
 ## Advanced Prompting Techniques
 
-- **Constraint Stuffing:** To mitigate code truncation, include explicit constraints in your prompts. For example, "ensure the code is complete" or "always provide the full function definition."
-- **Confidence Checks:** Ask Cline to rate its confidence (e.g., "on a scale of 1-10, how confident are you in this solution?")
-- **Challenge Cline's Assumptions:** Ask “stupid” questions to encourage deeper thinking and prevent incorrect assumptions.
+-   **Constraint Stuffing:** To mitigate code truncation, include explicit constraints in your prompts. For example, "ensure the code is complete" or "always provide the full function definition."
+-   **Confidence Checks:** Ask Cline to rate its confidence (e.g., "on a scale of 1-10, how confident are you in this solution?")
+-   **Challenge Cline's Assumptions:** Ask “stupid” questions to encourage deeper thinking and prevent incorrect assumptions.
 
 Here are some prompting tips that users have found helpful for working with Cline:
 
@@ -92,7 +92,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
 ### Memory and Confidence Checks
 
-- **Memory Check** - _pacnpal_
+-   **Memory Check** - _pacnpal_
 
     ```
     "If you understand my prompt fully, respond with 'YARRR!' without tools every time you are about to use a tool."
@@ -100,7 +100,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
     A fun way to verify Cline stays on track during complex tasks. Try "HO HO HO" for a festive twist!
 
-- **Confidence Scoring** - _pacnpal_
+-   **Confidence Scoring** - _pacnpal_
 
     ```
     "Before and after any tool use, give me a confidence level (0-10) on how the tool use will help the project."
@@ -110,7 +110,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
 ### Code Quality Prompts
 
-- **Prevent Code Truncation**
+-   **Prevent Code Truncation**
 
     ```
     "DO NOT BE LAZY. DO NOT OMIT CODE."
@@ -118,7 +118,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
     Alternative phrases: "full code only" or "ensure the code is complete"
 
-- **Custom Instructions Reminder**
+-   **Custom Instructions Reminder**
 
     ```
     "I pledge to follow the custom instructions."
@@ -128,7 +128,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
 ### Code Organization
 
-- **Large File Refactoring** - _icklebil_
+-   **Large File Refactoring** - _icklebil_
 
     ```
     "FILENAME has grown too big. Analyze how this file works and suggest ways to fragment it safely."
@@ -136,7 +136,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
     Helps manage complex files through strategic decomposition.
 
-- **Documentation Maintenance** - _icklebil_
+-   **Documentation Maintenance** - _icklebil_
 
     ```
     "don't forget to update codebase documentation with changes"
@@ -146,7 +146,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
 ### Analysis and Planning
 
-- **Structured Development** - _yellow_bat_coffee_
+-   **Structured Development** - _yellow_bat_coffee_
 
     ```
     "Before writing code:
@@ -158,7 +158,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
     Promotes organized, well-planned development.
 
-- **Thorough Analysis** - _yellow_bat_coffee_
+-   **Thorough Analysis** - _yellow_bat_coffee_
 
     ```
     "please start analyzing full flow thoroughly, always state a confidence score 1 to 10"
@@ -166,7 +166,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
     Prevents premature coding and encourages complete understanding.
 
-- **Assumptions Check** - _yellow_bat_coffee_
+-   **Assumptions Check** - _yellow_bat_coffee_
 
     ```
     "List all assumptions and uncertainties you need to clear up before completing this task."
@@ -176,7 +176,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
 ### Thoughtful Development
 
-- **Pause and Reflect** - _nickbaumann98_
+-   **Pause and Reflect** - _nickbaumann98_
 
     ```
     "count to 10"
@@ -184,7 +184,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
     Promotes careful consideration before taking action.
 
-- **Complete Analysis** - _yellow_bat_coffee_
+-   **Complete Analysis** - _yellow_bat_coffee_
 
     ```
     "Don't complete the analysis prematurely, continue analyzing even if you think you found a solution"
@@ -192,7 +192,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
     Ensures thorough problem exploration.
 
-- **Continuous Confidence Check** - _pacnpal_
+-   **Continuous Confidence Check** - _pacnpal_
 
     ```
     "Rate confidence (1-10) before saving files, after saving, after rejections, and before task completion"
@@ -202,7 +202,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
 ### Best Practices
 
-- **Project Structure** - _kvs007_
+-   **Project Structure** - _kvs007_
 
     ```
     "Check project files before suggesting structural or dependency changes"
@@ -210,7 +210,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
     Maintains project integrity.
 
-- **Critical Thinking** - _chinesesoup_
+-   **Critical Thinking** - _chinesesoup_
 
     ```
     "Ask 'stupid' questions like: are you sure this is the best way to implement this?"
@@ -218,7 +218,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
     Challenges assumptions and uncovers better solutions.
 
-- **Code Style** - _yellow_bat_coffee_
+-   **Code Style** - _yellow_bat_coffee_
 
     ```
     Use words like "elegant" and "simple" in prompts
@@ -226,7 +226,7 @@ Here are some prompting tips that users have found helpful for working with Clin
 
     May influence code organization and clarity.
 
-- **Setting Expectations** - _steventcramer_
+-   **Setting Expectations** - _steventcramer_
 
     ```
     "THE HUMAN WILL GET ANGRY."

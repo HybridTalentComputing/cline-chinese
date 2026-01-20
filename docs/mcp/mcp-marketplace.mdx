@@ -1,140 +1,140 @@
 ---
-title: "MCP 变得简单"
-description: "学习如何使用 MCP 市场来发现、安装和配置 MCP 服务器，这些服务器通过额外的工具和资源增强 Cline 的功能。"
+title: "MCP Made Easy"
+description: "Learn how to use the MCP Marketplace to discover, install, and configure MCP servers that enhance Cline's capabilities with additional tools and resources."
 ---
 
-## 什么是 MCP 服务器？
+## What's an MCP Server?
 
-MCP 服务器是增强 Cline 功能的专门扩展。它们使 Cline 能够执行额外的任务，如获取网页、处理图像、访问 API 等。
+MCP servers are specialized extensions that enhance Cline's capabilities. They enable Cline to perform additional tasks like fetching web pages, processing images, accessing APIs, and much more.
 
-## MCP 市场演练
+## MCP Marketplace Walkthrough
 
-MCP 市场为各种类别的数百个 MCP 服务器提供一键安装体验。
+The MCP Marketplace provides a one-click installation experience for hundreds of MCP servers across various categories.
 
-### 1. 访问市场
+### 1. Access the Marketplace
 
--   在 Cline 中，点击顶部工具栏中的"扩展"按钮（方形图标）
--   MCP 市场将打开，按类别显示可用服务器
+-   In Cline, click the "Extensions" button (square icon) in the top toolbar
+-   The MCP marketplace will open, showing available servers by category
 
-### 2. 浏览和选择服务器
+### 2. Browse and Select a Server
 
--   按类别浏览服务器（搜索、文件系统、浏览器自动化、研究数据等）
--   点击服务器查看其功能和要求的详细信息
+-   Browse servers by category (Search, File-systems, Browser-automation, Research-data, etc.)
+-   Click on a server to see details about its capabilities and requirements
 
-### 3. 安装和配置
+### 3. Install and Configure
 
--   点击您选择的服务器的安装按钮
--   如果服务器需要 API 密钥（大多数都需要），Cline 将指导您：
-    -   在哪里获取 API 密钥
-    -   如何安全地输入它
--   服务器将自动添加到您的 MCP 设置中
+-   Click the install button for your chosen server
+-   If the server requires an API key (most do), Cline will guide you through:
+    -   Where to get the API key
+    -   How to enter it securely
+-   The server will be added to your MCP settings automatically
 
-### 4. 验证安装
+### 4. Verify Installation
 
--   Cline 将在安装完成时显示确认
--   在 Cline 的 MCP 设置 UI 中检查服务器状态
+-   Cline will show confirmation when installation is complete
+-   Check the server status in Cline's MCP settings UI
 
-### 5. 使用您的新服务器
+### 5. Using Your New Server
 
--   成功安装后，Cline 将自动集成服务器的功能
--   您将在 Cline 的系统提示中看到新的工具和资源可用
--   只需要求 Cline 使用新服务器的功能
--   示例："使用 Perplexity 搜索网络获取最近的 React 更新"
+-   After successful installation, Cline will automatically integrate the server's capabilities
+-   You'll see new tools and resources available in Cline's system prompt
+-   Simply ask Cline to use the capabilities of your new server
+-   Example: "Search the web for recent React updates using Perplexity"
 
-**企业用户：** 如果您在企业环境中使用 Cline，请确保根据组织的安全策略获得安装第三方 MCP 服务器的许可。
+**Corporate Users:** If you're using Cline in a corporate environment, ensure you have permission to install third-party MCP servers according to your organization's security policies.
 
-## 幕后发生的事情
+## What Happens Behind the Scenes
 
-当您安装 MCP 服务器时，几件事会自动发生：
+When you install an MCP server, several things happen automatically:
 
-### 1. 安装过程
+### 1. Installation Process
 
--   服务器代码被克隆/安装到 `/Users/<username>/Documents/Cline/MCP/`
--   安装依赖项
--   构建服务器（TypeScript/JavaScript 编译或 Python 包安装）
+-   The server code is cloned/installed to `/Users/<username>/Documents/Cline/MCP/`
+-   Dependencies are installed
+-   The server is built (TypeScript/JavaScript compilation or Python package installation)
 
-### 2. 配置
+### 2. Configuration
 
--   MCP 设置文件使用您的服务器配置进行更新
--   此文件位于：`/Users/<username>/Library/Application Support/Code/User/globalStorage/saoudrizwan.cline-chinese/settings/cline_mcp_settings.json`
--   环境变量（如 API 密钥）被安全存储
--   注册服务器路径
+-   The MCP settings file is updated with your server configuration
+-   This file is located at: `/Users/<username>/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+-   Environment variables (like API keys) are securely stored
+-   The server path is registered
 
-### 3. 服务器启动
+### 3. Server Launch
 
--   Cline 检测配置更改
--   Cline 将您的服务器作为单独进程启动
--   通过 stdio 或 HTTP 建立通信
+-   Cline detects the configuration change
+-   Cline launches your server as a separate process
+-   Communication is established via stdio or HTTP
 
-### 4. 与 Cline 集成
+### 4. Integration with Cline
 
--   您服务器的功能被添加到 Cline 的系统提示中
--   工具通过 `use_mcp_tool` 命令可用
--   资源通过 `access_mcp_resource` 命令可用
--   Cline 现在可以在用户提示时使用这些功能
+-   Your server's capabilities are added to Cline's system prompt
+-   Tools become available via `use_mcp_tool` commands
+-   Resources become available via `access_mcp_resource` commands
+-   Cline can now use these capabilities when prompted by the user
 
-## 故障排除
+## Troubleshooting
 
-### 系统要求
+### System Requirements
 
-确保您的系统满足这些要求：
+Make sure your system meets these requirements:
 
--   **Node.js 18.x 或更新版本**
-    -   通过运行检查：`node --version`
-    -   从以下位置安装：https://nodejs.org/
-    -   JavaScript/TypeScript 实现需要
--   **Python 3.10 或更新版本**
-    -   通过运行检查：`python --version`
-    -   从以下位置安装：https://python.org/
-    -   注意：某些专门实现可能需要 Python 3.11+
--   **UV 包管理器**
-    -   用于依赖隔离的现代 Python 包管理器
-    -   使用以下命令安装：
+-   **Node.js 18.x or newer**
+    -   Check by running: `node --version`
+    -   Install from: https://nodejs.org/
+    -   Required for JavaScript/TypeScript implementations
+-   **Python 3.10 or newer**
+    -   Check by running: `python --version`
+    -   Install from: https://python.org/
+    -   Note: Some specialized implementations may require Python 3.11+
+-   **UV Package Manager**
+    -   Modern Python package manager for dependency isolation
+    -   Install using:
         ```bash
         curl -LsSf https://astral.sh/uv/install.sh | sh
         ```
-        或：`pip install uv`
-    -   通过以下命令验证：`uv --version`
+        Or: `pip install uv`
+    -   Verify with: `uv --version`
 
-如果这些命令中的任何一个失败或显示较旧版本，请在继续之前安装/更新！
+If any of these commands fail or show older versions, please install/update before continuing!
 
-### 常见安装问题
+### Common Installation Issues
 
--   确保您的互联网连接稳定
--   检查您是否有安装新软件的必要权限
--   验证 API 密钥是否正确输入（如果需要）
--   在 MCP 设置 UI 中检查服务器状态是否有任何错误消息
+-   Ensure your internet connection is stable
+-   Check that you have the necessary permissions to install new software
+-   Verify that the API key was entered correctly (if required)
+-   Check the server status in the MCP settings UI for any error messages
 
-### 如何删除 MCP 服务器
+### How to Remove an MCP Server
 
-要完全删除有问题的 MCP 服务器：
+To completely remove a faulty MCP server:
 
-1. 打开 MCP 设置文件：`/Users/<username>/Library/Application Support/Code/User/globalStorage/saoudrizwan.cline-chinese/settings/cline_mcp_settings.json`
-2. 从 `mcpServers` 对象中删除服务器的整个条目
-3. 保存文件
-4. 重启 Cline
+1. Open the MCP settings file: `/Users/<username>/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+2. Delete the entire entry for your server from the `mcpServers` object
+3. Save the file
+4. Restart Cline
 
-### 我仍然遇到错误
+### I'm Still Getting an Error
 
-如果您在使用 MCP 服务器时遇到错误，可以尝试以下操作：
+If you're getting an error when using an MCP server, you can try the following:
 
--   检查 MCP 设置文件是否有错误
--   使用 Claude Sonnet 模型进行安装
--   验证服务器文件的路径是否正确
--   确保设置了所有必需的环境变量
--   检查另一个进程是否使用相同的端口（对于基于 HTTP 的服务器）
--   尝试删除并重新安装服务器（从 `cline_mcp_settings.json` 文件和 `/Users/<username>/Documents/Cline/MCP/` 目录中删除）
--   使用终端并直接运行带有参数的命令。这将允许您看到 Cline 看到的相同错误
+-   Check the MCP settings file for errors
+-   Use a Claude Sonnet model for installation
+-   Verify that paths to your server's files are correct
+-   Ensure all required environment variables are set
+-   Check if another process is using the same port (for HTTP-based servers)
+-   Try removing and reinstalling the server (remove from both the `cline_mcp_settings.json` file and the `/Users/<username>/Documents/Cline/MCP/` directory)
+-   Use a terminal and run the command with its arguments directly. This will allow you to see the same errors that Cline is seeing
 
-## MCP 服务器规则
+## MCP Server Rules
 
-Cline 已经知道您的活动 MCP 服务器及其用途，但当您启用了很多 MCP 服务器时，定义何时使用每个服务器会很有用。
+Cline is already aware of your active MCP servers and what they are for, but when you have a lot of MCP servers enabled, it can be useful to define when to use each server.
 
-利用 `.clinerules` 文件或自定义指令通过基于关键字的触发器支持智能 MCP 服务器激活，使 Cline 的工具选择更加直观和上下文感知。
+Utilize a `.clinerules` file or custom instructions to support intelligent MCP server activation through keyword-based triggers, making Cline's tool selection more intuitive and context-aware.
 
-### MCP 规则如何工作
+### How MCP Rules Work
 
-MCP 规则将您连接的 MCP 服务器分组到功能类别中，并定义在您与 Cline 的对话中检测到时自动激活它们的触发关键字。
+MCP Rules group your connected MCP servers into functional categories and define trigger keywords that activate them automatically when detected in your conversations with Cline.
 
 ```json
 {
@@ -142,33 +142,33 @@ MCP 规则将您连接的 MCP 服务器分组到功能类别中，并定义在�
 		"webInteraction": {
 			"servers": ["firecrawl-mcp-server", "fetch-mcp"],
 			"triggers": ["web", "scrape", "browse", "website"],
-			"description": "用于网页浏览和抓取的工具"
+			"description": "Tools for web browsing and scraping"
 		}
 	}
 }
 ```
 
-### 配置结构
+### Configuration Structure
 
-1. **类别**：对相关服务器进行分组（例如，"webInteraction"、"mediaAndDesign"）
-2. **服务器**：列出每个类别中的服务器名称
-3. **触发器**：激活这些服务器的关键字
-4. **描述**：人类可读的类别解释
+1. **Categories**: Group related servers (e.g., "webInteraction", "mediaAndDesign")
+2. **Servers**: List server names in each category
+3. **Triggers**: Keywords that activate these servers
+4. **Description**: Human-readable category explanation
 
-### MCP 规则的优势
+### Benefits of MCP Rules
 
--   **上下文工具选择**：Cline 根据对话上下文选择适当的工具
--   **减少摩擦**：无需手动指定使用哪个工具
--   **组织功能**：逻辑上对相关工具和服务器进行分组
--   **优先级**：通过明确的优先级排序处理模糊情况
+-   **Contextual Tool Selection**: Cline selects appropriate tools based on conversation context
+-   **Reduced Friction**: No need to manually specify which tool to use
+-   **Organized Capabilities**: Logically group related tools and servers
+-   **Prioritization**: Handle ambiguous cases with explicit priority ordering
 
-### 使用示例
+### Example Usage
 
-当您写"你能抓取这个网站吗？"时，Cline 检测到"scrape"和"website"作为触发器，自动选择与网络相关的 MCP 服务器。
+When you write "Can you scrape this website?", Cline detects "scrape" and "website" as triggers, automatically selecting web-related MCP servers.
 
-对于金融任务，如"苹果的股价是多少？"，像"stock"和"price"这样的关键字会触发与金融相关的服务器。
+For finance tasks like "What's Apple's stock price?", keywords like "stock" and "price" trigger finance-related servers.
 
-### 快速开始模板
+### Quick Start Template
 
 ```json
 {
@@ -176,24 +176,24 @@ MCP 规则将您连接的 MCP 服务器分组到功能类别中，并定义在�
 		"category1": {
 			"servers": ["server-name-1", "server-name-2"],
 			"triggers": ["keyword1", "keyword2", "phrase1", "phrase2"],
-			"description": "这些工具功能的描述"
+			"description": "Description of what these tools do"
 		},
 		"category2": {
 			"servers": ["server-name-3"],
 			"triggers": ["keyword3", "keyword4", "phrase3"],
-			"description": "这些工具功能的描述"
+			"description": "Description of what these tools do"
 		},
 		"category3": {
 			"servers": ["server-name-4", "server-name-5"],
 			"triggers": ["keyword5", "keyword6", "phrase4"],
-			"description": "这些工具功能的描述"
+			"description": "Description of what these tools do"
 		}
 	},
 	"defaultBehavior": {
 		"priorityOrder": ["category1", "category2", "category3"],
-		"fallbackBehavior": "询问用户哪个工具最合适"
+		"fallbackBehavior": "Ask user which tool would be most appropriate"
 	}
 }
 ```
 
-将此添加到您的 `.clinerules` 文件或自定义指令中，使 Cline 的 MCP 服务器选择更加直观和上下文感知。
+Add this to your `.clinerules` file or to your custom instructions to make Cline's MCP server selection more intuitive and context-aware.
