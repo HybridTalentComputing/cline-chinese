@@ -10,16 +10,18 @@ export class SSYAccountService {
 	}
 	private async authenticatedRequest<T>(endpoint: string, config: AxiosRequestConfig = {}): Promise<T> {
 		const ssyApiKey = await this.getSSYApiKey()
-		if (!ssyApiKey) {
-			throw new Error("未找到胜算云 Auth API")
+		const hasToken = config?.headers?.["x-token"]
+		if (!ssyApiKey && !hasToken) {
+			throw new Error("未找到胜算云 Auth API Key")
 		}
 		const reqConfig: AxiosRequestConfig = {
 			...config,
 			headers: {
-				"x-token": ssyApiKey,
-				"Content-Type": "application/json",
 				...config.headers,
+				"x-token": ssyApiKey || hasToken,
+				"Content-Type": "application/json",
 			},
+			timeout: 50000,
 		}
 		const url = `${this.baseUrl}${endpoint}`
 		// console.log("SSYAccountService.authenticatedRequest():", url, reqConfig)
@@ -34,13 +36,12 @@ export class SSYAccountService {
 	async fetchUserDataRPC(): Promise<UserCreditsData> {
 		try {
 			const dqs = this.dateQueryString()
-			let [rate, usage, payment, user] = await Promise.all([
+			let [rate, usage, payment] = await Promise.all([
 				this.authenticatedRequest<any>("/base/rate"),
 				this.authenticatedRequest<any>(`/modelrouter/userlog?page=1&pageSize=1000&${dqs}`),
 				this.authenticatedRequest<any>("/modelrouter/listrecharge?page=1&pageSize=10000"),
-				this.authenticatedRequest<any>("/user/info"),
 			])
-			if (!rate || !user) {
+			if (!rate) {
 				throw new Error(`获取胜算云账户信息失败！`)
 			}
 			if (!usage || !Array.isArray(usage?.logs)) {
@@ -66,22 +67,11 @@ export class SSYAccountService {
 					credits: 0,
 				}))
 			}
-
-			let balance = { currentBalance: 0 }
-			if (user.Wallet && user.Wallet.Assets) {
-				balance = { currentBalance: (rate * user.Wallet.Assets) / 10000 }
-			}
-			console.log("UserCreditsData", balance, usage, payment, user)
+			console.log("UserCreditsData", usage, payment)
 			return UserCreditsData.create({
-				balance: balance,
+				rate: rate,
 				usageTransactions: usage,
 				paymentTransactions: payment,
-				user: {
-					uid: user.ID,
-					displayName: user.Nickname || user.Username || user.Phone,
-					email: user.Email,
-					photoUrl: user.HeadImg,
-				},
 			})
 		} catch (error) {
 			console.error("Failed fetchUserDataRPC:", error)
@@ -89,21 +79,25 @@ export class SSYAccountService {
 		}
 	}
 
-	async getUserInfo(): Promise<UserInfo> {
+	async getUserInfo(token: string = ""): Promise<UserInfo> {
+		const headers = { ...(token ? { "x-token": token } : {}) }
 		try {
-			const res = await this.authenticatedRequest<any>("/user/info")
-			if (!res.data || !res.data.data || res.data.code !== 0) {
+			const res = await this.authenticatedRequest<any>("/user/info", { headers })
+			if (!res) {
+				console.log(res)
 				throw new Error(`Invalid response from API: /user/info`)
 			}
 			const user: UserInfo = {
-				displayName: res.data.data.Nickname || res.data.data.Username || undefined,
-				email: res.data.data.Email ?? undefined,
-				photoUrl: res.data.data.HeadImg ?? undefined,
-				uid: res.data.data.ID || undefined,
+				displayName: res.Nickname || res.Username || undefined,
+				email: res.Email ?? undefined,
+				photoUrl: res.HeadImg ?? undefined,
+				uid: res.ID || undefined,
+				balance: res.Wallet.Assets / 10000,
 			}
 			return user
 		} catch (error) {
 			console.error("getUserInfo():", error)
+			console.log("headers: ", headers)
 			throw error
 		}
 	}

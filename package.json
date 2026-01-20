@@ -1,6 +1,6 @@
 {
-	"name": "claude-dev",
-	"displayName": "Cline",
+	"name": "cline-chinese",
+	"displayName": "Cline Chinese",
 	"description": "%cline.description%",
 	"version": "3.46.5",
 	"icon": "assets/icons/icon.png",
@@ -8,15 +8,15 @@
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "Cline Bot Inc."
+		"name": "HybridTalentComputing"
 	},
 	"license": "Apache-2.0",
-	"publisher": "saoudrizwan",
+	"publisher": "HybridTalentComputing",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cline/cline"
+		"url": "https://github.com/HybridTalentComputing/cline-chinese"
 	},
-	"homepage": "https://cline.bot",
+	"homepage": "https://github.com/HybridTalentComputing/cline-chinese",
 	"categories": [
 		"AI",
 		"Chat",
@@ -46,6 +46,15 @@
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
+		"chatParticipants": [
+			{
+				"id": "claude-code",
+				"name": "Claude Code",
+				"description": "Chat with Claude Code",
+				"isDefault": true,
+				"icon": "assets/icons/icon.png"
+			}
+		],
 		"icons": {
 			"cline-icon": {
 				"description": "cline",
@@ -110,17 +119,17 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "claude-dev-ActivityBar",
+					"id": "cline-chinese-ActivityBar",
 					"title": "Cline",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
 		},
 		"views": {
-			"claude-dev-ActivityBar": [
+			"cline-chinese-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "claude-dev.SidebarProvider",
+					"id": "cline-chinese.SidebarProvider",
 					"name": "",
 					"icon": "assets/icons/icon.svg"
 				}
@@ -256,27 +265,27 @@
 				{
 					"command": "cline.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == cline-chinese.SidebarProvider"
 				},
 				{
 					"command": "cline.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == cline-chinese.SidebarProvider"
 				},
 				{
 					"command": "cline.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == cline-chinese.SidebarProvider"
 				},
 				{
 					"command": "cline.accountButtonClicked",
 					"group": "navigation@5",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == cline-chinese.SidebarProvider"
 				},
 				{
 					"command": "cline.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == cline-chinese.SidebarProvider"
 				}
 			],
 			"editor/context": [

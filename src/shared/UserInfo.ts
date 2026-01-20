@@ -3,4 +3,5 @@ export interface UserInfo {
 	email?: string
 	photoUrl?: string
 	apiBaseUrl?: string // Base URL for API requests
+	balance?: number
 }

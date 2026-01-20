@@ -84,8 +84,8 @@ Reka AI	|Reka Core
 国际
 Github: https://github.com/SSYCloud/cline-chinese-ssy <br>
 中国大陆<br>
-Gitcode:https://gitcode.com/shengsuan-cloud/cline-chinese-ssy<br>
-Gitee:  https://gitee.com/shengsuan-cloud/cline-chinese-ssy<br>
+Gitcode:https://gitcode.com/HybridTalentComputing/cline-chinese-ssy<br>
+Gitee:  https://gitee.com/HybridTalentComputing/cline-chinese-ssy<br>
 ---
 ## 文档地址(包括使用方法，MCP知识，常见问题解答等)<br>
 https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs/<br>
@@ -93,10 +93,10 @@ https://modelmesh.gitbook.io/cline-zhong-wen-ban-docs/<br>
 ## 其他支持插件
 
 Kilo SSY Code Agent<br>
-https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.kilo-ssy<br>
+https://marketplace.visualstudio.com/items?itemName=HybridTalentComputing.kilo-ssy<br>
 
 Roo Code Chinese SSY<br>
-https://marketplace.visualstudio.com/items?itemName=shengsuan-cloud.roo-vibecoding<br>
+https://marketplace.visualstudio.com/items?itemName=HybridTalentComputing.roo-vibecoding<br>
 
 ---
 ## 欢迎关注我的自媒体账号

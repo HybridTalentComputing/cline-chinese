@@ -38,21 +38,21 @@ Sometimes when you update Cline or when certain settings change, you might lose 
 	<Tab title="VS Code">
 		```bash
 		# macOS
-		~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/
+		~/Library/Application Support/Code/User/globalStorage/saoudrizwan.cline-chinese/
 		# Windows
-		%APPDATA%\Code\User\globalStorage\saoudrizwan.claude-dev\
+		%APPDATA%\Code\User\globalStorage\saoudrizwan.cline-chinese\
 		# Linux
-		~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/
+		~/.config/Code/User/globalStorage/saoudrizwan.cline-chinese/
 		```
 	</Tab>
 	<Tab title="JetBrains">
 		```bash
 		# macOS
-		~/Library/Application Support/JetBrains/<IDE>/globalStorage/saoudrizwan.claude-dev/
+		~/Library/Application Support/JetBrains/<IDE>/globalStorage/saoudrizwan.cline-chinese/
 		# Windows
-		%APPDATA%\JetBrains\<IDE>\globalStorage\saoudrizwan.claude-dev\
+		%APPDATA%\JetBrains\<IDE>\globalStorage\saoudrizwan.cline-chinese\
 		# Linux
-		~/.config/JetBrains/<IDE>/globalStorage/saoudrizwan.claude-dev/
+		~/.config/JetBrains/<IDE>/globalStorage/saoudrizwan.cline-chinese/
 		```
 	</Tab>
 </Tabs>
@@ -62,7 +62,7 @@ For VS Code Insiders, replace `Code` with `Code - Insiders`. For JetBrains IDEs,
 ### Directory Structure
 
 ```
-saoudrizwan.claude-dev/
+saoudrizwan.cline-chinese/
 ├── state/
 │   ├── taskHistory.json          # Main history index
 │   └── taskHistory.backup.*.json # Backups
@@ -112,7 +112,7 @@ Cline creates backups automatically. Find them in the `state/` folder:
 	<Tab title="VS Code">
 		```bash
 		# macOS/Linux
-		cd ~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/state/
+		cd ~/.config/Code/User/globalStorage/saoudrizwan.cline-chinese/state/
 		ls taskHistory.backup.*.json
 
 		# Pick the most recent one and restore it
@@ -122,7 +122,7 @@ Cline creates backups automatically. Find them in the `state/` folder:
 	<Tab title="JetBrains">
 		```bash
 		# macOS
-		cd ~/Library/Application\ Support/JetBrains/<IDE>/globalStorage/saoudrizwan.claude-dev/state/
+		cd ~/Library/Application\ Support/JetBrains/<IDE>/globalStorage/saoudrizwan.cline-chinese/state/
 		ls taskHistory.backup.*.json
 
 		# Pick the most recent one and restore it
@@ -137,7 +137,7 @@ Switching to a new computer? You can bring all your Cline conversations with you
 
 <Steps>
 	<Step title="Locate and copy your Cline data">
-		On your **old machine**, find the `saoudrizwan.claude-dev` folder using the [storage paths above](#storage-paths) and copy the entire folder.
+		On your **old machine**, find the `saoudrizwan.cline-chinese` folder using the [storage paths above](#storage-paths) and copy the entire folder.
 	</Step>
 	<Step title="Set up your new machine">
 		On your **new machine**, install your IDE (VS Code or JetBrains) and the Cline extension.
@@ -146,7 +146,7 @@ Switching to a new computer? You can bring all your Cline conversations with you
 		Make sure your IDE is completely closed before proceeding.
 	</Step>
 	<Step title="Transfer your data">
-		Paste the `saoudrizwan.claude-dev` folder to the same storage path on your new machine.
+		Paste the `saoudrizwan.cline-chinese` folder to the same storage path on your new machine.
 	</Step>
 	<Step title="Launch and verify">
 		Open your IDE. Your task history should now appear in Cline.

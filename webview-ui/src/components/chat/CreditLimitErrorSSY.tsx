@@ -19,7 +19,7 @@ const CreditLimitErrorSSY: React.FC<CreditLimitErrorSSYProps> = ({
 	buyCreditsUrl = "https://console.shengsuanyun.com/user/recharge",
 }) => {
 	const { uriScheme } = useExtensionState()
-	const callbackUrl = `${uriScheme || "vscode"}://shengsuan-cloud.cline-shengsuan`
+	const callbackUrl = `${uriScheme || "vscode"}://HybridTalentComputing.cline-chinese`
 	const fullPurchaseUrl = new URL(buyCreditsUrl)
 	fullPurchaseUrl.searchParams.set("callback_url", callbackUrl)
 

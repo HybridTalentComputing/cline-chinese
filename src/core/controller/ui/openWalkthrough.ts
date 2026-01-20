@@ -15,7 +15,7 @@ export async function openWalkthrough(_controller: Controller, _request: EmptyRe
 	try {
 		await vscode.commands.executeCommand(
 			"workbench.action.openWalkthrough",
-			`shengsuan-cloud.${ExtensionRegistryInfo.name}#ClineWalkthrough`,
+			`HybridTalentComputing.${ExtensionRegistryInfo.name}#ClineWalkthrough`,
 		)
 		// telemetryService.captureButtonClick("webview_openWalkthrough")
 		return Empty.create({})

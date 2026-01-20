@@ -65,6 +65,7 @@ message UserInfo {
   optional string email = 3;
   optional string photo_url = 4;
   optional string app_base_url = 5; // Cline app base URL
+  optional double balance = 6;
 }
 
 message UserOrganization {
@@ -84,10 +85,11 @@ message UserOrganizationUpdateRequest {
 }
 
 message UserCreditsData {
-  UserCreditsBalance balance = 1;
+  optional UserCreditsBalance balance = 1;
   repeated UsageTransaction usage_transactions = 2;
   repeated PaymentTransaction payment_transactions = 3;
   optional UserInfo user = 4;
+  optional float rate = 5;
 }
 
 message GetOrganizationCreditsRequest {

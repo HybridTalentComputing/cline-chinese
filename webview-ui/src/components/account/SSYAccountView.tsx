@@ -10,30 +10,31 @@ import CreditsHistoryTable from "./CreditsHistoryTable"
 import { StyledCreditDisplaySSY } from "./StyledCreditDisplaySSY"
 
 export const SSYAccountView = () => {
-	const { userInfo, setUserInfo } = useExtensionState()
+	const { userInfo } = useExtensionState()
 	console.log("SSYAccountView() userInfo: ", userInfo)
 
-	const [balance, setBalance] = useState(0)
+	const [rate, setRate] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
 	const [usageData, setUsageData] = useState<UsageTransaction[]>([])
 	const [paymentsData, setPaymentsData] = useState<PaymentTransaction[]>([])
 
 	// Fetch all account data when component mounts using gRPC
 	useEffect(() => {
+		if (!userInfo || !userInfo.displayName) {
+			return
+		}
 		setIsLoading(true)
 		AccountServiceClient.shengSuanYunUserData(EmptyRequest.create())
 			.then((res: any) => {
-				setBalance(res.balance?.currentBalance || 0)
+				setRate(res.rate || 0)
 				setUsageData(res.usageTransactions)
 				setPaymentsData(res.paymentTransactions)
-				setUserInfo(res.user)
 			})
 			.catch((error: any) => {
 				console.error("Failed to fetch user credits data:", error)
-				setUserInfo(undefined)
 			})
 			.finally(() => setIsLoading(false))
-	}, [])
+	}, [userInfo])
 
 	return (
 		<div className="h-full flex flex-col">
@@ -95,7 +96,7 @@ export const SSYAccountView = () => {
 							) : (
 								<>
 									<span>$</span>
-									<StyledCreditDisplaySSY balance={balance} />
+									<StyledCreditDisplaySSY balance={(userInfo.balance || 0) * rate} />
 									<VSCodeButton
 										appearance="icon"
 										className="mt-1"
@@ -103,7 +104,7 @@ export const SSYAccountView = () => {
 											setIsLoading(true)
 											AccountServiceClient.shengSuanYunUserData(EmptyRequest.create())
 												.then((res) => {
-													setBalance(res.balance?.currentBalance || 0)
+													setRate(res.rate || 0)
 													setUsageData(res.usageTransactions as any)
 													setPaymentsData(res.paymentTransactions)
 												})
@@ -137,11 +138,15 @@ export const SSYAccountView = () => {
 					<p style={{}}>注册帐户访问最新模型，进群联系客服，获得100万Tokens免费额度，以及更多即将推出的功能。</p>
 					<VSCodeButton
 						className="w-full mb-4"
-						onClick={() =>
-							AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create()).catch((err) =>
-								console.error("Failed to get login URL:", err),
-							)
-						}>
+						disabled={isLoading}
+						onClick={() => {
+							setIsLoading(true)
+							AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create())
+								.catch((err) => console.error("Failed to get login URL:", err))
+								.finally(() => {
+									setIsLoading(false)
+								})
+						}}>
 						注册 Cline 胜算云
 					</VSCodeButton>
 					<p className="text-[var(--vscode-descriptionForeground)] text-xs text-center m-0">

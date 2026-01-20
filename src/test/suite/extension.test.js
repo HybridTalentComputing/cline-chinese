@@ -25,7 +25,7 @@ describe("Extension Tests", function () {
 
 	it("should activate extension successfully", async () => {
 		// Get the extension
-		const extension = vscode.extensions.getExtension("shengsuan-cloud.cline-shengsuan")
+		const extension = vscode.extensions.getExtension("HybridTalentComputing.cline-chinese")
 		expect(extension).to.not.be.undefined
 
 		// Activate the extension if not already activated

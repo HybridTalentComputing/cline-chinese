@@ -42,7 +42,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 					baseURL: "https://router.shengsuanyun.com/api/v1",
 					apiKey: this.options.shengSuanYunApiKey,
 					defaultHeaders: {
-						"HTTP-Referer": `vscode://shengsuan-cloud.cline-shengsuan/ssy`,
+						"HTTP-Referer": `vscode://HybridTalentComputing.cline-chinese/ssy`,
 						"X-Title": "cline",
 					},
 				})

@@ -13,7 +13,7 @@
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--disable-workspace-trust",
 				"--disable-extension",
-				"saoudrizwan.claude-dev", // Avoid conflicts with installed Cline
+				"saoudrizwan.cline-chinese", // Avoid conflicts with installed Cline
 				"--disable-extension",
 				"saoudrizwan.cline-nightly", // Avoid conflicts with installed Cline Nightly
 				"${workspaceFolder}"
@@ -37,7 +37,7 @@
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--disable-workspace-trust",
 				"--disable-extension",
-				"saoudrizwan.claude-dev", // Avoid conflicts with installed Cline
+				"saoudrizwan.cline-chinese", // Avoid conflicts with installed Cline
 				"--disable-extension",
 				"saoudrizwan.cline-nightly", // Avoid conflicts with installed Cline Nightly
 				"${workspaceFolder}"
@@ -61,7 +61,7 @@
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--disable-workspace-trust",
 				"--disable-extension",
-				"saoudrizwan.claude-dev", // Avoid conflicts with installed Cline
+				"saoudrizwan.cline-chinese", // Avoid conflicts with installed Cline
 				"--disable-extension",
 				"saoudrizwan.cline-nightly", // Avoid conflicts with installed Cline Nightly
 				"${workspaceFolder}"
@@ -87,7 +87,7 @@
 				"--profile-temp",
 				"--sync=off",
 				"--disable-extension",
-				"saoudrizwan.claude-dev", // Avoid conflicts with installed Cline
+				"saoudrizwan.cline-chinese", // Avoid conflicts with installed Cline
 				"--disable-extension",
 				"saoudrizwan.cline-nightly", // Avoid conflicts with installed Cline Nightly
 				"--extensionDevelopmentPath=${workspaceFolder}",

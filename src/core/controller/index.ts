@@ -688,7 +688,6 @@ export class Controller {
 	}
 
 	// OpenRouter
-
 	async handleOpenRouterCallback(code: string) {
 		let apiKey: string
 		try {
@@ -725,13 +724,12 @@ export class Controller {
 
 	// shengsuanyun Auth
 	async handleShengSuanYunCallback(code: string) {
-		// console.log("handleShengSuanYunCallback() with code:", code)
 		try {
 			let shengSuanYunApiKey: string
 			let shengSuanYunToken: string
 			const res = await axios.post("https://api.shengsuanyun.com/auth/keys", {
 				code: code,
-				callback_url: `vscode://shengsuan-cloud.cline-shengsuan/ssy`,
+				callback_url: `vscode://HybridTalentComputing.cline-chinese/ssy`,
 			})
 			// console.log("https://api.shengsuanyun.com/auth/keys :", res.data)
 			if (res.data && res.data.data && res.data.data.api_key) {
@@ -758,8 +756,8 @@ export class Controller {
 			if (this.task) {
 				this.task.api = buildApiHandler({ ...updatedConfig, ulid: this.task.ulid }, currentMode)
 			}
-			const user: UserInfo = await this.accountServiceSSY.getUserInfo()
-			// console.log("Controller.fetchUserCreditsData().user", user)
+			const user: UserInfo = await this.accountServiceSSY.getUserInfo(shengSuanYunToken)
+			console.log("Controller.fetchUserCreditsData().user ------------", user)
 			this.stateManager.setGlobalState("userInfo", user)
 			await this.postStateToWebview()
 		} catch (error) {
