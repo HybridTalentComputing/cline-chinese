@@ -4,154 +4,153 @@ import { getModeSpecificFields } from "@/components/settings/utils/providerUtils
 
 export function validateApiConfiguration(currentMode: Mode, apiConfiguration?: ApiConfiguration): string | undefined {
 	if (apiConfiguration) {
-		const {
-			apiProvider,
-			openAiModelId,
-			requestyModelId,
-			togetherModelId,
-			ollamaModelId,
-			lmStudioModelId,
-			vsCodeLmModelSelector,
-		} = getModeSpecificFields(apiConfiguration, currentMode)
+		const { apiProvider, openAiModelId, togetherModelId, ollamaModelId, lmStudioModelId, vsCodeLmModelSelector } =
+			getModeSpecificFields(apiConfiguration, currentMode)
 
+		const tips = "您必须提供有效的API密钥或选择其他提供者。"
 		switch (apiProvider) {
 			case "anthropic":
 				if (!apiConfiguration.apiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "bedrock":
 				if (!apiConfiguration.awsRegion) {
-					return "You must choose a region to use with AWS Bedrock."
+					return "您必须选择一个区域以使用 AWS Bedrock。"
 				}
 				break
 			case "openrouter":
 				if (!apiConfiguration.openRouterApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "vertex":
 				if (!apiConfiguration.vertexProjectId || !apiConfiguration.vertexRegion) {
-					return "You must provide a valid Google Cloud Project ID and Region."
+					return "您必须提供有效的 Google Cloud 项目 ID 和区域。"
 				}
 				break
 			case "gemini":
 				if (!apiConfiguration.geminiApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "openai-native":
 				if (!apiConfiguration.openAiNativeApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "deepseek":
 				if (!apiConfiguration.deepSeekApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "xai":
 				if (!apiConfiguration.xaiApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "qwen":
 				if (!apiConfiguration.qwenApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "doubao":
 				if (!apiConfiguration.doubaoApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "mistral":
 				if (!apiConfiguration.mistralApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "cline":
 				break
 			case "openai":
 				if (!apiConfiguration.openAiBaseUrl || !apiConfiguration.openAiApiKey || !openAiModelId) {
-					return "You must provide a valid base URL, API key, and model ID."
+					return "您必须提供一个有效的基本网址、API 密钥和模型 ID。"
 				}
 				break
 			case "requesty":
 				if (!apiConfiguration.requestyApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "fireworks":
 				if (!apiConfiguration.fireworksApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "together":
 				if (!apiConfiguration.togetherApiKey || !togetherModelId) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "ollama":
 				if (!ollamaModelId) {
-					return "You must provide a valid model ID."
+					return "您必须提供一个有效的模型 ID。"
 				}
 				break
 			case "lmstudio":
 				if (!lmStudioModelId) {
-					return "You must provide a valid model ID."
+					return "您必须提供一个有效的模型 ID。"
 				}
 				break
 			case "vscode-lm":
 				if (!vsCodeLmModelSelector) {
-					return "You must provide a valid model selector."
+					return "您必须提供一个有效的模型 ID。"
 				}
 				break
 			case "moonshot":
 				if (!apiConfiguration.moonshotApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "nebius":
 				if (!apiConfiguration.nebiusApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "asksage":
 				if (!apiConfiguration.asksageApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "sambanova":
 				if (!apiConfiguration.sambanovaApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
+				}
+				break
+			case "shengsuanyun":
+				if (!apiConfiguration.shengSuanYunApiKey) {
+					return tips
 				}
 				break
 			case "sapaicore":
 				if (!apiConfiguration.sapAiCoreBaseUrl) {
-					return "You must provide a valid Base URL key or choose a different provider."
+					return "您必须提供有效的 URL 密钥或选择其他提供者。"
 				}
 				if (!apiConfiguration.sapAiCoreClientId) {
-					return "You must provide a valid Client Id or choose a different provider."
+					return "您必须提供有效的客户端ID密钥或选择其他提供者。"
 				}
 				if (!apiConfiguration.sapAiCoreClientSecret) {
-					return "You must provide a valid Client Secret or choose a different provider."
+					return "您必须提供有效的客户端密钥或选择其他提供者。"
 				}
 				if (!apiConfiguration.sapAiCoreTokenUrl) {
-					return "You must provide a valid Auth URL or choose a different provider."
+					return "您必须提供有效的用户认证URL或选择其他提供者。"
 				}
 				break
 			case "zai":
 				if (!apiConfiguration.zaiApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "dify":
 				if (!apiConfiguration.difyBaseUrl) {
-					return "You must provide a valid Base URL or choose a different provider."
+					return tips
 				}
 				if (!apiConfiguration.difyApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return tips
 				}
 				break
 			case "minimax":
@@ -181,14 +180,14 @@ export function validateModelId(
 			case "cline":
 				const modelId = openRouterModelId || openRouterDefaultModelId // in case the user hasn't changed the model id, it will be undefined by default
 				if (!modelId) {
-					return "You must provide a model ID."
+					return "你必须提供一个可用的模型 ID."
 				}
 				if (modelId.startsWith("@preset/")) {
 					break
 				}
 				if (openRouterModels && !Object.keys(openRouterModels).includes(modelId)) {
 					// even if the model list endpoint failed, extensionstatecontext will always have the default model info
-					return "The model ID you provided is not available. Please choose a different model."
+					return "模型 ID 无效，请选择其他模型."
 				}
 				break
 		}

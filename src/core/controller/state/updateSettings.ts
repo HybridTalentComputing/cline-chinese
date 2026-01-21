@@ -14,7 +14,7 @@ import { ClineEnv } from "@/config"
 import { HostProvider } from "@/hosts/host-provider"
 import { McpDisplayMode } from "@/shared/McpDisplayMode"
 import { ShowMessageType } from "@/shared/proto/host/window"
-import { telemetryService } from "../../../services/telemetry"
+// import { telemetryService } from "../../../services/telemetry"
 import { BrowserSettings as SharedBrowserSettings } from "../../../shared/BrowserSettings"
 import { Controller } from ".."
 import { accountLogoutClicked } from "../account/accountLogoutClicked"
@@ -179,17 +179,17 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 		}
 		// Update yolo mode setting
 		if (request.yoloModeToggled !== undefined) {
-			if (controller.task) {
-				telemetryService.captureYoloModeToggle(controller.task.ulid, request.yoloModeToggled)
-			}
+			// if (controller.task) {
+			// 	telemetryService.captureYoloModeToggle(controller.task.ulid, request.yoloModeToggled)
+			// }
 			controller.stateManager.setGlobalState("yoloModeToggled", request.yoloModeToggled)
 		}
 
 		// Update cline web tools setting
 		if (request.clineWebToolsEnabled !== undefined) {
-			if (controller.task) {
-				telemetryService.captureClineWebToolsToggle(controller.task.ulid, request.clineWebToolsEnabled)
-			}
+			// if (controller.task) {
+			// 	telemetryService.captureClineWebToolsToggle(controller.task.ulid, request.clineWebToolsEnabled)
+			// }
 			controller.stateManager.setGlobalState("clineWebToolsEnabled", request.clineWebToolsEnabled)
 		}
 
@@ -204,21 +204,20 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 		}
 		// Update auto-condense setting
 		if (request.useAutoCondense !== undefined) {
-			if (controller.task) {
-				telemetryService.captureAutoCondenseToggle(
-					controller.task.ulid,
-					request.useAutoCondense,
-					controller.task.api.getModel().id,
-				)
-			}
+			// if (controller.task) {
+			// 	telemetryService.captureAutoCondenseToggle(
+			// 		controller.task.ulid,
+			// 		request.useAutoCondense,
+			// 		controller.task.api.getModel().id,
+			// 	)
+			// }
 			controller.stateManager.setGlobalState("useAutoCondense", request.useAutoCondense)
 		}
 
 		// Update focus chain settings
 		if (request.focusChainSettings !== undefined) {
 			{
-				const currentSettings = controller.stateManager.getGlobalSettingsKey("focusChainSettings")
-				const wasEnabled = currentSettings?.enabled ?? false
+				// const currentSettings = controller.stateManager.getGlobalSettingsKey("focusChainSettings")
 				const isEnabled = request.focusChainSettings.enabled
 
 				const focusChainSettings = {
@@ -228,9 +227,9 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 				controller.stateManager.setGlobalState("focusChainSettings", focusChainSettings)
 
 				// Capture telemetry when setting changes
-				if (wasEnabled !== isEnabled) {
-					telemetryService.captureFocusChainToggle(isEnabled)
-				}
+				// if (wasEnabled !== isEnabled) {
+				// 	telemetryService.captureFocusChainToggle(isEnabled)
+				// }
 			}
 		}
 
@@ -357,22 +356,22 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 			controller.stateManager.setGlobalState("subagentsEnabled", isEnabled)
 
 			// Capture telemetry when setting changes
-			if (wasEnabled !== isEnabled) {
-				telemetryService.captureSubagentToggle(isEnabled)
-			}
+			// if (wasEnabled !== isEnabled) {
+			// 	telemetryService.captureSubagentToggle(isEnabled)
+			// }
 			controller.stateManager.setGlobalState("subagentsEnabled", !!request.subagentsEnabled)
 		}
 
 		if (request.nativeToolCallEnabled !== undefined) {
 			controller.stateManager.setGlobalState("nativeToolCallEnabled", !!request.nativeToolCallEnabled)
-			if (controller.task) {
-				telemetryService.captureFeatureToggle(
-					controller.task.ulid,
-					"native-tool-call",
-					request.nativeToolCallEnabled,
-					controller.task.api.getModel().id,
-				)
-			}
+			// if (controller.task) {
+			// 	telemetryService.captureFeatureToggle(
+			// 		controller.task.ulid,
+			// 		"native-tool-call",
+			// 		request.nativeToolCallEnabled,
+			// 		controller.task.api.getModel().id,
+			// 	)
+			// }
 		}
 
 		if (request.enableParallelToolCalling !== undefined) {

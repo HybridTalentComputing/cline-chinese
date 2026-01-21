@@ -4,7 +4,7 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
 import { Button } from "@/components/ui/button"
-import { useClineAuth } from "@/context/ClineAuthContext"
+// import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient, StateServiceClient } from "@/services/grpc-client"
 import { getAsVar, VSC_INACTIVE_SELECTION_BACKGROUND } from "@/utils/vscStyles"
@@ -14,9 +14,9 @@ export const CURRENT_MODEL_BANNER_VERSION = 3
 
 export const NewModelBanner: React.FC = () => {
 	const { t } = useTranslation()
-	const { clineUser } = useClineAuth()
-	const { openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
-	const user = clineUser || undefined
+	// const { clineUser } = useClineAuth()
+	const { openRouterModels, setShowChatModelSelector, refreshOpenRouterModels, userInfo } = useExtensionState()
+	const user = userInfo || undefined
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 
 	// Need to get latest model list in case user hits shortcut button to set model

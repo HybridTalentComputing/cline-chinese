@@ -44,7 +44,7 @@ export async function deleteRuleFile(controller: Controller, request: RuleFileRe
 
 	const fileTypeName = request.type === "workflow" ? "workflow" : "rule"
 
-	const message = `${fileTypeName} file "${fileName}" deleted successfully`
+	const message = `${fileTypeName} 文件 "${fileName}" 删除成功`
 	HostProvider.window.showMessage({
 		type: ShowMessageType.INFORMATION,
 		message,

@@ -145,6 +145,7 @@ const (
 	XAI = "xai"
 	CEREBRAS = "cerebras"
 	OCA = "oca"
+	SSY = "shengsuanyun"
 	NOUSRESEARCH = "nousResearch"
 )
 
@@ -162,6 +163,7 @@ var AllProviders = []string{
 	"xai",
 	"cerebras",
 	"oca",
+	"shengsuanyun",
 	"nousResearch",
 }
 
@@ -472,7 +474,15 @@ var rawConfigFields = `	[
 	    "required": true,
 	    "fieldType": "password",
 	    "placeholder": "Enter your API key"
-	  },
+	  },{
+	    "name": "ssyApiKey",
+	    "type": "string",
+	    "comment": "",
+	    "category": "general",
+	    "required": true,
+	    "fieldType": "password",
+	    "placeholder": "请输入 API key"
+	  }
 	]`
 
 // Raw model definitions data (parsed from TypeScript)
@@ -1302,6 +1312,539 @@ var rawModelDefinitions = `	{
 	      "description": "SOTA performance with ~1500 tokens/s"
 	    }
 	  },
+	  "shengsuanyun": {
+			"ali/qwen3-next-80b-a3b-thinking": {
+				"maxTokens": 32768,
+				"contextWindow": 131072,
+				"inputPrice": 1407,
+				"outputPrice": 5628,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "Qwen3-Next-80B-A3B-Thinking 是Qwen3-Next系列中以推理为核心的对话模型，默认输出结构化的“思维链”内容。它专为复杂多步问题而设计，能够处理数学证明、代码生成与调试、逻辑推演以及智能体规划等任务，并在知识、推理、编程、对齐和多语言评测上表现出色。与以往的Qwen3模型相比，该版本在长链式思维下的稳定性与推理阶段的高效扩展上更具优势，且在复杂指令跟随时显著降低了重复或偏离任务的情况。"
+			},
+			"ali/qwen3-next-80b-a3b-Instruct": {
+				"maxTokens": 32768,
+				"contextWindow": 131072,
+				"inputPrice": 1407,
+				"outputPrice": 14071,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "Qwen3-Next-80B-A3B-Instruct是Qwen3-Next系列中的一款指令微调对话模型，专为提供快速、稳定的响应而优化。它能够胜任复杂推理、代码生成、知识问答和多语言应用，同时在对齐与格式控制方面保持稳健。与以往的Qwen3 指令模型相比，该版本在超长输入和多轮对话场景下具备更高吞吐与更强稳定性，非常适用于RAG、工具调用以及需要一致性最终答案的智能体工作流。"
+			},
+			"ali/qwen3-max-preview": {
+				"maxTokens": 32768,
+				"contextWindow": 262144,
+				"inputPrice": 8442,
+				"outputPrice": 33770,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "Qwen3-Max-Preview是阿里巴巴旗下通义千问团队发布的最新旗舰大语言模型，是 Qwen3 系列中参数量最大的模型，参数规模超过1万亿。模型在推理、指令跟随、多语言支持和长尾知识覆盖等方面有重大改进，支持超过100种语言，中英文理解能力出色。在数学推理、编程和科学推理等任务中表现出色，能更可靠地遵循复杂指令，减少幻觉，生成更高质量的响应。"
+			},
+			"ali/qwen3-vl-plus": {
+				"maxTokens": 258048,
+				"contextWindow": 262144,
+				"inputPrice": 1407,
+				"outputPrice": 14071,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Qwen3系列视觉理解模型，实现思考模式和非思考模式的有效融合，视觉智能体能力在OS World等公开测试集上达到世界顶尖水平。此版本在视觉coding、空间感知、多模态思考等方向全面升级；视觉感知与识别能力大幅提升，支持超长视频理解。"
+			},
+			"ali/qwen3-omni-flash": {
+				"maxTokens": 16384,
+				"contextWindow": 65536,
+				"inputPrice": 2532,
+				"outputPrice": 9708,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "Qwen-Omni 模型能够接收文本、图片、音频、视频等多种模态的组合输入，并生成文本或语音形式的回复， 提供多种拟人音色，支持多语言和方言的语音输出，可应用于文本创作、视觉识别、语音助手等场景。"
+			},
+			"ali/qwen3-max": {
+				"maxTokens": 32768,
+				"contextWindow": 262144,
+				"inputPrice": 8442,
+				"outputPrice": 33770,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Qwen3-Max 是在 Qwen3 系列的基础上构建的更新版本，与 2025 年 1 月版本相比，在推理、指令遵循、多语言支持和长尾知识覆盖方面进行了重大改进。它在数学、编码、逻辑和科学任务中提供更高的准确性，更可靠地遵循复杂的中文和英文指令，减少幻觉，并为开放式问答、写作和对话提供更高质量的回答。该模型支持 100 多种语言，具有更强的翻译和常识推理能力，并针对检索增强生成 （RAG） 和工具调用进行了优化，尽管它不包括专用的“思考”模式。"
+			},
+			"ali/qwen3-coder-480b-a35b-instruct": {
+				"maxTokens": 65536,
+				"contextWindow": 128000,
+				"inputPrice": 8442,
+				"outputPrice": 33770,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "基于Qwen3的代码生成模型，具有强大的Coding Agent能力，代码能力达到开源模型 SOTA。"
+			},
+			"ali/qwen3-coder-plus": {
+				"maxTokens": 65536,
+				"contextWindow": 1048576,
+				"inputPrice": 5628,
+				"outputPrice": 22513,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Qwen3-Coder-Plus，这是通义千问系列迄今为止最具代理能力的代码模型。"
+			},
+			"anthropic/claude-sonnet-4.5": {
+				"maxTokens": 64000,
+				"contextWindow": 200000,
+				"inputPrice": 30000,
+				"outputPrice": 150000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Claude Sonnet 4.5 是 Anthropic 迄今为止最先进的 Sonnet 模型，针对真实代理和编码工作流程进行了优化。它在 SWE-bench Verified 等编码基准测试中展现出顶尖性能，并在系统设计、代码安全性和规范遵循性方面均有所改进。该模型旨在实现扩展自主操作，保持跨会话的任务连续性，并提供基于事实的进度跟踪。\n\nSonnet 4.5 还引入了更强大的代理功能，包括改进的工具编排、推测并行执行以及更高效的上下文和内存管理。凭借增强的上下文跟踪和跨工具调用的令牌使用感知功能，它尤其适用于多上下文和长时间运行的工作流。用例涵盖软件工程、网络安全、财务分析、研究代理以及其他需要持续推理和工具使用的领域。"
+			},
+			"anthropic/claude-haiku-4.5:thinking": {
+				"maxTokens": 64000,
+				"contextWindow": 200000,
+				"inputPrice": 10000,
+				"outputPrice": 50000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Claude Haiku 4.5 为各种用例提供​​近乎前沿的性能，并脱颖而出，成为最佳编码和代理模型之一——其速度和成本恰到好处，能够为免费产品和海量用户体验提供支持。用例：为免费层级用户体验提供支持：Claude Haiku 4.5 以合理的成本和速度提供近乎前沿的性能，使为免费代理产品和代理用例提供支持在经济上可行。"
+			},
+			"anthropic/claude-sonnet-4.5:thinking": {
+				"maxTokens": 64000,
+				"contextWindow": 200000,
+				"inputPrice": 30000,
+				"outputPrice": 150000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Claude Sonnet 4.5 是 Anthropic 迄今为止最先进的 Sonnet 模型，针对真实代理和编码工作流程进行了优化。它在 SWE-bench Verified 等编码基准测试中展现出顶尖性能，并在系统设计、代码安全性和规范遵循性方面均有所改进。该模型旨在实现扩展自主操作，保持跨会话的任务连续性，并提供基于事实的进度跟踪。\n\nSonnet 4.5 还引入了更强大的代理功能，包括改进的工具编排、推测并行执行以及更高效的上下文和内存管理。凭借增强的上下文跟踪和跨工具调用的令牌使用感知功能，它尤其适用于多上下文和长时间运行的工作流。用例涵盖软件工程、网络安全、财务分析、研究代理以及其他需要持续推理和工具使用的领域。"
+			},
+			"anthropic/claude-haiku-4.5": {
+				"maxTokens": 64000,
+				"contextWindow": 200000,
+				"inputPrice": 10000,
+				"outputPrice": 50000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Claude Haiku 4.5 为各种用例提供​​近乎前沿的性能，并脱颖而出，成为最佳编码和代理模型之一——其速度和成本恰到好处，能够为免费产品和海量用户体验提供支持。用例：为免费层级用户体验提供支持：Claude Haiku 4.5 以合理的成本和速度提供近乎前沿的性能，使为免费代理产品和代理用例提供支持在经济上可行。"
+			},
+			"anthropic/claude-sonnet-4": {
+				"maxTokens": 64000,
+				"contextWindow": 200000,
+				"inputPrice": 30000,
+				"outputPrice": 150000,
+				"supportsImages": true,
+				"supportsPromptCache": true,
+				"description": "Claude Sonnet 4是对Sonnet 3.7的全面升级，在编程与推理任务中展现出更高的精度与可控性。该模型兼顾能力与计算效率，适用于从日常编码到复杂软件开发等多种场景。"
+			},
+			"anthropic/claude-sonnet-4:thinking": {
+				"maxTokens": 64000,
+				"contextWindow": 200000,
+				"inputPrice": 30000,
+				"outputPrice": 150000,
+				"supportsImages": true,
+				"supportsPromptCache": true,
+				"description": "Claude Sonnet 4 ( Thinking )，在编程与推理任务中展现出更高的精度与可控性。该模型兼顾能力与计算效率，适用于从日常编码到复杂软件开发等多种场景。"
+			},
+			"anthropic/claude-opus-4.1": {
+				"maxTokens": 32000,
+				"contextWindow": 200000,
+				"inputPrice": 150000,
+				"outputPrice": 750000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Claude Opus 4.1是Anthropic旗舰模型的更新版本，在编码、推理和代理任务方面均有提升。它在SWE-bench Verified测试中达到了74.5%的准确率，并在多文件代码重构、调试精度和面向细节的推理方面展现出显著提升。"
+			},
+			"anthropic/claude-3.5-haiku": {
+				"maxTokens": 8000,
+				"contextWindow": 200000,
+				"inputPrice": 8000,
+				"outputPrice": 40000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Claude 3.5 Haiku是Anthropic最快且最具成本效益的下一代模型，非常适合速度和经济性重要的应用场景。"
+			},
+			"anthropic/claude-3.7-sonnet:thinking": {
+				"maxTokens": 64000,
+				"contextWindow": 200000,
+				"inputPrice": 30000,
+				"outputPrice": 150000,
+				"supportsImages": true,
+				"supportsPromptCache": true,
+				"description": "Claude-3.7-sonnet（Thinking）是Anthropic于 2025 年推出的新一代思维型大语言模型。该模型首次融合自回归生成与符号推理架构，具备多步骤思维展示、自我纠错能力以及长达 10 万 tokens 的上下文理解能力，标志着AI从简单生成向深度逻辑推理与透明思考的跨越。"
+			},
+			"anthropic/claude-3.7-sonnet": {
+				"maxTokens": 64000,
+				"contextWindow": 200000,
+				"inputPrice": 30000,
+				"outputPrice": 150000,
+				"supportsImages": true,
+				"supportsPromptCache": true,
+				"description": "Claude 3.7 Sonnet是首个提供扩展思考功能的Claude模型，可通过仔细、逐步的推理解决复杂问题。"
+			},
+			"anthropic/claude-opus-4": {
+				"maxTokens": 32000,
+				"contextWindow": 200000,
+				"inputPrice": 150000,
+				"outputPrice": 750000,
+				"supportsImages": true,
+				"supportsPromptCache": true,
+				"description": "Claude Opus 4是Anthropic专为构建复杂的人工智能代理而设计的模型，能够在最少的监督下自主推理、规划和执行复杂的任务。该模型在需要扩展上下文、深度推理和自适应执行的软件开发场景中表现卓越。"
+			},
+			"deepseek/deepseek-r1-0528": {
+				"maxTokens": 48000,
+				"contextWindow": 96000,
+				"inputPrice": 5628,
+				"outputPrice": 22513,
+				"supportsImages": false,
+				"supportsPromptCache": true,
+				"description": "DeepSeek R1-0528是DeepSeek R1模型的小版本升级版。通过增加计算资源和引入后训练阶段的算法优化，DeepSeek R1-0528显著提升了推理与推断的深度和能力。该模型在数学、编程及一般逻辑等多项基准测试中表现优异，整体性能已接近业内领先的 O3和Gemini 2.5 Pro模型，展现出强大的多领域应用潜力。"
+			},
+			"deepseek/deepseek-v3.1-think": {
+				"maxTokens": 16000,
+				"contextWindow": 128000,
+				"inputPrice": 5628,
+				"outputPrice": 16885,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "DeepSeek-V3.1-Think采用混合推理架构，支持思考与非思考双模式运行，具备更高的思考效率，相比 DeepSeek-R1-0528 能够更快得出答案，并通过Post-Training优化显著增强了工具调用与智能体任务的处理能力。"
+			},
+			"deepseek/deepseek-v3.1": {
+				"maxTokens": 16000,
+				"contextWindow": 128000,
+				"inputPrice": 5628,
+				"outputPrice": 16885,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "DeepSeek V3.1是DeepSeek的新一代模型，具备混合推理（Think & Non-Think双模式），显著提升思考速度和任务处理效率，并通过后训练强化工具调用与多步骤智能体能力。"
+			},
+			"deepseek/deepseek-v3.2": {
+				"maxTokens": 8000,
+				"contextWindow": 128000,
+				"inputPrice": 2814,
+				"outputPrice": 4221,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "引入了DeepSeek Sparse Attention（一种稀疏注意力机制）的实验性质版本，针对长文本的训练和推理效率进行了探索性的优化和验证"
+			},
+			"deepseek/deepseek-v3.2-think": {
+				"maxTokens": 64000,
+				"contextWindow": 128000,
+				"inputPrice": 2814,
+				"outputPrice": 4221,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "引入了DeepSeek Sparse Attention（一种稀疏注意力机制）的实验性质版本，针对长文本的训练和推理效率进行了探索性的优化和验证"
+			},
+			"deepseek/deepseek-r1-0120": {
+				"maxTokens": 16384,
+				"contextWindow": 13072,
+				"inputPrice": 5628,
+				"outputPrice": 22513,
+				"supportsImages": false,
+				"supportsPromptCache": true,
+				"description": "DeepSeek-R1是深度求索DeepSeek公司发布的一款大型语言模型，专为数学、代码和逻辑推理任务设计，对标OpenAI的o1模型。它采用强化学习进行训练，无需依赖大量的监督微调数据，并且支持多语言，在推理能力和效率上都有显著提升。"
+			},
+			"deepseek/deepseek-v3": {
+				"maxTokens": 16000,
+				"contextWindow": 128000,
+				"inputPrice": 2814,
+				"outputPrice": 11256,
+				"supportsImages": false,
+				"supportsPromptCache": true,
+				"description": "DeepSeek-V3是DeepSeek公司发布的一款大型语言模型，以其在数学、编码和中文等任务上的卓越性能而闻名。该模型采用了MoE架构，拥有6710亿参数，每个token激活的参数量为370亿，并且支持128K token的超长上下文窗口。DeepSeek-V3不仅在性能上对标GPT-4o等主流模型，还在推理速度和效率上取得了显著提升。"
+			},
+			"google/gemini-2.5-flash": {
+				"maxTokens": 65535,
+				"contextWindow": 1048576,
+				"inputPrice": 3000,
+				"outputPrice": 25000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Gemini 2.5 Flash是Google在性价比方面表现最优的模型，兼具全面能力与高效性能。作为首个具备“思维能力”的 Flash 系列模型，Gemini 2.5 Flash支持可视化的思维过程，让用户直观了解模型在生成回答时的推理路径。"
+			},
+			"google/gemini-2.5-pro": {
+				"maxTokens": 65535,
+				"contextWindow": 1048576,
+				"inputPrice": 12500,
+				"outputPrice": 100000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Gemini 2.5 Pro是一款强大的推理模型，专为解决复杂问题而设计。它具备卓越的理解与分析能力，能够处理来自多种信息源的海量数据，包括文本、音频、图像、视频，甚至是完整的代码库。"
+			},
+			"google/gemini-2.5-flash-lite": {
+				"maxTokens": 64000,
+				"contextWindow": 1000000,
+				"inputPrice": 1000,
+				"outputPrice": 4000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Gemini 2.5 Flash-Lite 是Gemini 2.5 系列中的一个轻量级推理模型，优化了超低延迟和成本效率。与早期的 Flash 模型相比，它提供了更好的吞吐量、更快的 token 生成以及在常见基准测试中更好的性能。可通过reasoning.max_tokens开启思考并控制思维链长度。"
+			},
+			"google/gemini-2.0-flash": {
+				"maxTokens": 65535,
+				"contextWindow": 1047576,
+				"inputPrice": 1000,
+				"outputPrice": 4000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Gemini 2.0 Flash 是为智能体时代量身打造的下一代模型，具备更强大的功能和卓越的性能。它在继承前代 Flash 模型高速优势的基础上，实现了全方位升级：支持原生工具调用、具备多模态生成能力，并拥有高达 100 万 token 的上下文窗口。相比前代产品，Gemini 2.0 Flash 在保持相似速度的同时，显著提升了输出质量，是一款兼具高效性与先进能力的多场景 AI 模型。"
+			},
+			"meta/llama-4-scout": {
+				"maxTokens": 100000000,
+				"contextWindow": 10000000,
+				"inputPrice": 800,
+				"outputPrice": 3000,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "Llama 4 Scout适用于长上下文中的检索任务，以及需要对大量信息进行推理处理的任务，例如总结多个大型文档、分析大量用户互动日志以实现个性化，以及跨大型代码库进行推理。"
+			},
+			"minimax/minimax-m2": {
+				"maxTokens": 131000,
+				"contextWindow": 200000,
+				"inputPrice": 0,
+				"outputPrice": 0,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": " MiniMax M2，专为 Agent 和代码而生，仅 Claude Sonnet 8% 价格，2倍速度，限时免费（截止2025年11月7日）！"
+			},
+			"minimax/minimax-m1": {
+				"maxTokens": 80000,
+				"contextWindow": 1000000,
+				"inputPrice": 1125,
+				"outputPrice": 11256,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "MiniMax-M1，世界上第一个开源的大规模混合架构的推理模型，适合在复杂场景中使用。"
+			},
+			"moonshot/kimi-k2": {
+				"maxTokens": 32000,
+				"contextWindow": 256000,
+				"inputPrice": 5628,
+				"outputPrice": 22513,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "( 最新版本 0905) Kimi K2是一款上下文长度256k的模型，具备更强的Agentic Coding能力、更突出的前端代码的美观度和实用性、以及更好的上下文理解能力。"
+			},
+			"moonshot/kimi-latest": {
+				"maxTokens": 128000,
+				"contextWindow": 128000,
+				"inputPrice": 2814,
+				"outputPrice": 14071,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Kimi-latest是一个最长支持128k上下文的视觉模型，支持图片理解。同时，kimi-latest 模型总是使用Kimi智能助手产品使用最新的Kimi 大模型版本，可能包含尚未稳定的特性。"
+			},
+			"moonshot/kimi-thinking-preview": {
+				"maxTokens": 128000,
+				"contextWindow": 128000,
+				"inputPrice": 281420,
+				"outputPrice": 281420,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Kimi-thinking-preview是月之暗面提供的具有多模态推理能力和通用推理能力的多模态思考模型，它最长支持128k上下文，擅长深度推理，帮助解决更多更难的事情。"
+			},
+			"openai/gpt-5": {
+				"maxTokens": 128000,
+				"contextWindow": 400000,
+				"inputPrice": 12500,
+				"outputPrice": 100000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "GPT-5是OpenAI推出的最新一代先进模型，在推理能力、代码生成质量和用户体验方面实现显著提升。该模型针对复杂任务进行了专项优化，尤其擅长需要逐步推理、精准遵循指令以及对准确性要求严格的高风险场景。"
+			},
+			"openai/o3": {
+				"maxTokens": 100000,
+				"contextWindow": 200000,
+				"inputPrice": 20000,
+				"outputPrice": 80000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "o3是一款全面且强大的跨领域模型，在数学、科学、编程和视觉推理任务中树立了新标杆。它在技术写作和遵循指令方面也表现出色。可用于处理涉及文本、代码和图像分析的多步骤问题。"
+			},
+			"openai/gpt-5-codex": {
+				"maxTokens": 128000,
+				"contextWindow": 400000,
+				"inputPrice": 12500,
+				"outputPrice": 100000,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "GPT-5-Codex 是 GPT-5 的专用版本，针对软件工程和编码工作流程进行了优化。它专为交互式开发会话和复杂工程任务的长时间独立执行而设计。该模型支持从头开始构建项目、功能开发、调试、大规模重构和代码审查。与 GPT-5 相比，Codex 更具可作性，严格遵守开发人员的指令，并生成更干净、更高质量的代码输出。"
+			},
+			"openai/gpt-5-mini": {
+				"maxTokens": 128000,
+				"contextWindow": 400000,
+				"inputPrice": 2500,
+				"outputPrice": 20000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "GPT-5-Mini是GPT-5的轻量级版本，专为高效处理日常推理任务而设计。它继承了 GPT-5的指令跟随能力和安全优化，同时具备更低的延迟和成本优势。"
+			},
+			"openai/gpt-5-nano": {
+				"maxTokens": 128000,
+				"contextWindow": 400000,
+				"inputPrice": 500,
+				"outputPrice": 4000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "GPT-5-Nano是GPT-5系列中最快速的版本，专为开发者工具、即时交互和超低延迟场景优化。尽管在复杂推理能力上略逊于更大的模型，但它保留了核心的指令跟随与安全特性。"
+			},
+			"openai/gpt-oss-20b": {
+				"maxTokens": 131072,
+				"contextWindow": 131072,
+				"inputPrice": 700,
+				"outputPrice": 3000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "GPT OSS 20B是OpenAI发布的开放权重210亿参数模型，它采用MoE架构，每次前向传递有36亿个有效参数，并针对低延迟推理和在消费级或单GPU硬件上的部署进行了优化。该模型采用OpenAI的Harmony响应格式进行训练，并支持推理级别配置、微调和代理功能，包括函数调用、工具使用和结构化输出。"
+			},
+			"openai/gpt-oss-120b": {
+				"maxTokens": 131072,
+				"contextWindow": 131072,
+				"inputPrice": 1000,
+				"outputPrice": 5000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "GPT OSS 120B是OpenAI推出的开放权重、包含1170亿个参数的MoE语言模型，专为高推理、代理和通用生产用例而设计。它每次前向传递可激活51亿个参数，并经过优化，可在具有原生MXFP4量化的单个H100 GPU上运行。"
+			},
+			"openai/gpt-4o-2024-11-20": {
+				"maxTokens": 16384,
+				"contextWindow": 128000,
+				"inputPrice": 50000,
+				"outputPrice": 200000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "GPT 4o是OpenAI智能水平最高、通用性最强的旗舰模型。它支持文本与图像输入，并生成文本输出（包括结构化结果），在大多数任务中表现出色，是目前除o系列专用模型外能力最强的通用模型。"
+			},
+			"openai/gpt-4o-mini": {
+				"maxTokens": 16384,
+				"contextWindow": 128000,
+				"inputPrice": 844,
+				"outputPrice": 3377,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "GPT-4o-mini是一款快速、经济的小型模型，适用于聚焦型任务和微调场景。它支持文本和图像输入，并生成文本输出，在成本和响应速度方面具有显著优势。"
+			},
+			"openai/o3-mini-high": {
+				"maxTokens": 100000,
+				"contextWindow": 200000,
+				"inputPrice": 11000,
+				"outputPrice": 44000,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "o3-mini-high是 o3-mini 模型在高推理强度设置下的版本，特别擅长STEM领域的推理任务，包括科学、数学和编程。"
+			},
+			"openai/o3-mini": {
+				"maxTokens": 100000,
+				"contextWindow": 200000,
+				"inputPrice": 11000,
+				"outputPrice": 44000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "OpenAI o3-mini是OpenAI推出的小型推理模型，在保持与o1-mini 相同的成本与延迟水平下，提供了更高的智能表现。该模型专为复杂推理任务优化，特别适用于科学、数学与编程等领域。同时，o3-mini支持结构化输出、函数调用、Batch API等关键开发功能，为构建高效智能应用提供了强大支持。"
+			},
+			"openai/gpt-4.1": {
+				"maxTokens": 32768,
+				"contextWindow": 1047576,
+				"inputPrice": 20000,
+				"outputPrice": 80000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "GPT-4.1是OpenAI推出的一款面向复杂任务的旗舰模型，具备跨领域的问题解决能力，能够高效应对各种复杂场景和挑战。"
+			},
+			"openai/o1": {
+				"maxTokens": 100000,
+				"contextWindow": 200000,
+				"inputPrice": 150000,
+				"outputPrice": 600000,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "o1模型，具有强大的推理能力，在科学、编程、数学等领域表现出色。它采用了长思维链和自适应计算，能够处理复杂推理任务。"
+			},
+			"openai/gpt-4.1-mini": {
+				"maxTokens": 32768,
+				"contextWindow": 1047576,
+				"inputPrice": 4000,
+				"outputPrice": 16000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "GPT-4.1-mini是GPT-4.1的小型版本，兼顾文本生成与理解，适合用于语言教学与分析任务。"
+			},
+			"openai/gpt-4.1-nano": {
+				"maxTokens": 32768,
+				"contextWindow": 1047576,
+				"inputPrice": 1000,
+				"outputPrice": 4000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "GPT-4.1-nano是GPT-4.1系列中速度最快且性价比最高的模型，专为高效、低成本的应用场景设计。"
+			},
+			"openai/o4-mini": {
+				"maxTokens": 100000,
+				"contextWindow": 200000,
+				"inputPrice": 11000,
+				"outputPrice": 44000,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "OpenAI o4-mini 是 o 系列中的一款紧凑型推理模型，经过优化，能够在保持强大多模态和代理能力的同时，实现快速且成本效益高的性能。它支持工具使用，并在 AIME（使用 Python 达到 99.5% 准确率）和 SWE-bench 等基准测试中表现出色，超越了前代 o3-mini，甚至在某些领域接近 o3 的水平。  尽管体积较小，o4-mini 在 STEM 任务、视觉问题解决（如 MathVista、MMMU）和代码编辑方面表现出高准确率。它特别适用于对延迟或成本敏感的高吞吐量场景。得益于其高效的架构和精细的强化学习训练，o4-mini 能够串联使用工具、生成结构化输出，并以最小延迟解决多步骤任务——通常在一分钟内完成。  此外，o4-mini 与 o3 一样，具备图像推理能力，能够将视觉输入（如草图和白板）直接整合到其思维过程中，并在分析中对图像进行调整，如缩放或旋转。这些增强功能现已向 ChatGPT Plus、Pro 和 Team 用户开放。"
+			},
+			"openai/o4-mini-high": {
+				"maxTokens": 100000,
+				"contextWindow": 200000,
+				"inputPrice": 11000,
+				"outputPrice": 44000,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "OpenAI o4-mini-high 与 o4-mini 是同一个模型，只是将 推理效果设为高。o4 是 o 系列中的一个紧凑型推理模型，优化目标是实现快速、成本效益高的性能，同时保持强大的多模态能力和自主代理（agentic）能力。它支持工具调用，在多个基准测试中展现出强劲的推理和编程表现，例如在 AIME 中使用 Python 达到 99.5% 的成绩，在 SWE-bench 中也优于其前代 o3-mini，甚至在某些领域接近 o3 模型的表现。尽管体积更小，o4-mini 在 STEM 任务（科学、技术、工程、数学）、视觉问题解决（如 MathVista、MMMU）以及代码编辑方面依然表现出色。它特别适用于对延迟和成本要求较高的大吞吐场景。得益于其高效的架构设计和精细化的强化学习训练，o4-mini 能够链式调用工具、生成结构化输出，并在不到一分钟内完成多步复杂任务。"
+			},
+			"openai/codex-mini-latest": {
+				"maxTokens": 100000,
+				"contextWindow": 200000,
+				"inputPrice": 15000,
+				"outputPrice": 60000,
+				"supportsImages": false,
+				"supportsPromptCache": true,
+				"description": "codex-mini-latest 是 o4-mini 的微调版本，专门用于 Codex CLI。对于直接在 API 中使用，我们建议从 gpt-4.1 开始。"
+			},
+			"x-ai/grok-4-fast": {
+				"maxTokens": 30000,
+				"contextWindow": 2000000,
+				"inputPrice": 2000,
+				"outputPrice": 5000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Grok 4 Fast 是 xAI 最新的多模态模型，具有 SOTA 成本效益和 2M 令牌上下文窗口。它有两种类型：非推理和推理。"
+			},
+			"xai/grok-code-fast-1": {
+				"maxTokens": 10000,
+				"contextWindow": 256000,
+				"inputPrice": 2000,
+				"outputPrice": 15000,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "Grok Code Fast 1是xAI的首款编程模型，是一款兼具速度、高性价比的推理模型。"
+			},
+			"x-ai/grok-4": {
+				"maxTokens": 256000,
+				"contextWindow": 256000,
+				"inputPrice": 30000,
+				"outputPrice": 150000,
+				"supportsImages": false,
+				"supportsPromptCache": false,
+				"description": "Grok 4是xAI的多模态大型语言模型，目前支持文本模态，视觉、图像生成等功能即将推出。"
+			},
+			"x-ai/grok-3": {
+				"maxTokens": 131072,
+				"contextWindow": 131072,
+				"inputPrice": 30000,
+				"outputPrice": 150000,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Grok 3是Grok的第三代版本，在数据提取、编码和文本摘要等企业用例中表现出色。"
+			},
+			"x-ai/grok-3-mini": {
+				"maxTokens": 0,
+				"contextWindow": 0,
+				"inputPrice": 0,
+				"outputPrice": 0,
+				"supportsImages": true,
+				"supportsPromptCache": false,
+				"description": "Grok 3 Mini是Grok 3的精简版本，该模型在数学、科学及编程领域的基准测试中表现优异，支持自我事实核查和防“蒸馏”技术，可隐藏推理过程的中间步骤。"
+			}
+		}
 	  "nousResearch": {
 	    "Hermes-4-405B": {
 	      "maxTokens": 8192,
@@ -1491,6 +2034,15 @@ func GetProviderDefinitions() (map[string]ProviderDefinition, error) {
 		SetupInstructions: `Configure Oca API credentials`,
 	}
 
+	definitions["shengsuanyun"] = ProviderDefinition{
+		ID:              "shengsuanyun",
+		Name:            "Oca",
+		RequiredFields:  getFieldsByProvider("shengsuanyun", configFields, true),
+		OptionalFields:  getFieldsByProvider("shengsuanyun", configFields, false),
+		Models:          modelDefinitions["shengsuanyun"],
+		DefaultModelID:  "",
+		HasDynamicModels: false,
+		SetupInstructions: `配置胜算云 API Key`,
 	// NousResearch
 	definitions["nousResearch"] = ProviderDefinition{
 		ID:              "nousResearch",
@@ -1529,6 +2081,7 @@ func GetProviderDisplayName(providerID string) string {
 		"xai": "X AI (Grok)",
 		"cerebras": "Cerebras",
 		"oca": "Oca",
+		"shengsuanyun":"SSY",
 		"nousResearch": "NousResearch",
 	}
 	

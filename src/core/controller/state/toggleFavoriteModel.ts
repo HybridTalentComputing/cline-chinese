@@ -1,5 +1,5 @@
 import { Empty, StringRequest } from "@shared/proto/cline/common"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { Controller } from ".."
 
 /**
@@ -26,8 +26,8 @@ export async function toggleFavoriteModel(controller: Controller, request: Strin
 		controller.stateManager.setGlobalState("favoritedModelIds", updatedFavorites)
 
 		// Capture telemetry for model favorite toggle
-		const isFavorited = !favoritedModelIds.includes(modelId)
-		telemetryService.captureModelFavoritesUsage(modelId, isFavorited)
+		const _isFavorited = !favoritedModelIds.includes(modelId)
+		// telemetryService.captureModelFavoritesUsage(modelId, isFavorited)
 
 		// Post state to webview without changing any other configuration
 		await controller.postStateToWebview()

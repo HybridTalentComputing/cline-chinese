@@ -1,6 +1,7 @@
 import { ClineError } from "./ClineError"
 import { ErrorProviderFactory } from "./ErrorProviderFactory"
 import { IErrorProvider } from "./providers/IErrorProvider"
+import { SSYError } from "./SSYError"
 
 /**
  * ErrorService handles error logging and tracking for the Cline extension
@@ -39,7 +40,7 @@ export class ErrorService {
 		this.provider = provider
 	}
 
-	public logException(error: Error | ClineError, properties?: Record<string, unknown>): void {
+	public logException(error: Error | SSYError | ClineError, properties?: Record<string, unknown>): void {
 		this.provider.logException(error, properties)
 		console.error("[ErrorService] Logging exception", JSON.stringify(error))
 	}
@@ -52,9 +53,9 @@ export class ErrorService {
 		this.provider.logMessage(message, level, properties)
 	}
 
-	public toClineError(rawError: unknown, modelId?: string, providerId?: string): ClineError {
-		const transformed = ClineError.transform(rawError, modelId, providerId)
-		this.logException(transformed, { modelId, providerId })
+	public toClineError(rawError: unknown, modelId?: string, providerId?: string): SSYError {
+		const transformed = SSYError.transform(rawError, modelId, providerId)
+		// this.logException(transformed, { modelId, providerId })
 		return transformed
 	}
 

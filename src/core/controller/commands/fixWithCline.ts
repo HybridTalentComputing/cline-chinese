@@ -1,6 +1,6 @@
 import { getFileMentionFromPath } from "@/core/mentions"
 import { singleFileDiagnosticsToProblemsString } from "@/integrations/diagnostics"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { CommandContext, Empty } from "@/shared/proto/index.cline"
 import { Controller } from "../index"
 
@@ -15,6 +15,6 @@ export async function fixWithCline(controller: Controller, request: CommandConte
 	)
 	console.log("fixWithCline", request.selectedText, request.filePath, request.language, problemsString)
 
-	telemetryService.captureButtonClick("codeAction_fixWithCline", controller.task?.ulid)
+	// telemetryService.captureButtonClick("codeAction_fixWithCline", controller.task?.ulid)
 	return {}
 }

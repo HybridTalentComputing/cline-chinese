@@ -5,7 +5,7 @@ import { detectWorkspaceRoots } from "@core/workspace/detection"
 import { setupWorkspaceManager } from "@core/workspace/setup"
 import type { WorkspaceRootManager } from "@core/workspace/WorkspaceRootManager"
 import { cleanupLegacyCheckpoints } from "@integrations/checkpoints/CheckpointMigration"
-import { ClineAccountService } from "@services/account/ClineAccountService"
+// import { ClineAccountService } from "@services/account/ClineAccountService"
 import { McpHub } from "@services/mcp/McpHub"
 import type { ApiProvider, ModelInfo } from "@shared/api"
 import type { ChatContent } from "@shared/ChatContent"
@@ -27,17 +27,18 @@ import type * as vscode from "vscode"
 import { ClineEnv } from "@/config"
 import { HostProvider } from "@/hosts/host-provider"
 import { ExtensionRegistryInfo } from "@/registry"
-import { AuthService } from "@/services/auth/AuthService"
-import { OcaAuthService } from "@/services/auth/oca/OcaAuthService"
-import { LogoutReason } from "@/services/auth/types"
+// import { AuthService } from "@/services/auth/AuthService"
+// import { OcaAuthService } from "@/services/auth/oca/OcaAuthService"
+// import { LogoutReason } from "@/services/auth/types"
 import { featureFlagsService } from "@/services/feature-flags"
-import { getDistinctId } from "@/services/logging/distinctId"
-import { telemetryService } from "@/services/telemetry"
+// import { getDistinctId } from "@/services/logging/distinctId"
+// import { telemetryService } from "@/services/telemetry"
 import { getAxiosSettings } from "@/shared/net"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { getLatestAnnouncementId } from "@/utils/announcements"
 import { getCwd, getDesktopDir } from "@/utils/path"
-import { BannerService } from "../../services/banner/BannerService"
+import { SSYAccountService } from "../../services/account/SSYAccountService"
+// import { BannerService } from "../../services/banner/BannerService"
 import { PromptRegistry } from "../prompts/system-prompt"
 import {
 	ensureCacheDirectoryExists,
@@ -46,7 +47,7 @@ import {
 	GlobalFileNames,
 	writeMcpMarketplaceCatalogToCache,
 } from "../storage/disk"
-import { fetchRemoteConfig } from "../storage/remote-config/fetch"
+// import { fetchRemoteConfig } from "../storage/remote-config/fetch.ts"
 import { type PersistenceErrorEvent, StateManager } from "../storage/StateManager"
 import { Task } from "../task"
 import { sendMcpMarketplaceCatalogEvent } from "./mcp/subscribeToMcpMarketplaceCatalog"
@@ -66,9 +67,10 @@ export class Controller {
 	task?: Task
 
 	mcpHub: McpHub
-	accountService: ClineAccountService
-	authService: AuthService
-	ocaAuthService: OcaAuthService
+	// accountService: ClineAccountService
+	accountServiceSSY: SSYAccountService
+	// authService: AuthService
+	// ocaAuthService: OcaAuthService
 	readonly stateManager: StateManager
 
 	// NEW: Add workspace manager (optional initially)
@@ -106,12 +108,12 @@ export class Controller {
 	 * Starts the periodic remote config fetching timer
 	 * Fetches immediately and then every 30 seconds
 	 */
-	private startRemoteConfigTimer() {
-		// Initial fetch
-		fetchRemoteConfig(this)
-		// Set up 30-second interval
-		this.remoteConfigTimer = setInterval(() => fetchRemoteConfig(this), 30000) // 30 seconds
-	}
+	// private startRemoteConfigTimer() {
+	// 	// Initial fetch
+	// 	fetchRemoteConfig(this)
+	// 	// Set up 30-second interval
+	// 	this.remoteConfigTimer = setInterval(() => fetchRemoteConfig(this), 30000) // 30 seconds
+	// }
 
 	constructor(readonly context: vscode.ExtensionContext) {
 		PromptRegistry.getInstance() // Ensure prompts and tools are registered
@@ -139,20 +141,33 @@ export class Controller {
 				await this.postStateToWebview()
 			},
 		})
-		this.authService = AuthService.getInstance(this)
-		this.ocaAuthService = OcaAuthService.initialize(this)
-		this.accountService = ClineAccountService.getInstance()
+		// this.authService = AuthService.getInstance(this)
+		// this.ocaAuthService = OcaAuthService.initialize(this)
+		// this.accountService = ClineAccountService.getInstance()
 
-		this.authService.restoreRefreshTokenAndRetrieveAuthInfo().then(() => {
-			this.startRemoteConfigTimer()
-		})
+		// const authStatusHandler: StreamingResponseHandler<AuthState> = async (response, _isLast, _seqNumber): Promise<void> => {
+		// 	if (response.user) {
+		// 		fetchRemoteConfig(this)
+		// 	}
+		// }
+		// this.authService.subscribeToAuthStatusUpdate(this, {}, authStatusHandler, undefined)
+
+		// this.authService.restoreRefreshTokenAndRetrieveAuthInfo().then(() => {
+		// 	this.startRemoteConfigTimer()
+		// })
 
 		this.mcpHub = new McpHub(
 			() => ensureMcpServersDirectoryExists(),
 			() => ensureSettingsDirectoryExists(),
 			ExtensionRegistryInfo.version,
-			telemetryService,
+			// telemetryService,
 		)
+		this.accountServiceSSY = new SSYAccountService(async () => {
+			const { apiConfiguration } = await this.getStateToPostToWebview()
+			console.log("[ Controller.accountServiceSSY ] :", apiConfiguration?.shengSuanYunToken)
+			return apiConfiguration?.shengSuanYunToken
+		})
+		// this.accountService = ClineAccountService.getInstance()
 
 		// Clean up legacy checkpoints
 		cleanupLegacyCheckpoints().catch((error) => {
@@ -191,20 +206,20 @@ export class Controller {
 			const apiConfiguration = this.stateManager.getApiConfiguration()
 			const updatedConfig = {
 				...apiConfiguration,
-				planModeApiProvider: "openrouter" as ApiProvider,
-				actModeApiProvider: "openrouter" as ApiProvider,
+				shengSuanYunToken: undefined,
+				userInfo: undefined,
 			}
 			this.stateManager.setApiConfiguration(updatedConfig)
 
 			await this.postStateToWebview()
 			HostProvider.window.showMessage({
 				type: ShowMessageType.INFORMATION,
-				message: "Successfully logged out of Cline",
+				message: "成功登出 Cline 胜算云",
 			})
 		} catch (_error) {
 			HostProvider.window.showMessage({
 				type: ShowMessageType.INFORMATION,
-				message: "Logout failed",
+				message: "登出失败",
 			})
 		}
 	}
@@ -212,7 +227,7 @@ export class Controller {
 	// Oca Auth methods
 	async handleOcaSignOut() {
 		try {
-			await this.ocaAuthService.handleDeauth(LogoutReason.USER_INITIATED)
+			// await this.ocaAuthService.handleDeauth(LogoutReason.USER_INITIATED)
 			await this.postStateToWebview()
 			HostProvider.window.showMessage({
 				type: ShowMessageType.INFORMATION,
@@ -224,10 +239,6 @@ export class Controller {
 				message: "OCA Logout failed",
 			})
 		}
-	}
-
-	async setUserInfo(info?: UserInfo) {
-		this.stateManager.setGlobalState("userInfo", info)
 	}
 
 	async initTask(
@@ -244,7 +255,7 @@ export class Controller {
 		// getGlobalSettingsKey() reads from remoteConfigCache on each call, so any updates
 		// will apply as soon as this fetch completes. The function also calls postStateToWebview()
 		// when done and catches all errors internally.
-		fetchRemoteConfig(this)
+		// fetchRemoteConfig(this)
 
 		await this.clearTask() // ensures that an existing task doesn't exist before starting a new one, although this shouldn't be possible since user must clear task before starting a new one
 
@@ -349,8 +360,8 @@ export class Controller {
 
 	async updateTelemetrySetting(telemetrySetting: TelemetrySetting) {
 		this.stateManager.setGlobalState("telemetrySetting", telemetrySetting)
-		const isOptedIn = telemetrySetting !== "disabled"
-		telemetryService.updateTelemetryState(isOptedIn)
+		const _isOptedIn = telemetrySetting !== "disabled"
+		// telemetryService.updateTelemetryState(isOptedIn)
 		await this.postStateToWebview()
 	}
 
@@ -382,7 +393,7 @@ export class Controller {
 		this.stateManager.setGlobalState("mode", modeToSwitchTo)
 
 		// Capture mode switch telemetry | Capture regardless of if we know the taskId
-		telemetryService.captureModeSwitch(this.task?.ulid ?? "0", modeToSwitchTo)
+		// telemetryService.captureModeSwitch(this.task?.ulid ?? "0", modeToSwitchTo)
 
 		// Update API handler with new mode (buildApiHandler now selects provider based on mode)
 		if (this.task) {
@@ -502,7 +513,8 @@ export class Controller {
 
 	async handleAuthCallback(customToken: string, provider: string | null = null) {
 		try {
-			await this.authService.handleAuthCallback(customToken, provider ? provider : "google")
+			console.log(customToken, provider)
+			// await this.authService.handleAuthCallback(customToken, provider ? provider : "google")
 
 			const clineProvider: ApiProvider = "cline"
 
@@ -544,7 +556,7 @@ export class Controller {
 			console.error("Failed to handle auth callback:", error)
 			HostProvider.window.showMessage({
 				type: ShowMessageType.ERROR,
-				message: "Failed to log in to Cline",
+				message: "登录失败",
 			})
 			// Even on login failure, we preserve any existing tokens
 			// Only clear tokens on explicit logout
@@ -553,7 +565,8 @@ export class Controller {
 
 	async handleOcaAuthCallback(code: string, state: string) {
 		try {
-			await this.ocaAuthService.handleAuthCallback(code, state)
+			console.log(code, state)
+			// await this.ocaAuthService.handleAuthCallback(code, state)
 
 			const ocaProvider: ApiProvider = "oca"
 
@@ -675,7 +688,6 @@ export class Controller {
 	}
 
 	// OpenRouter
-
 	async handleOpenRouterCallback(code: string) {
 		let apiKey: string
 		try {
@@ -710,6 +722,57 @@ export class Controller {
 		// Dont send settingsButtonClicked because its bad ux if user is on welcome
 	}
 
+	// shengsuanyun Auth
+	async handleShengSuanYunCallback(code: string) {
+		try {
+			let shengSuanYunApiKey: string
+			let shengSuanYunToken: string
+			const res = await axios.post("https://api.shengsuanyun.com/auth/keys", {
+				code: code,
+				callback_url: `vscode://HybridTalentComputing.cline-chinese/ssy`,
+			})
+			// console.log("https://api.shengsuanyun.com/auth/keys :", res.data)
+			if (res.data && res.data.data && res.data.data.api_key) {
+				shengSuanYunApiKey = res.data.data.api_key
+				shengSuanYunToken = res.data.data.jwt_token
+			} else {
+				throw new Error("Invalid response from handleShengSuanYunCallback()", { cause: res })
+			}
+
+			// await this.accountServiceSSY.handleAuthCallback(customToken, provider ? provider : "google")
+			const shengsuanyun: ApiProvider = "shengsuanyun"
+			const currentMode = this.stateManager.getGlobalSettingsKey("mode")
+			const currentApiConfiguration = this.stateManager.getApiConfiguration()
+
+			const updatedConfig = {
+				...currentApiConfiguration,
+				planModeApiProvider: shengsuanyun,
+				actModeApiProvider: shengsuanyun,
+				shengSuanYunApiKey,
+				shengSuanYunToken,
+			}
+			this.stateManager.setApiConfiguration(updatedConfig)
+			this.stateManager.setGlobalState("welcomeViewCompleted", true)
+			if (this.task) {
+				this.task.api = buildApiHandler({ ...updatedConfig, ulid: this.task.ulid }, currentMode)
+			}
+			const user: UserInfo = await this.accountServiceSSY.getUserInfo(shengSuanYunToken)
+			console.log("Controller.fetchUserCreditsData().user ------------", user)
+			this.stateManager.setGlobalState("userInfo", user)
+			await this.postStateToWebview()
+		} catch (error) {
+			console.error("Failed to handle auth callback:", error)
+			HostProvider.window.showMessage({
+				type: ShowMessageType.ERROR,
+				message: "登录失败",
+			})
+		}
+	}
+
+	// private async ensureCacheDirectoryExists(): Promise<string> {
+	// 	const cacheDir = path.join(this.context.globalStorageUri.fsPath, "cache")
+	// 	await fs.mkdir(cacheDir, { recursive: true })
+	// 	return cacheDir
 	// Requesty
 
 	async handleRequestyCallback(code: string) {
@@ -838,9 +901,9 @@ export class Controller {
 		const vscodeTerminalExecutionMode = this.stateManager.getGlobalStateKey("vscodeTerminalExecutionMode")
 		const defaultTerminalProfile = this.stateManager.getGlobalSettingsKey("defaultTerminalProfile")
 		const isNewUser = this.stateManager.getGlobalStateKey("isNewUser")
-		// Can be undefined but is set to either true or false by the migration that runs on extension launch in extension.ts
-		const welcomeViewCompleted = !!this.stateManager.getGlobalStateKey("welcomeViewCompleted")
-
+		const welcomeViewCompleted = Boolean(
+			this.stateManager.getGlobalStateKey("welcomeViewCompleted") || this.context.globalState.get("shengSuanYunToken"), //this.authService.getInfo()?.user?.uid,
+		)
 		const customPrompt = this.stateManager.getGlobalSettingsKey("customPrompt")
 		const mcpResponsesCollapsed = this.stateManager.getGlobalStateKey("mcpResponsesCollapsed")
 		const terminalOutputLineLimit = this.stateManager.getGlobalSettingsKey("terminalOutputLineLimit")
@@ -871,7 +934,7 @@ export class Controller {
 		const latestAnnouncementId = getLatestAnnouncementId()
 		const shouldShowAnnouncement = lastShownAnnouncementId !== latestAnnouncementId
 		const platform = process.platform as Platform
-		const distinctId = getDistinctId()
+		const distinctId = "" // getDistinctId()
 		const version = ExtensionRegistryInfo.version
 		const environment = ClineEnv.config().environment
 
@@ -1000,61 +1063,61 @@ export class Controller {
 	/**
 	 * Initializes the BannerService if not already initialized
 	 */
-	private async ensureBannerService() {
-		if (!BannerService.isInitialized()) {
-			try {
-				BannerService.initialize(this)
-			} catch (error) {
-				console.error("Failed to initialize BannerService:", error)
-			}
-		}
-	}
+	// private async ensureBannerService() {
+	// 	if (!BannerService.isInitialized()) {
+	// 		try {
+	// 			BannerService.initialize(this)
+	// 		} catch (error) {
+	// 			console.error("Failed to initialize BannerService:", error)
+	// 		}
+	// 	}
+	// }
 
 	/**
 	 * Fetches non-dismissed banners for display
 	 * @returns Array of banners that haven't been dismissed
 	 */
-	async fetchBannersForDisplay(): Promise<any[]> {
-		try {
-			await this.ensureBannerService()
-			if (BannerService.isInitialized()) {
-				return await BannerService.get().getNonDismissedBanners()
-			}
-		} catch (error) {
-			console.error("Failed to fetch banners:", error)
-		}
-		return []
-	}
+	// async fetchBannersForDisplay(): Promise<any[]> {
+	// 	try {
+	// 		await this.ensureBannerService()
+	// 		if (BannerService.isInitialized()) {
+	// 			return await BannerService.get().getNonDismissedBanners()
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Failed to fetch banners:", error)
+	// 	}
+	// 	return []
+	// }
 
 	/**
 	 * Dismisses a banner and sends telemetry
 	 * @param bannerId The ID of the banner to dismiss
 	 */
-	async dismissBanner(bannerId: string): Promise<void> {
-		try {
-			await this.ensureBannerService()
-			if (BannerService.isInitialized()) {
-				await BannerService.get().dismissBanner(bannerId)
-				await this.postStateToWebview()
-			}
-		} catch (error) {
-			console.error("Failed to dismiss banner:", error)
-		}
-	}
+	// async dismissBanner(bannerId: string): Promise<void> {
+	// 	try {
+	// 		await this.ensureBannerService()
+	// 		if (BannerService.isInitialized()) {
+	// 			await BannerService.get().dismissBanner(bannerId)
+	// 			await this.postStateToWebview()
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Failed to dismiss banner:", error)
+	// 	}
+	// }
 
 	/**
 	 * Sends a banner event for telemetry tracking
 	 * @param bannerId The ID of the banner
 	 * @param eventType The type of event (seen, dismiss, click)
 	 */
-	async trackBannerEvent(bannerId: string, eventType: "dismiss"): Promise<void> {
-		try {
-			await this.ensureBannerService()
-			if (BannerService.isInitialized()) {
-				await BannerService.get().sendBannerEvent(bannerId, eventType)
-			}
-		} catch (error) {
-			console.error("Failed to track banner event:", error)
-		}
-	}
+	// async trackBannerEvent(bannerId: string, eventType: "dismiss"): Promise<void> {
+	// 	try {
+	// 		await this.ensureBannerService()
+	// 		if (BannerService.isInitialized()) {
+	// 			await BannerService.get().sendBannerEvent(bannerId, eventType)
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Failed to track banner event:", error)
+	// 	}
+	// }
 }

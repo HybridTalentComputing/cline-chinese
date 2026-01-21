@@ -157,7 +157,7 @@ const McpMarketplaceView = () => {
 					/>
 					{searchQuery && (
 						<div
-							aria-label="Clear search"
+							aria-label="清除"
 							className="codicon codicon-close"
 							onClick={() => setSearchQuery("")}
 							slot="end"

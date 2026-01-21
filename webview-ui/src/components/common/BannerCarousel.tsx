@@ -164,7 +164,9 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
 						onClick={(e) => {
 							e.stopPropagation()
 							// Dismiss ALL banners, not just the current one
-							banners.forEach((banner) => banner.onDismiss?.())
+							banners.forEach((banner) => {
+								banner.onDismiss?.()
+							})
 						}}
 						size="icon"
 						variant="icon">

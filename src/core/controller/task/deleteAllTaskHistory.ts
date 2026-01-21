@@ -25,10 +25,10 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 			await HostProvider.window.showMessage(
 				ShowMessageRequest.create({
 					type: ShowMessageType.WARNING,
-					message: "What would you like to delete?",
+					message: "您想删除什么?",
 					options: {
 						modal: true,
-						items: ["Delete All Except Favorites", "Delete Everything"],
+						items: ["删除除收藏夹以外的所有内容", "删除所有内容"],
 					},
 				}),
 			)
@@ -42,7 +42,7 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 		}
 
 		// If preserving favorites, filter out non-favorites
-		if (userChoice === "Delete All Except Favorites") {
+		if (userChoice === "删除除收藏夹以外的所有内容") {
 			const favoritedTasks = taskHistory.filter((task) => task.isFavorited === true)
 
 			// If there are favorited tasks, update state
@@ -68,10 +68,10 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 				const answer = (
 					await HostProvider.window.showMessage({
 						type: ShowMessageType.WARNING,
-						message: "No favorited tasks found. Would you like to delete all tasks anyway?",
+						message: "未找到已收藏的任务。是否仍然要删除所有任务？?",
 						options: {
 							modal: true,
-							items: ["Delete All Tasks"],
+							items: ["删除所有任务"],
 						},
 					})
 				).selectedOption
@@ -104,7 +104,7 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 		} catch (error) {
 			HostProvider.window.showMessage({
 				type: ShowMessageType.ERROR,
-				message: `Encountered error while deleting task history, there may be some files left behind. Error: ${error instanceof Error ? error.message : String(error)}`,
+				message: `删除任务历史记录时遇到错误，可能会残留一些文件。Error: ${error instanceof Error ? error.message : String(error)}`,
 			})
 		}
 

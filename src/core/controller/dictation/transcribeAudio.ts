@@ -1,7 +1,7 @@
 import { TranscribeAudioRequest, Transcription } from "@shared/proto/cline/dictation"
 import { HostProvider } from "@/hosts/host-provider"
 import { getVoiceTranscriptionService } from "@/services/dictation/VoiceTranscriptionService"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { Controller } from ".."
 
@@ -16,7 +16,7 @@ export const transcribeAudio = async (controller: Controller, request: Transcrib
 	const startTime = Date.now()
 
 	// Capture telemetry for transcription start
-	telemetryService.captureVoiceTranscriptionStarted(taskId, request.language ?? "en")
+	// telemetryService.captureVoiceTranscriptionStarted(taskId, request.language ?? "en")
 
 	try {
 		// Transcribe the audio
@@ -41,7 +41,7 @@ export const transcribeAudio = async (controller: Controller, request: Transcrib
 				errorType = "network_error"
 			}
 
-			telemetryService.captureVoiceTranscriptionError(taskId, errorType, result.error, durationMs)
+			// telemetryService.captureVoiceTranscriptionError(taskId, errorType, result.error, durationMs)
 
 			// Use the error message directly from the service as it's already user-friendly
 			const errorMessage = result.error
@@ -51,7 +51,7 @@ export const transcribeAudio = async (controller: Controller, request: Transcrib
 				message: errorMessage,
 			})
 		} else if (result.text) {
-			telemetryService.captureVoiceTranscriptionCompleted(taskId, result.text.length, durationMs, request.language ?? "en")
+			// telemetryService.captureVoiceTranscriptionCompleted(taskId, result.text.length, durationMs, request.language ?? "en")
 		}
 
 		return Transcription.create({
@@ -63,7 +63,7 @@ export const transcribeAudio = async (controller: Controller, request: Transcrib
 		const durationMs = Date.now() - startTime
 		const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
 
-		telemetryService.captureVoiceTranscriptionError(taskId, "unexpected_error", errorMessage, durationMs)
+		// telemetryService.captureVoiceTranscriptionError(taskId, "unexpected_error", errorMessage, durationMs)
 
 		return Transcription.create({
 			text: "",

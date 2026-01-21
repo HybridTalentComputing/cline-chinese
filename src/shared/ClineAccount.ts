@@ -41,6 +41,10 @@ export interface UsageTransaction {
 	promptTokens: number
 	totalTokens: number
 	userId: string
+	model?: string
+	modelProvider?: string
+	spentAt?: string
+	credits?: string
 }
 
 export interface PaymentTransaction {

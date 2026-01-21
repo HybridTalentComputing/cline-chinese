@@ -279,7 +279,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 					</Button>
 				</TooltipTrigger>
 				<TooltipContent side="top">
-					Stop Recording ({formatSeconds(recordingDuration)}/{formatSeconds(MAX_DURATION)})
+					停止录音 ({formatSeconds(recordingDuration)}/{formatSeconds(MAX_DURATION)})
 				</TooltipContent>
 			</Tooltip>
 
@@ -297,7 +297,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 						<SquareIcon />
 					</Button>
 				</TooltipTrigger>
-				<TooltipContent side="top">Cancel Recording</TooltipContent>
+				<TooltipContent side="top">取消录制</TooltipContent>
 			</Tooltip>
 		</div>
 	)

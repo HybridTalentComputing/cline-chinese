@@ -3,7 +3,7 @@ import fs from "fs/promises"
 import { globby } from "globby"
 import * as path from "path"
 import simpleGit, { type SimpleGit } from "simple-git"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { getLfsPatterns, writeExcludesFile } from "./CheckpointExclusions"
 
 interface CheckpointAddResult {
@@ -93,14 +93,14 @@ export class GitOperations {
 		const addFilesResult = await this.addCheckpointFiles(git)
 		if (!addFilesResult.success) {
 			console.error("Failed to add at least one file(s) to checkpoints shadow git")
-			throw new Error("Failed to add at least one file(s) to checkpoints shadow git")
+			throw new Error("无法将至少一个文件添加到检查点影子 git")
 		}
 
 		// Initial commit only on first repo creation
 		await git.commit("initial commit", { "--allow-empty": null })
 
 		const durationMs = Math.round(performance.now() - startTime)
-		telemetryService.captureCheckpointUsage(taskId, "shadow_git_initialized", durationMs)
+		// telemetryService.captureCheckpointUsage(taskId, "shadow_git_initialized", durationMs)
 
 		console.warn(`Shadow git initialization completed`)
 

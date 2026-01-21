@@ -47,7 +47,7 @@ export async function validateWorkspacePath(workspacePath: string): Promise<void
 		await access(workspacePath, constants.R_OK)
 	} catch (error) {
 		throw new Error(
-			`Cannot access workspace directory. Please ensure VS Code has permission to access your workspace. Error: ${error instanceof Error ? error.message : String(error)}`,
+			`无法访问工作区目录。请确保 VS Code 拥有访问您工作区的权限。错误： ${error instanceof Error ? error.message : String(error)}`,
 		)
 	}
 
@@ -58,13 +58,13 @@ export async function validateWorkspacePath(workspacePath: string): Promise<void
 
 	switch (workspacePath) {
 		case homedir:
-			throw new Error("Cannot use checkpoints in home directory")
+			throw new Error("无法在主目录中使用检查点")
 		case desktopPath:
-			throw new Error("Cannot use checkpoints in Desktop directory")
+			throw new Error("无法使用桌面目录中的检查点")
 		case documentsPath:
-			throw new Error("Cannot use checkpoints in Documents directory")
+			throw new Error("无法在“文档”目录中使用检查点")
 		case downloadsPath:
-			throw new Error("Cannot use checkpoints in Downloads directory")
+			throw new Error("无法使用下载目录中的检查点")
 	}
 }
 
@@ -87,7 +87,7 @@ export async function validateWorkspacePath(workspacePath: string): Promise<void
 export async function getWorkingDirectory(): Promise<string> {
 	const cwd = await getCwd()
 	if (!cwd) {
-		throw new Error("No workspace detected. Please open Cline in a workspace to use checkpoints.")
+		throw new Error("未检测到工作区。请在工作区中打开 Cline 以使用检查点。")
 	}
 
 	await validateWorkspacePath(cwd)
@@ -102,7 +102,7 @@ export async function getWorkingDirectory(): Promise<string> {
  */
 export function hashWorkingDir(workingDir: string): string {
 	if (!workingDir) {
-		throw new Error("Working directory path cannot be empty")
+		throw new Error("工作目录路径不能为空")
 	}
 	let hash = 0
 	for (let i = 0; i < workingDir.length; i++) {

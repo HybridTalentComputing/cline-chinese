@@ -1,5 +1,4 @@
-import { Empty, StringRequest } from "@shared/proto/cline/common"
-import { telemetryService } from "@/services/telemetry"
+import { Empty, StringRequest } from "@/shared/proto/cline/common"
 import { Controller } from ".."
 
 /**
@@ -16,7 +15,8 @@ export async function taskFeedback(controller: Controller, request: StringReques
 
 	try {
 		if (controller.task?.ulid) {
-			telemetryService.captureTaskFeedback(controller.task.ulid, request.value as any)
+			console.log(controller.task.ulid, request.value as any)
+			// telemetryService.captureTaskFeedback(controller.task.ulid, request.value as any)
 		} else {
 			console.warn("taskFeedback: No active task to receive feedback")
 		}

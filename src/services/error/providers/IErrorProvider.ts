@@ -4,7 +4,7 @@
  */
 
 import type { ClineError } from "../ClineError"
-
+import type { SSYError } from "../SSYError"
 /**
  * Error settings that control when and how errors are logged
  */
@@ -27,7 +27,7 @@ export interface IErrorProvider {
 	 * @param error The error to log (Error or ClineError)
 	 * @param properties Optional additional properties to attach
 	 */
-	logException(error: Error | ClineError, properties?: Record<string, unknown>): void
+	logException(error: Error | SSYError | ClineError, properties?: Record<string, unknown>): void
 
 	/**
 	 * Log a message with specified level

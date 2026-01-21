@@ -34,16 +34,16 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 	api_req_failed: {
 		sendingDisabled: true,
 		enableButtons: true,
-		primaryText: "Retry",
-		secondaryText: "Start New Task",
+		primaryText: "重试",
+		secondaryText: "开始新任务",
 		primaryAction: "retry",
 		secondaryAction: "new_task",
 	},
 	mistake_limit_reached: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Proceed Anyways",
-		secondaryText: "Start New Task",
+		primaryText: "无论如何继续",
+		secondaryText: "开始新任务",
 		primaryAction: "proceed",
 		secondaryAction: "new_task",
 	},
@@ -52,16 +52,16 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 	tool_approve: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Approve",
-		secondaryText: "Reject",
+		primaryText: "批准",
+		secondaryText: "拒绝",
 		primaryAction: "approve",
 		secondaryAction: "reject",
 	},
 	tool_save: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Save",
-		secondaryText: "Reject",
+		primaryText: "保存",
+		secondaryText: "拒绝",
 		primaryAction: "approve",
 		secondaryAction: "reject",
 	},
@@ -70,15 +70,15 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 	command: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Run Command",
-		secondaryText: "Reject",
+		primaryText: "执行命令",
+		secondaryText: "拒绝",
 		primaryAction: "approve",
 		secondaryAction: "reject",
 	},
 	command_output: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Proceed While Running",
+		primaryText: "执行时继续",
 		secondaryText: undefined,
 		primaryAction: "proceed",
 		secondaryAction: undefined,
@@ -88,16 +88,16 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 	browser_action_launch: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Approve",
-		secondaryText: "Reject",
+		primaryText: "批准",
+		secondaryText: "拒绝",
 		primaryAction: "approve",
 		secondaryAction: "reject",
 	},
 	use_mcp_server: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Approve",
-		secondaryText: "Reject",
+		primaryText: "批准",
+		secondaryText: "拒绝",
 		primaryAction: "approve",
 		secondaryAction: "reject",
 	},
@@ -122,7 +122,7 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 	completion_result: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Start New Task",
+		primaryText: "开始新任务",
 		secondaryText: undefined,
 		primaryAction: "new_task",
 		secondaryAction: undefined,
@@ -130,7 +130,7 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 	resume_task: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Resume Task",
+		primaryText: "重启任务",
 		secondaryText: undefined,
 		primaryAction: "proceed",
 		secondaryAction: undefined,
@@ -138,7 +138,7 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 	resume_completed_task: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Start New Task",
+		primaryText: "开始新任务",
 		secondaryText: undefined,
 		primaryAction: "new_task",
 		secondaryAction: undefined,
@@ -146,7 +146,7 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 	new_task: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Start New Task with Context",
+		primaryText: "在当前上下文开始新任务",
 		secondaryText: undefined,
 		primaryAction: "new_task",
 		secondaryAction: undefined,
@@ -156,7 +156,7 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 	condense: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Condense Conversation",
+		primaryText: "精简对话",
 		secondaryText: undefined,
 		primaryAction: "utility",
 		secondaryAction: undefined,
@@ -164,7 +164,7 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 	report_bug: {
 		sendingDisabled: false,
 		enableButtons: true,
-		primaryText: "Report GitHub issue",
+		primaryText: "通过GitHub报告问题",
 		secondaryText: undefined,
 		primaryAction: "utility",
 		secondaryAction: undefined,
@@ -175,7 +175,7 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 		sendingDisabled: true,
 		enableButtons: true,
 		primaryText: undefined,
-		secondaryText: "Cancel",
+		secondaryText: "取消",
 		primaryAction: undefined,
 		secondaryAction: "cancel",
 	},
@@ -193,7 +193,7 @@ export const BUTTON_CONFIGS: Record<string, ButtonConfig> = {
 		sendingDisabled: true,
 		enableButtons: true,
 		primaryText: undefined,
-		secondaryText: "Cancel",
+		secondaryText: "取消",
 		primaryAction: undefined,
 		secondaryAction: "cancel",
 	},
@@ -212,6 +212,12 @@ export function getButtonConfig(message: ClineMessage | undefined, _mode: Mode =
 
 	const isStreaming = message.partial === true
 	const isError = message?.ask ? errorTypes.includes(message.ask) : false
+
+	// Special case: command_output should show "Proceed While Running" button even while streaming
+	// This allows terminal output to stream while still showing the action button
+	if (message.type === "ask" && message.ask === "command_output") {
+		return BUTTON_CONFIGS.command_output
+	}
 
 	// Handle partial/streaming messages first (most common during task execution)
 	// This must be checked before any other conditions to ensure streaming state takes precedence
@@ -282,6 +288,12 @@ export function getButtonConfig(message: ClineMessage | undefined, _mode: Mode =
 	// Handle say messages (typically don't require buttons except in special cases)
 	if (message.type === "say" && message.say === "api_req_started") {
 		return BUTTON_CONFIGS.api_req_active
+	}
+
+	// Special case: command_output say messages should show "Proceed While Running" button
+	// This allows terminal output to stream while still showing the action button
+	if (message.type === "say" && message.say === "command_output") {
+		return BUTTON_CONFIGS.command_output
 	}
 
 	return BUTTON_CONFIGS.partial

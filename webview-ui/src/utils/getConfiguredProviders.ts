@@ -9,11 +9,11 @@ export function getConfiguredProviders(apiConfiguration: ApiConfiguration | unde
 	const configured: ApiProvider[] = []
 
 	if (!apiConfiguration) {
-		return ["cline"] // Cline is always available
+		return ["shengsuanyun"] // Cline is always available
 	}
 
 	// Cline - always available (uses account-based auth)
-	configured.push("cline")
+	configured.push("shengsuanyun")
 
 	// Anthropic - requires API key
 	if (apiConfiguration.apiKey) {

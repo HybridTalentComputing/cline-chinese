@@ -1,7 +1,7 @@
 import { FocusChainSettings } from "@shared/FocusChainSettings"
 import * as chokidar from "chokidar"
 import * as fs from "fs/promises"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { ClineSay } from "../../../shared/ExtensionMessage"
 import { Mode } from "../../../shared/storage/types"
 import { writeFile } from "../../../utils/fs"
@@ -120,7 +120,7 @@ export class FocusChainManager {
 						this.taskState.todoListWasUpdatedByUser = true
 
 						await this.postStateToWebview()
-						telemetryService.captureFocusChainListWritten(this.taskId)
+						// telemetryService.captureFocusChainListWritten(this.taskId)
 					} else {
 						console.log(
 							`[Task ${this.taskId}] Focus Chain List: File watcher triggered but content unchanged, skipping update`,
@@ -289,12 +289,12 @@ export class FocusChainManager {
 
 				// Track first progress creation
 				if (!this.hasTrackedFirstProgress && totalItems > 0) {
-					telemetryService.captureFocusChainProgressFirst(this.taskId, totalItems)
+					// telemetryService.captureFocusChainProgressFirst(this.taskId, totalItems)
 					this.hasTrackedFirstProgress = true
 				}
 				// Track progress updates (only if not the first, and has items)
 				else if (this.hasTrackedFirstProgress && totalItems > 0) {
-					telemetryService.captureFocusChainProgressUpdate(this.taskId, totalItems, completedItems)
+					// telemetryService.captureFocusChainProgressUpdate(this.taskId, totalItems, completedItems)
 				}
 
 				// Write the model's update to the markdown file
@@ -375,14 +375,14 @@ export class FocusChainManager {
 			// Only track if there are items and not all are marked as completed
 			if (totalItems > 0 && completedItems < totalItems) {
 				const incompleteItems = totalItems - completedItems
-				telemetryService.captureFocusChainIncompleteOnCompletion(
-					this.taskId,
-					totalItems,
-					completedItems,
-					incompleteItems,
-					modelId,
-					provider,
-				)
+				// telemetryService.captureFocusChainIncompleteOnCompletion(
+				// 	this.taskId,
+				// 	totalItems,
+				// 	completedItems,
+				// 	incompleteItems,
+				// 	modelId,
+				// 	provider,
+				// )
 			}
 		}
 	}

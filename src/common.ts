@@ -15,13 +15,13 @@ import { HostProvider } from "@/hosts/host-provider"
 import { FileContextTracker } from "./core/context/context-tracking/FileContextTracker"
 import { StateManager } from "./core/storage/StateManager"
 import { ExtensionRegistryInfo } from "./registry"
-import { BannerService } from "./services/banner/BannerService"
+// import { BannerService } from "./services/banner/BannerService"
 import { audioRecordingService } from "./services/dictation/AudioRecordingService"
 import { ErrorService } from "./services/error"
 import { featureFlagsService } from "./services/feature-flags"
-import { initializeDistinctId } from "./services/logging/distinctId"
-import { telemetryService } from "./services/telemetry"
-import { PostHogClientProvider } from "./services/telemetry/providers/posthog/PostHogClientProvider"
+// import { initializeDistinctId } from "./services/logging/distinctId"
+// import { PostHogClientProvider } from "./services/posthog/PostHogClientProvider"
+// import { telemetryService } from "./services/telemetry"
 import { ShowMessageType } from "./shared/proto/host/window"
 import { getLatestAnnouncementId } from "./utils/announcements"
 /**
@@ -42,10 +42,10 @@ export async function initialize(context: vscode.ExtensionContext): Promise<Webv
 	}
 
 	// Set the distinct ID for logging and telemetry
-	await initializeDistinctId(context)
+	// await initializeDistinctId(context)
 
 	// Initialize PostHog client provider
-	PostHogClientProvider.getInstance()
+	// PostHogClientProvider.getInstance()
 
 	// Setup the external services
 	await ErrorService.initialize()
@@ -77,20 +77,20 @@ export async function initialize(context: vscode.ExtensionContext): Promise<Webv
 	await showVersionUpdateAnnouncement(context)
 
 	// Initialize banner service
-	BannerService.initialize(webview.controller)
-	BannerService.get()
-		.fetchActiveBanners()
-		.then((banners) => {
-			if (banners.length > 0) {
-				Logger.log(`BannerService: ${banners.length} active banner(s) fetched.`)
-				// Banners are now cached and can be accessed by the frontend when needed
-			}
-		})
-		.catch((error) => {
-			Logger.error("BannerService: Failed to fetch banners on startup", error)
-		})
+	// BannerService.initialize(webview.controller)
+	// BannerService.get()
+	// 	.fetchActiveBanners()
+	// 	.then((banners) => {
+	// 		if (banners.length > 0) {
+	// 			Logger.log(`BannerService: ${banners.length} active banner(s) fetched.`)
+	// 			// Banners are now cached and can be accessed by the frontend when needed
+	// 		}
+	// 	})
+	// 	.catch((error) => {
+	// 		Logger.error("BannerService: Failed to fetch banners on startup", error)
+	// 	})
 
-	telemetryService.captureExtensionActivated()
+	// telemetryService.captureExtensionActivated()
 
 	return webview
 }
@@ -110,9 +110,7 @@ async function showVersionUpdateAnnouncement(context: vscode.ExtensionContext) {
 
 			if (lastShownAnnouncementId !== latestAnnouncementId) {
 				// Focus Cline when there's a new announcement to show (major/minor updates or fresh installs)
-				const message = previousVersion
-					? `Cline has been updated to v${currentVersion}`
-					: `Welcome to Cline v${currentVersion}`
+				const message = previousVersion ? `Cline 中文版更新到 v${currentVersion}` : `Cline 中文版 v${currentVersion}`
 				await HostProvider.workspace.openClineSidebarPanel({})
 				await new Promise((resolve) => setTimeout(resolve, 200))
 				HostProvider.window.showMessage({
@@ -136,8 +134,8 @@ export async function tearDown(): Promise<void> {
 	// Clean up audio recording service to ensure no orphaned processes
 	audioRecordingService.cleanup()
 
-	PostHogClientProvider.getInstance().dispose()
-	telemetryService.dispose()
+	// PostHogClientProvider.getInstance().dispose()
+	// telemetryService.dispose()
 	ErrorService.get().dispose()
 	featureFlagsService.dispose()
 	// Dispose all webview instances

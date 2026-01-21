@@ -1,5 +1,5 @@
 import { searchWorkspaceFiles, searchWorkspaceFilesMultiroot } from "@services/search/file-search"
-import { telemetryService } from "@services/telemetry"
+// import { telemetryService } from "@services/telemetry"
 import { FileSearchRequest, FileSearchResults, FileSearchType } from "@shared/proto/cline/file"
 import { convertSearchResultsToProtoFileInfos } from "@shared/proto-conversions/file/search-result-conversion"
 import { getWorkspacePath } from "@utils/path"
@@ -42,7 +42,7 @@ export async function searchFiles(controller: Controller, request: FileSearchReq
 
 			if (!workspacePath) {
 				console.error("Error in searchFiles: No workspace path available")
-				await telemetryService.captureMentionFailed("folder", "not_found", "No workspace path available")
+				// await telemetryService.captureMentionFailed("folder", "not_found", "No workspace path available")
 				return { results: [], mentionsRequestId: request.mentionsRequestId }
 			}
 
@@ -67,12 +67,12 @@ export async function searchFiles(controller: Controller, request: FileSearchReq
 			searchType = "folder"
 		}
 
-		await telemetryService.captureMentionSearchResults(
-			request.query || "",
-			protoResults.length,
-			searchType,
-			protoResults.length === 0,
-		)
+		// await telemetryService.captureMentionSearchResults(
+		// 	request.query || "",
+		// 	protoResults.length,
+		// 	searchType,
+		// 	protoResults.length === 0,
+		// )
 
 		// Return successful results
 		return { results: protoResults, mentionsRequestId: request.mentionsRequestId }
@@ -92,7 +92,7 @@ export async function searchFiles(controller: Controller, request: FileSearchReq
 					? "folder"
 					: "folder" // Default to folder for "all" searches
 
-		await telemetryService.captureMentionFailed(mentionType, errorType, errorMessage)
+		// await telemetryService.captureMentionFailed(mentionType, errorType, errorMessage)
 
 		// Return empty results without error message
 		return { results: [], mentionsRequestId: request.mentionsRequestId }

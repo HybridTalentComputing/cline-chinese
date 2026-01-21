@@ -4,7 +4,7 @@ import { fileExistsAtPath } from "@utils/fs"
 import axios from "axios"
 import fs from "fs/promises"
 import path from "path"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { getAxiosSettings } from "@/shared/net"
 import { groqModels } from "../../../shared/api"
 import { Controller } from ".."
@@ -92,29 +92,29 @@ export async function refreshGroqModels(controller: Controller): Promise<Record<
 		console.error("Error fetching Groq models:", error)
 
 		// Provide more specific error messages
-		let errorMessage = "Unknown error occurred"
+		let _errorMessage = "Unknown error occurred"
 		if (axios.isAxiosError(error)) {
 			if (error.response?.status === 401) {
-				errorMessage = "Invalid Groq API key. Please check your API key in settings."
+				_errorMessage = "Invalid Groq API key. Please check your API key in settings."
 			} else if (error.response?.status === 403) {
-				errorMessage = "Access forbidden. Please verify your Groq API key has the correct permissions."
+				_errorMessage = "Access forbidden. Please verify your Groq API key has the correct permissions."
 			} else if (error.response?.status === 429) {
-				errorMessage = "Rate limit exceeded. Please try again later."
+				_errorMessage = "Rate limit exceeded. Please try again later."
 			} else if (error.code === "ECONNABORTED") {
-				errorMessage = "Request timeout. Please check your internet connection."
+				_errorMessage = "Request timeout. Please check your internet connection."
 			} else {
-				errorMessage = `API request failed: ${error.response?.status || error.code || "Unknown error"}`
+				_errorMessage = `API request failed: ${error.response?.status || error.code || "Unknown error"}`
 			}
 		} else if (error instanceof Error) {
-			errorMessage = error.message
+			_errorMessage = error.message
 		}
 
-		telemetryService.captureProviderApiError({
-			ulid: controller.task?.ulid || "",
-			errorMessage,
-			errorStatus: error.status,
-			model: "groq",
-		})
+		// telemetryService.captureProviderApiError({
+		// 	ulid: controller.task?.ulid || "",
+		// 	errorMessage,
+		// 	errorStatus: error.status,
+		// 	model: "groq",
+		// })
 
 		// If we failed to fetch models, try to read cached models first
 		const cachedModels = await readGroqModels()

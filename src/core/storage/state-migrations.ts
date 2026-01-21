@@ -34,6 +34,8 @@ export async function migrateWorkspaceToGlobalStorage(context: vscode.ExtensionC
 		"groqModelInfo",
 		"huggingFaceModelId",
 		"huggingFaceModelInfo",
+		"shengSuanYunModelId",
+		"shengSuanYunModelInfo",
 
 		// Previous mode settings
 		"previousModeApiProvider",
@@ -229,6 +231,8 @@ export async function migrateLegacyApiConfigurationToModeSpecific(context: vscod
 		const groqModelInfo = await context.globalState.get("groqModelInfo")
 		const huggingFaceModelId = await context.globalState.get("huggingFaceModelId")
 		const huggingFaceModelInfo = await context.globalState.get("huggingFaceModelInfo")
+		const shengSuanYunModelId = await context.globalState.get("shengSuanYunModelId")
+		const shengSuanYunModelInfo = await context.globalState.get("shengSuanYunModelInfo")
 
 		// Read previous mode values
 		const previousModeApiProvider = await context.globalState.get("previousModeApiProvider")
@@ -342,6 +346,14 @@ export async function migrateLegacyApiConfigurationToModeSpecific(context: vscod
 				await context.globalState.update("planModeHuggingFaceModelInfo", huggingFaceModelInfo)
 				await context.globalState.update("actModeHuggingFaceModelInfo", huggingFaceModelInfo)
 			}
+			if (shengSuanYunModelId !== undefined) {
+				await context.globalState.update("planModeShengSuanYunModelId", shengSuanYunModelId)
+				await context.globalState.update("actModeShengSuanYunModelId", shengSuanYunModelId)
+			}
+			if (shengSuanYunModelInfo !== undefined) {
+				await context.globalState.update("planModeShengSuanYunModelInfo", shengSuanYunModelInfo)
+				await context.globalState.update("actModeShengSuanYunModelInfo", shengSuanYunModelInfo)
+			}
 		} else {
 			console.log("Migrating with separate models ENABLED - using current->plan, previous->act")
 
@@ -417,6 +429,9 @@ export async function migrateLegacyApiConfigurationToModeSpecific(context: vscod
 			}
 			if (huggingFaceModelInfo !== undefined) {
 				await context.globalState.update("planModeHuggingFaceModelInfo", huggingFaceModelInfo)
+			}
+			if (shengSuanYunModelId !== undefined) {
+				await context.globalState.update("planModeShengSuanYunModelId", shengSuanYunModelId)
 			}
 
 			// Use previous values for act mode (with fallback to current values)
@@ -512,6 +527,12 @@ export async function migrateLegacyApiConfigurationToModeSpecific(context: vscod
 			if (huggingFaceModelInfo !== undefined) {
 				await context.globalState.update("actModeHuggingFaceModelInfo", huggingFaceModelInfo)
 			}
+			if (shengSuanYunModelId !== undefined) {
+				await context.globalState.update("actModeShengSuanYunModelId", shengSuanYunModelId)
+			}
+			if (shengSuanYunModelInfo !== undefined) {
+				await context.globalState.update("actModeShengSuanYunModelInfo", shengSuanYunModelInfo)
+			}
 		}
 
 		// Clean up legacy keys after successful migration
@@ -540,6 +561,8 @@ export async function migrateLegacyApiConfigurationToModeSpecific(context: vscod
 		await context.globalState.update("groqModelInfo", undefined)
 		await context.globalState.update("huggingFaceModelId", undefined)
 		await context.globalState.update("huggingFaceModelInfo", undefined)
+		await context.globalState.update("shengSuanYunModelId", undefined)
+		await context.globalState.update("shengSuanYunModelInfo", undefined)
 		await context.globalState.update("previousModeApiProvider", undefined)
 		await context.globalState.update("previousModeModelId", undefined)
 		await context.globalState.update("previousModeModelInfo", undefined)
@@ -586,6 +609,7 @@ export async function migrateWelcomeViewCompleted(context: vscode.ExtensionConte
 			const sapAiCoreClientId = await context.secrets.get("sapAiCoreClientId")
 			const difyApiKey = await context.secrets.get("difyApiKey")
 			const hicapApiKey = await context.secrets.get("hicapApiKey")
+			const shengSuanYunApiKey = await context.secrets.get("shengSuanYunApiKey")
 
 			// Fetch configuration values from global state
 			const awsRegion = context.globalState.get("awsRegion")
@@ -628,6 +652,7 @@ export async function migrateWelcomeViewCompleted(context: vscode.ExtensionConte
 				sapAiCoreClientId,
 				difyApiKey,
 				hicapApiKey,
+				shengSuanYunApiKey,
 			].some((key) => key !== undefined)
 
 			// Set welcomeViewCompleted based on whether user has keys

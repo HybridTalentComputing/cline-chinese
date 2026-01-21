@@ -12,7 +12,7 @@ const ask = (question) => new Promise((resolve) => rl.question(`\n${question}`, 
 const getClineVersion = () => {
 	try {
 		const extensions = execSync("code --list-extensions --show-versions").toString()
-		const clineMatch = extensions.match(/claude-dev@(\d+\.\d+\.\d+)/)
+		const clineMatch = extensions.match(/cline-chinese@(\d+\.\d+\.\d+)/)
 		return clineMatch ? clineMatch[1] : "Not installed"
 	} catch (_err) {
 		return "Error getting version"

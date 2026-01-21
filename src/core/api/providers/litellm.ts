@@ -247,10 +247,12 @@ export class LiteLlmHandler implements ApiHandler {
 		}
 
 		// Find the last two user messages to apply caching
-		const userMsgIndices = formattedMessages.reduce(
-			(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
-			[] as number[],
-		)
+		const userMsgIndices: number[] = []
+		formattedMessages.forEach((msg, index) => {
+			if (msg.role === "user") {
+				userMsgIndices.push(index)
+			}
+		})
 		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
 		const secondLastUserMsgIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 

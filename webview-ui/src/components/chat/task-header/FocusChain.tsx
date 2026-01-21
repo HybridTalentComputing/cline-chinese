@@ -22,6 +22,12 @@ interface FocusChainProps {
 	readonly currentTaskItemId?: string
 }
 
+// Static strings to avoid recreating them
+const COMPLETED_MESSAGE = "所有任务均已完成!"
+const TODO_LIST_LABEL = "To-Do 列表"
+const NEW_STEPS_MESSAGE = "如果您继续执行任务，将会生成新的步骤。"
+const CLICK_TO_EDIT_TITLE = "点击编辑文件中的待办事项列表"
+
 // Optimized header component with minimal re-renders
 const ToDoListHeader = memo<{
 	todoInfo: TodoInfo
@@ -32,7 +38,9 @@ const ToDoListHeader = memo<{
 	const isCompleted = completedCount === totalCount
 
 	// Pre-compute display text
-	const displayText = isCompleted ? t("chatRow.focusChain.allTasksCompleted") : currentTodo?.text || t("chatRow.focusChain.todoList")
+	const displayText = isCompleted
+		? t("chatRow.focusChain.allTasksCompleted")
+		: currentTodo?.text || t("chatRow.focusChain.todoList")
 
 	return (
 		<div
@@ -203,7 +211,9 @@ export const FocusChain: React.FC<FocusChainProps> = memo(
 					<div className="mx-1 pb-2 px-1 relative" onClick={handleEditClick}>
 						<ChecklistRenderer text={lastProgressMessageText!} />
 						{isCompleted && (
-							<div className="mt-2 text-xs font-semibold text-muted-foreground">{t("chatRow.focusChain.newStepsMessage")}</div>
+							<div className="mt-2 text-xs font-semibold text-muted-foreground">
+								{t("chatRow.focusChain.newStepsMessage")}
+							</div>
 						)}
 					</div>
 				)}

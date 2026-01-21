@@ -24,19 +24,22 @@ service AccountService {
 
   // Handles authentication state changes from the Firebase context.
   // Updates the user info in global state and returns the updated value.
+  rpc shengSuanYunLoginClicked(EmptyRequest) returns (String);
+  rpc shengSuanYunLogoutClicked(EmptyRequest) returns (Empty);
+  rpc shengSuanYunUserData(EmptyRequest) returns (UserCreditsData);
+  rpc subscribeSsyAuthCallback(EmptyRequest) returns (stream String);
   rpc authStateChanged(AuthStateChangedRequest) returns (AuthState);
 
   // Fetches all user credits data
   // (balance, usage transactions, payment transactions)
-  rpc getUserCredits(EmptyRequest) returns (UserCreditsData);
+  // rpc getUserCredits(EmptyRequest) returns (UserCreditsData);
 
-  rpc getOrganizationCredits(GetOrganizationCreditsRequest) returns (OrganizationCreditsData);
-
+  // rpc getOrganizationCredits(GetOrganizationCreditsRequest) returns (OrganizationCreditsData);
   // Fetches all user organizations data
   // Returns a list of UserOrganization objects
-  rpc getUserOrganizations(EmptyRequest) returns (UserOrganizationsResponse);
+  // rpc getUserOrganizations(EmptyRequest) returns (UserOrganizationsResponse);
 
-  rpc setUserOrganization(UserOrganizationUpdateRequest) returns (Empty);
+  // rpc setUserOrganization(UserOrganizationUpdateRequest) returns (Empty);
 
   rpc openrouterAuthClicked(EmptyRequest) returns (Empty);
 
@@ -62,6 +65,7 @@ message UserInfo {
   optional string email = 3;
   optional string photo_url = 4;
   optional string app_base_url = 5; // Cline app base URL
+  optional double balance = 6;
 }
 
 message UserOrganization {
@@ -81,9 +85,11 @@ message UserOrganizationUpdateRequest {
 }
 
 message UserCreditsData {
-  UserCreditsBalance balance = 1;
+  optional UserCreditsBalance balance = 1;
   repeated UsageTransaction usage_transactions = 2;
   repeated PaymentTransaction payment_transactions = 3;
+  optional UserInfo user = 4;
+  optional float rate = 5;
 }
 
 message GetOrganizationCreditsRequest {
@@ -113,7 +119,10 @@ message UsageTransaction {
   int32 prompt_tokens = 10;
   int32 total_tokens = 11;
   string user_id = 12;
-  string operation = 13;
+  optional string spent_at = 13;
+  optional string model = 14;
+  optional string credits = 15;
+  string operation = 16;
 }
 
 message PaymentTransaction {

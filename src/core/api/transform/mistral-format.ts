@@ -37,13 +37,18 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 									},
 								}
 							}
-							return { type: "text", text: part.text }
+							if (part.type === "text") {
+								return { type: "text", text: part.text }
+							}
+							return { type: "text", text: "" }
 						}),
 					})
 				}
 			} else if (anthropicMessage.role === "assistant") {
 				// Only process text blocks - assistant cannot send images or other content types in Mistral's API format
-				const textBlocks = anthropicMessage.content.filter((part) => part.type === "text")
+				const textBlocks = anthropicMessage.content.filter(
+					(part): part is { type: "text"; text: string } => part.type === "text",
+				)
 
 				if (textBlocks.length > 0) {
 					const content = textBlocks.map((part) => part.text).join("\n")

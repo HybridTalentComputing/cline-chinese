@@ -110,7 +110,7 @@ export abstract class WebviewProvider {
 				<link rel="stylesheet" type="text/css" href="${stylesUrl}">
 				<link href="${codiconsUrl}" rel="stylesheet" />
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none';
-					connect-src https://*.posthog.com https://*.cline.bot; 
+					connect-src https://*.posthog.com https://*.cline.bot  https://*.shengsuanyun.com; 
 					font-src ${this.getCspSource()} data:; 
 					style-src ${this.getCspSource()} 'unsafe-inline'; 
 					img-src ${this.getCspSource()} https: data:; 
@@ -172,7 +172,7 @@ export abstract class WebviewProvider {
 				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
 					message:
-						"Cline: Local webview dev server is not running, HMR will not work. Please run 'npm run dev:webview' before launching the extension to enable HMR. Using bundled assets.",
+						"Cline：本地 WebView 开发服务器未运行，HMR 将无法工作。请在启动扩展程序之前运行“npm run dev:webview”以启用 HMR。正在使用捆绑资源。",
 				})
 			}
 

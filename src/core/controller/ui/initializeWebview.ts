@@ -1,7 +1,7 @@
 import { Empty, EmptyRequest } from "@shared/proto/cline/common"
 import { OpenRouterCompatibleModelInfo } from "@shared/proto/cline/models"
 import { readMcpMarketplaceCatalogFromCache } from "@/core/storage/disk"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { GlobalStateAndSettings } from "@/shared/storage/state-keys"
 import type { Controller } from "../index"
 import { sendMcpMarketplaceCatalogEvent } from "../mcp/subscribeToMcpMarketplaceCatalog"
@@ -219,8 +219,8 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 		// Initialize telemetry service with user's current setting
 		controller.getStateToPostToWebview().then((state) => {
 			const { telemetrySetting } = state
-			const isOptedIn = telemetrySetting !== "disabled"
-			telemetryService.updateTelemetryState(isOptedIn)
+			const _isOptedIn = telemetrySetting !== "disabled"
+			// telemetryService.updateTelemetryState(isOptedIn)
 		})
 
 		return Empty.create({})

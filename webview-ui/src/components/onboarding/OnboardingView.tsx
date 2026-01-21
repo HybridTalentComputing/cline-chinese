@@ -121,7 +121,9 @@ const ModelSelection = ({
 			<div className="flex w-full max-w-lg flex-col gap-6 my-4">
 				{modelGroups.map((group) => (
 					<div className="flex flex-col gap-3" key={group.group}>
-						<h4 className="text-sm font-bold text-foreground/70 uppercase mb-2">{group.group}</h4>
+						<h4 className="text-sm font-bold text-foreground/70 uppercase mb-2">
+							{group.group == "free" ? "免费模型" : group.group == "frontier" ? "前沿模型" : group.group}
+						</h4>
 						{group.models.map((model) => (
 							<ModelItem id={model.id} isSelected={selectedModelId === model.id} key={model.id} model={model} />
 						))}
@@ -347,8 +349,8 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 					actModeOpenRouterModelId: selectedModelId,
 					planModeOpenRouterModelInfo: openRouterModels[selectedModelId],
 					actModeOpenRouterModelInfo: openRouterModels[selectedModelId],
-					planModeApiProvider: "cline",
-					actModeApiProvider: "cline",
+					planModeApiProvider: "shengsuanyun",
+					actModeApiProvider: "shengsuanyun",
 				})
 			}
 			hideAccount()
@@ -365,14 +367,14 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 				case "signup":
 					setStepNumber(stepNumber + 1)
 					setIsActionLoading(true)
-					await AccountServiceClient.accountLoginClicked({})
+					await AccountServiceClient.shengSuanYunLoginClicked({})
 						.catch(() => {})
 						.finally(() => setIsActionLoading(false))
 					await finishOnboarding(true, stepNumber + 1)
 					break
 				case "signin":
 					setIsActionLoading(true)
-					await AccountServiceClient.accountLoginClicked({})
+					await AccountServiceClient.shengSuanYunLoginClicked({})
 						.catch(() => {})
 						.finally(() => setIsActionLoading(false))
 					await finishOnboarding(true, stepNumber + 1)

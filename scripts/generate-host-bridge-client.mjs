@@ -17,7 +17,7 @@ const VSCODE_CLIENT_FILE = path.resolve("src/generated/hosts/vscode/hostbridge-g
  */
 export async function main() {
 	const { hostServices } = await loadServicesFromProtoDescriptor()
-
+	// console.log(chalk.green("Loaded host services from proto descriptor."),JSON.stringify(Object.keys(hostServices), null, 2))
 	await generateTypesFile(hostServices)
 	await generateExternalClientFile(hostServices)
 	await generateVscodeClientFile(hostServices)

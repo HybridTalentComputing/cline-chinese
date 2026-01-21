@@ -2,7 +2,7 @@ import { RecordingResult } from "@shared/proto/cline/dictation"
 import * as os from "os"
 import { HostProvider } from "@/hosts/host-provider"
 import { audioRecordingService } from "@/services/dictation/AudioRecordingService"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { AUDIO_PROGRAM_CONFIG } from "@/shared/audioProgramConstants"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { Controller } from ".."
@@ -76,9 +76,9 @@ async function handleSignInError(controller: Controller, errorMessage: string): 
 		options: { items: [signInAction] },
 	})
 
-	if (action.selectedOption === signInAction) {
-		await controller.authService.createAuthRequest()
-	}
+	// if (action.selectedOption === signInAction) {
+	// await controller.authService.createAuthRequest()
+	// }
 }
 
 /**
@@ -112,17 +112,17 @@ export const startRecording = async (controller: Controller): Promise<RecordingR
 
 	try {
 		// Verify user authentication
-		const userInfo = controller.authService.getInfo()
-		if (!userInfo?.user?.uid) {
-			throw new Error("Please sign in to your Cline Account to use Dictation.")
-		}
+		// const userInfo = controller.authService.getInfo()
+		// if (!userInfo?.user?.uid) {
+		// 	throw new Error("Please sign in to your Cline Account to use Dictation.")
+		// }
 
 		// Attempt to start recording
 		const result = await audioRecordingService.startRecording()
 
 		// Handle successful recording start
 		if (result.success) {
-			telemetryService.captureVoiceRecordingStarted(taskId, process.platform)
+			// telemetryService.captureVoiceRecordingStarted(taskId, process.platform)
 			return RecordingResult.create({
 				success: true,
 				error: "",

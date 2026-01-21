@@ -11,9 +11,9 @@ import type { Controller } from ".."
 export async function trackBannerEvent(controller: Controller, request: TrackBannerEventRequest): Promise<Empty> {
 	const { bannerId, eventType } = request
 
-	if (bannerId && eventType) {
-		await controller.trackBannerEvent(bannerId, eventType as "dismiss")
-	}
+	// if (bannerId && eventType) {
+	// 	await controller.trackBannerEvent(bannerId, eventType as "dismiss")
+	// }
 
 	return Empty.create()
 }

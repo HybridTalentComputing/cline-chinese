@@ -57,6 +57,7 @@ export async function refreshHicapModels(controller: Controller, _request: Empty
 		}
 		await fs.writeFile(hicapModelsFilePath, JSON.stringify(models))
 	} catch (error) {
+		console.log(String(error))
 		// If we failed to fetch models, try to read cached models
 		/* const cachedModels = await readHicapModels(controller)
 		if (cachedModels) {
@@ -70,7 +71,7 @@ export async function refreshHicapModels(controller: Controller, _request: Empty
 /**
  * Reads cached OpenRouter models from disk
  */
-async function readHicapModels(controller: Controller): Promise<Record<string, OpenRouterModelInfo> | undefined> {
+async function _readHicapModels(controller: Controller): Promise<Record<string, OpenRouterModelInfo> | undefined> {
 	const hicapModelsFilePath = path.join(await ensureCacheDirectoryExists(controller), GlobalFileNames.hicapModels)
 	const fileExists = await fileExistsAtPath(hicapModelsFilePath)
 	if (fileExists) {
@@ -78,6 +79,7 @@ async function readHicapModels(controller: Controller): Promise<Record<string, O
 			const fileContents = await fs.readFile(hicapModelsFilePath, "utf8")
 			return JSON.parse(fileContents)
 		} catch (error) {
+			console.log(String(error))
 			return undefined
 		}
 	}

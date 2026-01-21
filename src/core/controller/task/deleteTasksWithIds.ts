@@ -20,9 +20,7 @@ export async function deleteTasksWithIds(controller: Controller, request: String
 
 	const taskCount = request.value.length
 	const message =
-		taskCount === 1
-			? "Are you sure you want to delete this task? This action cannot be undone."
-			: `Are you sure you want to delete these ${taskCount} tasks? This action cannot be undone.`
+		taskCount === 1 ? "您确定要删除此任务吗？此操作无法撤销。" : `您确定要删除这 ${taskCount} 个任务吗？此操作无法撤销。`
 
 	const userChoice = await HostProvider.window.showMessage({
 		type: ShowMessageType.WARNING,

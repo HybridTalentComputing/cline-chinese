@@ -9,7 +9,7 @@ For reference, here are some examples of how we converted previous changesets to
 This PR was opened by the Changesets release GitHub action. When you're ready to do a release, you can merge this and publish to npm yourself or setup this action to publish automatically. If you're not ready to do a release yet, that's fine, whenever you add more changesets to main, this PR will be updated.
 
 Releases
-claude-dev@3.14.0
+cline-chinese@3.14.0
 Minor Changes
 77c9863: create clinerules folder if its currently a file and creating new rule
 0ffb7dd: disabling shift hint for now & improving tooltip behavior
@@ -369,7 +369,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 
 
 # Releases
-## claude-dev@3.16.0
+## cline-chinese@3.16.0
 
 ### Minor Changes
 

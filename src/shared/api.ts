@@ -1,5 +1,5 @@
 import type { LanguageModelChatSelector } from "../core/api/providers/types"
-import { ApiFormat } from "./proto/cline/models"
+import { ApiFormat, ShengSuanYunModelInfo } from "./proto/cline/models"
 
 export type ApiProvider =
 	| "anthropic"
@@ -28,6 +28,7 @@ export type ApiProvider =
 	| "asksage"
 	| "xai"
 	| "sambanova"
+	| "shengsuanyun"
 	| "cerebras"
 	| "sapaicore"
 	| "groq"
@@ -85,6 +86,7 @@ export interface ApiHandlerSecrets {
 	difyApiKey?: string
 	minimaxApiKey?: string
 	hicapApiKey?: string
+	shengSuanYunApiKey?: string
 	nousResearchApiKey?: string
 }
 
@@ -123,6 +125,10 @@ export interface ApiHandlerOptions {
 	moonshotApiLine?: string
 	asksageApiUrl?: string
 	requestTimeoutMs?: number
+	shengSuanYunApiKey?: string
+	shengSuanYunToken?: string
+	sapAiCoreClientId?: string
+	sapAiCoreClientSecret?: string
 	sapAiResourceGroup?: string
 	sapAiCoreTokenUrl?: string
 	sapAiCoreBaseUrl?: string
@@ -167,6 +173,9 @@ export interface ApiHandlerOptions {
 	planModeBasetenModelInfo?: ModelInfo
 	planModeHuggingFaceModelId?: string
 	planModeHuggingFaceModelInfo?: ModelInfo
+	planModeShengSuanYunModelId?: string
+	planModeShengSuanYunModelInfo?: ShengSuanYunModelInfo
+
 	planModeHuaweiCloudMaasModelId?: string
 	planModeHuaweiCloudMaasModelInfo?: ModelInfo
 	planModeOcaModelId?: string
@@ -207,6 +216,8 @@ export interface ApiHandlerOptions {
 	actModeBasetenModelInfo?: ModelInfo
 	actModeHuggingFaceModelId?: string
 	actModeHuggingFaceModelInfo?: ModelInfo
+	actModeShengSuanYunModelId?: string
+	actModeShengSuanYunModelInfo?: ShengSuanYunModelInfo
 	actModeHuaweiCloudMaasModelId?: string
 	actModeHuaweiCloudMaasModelInfo?: ModelInfo
 	actModeOcaModelId?: string
@@ -3614,6 +3625,21 @@ export const requestyDefaultModelInfo: ModelInfo = {
 	description: "Anthropic's most intelligent model. Highest level of intelligence and capability.",
 }
 
+// ShengSuanYun
+// https://router.shengsuanyun.com/model
+export const shengSuanYunDefaultModelId: string = "anthropic/claude-sonnet-4.5"
+export const shengSuanYunDefaultModelInfo: ShengSuanYunModelInfo = {
+	maxTokens: 64_000,
+	contextWindow: 20_000,
+	inputPrice: 3.0,
+	outputPrice: 15.0,
+	supportsImages: true,
+	supportsPromptCache: false,
+	endPoints: [],
+	description:
+		"Claude Sonnet 4.5 是 Anthropic 迄今为止最先进的 Sonnet 模型，针对真实代理和编码工作流程进行了优化。它在 SWE-bench Verified 等编码基准测试中展现出顶尖性能，并在系统设计、代码安全性和规范遵循性方面均有所改进。该模型旨在实现扩展自主操作，保持跨会话的任务连续性，并提供基于事实的进度跟踪。\n\nSonnet 4.5 还引入了更强大的代理功能，包括改进的工具编排、推测并行执行以及更高效的上下文和内存管理。凭借增强的上下文跟踪和跨工具调用的令牌使用感知功能，它尤其适用于多上下文和长时间运行的工作流。用例涵盖软件工程、网络安全、财务分析、研究代理以及其他需要持续推理和工具使用的领域。",
+}
+
 // SAP AI Core
 export type SapAiCoreModelId = keyof typeof sapAiCoreModels
 export const sapAiCoreDefaultModelId: SapAiCoreModelId = "anthropic--claude-3.5-sonnet"
@@ -4059,13 +4085,23 @@ export const basetenDefaultModelId = "zai-org/GLM-4.6" satisfies BasetenModelId
 // https://docs.z.ai/guides/llm/glm-4.5
 // https://docs.z.ai/guides/overview/pricing
 export type internationalZAiModelId = keyof typeof internationalZAiModels
-export const internationalZAiDefaultModelId: internationalZAiModelId = "glm-4.5"
+export const internationalZAiDefaultModelId: internationalZAiModelId = "glm-4.7"
 export const internationalZAiModels = {
+	"glm-4.7": {
+		maxTokens: 131_000,
+		contextWindow: 200_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		cacheReadsPrice: 0.11,
+		inputPrice: 0.6,
+		outputPrice: 2.2,
+	},
 	"glm-4.6": {
 		maxTokens: 128_000,
 		contextWindow: 200_000,
 		supportsImages: false,
 		supportsPromptCache: true,
+		cacheReadsPrice: 0.11,
 		inputPrice: 0.6,
 		outputPrice: 2.2,
 	},
@@ -4096,13 +4132,23 @@ export const internationalZAiModels = {
 } as const satisfies Record<string, ModelInfo>
 
 export type mainlandZAiModelId = keyof typeof mainlandZAiModels
-export const mainlandZAiDefaultModelId: mainlandZAiModelId = "glm-4.5"
+export const mainlandZAiDefaultModelId: mainlandZAiModelId = "glm-4.7"
 export const mainlandZAiModels = {
+	"glm-4.7": {
+		maxTokens: 131_000,
+		contextWindow: 200_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		cacheReadsPrice: 0.11,
+		inputPrice: 0.6,
+		outputPrice: 2.2,
+	},
 	"glm-4.6": {
 		maxTokens: 128_000,
 		contextWindow: 200_000,
 		supportsImages: false,
 		supportsPromptCache: true,
+		cacheReadsPrice: 0.11,
 		inputPrice: 0.6,
 		outputPrice: 2.2,
 	},

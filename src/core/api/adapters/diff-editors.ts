@@ -437,9 +437,9 @@ function convertDiffToPatchWithContext(diff: string, finalContent?: string): str
 
 	// Match all SEARCH/REPLACE blocks
 	const blockRegex = /------- SEARCH\s*\n([\s\S]*?)\n=======\s*\n([\s\S]*?)\n\+{7} REPLACE/g
-	let match
+	const match = blockRegex.exec(diff)
 
-	while ((match = blockRegex.exec(diff)) !== null) {
+	while (match !== null) {
 		const searchContent = match[1]
 		const replaceContent = match[2]
 

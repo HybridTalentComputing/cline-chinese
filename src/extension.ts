@@ -41,9 +41,9 @@ import { VscodeTerminalManager } from "./hosts/vscode/terminal/VscodeTerminalMan
 import { VscodeDiffViewProvider } from "./hosts/vscode/VscodeDiffViewProvider"
 import { VscodeWebviewProvider } from "./hosts/vscode/VscodeWebviewProvider"
 import { ExtensionRegistryInfo } from "./registry"
-import { AuthService } from "./services/auth/AuthService"
-import { LogoutReason } from "./services/auth/types"
-import { telemetryService } from "./services/telemetry"
+// import { AuthService } from "./services/auth/AuthService"
+// import { LogoutReason } from "./services/auth/types"
+// import { telemetryService } from "./services/telemetry"
 import { SharedUriHandler } from "./services/uri/SharedUriHandler"
 import { ShowMessageType } from "./shared/proto/host/window"
 import { fileExistsAtPath } from "./utils/fs"
@@ -219,7 +219,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				console.error("Error getting terminal contents:", error)
 				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
-					message: "Failed to get terminal contents",
+					message: "获取终端内容失败",
 				})
 			}
 		}),
@@ -273,7 +273,10 @@ export async function activate(context: vscode.ExtensionContext) {
 					}
 
 					// Add to Cline (Always available)
-					const addAction = new vscode.CodeAction(vscode.l10n.t("codeAction.addToCline"), vscode.CodeActionKind.QuickFix)
+					const addAction = new vscode.CodeAction(
+						vscode.l10n.t("codeAction.addToCline"),
+						vscode.CodeActionKind.QuickFix,
+					)
 					addAction.command = {
 						command: commands.AddToChat,
 						title: vscode.l10n.t("codeAction.addToCline"),
@@ -282,7 +285,10 @@ export async function activate(context: vscode.ExtensionContext) {
 					actions.push(addAction)
 
 					// Explain with Cline (Always available)
-					const explainAction = new vscode.CodeAction(vscode.l10n.t("codeAction.explainWithCline"), vscode.CodeActionKind.RefactorExtract) // Using a refactor kind
+					const explainAction = new vscode.CodeAction(
+						vscode.l10n.t("codeAction.explainWithCline"),
+						vscode.CodeActionKind.RefactorExtract,
+					) // Using a refactor kind
 					explainAction.command = {
 						command: commands.ExplainCode,
 						title: vscode.l10n.t("codeAction.explainWithCline"),
@@ -291,7 +297,10 @@ export async function activate(context: vscode.ExtensionContext) {
 					actions.push(explainAction)
 
 					// Improve with Cline (Always available)
-					const improveAction = new vscode.CodeAction(vscode.l10n.t("codeAction.improveWithCline"), vscode.CodeActionKind.RefactorRewrite) // Using a refactor kind
+					const improveAction = new vscode.CodeAction(
+						vscode.l10n.t("codeAction.improveWithCline"),
+						vscode.CodeActionKind.RefactorRewrite,
+					) // Using a refactor kind
 					improveAction.command = {
 						command: commands.ImproveCode,
 						title: vscode.l10n.t("codeAction.improveWithCline"),
@@ -301,7 +310,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
 					// Fix with Cline (Only if diagnostics exist)
 					if (context.diagnostics.length > 0) {
-						const fixAction = new vscode.CodeAction(vscode.l10n.t("codeAction.fixWithCline"), vscode.CodeActionKind.QuickFix)
+						const fixAction = new vscode.CodeAction(
+							vscode.l10n.t("codeAction.fixWithCline"),
+							vscode.CodeActionKind.QuickFix,
+						)
 						fixAction.isPreferred = true
 						fixAction.command = {
 							command: commands.FixWithCline,
@@ -374,7 +386,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			// Send focus event
 			sendFocusChatInputEvent()
-			telemetryService.captureButtonClick("command_focusChatInput", webview.controller?.task?.ulid)
+			// telemetryService.captureButtonClick("command_focusChatInput", webview.controller?.task?.ulid)
 		}),
 	)
 
@@ -382,7 +394,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand(commands.Walkthrough, async () => {
 			await vscode.commands.executeCommand("workbench.action.openWalkthrough", `${context.extension.id}#ClineWalkthrough`)
-			telemetryService.captureButtonClick("command_openWalkthrough")
+			// telemetryService.captureButtonClick("command_openWalkthrough")
 		}),
 	)
 
@@ -391,7 +403,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand(commands.ReconstructTaskHistory, async () => {
 			const { reconstructTaskHistory } = await import("./core/commands/reconstructTaskHistory")
 			await reconstructTaskHistory()
-			telemetryService.captureButtonClick("command_reconstructTaskHistory")
+			// telemetryService.captureButtonClick("command_reconstructTaskHistory")
 		}),
 	)
 
@@ -413,14 +425,14 @@ export async function activate(context: vscode.ExtensionContext) {
 				const activeWebview = WebviewProvider.getVisibleInstance()
 				const controller = activeWebview?.controller
 
-				const authService = AuthService.getInstance(controller)
-				if (secretValue) {
-					// Secret was added or updated - restore auth info (login from another window)
-					authService?.restoreRefreshTokenAndRetrieveAuthInfo()
-				} else {
-					// Secret was removed - handle logout for all windows
-					authService?.handleDeauth(LogoutReason.CROSS_WINDOW_SYNC)
-				}
+				// const authService = AuthService.getInstance(controller)
+				// if (secretValue) {
+				// 	// Secret was added or updated - restore auth info (login from another window)
+				// 	authService?.restoreRefreshTokenAndRetrieveAuthInfo()
+				// } else {
+				// 	// Secret was removed - handle logout for all windows
+				// 	authService?.handleDeauth(LogoutReason.CROSS_WINDOW_SYNC)
+				// }
 			}
 		}),
 	)

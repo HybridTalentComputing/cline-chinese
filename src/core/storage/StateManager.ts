@@ -558,6 +558,8 @@ export class StateManager {
 			minimaxApiLine,
 			nousResearchApiKey,
 			requestTimeoutMs,
+			shengSuanYunApiKey,
+			shengSuanYunToken,
 			ocaBaseUrl,
 			ocaMode,
 			hicapApiKey,
@@ -593,6 +595,8 @@ export class StateManager {
 			planModeBasetenModelInfo,
 			planModeHuggingFaceModelId,
 			planModeHuggingFaceModelInfo,
+			planModeShengSuanYunModelId,
+			planModeShengSuanYunModelInfo,
 			planModeHuaweiCloudMaasModelId,
 			planModeHuaweiCloudMaasModelInfo,
 			planModeOcaModelId,
@@ -631,6 +635,8 @@ export class StateManager {
 			actModeBasetenModelInfo,
 			actModeHuggingFaceModelId,
 			actModeHuggingFaceModelInfo,
+			actModeShengSuanYunModelId,
+			actModeShengSuanYunModelInfo,
 			actModeHuaweiCloudMaasModelId,
 			actModeHuaweiCloudMaasModelInfo,
 			actModeOcaModelId,
@@ -673,6 +679,8 @@ export class StateManager {
 			planModeBasetenModelInfo,
 			planModeHuggingFaceModelId,
 			planModeHuggingFaceModelInfo,
+			planModeShengSuanYunModelId,
+			planModeShengSuanYunModelInfo,
 			planModeHuaweiCloudMaasModelId,
 			planModeHuaweiCloudMaasModelInfo,
 			planModeOcaModelId,
@@ -712,6 +720,8 @@ export class StateManager {
 			actModeBasetenModelInfo,
 			actModeHuggingFaceModelId,
 			actModeHuggingFaceModelInfo,
+			actModeShengSuanYunModelId,
+			actModeShengSuanYunModelInfo,
 			actModeHuaweiCloudMaasModelId,
 			actModeHuaweiCloudMaasModelInfo,
 			actModeOcaModelId,
@@ -759,6 +769,7 @@ export class StateManager {
 			sapAiResourceGroup,
 			sapAiCoreUseOrchestrationMode,
 			claudeCodePath,
+			shengSuanYunToken,
 			difyBaseUrl,
 			qwenCodeOauthPath,
 			ocaBaseUrl,
@@ -801,6 +812,7 @@ export class StateManager {
 			sapAiCoreClientSecret,
 			basetenApiKey,
 			huggingFaceApiKey,
+			shengSuanYunApiKey,
 			huaweiCloudMaasApiKey,
 			difyApiKey,
 			vercelAiGatewayApiKey,
@@ -1113,6 +1125,7 @@ export class StateManager {
 			sapAiCoreClientId: this.secretsCache["sapAiCoreClientId"],
 			sapAiCoreClientSecret: this.secretsCache["sapAiCoreClientSecret"],
 			huggingFaceApiKey: this.secretsCache["huggingFaceApiKey"],
+			shengSuanYunApiKey: this.secretsCache["shengSuanYunApiKey"],
 			huaweiCloudMaasApiKey: this.secretsCache["huaweiCloudMaasApiKey"],
 			difyApiKey: this.secretsCache["difyApiKey"],
 			vercelAiGatewayApiKey: this.secretsCache["vercelAiGatewayApiKey"],
@@ -1120,7 +1133,6 @@ export class StateManager {
 			minimaxApiKey: this.secretsCache["minimaxApiKey"],
 			hicapApiKey: this.secretsCache["hicapApiKey"],
 			aihubmixApiKey: this.secretsCache["aihubmixApiKey"],
-
 			// Global state (with remote config precedence for applicable fields)
 			awsRegion:
 				this.remoteConfigCache["awsRegion"] || this.taskStateCache["awsRegion"] || this.globalStateCache["awsRegion"],
@@ -1203,6 +1215,7 @@ export class StateManager {
 			hicapModelId: this.globalStateCache["hicapModelId"],
 			aihubmixBaseUrl: this.taskStateCache["aihubmixBaseUrl"] || this.globalStateCache["aihubmixBaseUrl"],
 			aihubmixAppCode: this.taskStateCache["aihubmixAppCode"] || this.globalStateCache["aihubmixAppCode"],
+			shengSuanYunToken: this.taskStateCache["shengSuanYunToken"] || this.globalStateCache["shengSuanYunToken"],
 
 			// Plan mode configurations
 			planModeApiProvider:
@@ -1272,6 +1285,10 @@ export class StateManager {
 				this.taskStateCache["planModeAihubmixModelId"] || this.globalStateCache["planModeAihubmixModelId"],
 			planModeAihubmixModelInfo:
 				this.taskStateCache["planModeAihubmixModelInfo"] || this.globalStateCache["planModeAihubmixModelInfo"],
+			planModeShengSuanYunModelId:
+				this.taskStateCache["planModeShengSuanYunModelId"] || this.globalStateCache["planModeShengSuanYunModelId"],
+			planModeShengSuanYunModelInfo:
+				this.taskStateCache["planModeShengSuanYunModelInfo"] || this.globalStateCache["planModeShengSuanYunModelInfo"],
 			planModeNousResearchModelId:
 				this.taskStateCache["planModeNousResearchModelId"] || this.globalStateCache["planModeNousResearchModelId"],
 			geminiPlanModeThinkingLevel:
@@ -1342,6 +1359,10 @@ export class StateManager {
 				this.taskStateCache["actModeAihubmixModelId"] || this.globalStateCache["actModeAihubmixModelId"],
 			actModeAihubmixModelInfo:
 				this.taskStateCache["actModeAihubmixModelInfo"] || this.globalStateCache["actModeAihubmixModelInfo"],
+			actModeShengSuanYunModelId:
+				this.taskStateCache["actModeShengSuanYunModelId"] || this.globalStateCache["actModeShengSuanYunModelId"],
+			actModeShengSuanYunModelInfo:
+				this.taskStateCache["actModeShengSuanYunModelInfo"] || this.globalStateCache["actModeShengSuanYunModelInfo"],
 			actModeNousResearchModelId:
 				this.taskStateCache["actModeNousResearchModelId"] || this.globalStateCache["actModeNousResearchModelId"],
 			geminiActModeThinkingLevel:

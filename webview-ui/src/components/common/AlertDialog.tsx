@@ -107,7 +107,7 @@ export function UnsavedChangesDialog({
 					<AlertDialogDescription>{description}</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
+					<AlertDialogCancel onClick={onCancel}>取消</AlertDialogCancel>
 					{showSaveOption && onSave && <AlertDialogAction onClick={onSave}>{saveText}</AlertDialogAction>}
 					<AlertDialogAction appearance={showSaveOption ? "secondary" : "primary"} onClick={onConfirm}>
 						{confirmText}

@@ -9,7 +9,6 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
-
 	"github.com/cline/cli/pkg/hostbridge"
 )
 

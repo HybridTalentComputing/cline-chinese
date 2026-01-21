@@ -170,7 +170,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						</>
 					)
 				}
-				return <span>Add {option.type === ContextMenuOptionType.File ? "File" : "Folder"}</span>
+				return <span>添加 {option.type === ContextMenuOptionType.File ? "文件" : "文件夹"}</span>
 			default:
 				return null
 		}
@@ -262,7 +262,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							opacity: 0.7,
 						}}>
 						<i className="codicon codicon-loading codicon-modifier-spin" style={{ fontSize: "14px" }} />
-						<span>Searching...</span>
+						<span>搜索...</span>
 					</div>
 				)}
 				{filteredOptions.map((option, index) => {

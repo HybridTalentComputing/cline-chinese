@@ -23,7 +23,7 @@ import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import Thumbnails from "@/components/common/Thumbnails"
 import { getModeSpecificFields, normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { useClineAuth } from "@/context/ClineAuthContext"
+// import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { usePlatform } from "@/context/PlatformContext"
 import { cn } from "@/lib/utils"
@@ -276,7 +276,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			setShowChatModelSelector: setShowModelSelector,
 			dictationSettings,
 		} = useExtensionState()
-		const { clineUser } = useClineAuth()
+		// const { clineUser } = useClineAuth()
 		const [isTextAreaFocused, setIsTextAreaFocused] = useState(false)
 		const [isDraggingOver, setIsDraggingOver] = useState(false)
 		const [gitCommits, setGitCommits] = useState<GitCommit[]>([])
@@ -1151,8 +1151,15 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		// Get model display name
 		const modelDisplayName = useMemo(() => {
 			const { selectedProvider, selectedModelId } = normalizeApiConfiguration(apiConfiguration, mode)
-			const { vsCodeLmModelSelector, togetherModelId, lmStudioModelId, ollamaModelId, liteLlmModelId, requestyModelId } =
-				getModeSpecificFields(apiConfiguration, mode)
+			const {
+				vsCodeLmModelSelector,
+				togetherModelId,
+				lmStudioModelId,
+				ollamaModelId,
+				liteLlmModelId,
+				requestyModelId,
+				shengSuanYunModelId,
+			} = getModeSpecificFields(apiConfiguration, mode)
 			const unknownModel = t("mcp.unknown")
 			if (!apiConfiguration) {
 				return unknownModel
@@ -1174,6 +1181,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					return `${selectedProvider}:${liteLlmModelId}`
 				case "requesty":
 					return `${selectedProvider}:${requestyModelId}`
+				case "shengsuanyun":
+					return `${selectedProvider}:${shengSuanYunModelId}`
 				case "anthropic":
 				case "openrouter":
 				default:
@@ -1648,7 +1657,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							{dictationSettings?.dictationEnabled === true && dictationSettings?.featureEnabled && (
 								<VoiceRecorder
 									disabled={sendingDisabled}
-									isAuthenticated={!!clineUser?.uid}
+									isAuthenticated={false}
 									language={dictationSettings?.dictationLanguage || "en"}
 									onProcessingStateChange={(isProcessing, message) => {
 										if (isProcessing && message) {
@@ -1789,12 +1798,14 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										aria-checked={mode === (m === t("chat.plan") ? "plan" : "act")}
 										className={cn(
 											"pt-0.5 pb-px px-2 z-10 text-xs w-1/2 text-center bg-transparent",
-											mode === (m === t("chat.plan") ? "plan" : "act") ? "text-white" : "text-input-foreground",
+											mode === (m === t("chat.plan") ? "plan" : "act")
+												? "text-white"
+												: "text-input-foreground",
 										)}
+										key={m}
 										onMouseLeave={() => setShownTooltipMode(null)}
 										onMouseOver={() => setShownTooltipMode(m === t("chat.plan") ? "plan" : "act")}
-										role="switch"
-										key={m}>
+										role="switch">
 										{m}
 									</div>
 								))}

@@ -12,6 +12,8 @@ import { Mode, OpenaiReasoningEffort } from "@shared/storage/types"
 import { TelemetrySetting } from "@shared/TelemetrySetting"
 import { UserInfo } from "@shared/UserInfo"
 import { LanguageModelChatSelector } from "vscode"
+import { ShengSuanYunModelInfo } from "../proto/cline/models"
+
 export type SecretKey = keyof Secrets
 
 export type GlobalStateKey = keyof GlobalState
@@ -37,6 +39,7 @@ export interface RemoteConfigExtraFields {
 export type RemoteConfigFields = GlobalStateAndSettings & RemoteConfigExtraFields
 
 export interface GlobalState {
+	shengSuanYunToken: string | undefined
 	lastShownAnnouncementId: string | undefined
 	taskHistory: HistoryItem[]
 	userInfo: UserInfo | undefined
@@ -129,6 +132,7 @@ export interface Settings {
 	aihubmixAppCode: string | undefined
 	hooksEnabled: boolean
 	subagentsEnabled: boolean
+	shengSuanYunToken: string | undefined
 	enableParallelToolCalling: boolean
 	backgroundEditEnabled: boolean
 
@@ -163,6 +167,8 @@ export interface Settings {
 	planModeBasetenModelInfo: ModelInfo | undefined
 	planModeHuggingFaceModelId: string | undefined
 	planModeHuggingFaceModelInfo: ModelInfo | undefined
+	planModeShengSuanYunModelId: string | undefined
+	planModeShengSuanYunModelInfo: ShengSuanYunModelInfo | undefined
 	planModeHuaweiCloudMaasModelId: string | undefined
 	planModeHuaweiCloudMaasModelInfo: ModelInfo | undefined
 	planModeOcaModelId: string | undefined
@@ -201,6 +207,8 @@ export interface Settings {
 	actModeBasetenModelInfo: ModelInfo | undefined
 	actModeHuggingFaceModelId: string | undefined
 	actModeHuggingFaceModelInfo: ModelInfo | undefined
+	actModeShengSuanYunModelId: string | undefined
+	actModeShengSuanYunModelInfo: ShengSuanYunModelInfo | undefined
 	actModeHuaweiCloudMaasModelId: string | undefined
 	actModeHuaweiCloudMaasModelInfo: ModelInfo | undefined
 	actModeOcaModelId: string | undefined
@@ -264,6 +272,7 @@ export interface Secrets {
 	groqApiKey: string | undefined
 	huaweiCloudMaasApiKey: string | undefined
 	basetenApiKey: string | undefined
+	shengSuanYunApiKey: string | undefined
 	vercelAiGatewayApiKey: string | undefined
 	difyApiKey: string | undefined
 	ocaApiKey: string | undefined

@@ -11,9 +11,9 @@ import type { Controller } from ".."
 export async function dismissBanner(controller: Controller, request: StringRequest): Promise<Empty> {
 	const bannerId = request.value
 
-	if (bannerId) {
-		await controller.dismissBanner(bannerId)
-	}
+	// if (bannerId) {
+	// 	await controller.dismissBanner(bannerId)
+	// }
 
 	return Empty.create()
 }

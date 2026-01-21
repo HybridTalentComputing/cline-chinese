@@ -5,7 +5,7 @@ import { processFilesIntoText } from "@integrations/misc/extract-text"
 import type { ClineSayTool } from "@shared/ExtensionMessage"
 import { fileExistsAtPath } from "@utils/fs"
 import { getReadablePath, isLocatedInWorkspace } from "@utils/path"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { BASH_WRAPPERS, DiffError, PATCH_MARKERS, type Patch, PatchActionType, type PatchChunk } from "@/shared/Patch"
 import { preserveEscaping } from "@/shared/string"
 import { ClineDefaultTool } from "@/shared/tools"
@@ -667,16 +667,16 @@ export class ApplyPatchHandler implements IFullyManagedTool {
 		if (shouldAutoApprove) {
 			await config.callbacks.removeLastPartialMessageIfExistsWithType("ask", "tool")
 			await config.callbacks.say("tool", completeMessage, undefined, undefined, false)
-			telemetryService.captureToolUsage(
-				config.ulid,
-				this.name,
-				modelId,
-				providerId,
-				true,
-				true,
-				undefined,
-				block.isNativeToolCall,
-			)
+			// telemetryService.captureToolUsage(
+			// 	config.ulid,
+			// 	this.name,
+			// 	modelId,
+			// 	providerId,
+			// 	true,
+			// 	true,
+			// 	undefined,
+			// 	block.isNativeToolCall,
+			// )
 			return true
 		}
 
@@ -693,16 +693,16 @@ export class ApplyPatchHandler implements IFullyManagedTool {
 
 		const approved = response === "yesButtonClicked"
 		config.taskState.didRejectTool = !approved
-		telemetryService.captureToolUsage(
-			config.ulid,
-			this.name,
-			modelId,
-			providerId,
-			false,
-			approved,
-			undefined,
-			block.isNativeToolCall,
-		)
+		// telemetryService.captureToolUsage(
+		// 	config.ulid,
+		// 	this.name,
+		// 	modelId,
+		// 	providerId,
+		// 	false,
+		// 	approved,
+		// 	undefined,
+		// 	block.isNativeToolCall,
+		// )
 		return approved
 	}
 }

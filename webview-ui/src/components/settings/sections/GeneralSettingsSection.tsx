@@ -1,10 +1,10 @@
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { useTranslation, Trans } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
+import { updateSetting } from "@/components/settings/utils/settingsHandlers"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import PreferredLanguageSetting from "../PreferredLanguageSetting"
 import Section from "../Section"
-import { updateSetting } from "../utils/settingsHandlers"
 
 interface GeneralSettingsSectionProps {
 	renderSectionHeader: (tabId: string) => JSX.Element | null
@@ -45,7 +45,6 @@ const GeneralSettingsSection = ({ renderSectionHeader }: GeneralSettingsSectionP
 
 					<p className="text-sm mt-[5px] text-description">
 						<Trans
-							i18nKey="settings.general.telemetryDescription"
 							components={{
 								telemetryLink: (
 									<VSCodeLink
@@ -64,6 +63,7 @@ const GeneralSettingsSection = ({ renderSectionHeader }: GeneralSettingsSectionP
 									</VSCodeLink>
 								),
 							}}
+							i18nKey="settings.general.telemetryDescription"
 						/>
 					</p>
 				</div>

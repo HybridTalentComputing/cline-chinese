@@ -73,9 +73,14 @@ import type { SystemPromptContext } from "@/core/prompts/system-prompt"
 import { getSystemPrompt } from "@/core/prompts/system-prompt"
 import { HostProvider } from "@/hosts/host-provider"
 import { FileEditProvider } from "@/integrations/editor/FileEditProvider"
-import { CommandExecutorCallbacks, StandaloneTerminalManager } from "@/integrations/terminal"
-import { CommandExecutor, FullCommandExecutorConfig } from "@/integrations/terminal/CommandExecutor"
+import {
+	CommandExecutor,
+	CommandExecutorCallbacks,
+	FullCommandExecutorConfig,
+	StandaloneTerminalManager,
+} from "@/integrations/terminal"
 import { ClineError, ClineErrorType, ErrorService } from "@/services/error"
+import { SSYError, SSYErrorType } from "@/services/error/SSYError"
 import { telemetryService } from "@/services/telemetry"
 import {
 	ClineAssistantContent,
@@ -276,7 +281,6 @@ export class Task {
 		this.cancelTask = cancelTask
 		this.clineIgnoreController = new ClineIgnoreController(cwd)
 		this.taskLockAcquired = taskLockAcquired
-
 		// Determine terminal execution mode and create appropriate terminal manager
 		this.terminalExecutionMode = vscodeTerminalExecutionMode || "vscodeTerminal"
 
@@ -484,13 +488,13 @@ export class Task {
 			openAiCompatibleDomain = extractProviderDomainFromUrl(apiConfiguration.openAiBaseUrl)
 		}
 
-		if (historyItem) {
-			// Open task from history
-			telemetryService.captureTaskRestarted(this.ulid, currentProvider, openAiCompatibleDomain)
-		} else {
-			// New task started
-			telemetryService.captureTaskCreated(this.ulid, currentProvider, openAiCompatibleDomain)
-		}
+		// if (historyItem) {
+		// 	// Open task from history
+		// 	telemetryService.captureTaskRestarted(this.ulid, currentProvider, openAiCompatibleDomain)
+		// } else {
+		// 	// New task started
+		// 	telemetryService.captureTaskCreated(this.ulid, currentProvider, openAiCompatibleDomain)
+		// }
 
 		// Initialize command executor with config and callbacks
 		const commandExecutorConfig: FullCommandExecutorConfig = {
@@ -810,9 +814,9 @@ export class Task {
 	async sayAndCreateMissingParamError(toolName: ClineDefaultTool, paramName: string, relPath?: string) {
 		await this.say(
 			"error",
-			`Cline tried to use ${toolName}${
+			`Cline 尝试使用 ${toolName}${
 				relPath ? ` for '${relPath.toPosix()}'` : ""
-			} without value for required parameter '${paramName}'. Retrying...`,
+			} 但是没有必要的参数 '${paramName}'. 重试...`,
 		)
 		return formatResponse.toolError(
 			formatResponse.missingToolParameterError(paramName, this.preferredLanguage),
@@ -1824,10 +1828,18 @@ export class Task {
 		} catch (error) {
 			const isContextWindowExceededError = checkContextWindowExceededError(error)
 			const { model, providerId } = this.getCurrentProviderInfo()
-			const clineError = ErrorService.get().toClineError(error, model.id, providerId)
+			const ssyError = SSYError.transform(error, model.id, providerId) //errorService.toClineError(error, model.id, providerId)
 
 			// Capture provider failure telemetry using clineError
-			ErrorService.get().logMessage(clineError.message)
+			// TODO: Move into errorService
+			// console.log( clineError, "----------------clineError.message-----------------")
+			// errorService.logMessage(clineError.message)
+			// errorService.logException(clineError)
+			// console.log(  "***********************clineError.message*************************")
+			// const clineError = ErrorService.get().toClineError(error, model.id, providerId)
+
+			// Capture provider failure telemetry using clineError
+			ErrorService.get().logMessage(ssyError.message)
 
 			if (isContextWindowExceededError && !this.taskState.didAutomaticallyRetryFailedApiRequest) {
 				await this.handleContextWindowExceededError()
@@ -1844,12 +1856,12 @@ export class Task {
 					// If the conversation has more than 3 messages, we can truncate again. If not, then the conversation is bricked.
 					// ToDo: Allow the user to change their input if this is the case.
 					if (truncatedConversationHistory.length > 3) {
-						clineError.message = "Context window exceeded. Click retry to truncate the conversation and try again."
+						// ssyError.message = "Context window exceeded. Click retry to truncate the conversation and try again."
 						this.taskState.didAutomaticallyRetryFailedApiRequest = false
 					}
 				}
 
-				const streamingFailedMessage = clineError.serialize()
+				const streamingFailedMessage = ssyError.serialize()
 
 				// Update the 'api_req_started' message to reflect final failure before asking user to manually retry
 				const lastApiReqStartedIndex = findLastIndex(
@@ -1864,14 +1876,14 @@ export class Task {
 					await this.messageStateHandler.updateClineMessage(lastApiReqStartedIndex, {
 						text: JSON.stringify({
 							...currentApiReqInfo, // Spread the modified info (with retryStatus removed)
-							// cancelReason: "retries_exhausted", // Indicate that automatic retries failed
+							cancelReason: "retries_exhausted", // Indicate that automatic retries failed
 							streamingFailedMessage,
 						} satisfies ClineApiReqInfo),
 					})
 					// this.ask will trigger postStateToWebview, so this change should be picked up.
 				}
 
-				const isAuthError = clineError.isErrorType(ClineErrorType.Auth)
+				const isAuthError = ssyError.isErrorType(SSYErrorType.Auth)
 
 				// Check if this is a Cline provider insufficient credits error - don't auto-retry these
 				const isClineProviderInsufficientCredits = (() => {
@@ -2153,14 +2165,14 @@ export class Task {
 			if (autoApprovalSettings.enableNotifications) {
 				showSystemNotification({
 					subtitle: "Error",
-					message: "Cline is having trouble. Would you like to continue the task?",
+					message: "Cline 发生了错误. 你要继续任务吗?",
 				})
 			}
 			const { response, text, images, files } = await this.ask(
 				"mistake_limit_reached",
 				this.api.getModel().id.includes("claude")
-					? `This may indicate a failure in his thought process or inability to use a tool properly, which can be mitigated with some user guidance (e.g. "Try breaking down the task into smaller steps").`
-					: "Cline uses complex prompts and iterative task execution that may be challenging for less capable models. For best results, it's recommended to use Claude 4 Sonnet for its advanced agentic coding capabilities.",
+					? `选择的模型推理过程失败或无法正确使用工具，这可以通过一些用户指南来缓解（例如，“尝试将任务分解成更小的步骤”）。`
+					: "Cline 使用复杂的提示和迭代任务执行，这对于功能较弱的模型可能具有挑战性。为获得最佳效果，建议使用 Claude 3.7 Sonnet 的高级代理编码功能。",
 			)
 			if (response === "messageResponse") {
 				// Display the user's message in the chat UI
@@ -2390,17 +2402,17 @@ export class Task {
 			content: userContent,
 		})
 
-		telemetryService.captureConversationTurnEvent(this.ulid, providerId, model.id, "user", modelInfo.mode)
+		// telemetryService.captureConversationTurnEvent(this.ulid, providerId, model.id, "user", modelInfo.mode)
 
 		// Capture task initialization timing telemetry for the first API request
 		if (isFirstRequest) {
 			const durationMs = Math.round(performance.now() - this.taskInitializationStartTime)
-			telemetryService.captureTaskInitialization(
-				this.ulid,
-				this.taskId,
-				durationMs,
-				this.stateManager.getGlobalSettingsKey("enableCheckpointsSetting"),
-			)
+			// telemetryService.captureTaskInitialization(
+			// 	this.ulid,
+			// 	this.taskId,
+			// 	durationMs,
+			// 	this.stateManager.getGlobalSettingsKey("enableCheckpointsSetting"),
+			// )
 		}
 
 		// since we sent off a placeholder api_req_started message to update the webview while waiting to actually start the API request (to load potential details for example), we need to update the text of that message
@@ -2476,21 +2488,21 @@ export class Task {
 					},
 				})
 
-				telemetryService.captureConversationTurnEvent(
-					this.ulid,
-					providerId,
-					modelInfo.modelId,
-					"assistant",
-					modelInfo.mode,
-					{
-						tokensIn: taskMetrics.inputTokens,
-						tokensOut: taskMetrics.outputTokens,
-						cacheWriteTokens: taskMetrics.cacheWriteTokens,
-						cacheReadTokens: taskMetrics.cacheReadTokens,
-						totalCost: taskMetrics.totalCost,
-					},
-					this.useNativeToolCalls, // For assistant turn only.
-				)
+				// telemetryService.captureConversationTurnEvent(
+				// 	this.ulid,
+				// 	providerId,
+				// 	modelInfo.modelId,
+				// 	"assistant",
+				// 	modelInfo.mode,
+				// 	{
+				// 		tokensIn: taskMetrics.inputTokens,
+				// 		tokensOut: taskMetrics.outputTokens,
+				// 		cacheWriteTokens: taskMetrics.cacheWriteTokens,
+				// 		cacheReadTokens: taskMetrics.cacheReadTokens,
+				// 		totalCost: taskMetrics.totalCost,
+				// 	},
+				// 	this.useNativeToolCalls, // For assistant turn only.
+				// )
 
 				// signals to provider that it can retrieve the saved messages from disk, as abortTask can not be awaited on in nature
 				this.taskState.didFinishAbortingStream = true
@@ -2684,7 +2696,7 @@ export class Task {
 					// needs to happen after the say, otherwise the say would fail
 					this.abortTask() // if the stream failed, there's various states the task could be in (i.e. could have streamed some tools the user may have executed), so we just resort to replicating a cancel task
 
-					await abortStream("streaming_failed", errorMessage)
+					// await abortStream("streaming_failed", errorMessage)
 					await this.reinitExistingTaskFromId(this.taskId)
 				}
 			} finally {
@@ -2862,14 +2874,14 @@ export class Task {
 				const reqId = this.getApiRequestIdSafe()
 
 				// Minimal diagnostics: structured log and telemetry
-				telemetryService.captureProviderApiError({
-					ulid: this.ulid,
-					model: model.id,
-					provider: providerId,
-					errorMessage: "empty_assistant_message",
-					requestId: reqId,
-					isNativeToolCall: this.useNativeToolCalls,
-				})
+				// telemetryService.captureProviderApiError({
+				// 	ulid: this.ulid,
+				// 	model: model.id,
+				// 	provider: providerId,
+				// 	errorMessage: "empty_assistant_message",
+				// 	requestId: reqId,
+				// 	isNativeToolCall: this.useNativeToolCalls,
+				// })
 
 				const baseErrorMessage =
 					"Invalid API Response: The provider returned an empty or unparsable response. This is a provider-side issue where the model failed to generate valid output or returned tool calls that Cline cannot process. Retrying the request may help resolve this issue."
@@ -2881,7 +2893,7 @@ export class Task {
 					content: [
 						{
 							type: "text",
-							text: "Failure: I did not provide a response.",
+							text: "失败：我没有提供答复。",
 						},
 					],
 					modelInfo,

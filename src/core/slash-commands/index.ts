@@ -1,7 +1,7 @@
 import type { ApiProviderInfo } from "@core/api"
 import { ClineRulesToggles } from "@shared/cline-rules"
 import fs from "fs/promises"
-import { telemetryService } from "@/services/telemetry"
+// import { telemetryService } from "@/services/telemetry"
 import { isNativeToolCallingConfig } from "@/utils/model-utils"
 import {
 	condenseToolResponse,
@@ -37,7 +37,7 @@ export async function parseSlashCommands(
 	text: string,
 	localWorkflowToggles: ClineRulesToggles,
 	globalWorkflowToggles: ClineRulesToggles,
-	ulid: string,
+	_ulid: string,
 	focusChainSettings?: { enabled: boolean },
 	enableNativeToolCalls?: boolean,
 	providerInfo?: ApiProviderInfo,
@@ -138,7 +138,7 @@ export async function parseSlashCommands(
 				const processedText = commandReplacements[commandName] + textWithoutSlashCommand
 
 				// Track telemetry for builtin slash command usage
-				telemetryService.captureSlashCommandUsed(ulid, commandName, "builtin")
+				// telemetryService.captureSlashCommandUsed(ulid, commandName, "builtin")
 
 				return { processedText: processedText, needsClinerulesFileCheck: commandName === "newrule" }
 			}
@@ -200,7 +200,7 @@ export async function parseSlashCommands(
 						textWithoutSlashCommand
 
 					// Track telemetry for workflow command usage
-					telemetryService.captureSlashCommandUsed(ulid, commandName, "workflow")
+					// telemetryService.captureSlashCommandUsed(ulid, commandName, "workflow")
 
 					return { processedText, needsClinerulesFileCheck: false }
 				} catch (error) {

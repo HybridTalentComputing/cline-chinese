@@ -89,18 +89,18 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 			requiresApiKey: mcpDetails.requiresApiKey,
 		})
 	} catch (error) {
-		console.error("Failed to download MCP:", error)
-		let errorMessage = "Failed to download MCP"
+		console.error("下载 MCP 失败:", error)
+		let errorMessage = "下载 MCP 失败"
 
 		if (axios.isAxiosError(error)) {
 			if (error.code === "ECONNABORTED") {
-				errorMessage = "Request timed out. Please try again."
+				errorMessage = "超时，请重试."
 			} else if (error.response?.status === 404) {
-				errorMessage = "MCP server not found in marketplace."
+				errorMessage = "MCP 在市场没有找到."
 			} else if (error.response?.status === 500) {
-				errorMessage = "Internal server error. Please try again later."
+				errorMessage = "网络错误.请稍后重试."
 			} else if (!error.response && error.request) {
-				errorMessage = "Network error. Please check your internet connection."
+				errorMessage = "网络错误. 请检查你的网络链接."
 			}
 		} else if (error instanceof Error) {
 			errorMessage = error.message
