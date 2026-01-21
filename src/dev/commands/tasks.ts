@@ -13,7 +13,7 @@ import { ShowMessageType } from "@/shared/proto/host/window"
  */
 export function registerTaskCommands(controller: Controller): vscode.Disposable[] {
 	return [
-		vscode.commands.registerCommand("cline.dev.expireMcpOAuthTokens", async () => {
+		vscode.commands.registerCommand("cline-chinese.dev.expireMcpOAuthTokens", async () => {
 			try {
 				const stateManager = controller.stateManager
 				const secretsJson = stateManager.getSecretKey("mcpOAuthSecrets")
@@ -51,7 +51,7 @@ export function registerTaskCommands(controller: Controller): vscode.Disposable[
 				console.error("[Dev] Error expiring MCP OAuth tokens:", error)
 			}
 		}),
-		vscode.commands.registerCommand("cline.dev.createTestTasks", async () => {
+		vscode.commands.registerCommand("cline-chinese.dev.createTestTasks", async () => {
 			const count = (
 				await HostProvider.window.showInputBox({
 					title: "Test Tasks",
