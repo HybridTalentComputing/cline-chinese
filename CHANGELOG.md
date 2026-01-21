@@ -1530,7 +1530,7 @@ Add Opus 4.1 through Claude Code
 
 ## [2.0.0]
 
-- New name! Meet Cline, an AI assistant that can use your CLI and Editor
+- 新名称！认识 Cline，一个可以使用您的 CLI 和编辑器的 AI 助手
 - Responses are now streamed with a yellow text decoration animation to keep track of Cline's progress as he edits files
 - New Cancel button to give Cline feedback if he goes off in the wrong direction, giving you more control over tasks
 - Re-imagined tool calling prompt resulting in ~40% fewer requests to accomplish tasks + better performance with other models
