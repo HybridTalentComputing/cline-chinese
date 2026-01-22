@@ -760,8 +760,8 @@
 		},
 		"button": {
 			"continue": "继续",
-			"login": "登录 Cline",
-			"createAccount": "创建我的账号",
+			"login": "登录 Cline Chinese赞助商--胜算云",
+			"createAccount": "创建Cline Chinese赞助商--胜算云账号",
 			"back": "返回"
 		},
 		"footer": {
@@ -801,7 +801,7 @@
 	"account": {
 		"welcome": {
 			"description": "注册账号即可访问最新模型、账单仪表盘以查看使用情况和额度，以及更多即将推出的功能。",
-			"signUp": "使用 Cline 注册",
+			"signUp": "注册Cline Chinese赞助商--胜算云",
 			"tosAgreement": "继续操作即表示您同意",
 			"tos": "服务条款",
 			"and": " 和 ",

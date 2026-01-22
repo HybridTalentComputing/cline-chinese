@@ -63,7 +63,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 			<div className="flex gap-2 flex-wrap">{children}</div>
 		) : (
 			<Button className="my-1" onClick={handleShowAccount} size="sm">
-				胜算云中使用
+				Cline Chinese赞助商--胜算云中使用
 			</Button>
 		)
 
@@ -94,7 +94,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 							<strong>MiMo V2 Flash</strong>, 限时免费!
 							<br />
 							<AuthButton>
-								<ModelButton label="Try Kat-Coder Pro" modelId="xiaomi/mimo-v2-flash" />
+								<ModelButton label="Try MiMo V2 Flash" modelId="xiaomi/mimo-v2-flash" />
 							</AuthButton>
 						</li>
 						<li>
