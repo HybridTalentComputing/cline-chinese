@@ -1,6 +1,6 @@
 import { name, publisher, version } from "../package.json"
 
-const prefix = "cline"
+const prefix = "cline-chinese"
 
 /**
  * List of commands with the name of the extension they are registered under.
