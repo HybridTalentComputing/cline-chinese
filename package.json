@@ -121,7 +121,7 @@
 			"activitybar": [
 				{
 					"id": "cline-chinese-ActivityBar",
-					"title": "Cline",
+					"title": "CLINE CHINESE",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
@@ -131,7 +131,7 @@
 				{
 					"type": "webview",
 					"id": "cline-chinese.SidebarProvider",
-					"name": "",
+					"name": "CLINE CHINESE",
 					"icon": "assets/icons/icon.svg"
 				}
 			]

@@ -147,7 +147,7 @@ export const SSYAccountView = () => {
 									setIsLoading(false)
 								})
 						}}>
-						注册 Cline 胜算云
+						注册 Cline Chinese赞助商--胜算云
 					</VSCodeButton>
 					<p className="text-[var(--vscode-descriptionForeground)] text-xs text-center m-0">
 						继续即表示您同意{" "}
