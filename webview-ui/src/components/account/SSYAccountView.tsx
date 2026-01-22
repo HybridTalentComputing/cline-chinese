@@ -21,6 +21,7 @@ export const SSYAccountView = () => {
 	// Fetch all account data when component mounts using gRPC
 	useEffect(() => {
 		if (!userInfo || !userInfo.displayName) {
+			setIsLoading(false)
 			return
 		}
 		setIsLoading(true)
