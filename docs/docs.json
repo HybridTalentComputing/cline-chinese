@@ -13,8 +13,8 @@
 		"dark": "/assets/Cline_Logo-complete_white.png"
 	},
 	"favicon": {
-		"light": "/assets/robot_panel_light.png",
-		"dark": "/assets/robot_panel_dark.png"
+		"light": "/assets/icons/panda-face-light.svg",
+		"dark": "/assets/icons/panda-face-dark.svg"
 	},
 	"background": {
 		"color": {
