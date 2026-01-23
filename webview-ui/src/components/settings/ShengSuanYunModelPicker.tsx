@@ -37,6 +37,44 @@ const StarIcon = ({ isFavorite, onClick }: { isFavorite: boolean; onClick: (e: R
 		</div>
 	)
 }
+
+// Featured models for Cline provider organized by tabs
+// Note: These will be translated in the component using useTranslation hook
+export const recommendedModels = [
+	{
+		id: "anthropic/claude-sonnet-4.5",
+		descriptionKey: "claudeSonnet45",
+		labelKey: "best",
+	},
+	{
+		id: "google/gemini-3-flash",
+		descriptionKey: "gemini3Flash",
+		labelKey: "new",
+	},
+	{
+		id: "anthropic/claude-opus-4.5",
+		descriptionKey: "claudeOpus45",
+		labelKey: "hot",
+	},
+	{
+		id: "openai/gpt-5.2",
+		descriptionKey: "gpt52",
+		labelKey: "new",
+	},
+	{
+		id: "google/gemini-3-pro-preview",
+		descriptionKey: "gemini3Pro",
+		labelKey: "oneMillionCtx",
+	},
+]
+
+export const freeModels = [
+	{
+		id: "xiaomi/mimo-v2-flash",
+		descriptionKey: "MiMo V2 Flash (Free)",
+		labelKey: "free",
+	},
+]
 const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPopup, currentMode }) => {
 	const { apiConfiguration, shengSuanYunModels, setShengSuanYunModels } = useExtensionState()
 	const { handleModeFieldsChange } = useApiConfigurationHandlers()

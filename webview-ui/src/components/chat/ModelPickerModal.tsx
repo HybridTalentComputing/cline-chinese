@@ -121,9 +121,9 @@ const getProviderInfo = (
 
 const OPENROUTER_MODEL_PROVIDERS: ApiProvider[] = ["cline", "openrouter", "vercel-ai-gateway"]
 
-import { freeModels, recommendedModels } from "@/components/settings/OpenRouterModelPicker"
 import { SUPPORTED_ANTHROPIC_THINKING_MODELS } from "@/components/settings/providers/AnthropicProvider"
 import { SUPPORTED_BEDROCK_THINKING_MODELS } from "@/components/settings/providers/BedrockProvider"
+import { freeModels, recommendedModels } from "@/components/settings/ShengSuanYunModelPicker"
 import {
 	filterOpenRouterModelIds,
 	getModelsForProvider,
@@ -299,10 +299,10 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 
 	// Filtered models - for OpenRouter/Vercel show all by default, for Cline only when searching
 	const filteredModels = useMemo(() => {
-		const isCline = selectedProvider === "cline"
+		const isShengsuanyun = selectedProvider === "shengsuanyun"
 
 		// For Cline: only show non-featured models when searching
-		if (isCline && !searchQuery) return []
+		if (isShengsuanyun && !searchQuery) return []
 
 		let models: ModelItem[]
 		if (searchQuery) {
@@ -316,13 +316,13 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 		models = models.filter((m) => m.id !== selectedModelId)
 
 		// For Cline when searching, also filter out featured models (they're shown separately)
-		if (isCline) {
+		if (isShengsuanyun) {
 			const featuredIds = new Set([...recommendedModels, ...freeModels].map((m) => m.id))
 			models = models.filter((m) => !featuredIds.has(m.id))
 		}
 
 		// For openrouter/vercel-ai-gateway (not cline): put favorites first
-		if (!isCline && (selectedProvider === "openrouter" || selectedProvider === "vercel-ai-gateway")) {
+		if (!isShengsuanyun && (selectedProvider === "openrouter" || selectedProvider === "vercel-ai-gateway")) {
 			const favoriteSet = new Set(favoritedModelIds || [])
 			const favoritedModels = models.filter((m) => favoriteSet.has(m.id))
 			const nonFavoritedModels = models.filter((m) => !favoriteSet.has(m.id))
@@ -338,7 +338,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 
 	// Featured models for Cline provider (recommended + free)
 	const featuredModels = useMemo(() => {
-		if (selectedProvider !== "cline") return []
+		// if (selectedProvider !== "cline") return []
 
 		const allFeatured = [...recommendedModels, ...freeModels].map((m) => ({
 			...m,
@@ -577,7 +577,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 		onOpenChange(!isOpen)
 	}, [isOpen, onOpenChange])
 
-	const isClineProvider = selectedProvider === "cline"
+	const isshengsuanyunProvider = selectedProvider === "shengsuanyun"
 	const isSearching = !!searchQuery
 
 	return (
@@ -757,7 +757,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 									modelBelongsToProvider &&
 									(() => {
 										// Check if current model has a featured label (only for Cline provider)
-										const currentFeaturedModel = isClineProvider
+										const currentFeaturedModel = isshengsuanyunProvider
 											? [...recommendedModels, ...freeModels].find((m) => m.id === selectedModelId)
 											: undefined
 										const currentLabel = currentFeaturedModel
@@ -787,7 +787,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 								)}
 
 								{/* For Cline: Show recommended models */}
-								{isClineProvider &&
+								{isshengsuanyunProvider &&
 									featuredModels.map((model, index) => (
 										<ModelItemContainer
 											$isSelected={index === selectedIndex}

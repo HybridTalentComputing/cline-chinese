@@ -138,7 +138,6 @@ export const SSYAccountView = () => {
 					<p style={{}}>注册帐户访问最新模型，进群联系客服，获得100万Tokens免费额度，以及更多即将推出的功能。</p>
 					<VSCodeButton
 						className="w-full mb-4"
-						disabled={isLoading}
 						onClick={() => {
 							setIsLoading(true)
 							AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create())

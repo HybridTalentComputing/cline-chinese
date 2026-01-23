@@ -1,5 +1,6 @@
 import { Button } from "@components/ui/button"
 import { EmptyRequest } from "@shared/proto/cline/common"
+import { ShengSuanYunModelInfo } from "@shared/proto/cline/models"
 import React, { useCallback, useRef } from "react"
 import { useMount } from "react-use"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
@@ -24,11 +25,27 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 
 	const setModel = useCallback(
 		(modelId: string) => {
+			const modelInfo = openRouterModels[modelId]
+			if (!modelInfo) {
+				return
+			}
+
+			const ssyModelInfo: ShengSuanYunModelInfo = {
+				...modelInfo,
+				endPoints: [],
+				thinkingConfig: modelInfo.thinkingConfig
+					? {
+							...modelInfo.thinkingConfig,
+							outputPriceTiers: modelInfo.thinkingConfig.outputPriceTiers || [],
+						}
+					: undefined,
+			}
+
 			handleFieldsChange({
-				planModeOpenRouterModelId: modelId,
-				actModeOpenRouterModelId: modelId,
-				planModeOpenRouterModelInfo: openRouterModels[modelId],
-				actModeOpenRouterModelInfo: openRouterModels[modelId],
+				planModeShengSuanYunModelId: modelId,
+				actModeShengSuanYunModelId: modelId,
+				planModeShengSuanYunModelInfo: ssyModelInfo,
+				actModeShengSuanYunModelInfo: ssyModelInfo,
 				planModeApiProvider: "shengsuanyun",
 				actModeApiProvider: "shengsuanyun",
 			})
