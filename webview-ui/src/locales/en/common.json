@@ -448,6 +448,7 @@
 				"hicap": "Add your HiCap API key in settings",
 				"oca": "Configure your OCA endpoint in settings",
 				"aihubmix": "Add your AIHubMix API key in settings",
+				"shengsuanyun": "Add your ShengSuanYun API key in settings",
 				"default": "Configure this provider in model settings"
 			},
 			"vscodeLm": {

@@ -4,6 +4,7 @@ import {
 	LiteLLMModelInfo as ProtoLiteLLMModelInfo,
 	OcaModelInfo as ProtoOcaModelInfo,
 	OpenAiCompatibleModelInfo as ProtoOpenAiCompatibleModelInfo,
+	ShengSuanYunModelInfo,
 	ThinkingConfig,
 } from "@shared/proto/cline/models"
 
@@ -165,6 +166,29 @@ export function toProtobufModels(models: Record<string, ModelInfo>): Record<stri
 	const result: Record<string, OpenRouterModelInfo> = {}
 	for (const [key, value] of Object.entries(models)) {
 		result[key] = toProtobufModelInfo(value)
+	}
+	return result
+}
+
+export function fromProtobufShengSuanYunModelInfo(protoInfo: ShengSuanYunModelInfo): ModelInfo {
+	return {
+		maxTokens: protoInfo.maxTokens,
+		contextWindow: protoInfo.contextWindow,
+		supportsImages: protoInfo.supportsImages,
+		supportsPromptCache: protoInfo.supportsPromptCache,
+		inputPrice: protoInfo.inputPrice,
+		outputPrice: protoInfo.outputPrice,
+		cacheWritesPrice: protoInfo.cacheWritesPrice,
+		cacheReadsPrice: protoInfo.cacheReadsPrice,
+		description: protoInfo.description,
+		thinkingConfig: convertThinkingConfig(protoInfo.thinkingConfig),
+	}
+}
+
+export function fromProtobufShengSuanYunModels(protoModels: Record<string, ShengSuanYunModelInfo>): Record<string, ModelInfo> {
+	const result: Record<string, ModelInfo> = {}
+	for (const [key, value] of Object.entries(protoModels)) {
+		result[key] = fromProtobufShengSuanYunModelInfo(value)
 	}
 	return result
 }

@@ -27,6 +27,7 @@ const SETTINGS_ONLY_PROVIDERS: ApiProvider[] = [
 	"oca",
 	"aihubmix",
 	"together",
+	"shengsuanyun",
 ]
 
 // Helper to get provider-specific configuration info and empty state guidance
@@ -77,6 +78,14 @@ const getProviderInfo = (
 					effectiveMode === "plan" ? apiConfiguration.planModeRequestyModelId : apiConfiguration.actModeRequestyModelId,
 				baseUrl: apiConfiguration.requestyBaseUrl,
 				helpText: t("settings.apiConfig.providerHelpText.requesty"),
+			}
+		case "shengsuanyun":
+			return {
+				modelId:
+					effectiveMode === "plan"
+						? apiConfiguration.planModeShengSuanYunModelId
+						: apiConfiguration.actModeShengSuanYunModelId,
+				helpText: t("settings.apiConfig.providerHelpText.shengsuanyun"),
 			}
 		case "together":
 			return {
@@ -178,6 +187,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 	const { t } = useTranslation()
 	const {
 		apiConfiguration,
+		shengSuanYunModels,
 		openRouterModels,
 		navigateToSettings,
 		planActSeparateModelsSetting,
@@ -207,7 +217,6 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 	// Get current provider from config - use activeEditMode when in split mode
 	const effectiveMode = planActSeparateModelsSetting ? activeEditMode : currentMode
 	const { selectedProvider, selectedModelId, selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, effectiveMode)
-
 	// Get both Plan and Act models for split view
 	const planModel = useMemo(() => normalizeApiConfiguration(apiConfiguration, "plan"), [apiConfiguration])
 	const actModel = useMemo(() => normalizeApiConfiguration(apiConfiguration, "act"), [apiConfiguration])
@@ -264,14 +273,14 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 	// Get models for current provider
 	const allModels = useMemo((): ModelItem[] => {
 		if (OPENROUTER_MODEL_PROVIDERS.includes(selectedProvider)) {
-			const modelIds = Object.keys(openRouterModels || {})
+			const modelIds = Object.keys(shengSuanYunModels || {})
 			const filteredIds = filterOpenRouterModelIds(modelIds, selectedProvider)
 
 			return filteredIds.map((id) => ({
 				id,
 				name: id.split("/").pop() || id,
 				provider: id.split("/")[0],
-				info: openRouterModels[id],
+				info: shengSuanYunModels[id],
 			}))
 		}
 
@@ -287,7 +296,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 		}
 
 		return []
-	}, [selectedProvider, openRouterModels, apiConfiguration])
+	}, [selectedProvider, shengSuanYunModels, apiConfiguration])
 
 	// Multi-word substring search - all words must match somewhere in id/name/provider
 	const matchesSearch = useCallback((model: ModelItem, query: string): boolean => {
@@ -362,7 +371,6 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 	const handleSelectModel = useCallback(
 		(modelId: string, modelInfo?: ModelInfoType) => {
 			const modeToUse = isSplit ? activeEditMode : currentMode
-
 			if (OPENROUTER_MODEL_PROVIDERS.includes(selectedProvider)) {
 				const modelInfoToUse = modelInfo || openRouterModels[modelId]
 				handleModeFieldsChange(
@@ -376,10 +384,24 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 					},
 					modeToUse,
 				)
+			} else if (selectedProvider == "shengsuanyun") {
+				const modelInfoToUse = modelInfo || shengSuanYunModels[modelId]
+				handleModeFieldsChange(
+					{
+						shengSuanYunModelId: { plan: "planModeShengSuanYunModelId", act: "actModeShengSuanYunModelId" },
+						shengSuanYunModelInfo: { plan: "planModeShengSuanYunModelInfo", act: "actModeShengSuanYunModelInfo" },
+					},
+					{
+						shengSuanYunModelId: modelId,
+						shengSuanYunModelInfo: modelInfoToUse,
+					},
+					modeToUse,
+				)
 			} else {
 				// Static model providers use apiModelId
 				handleModeFieldChange({ plan: "planModeApiModelId", act: "actModeApiModelId" }, modelId, modeToUse)
 			}
+
 			// Only close modal if not in split mode
 			if (!isSplit) {
 				onOpenChange(false)
@@ -392,6 +414,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 			currentMode,
 			isSplit,
 			activeEditMode,
+			shengSuanYunModels,
 			openRouterModels,
 			onOpenChange,
 		],
@@ -456,7 +479,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 						// Determine which list the index falls into
 						if (selectedIndex < featuredModels.length) {
 							const model = featuredModels[selectedIndex]
-							handleSelectModel(model.id, openRouterModels[model.id])
+							handleSelectModel(model.id, shengSuanYunModels[model.id])
 						} else {
 							const model = filteredModels[selectedIndex - featuredModels.length]
 							handleSelectModel(model.id, model.info)
@@ -469,7 +492,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 					break
 			}
 		},
-		[filteredModels, featuredModels, selectedIndex, handleSelectModel, openRouterModels, onOpenChange],
+		[filteredModels, featuredModels, selectedIndex, handleSelectModel, shengSuanYunModels, onOpenChange],
 	)
 
 	// Reset selectedIndex and clear refs when search/provider changes
@@ -792,7 +815,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 										<ModelItemContainer
 											$isSelected={index === selectedIndex}
 											key={model.id}
-											onClick={() => handleSelectModel(model.id, openRouterModels[model.id])}
+											onClick={() => handleSelectModel(model.id, shengSuanYunModels[model.id])}
 											onMouseEnter={() => setSelectedIndex(index)}
 											ref={(el) => (itemRefs.current[index] = el)}>
 											<ModelInfoRow>

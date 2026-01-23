@@ -16,16 +16,16 @@ interface WhatsNewModalProps {
 }
 
 export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, version }) => {
-	const { userInfo, openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
+	const { userInfo, shengSuanYunModels, setShowChatModelSelector, refreshShengSuanYunModels } = useExtensionState()
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 	const clickedModelsRef = useRef<Set<string>>(new Set())
 
 	// Get latest model list in case user hits shortcut button to set model
-	useMount(refreshOpenRouterModels)
+	useMount(refreshShengSuanYunModels)
 
 	const setModel = useCallback(
 		(modelId: string) => {
-			const modelInfo = openRouterModels[modelId]
+			const modelInfo = shengSuanYunModels[modelId]
 			if (!modelInfo) {
 				return
 			}
@@ -34,10 +34,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 				...modelInfo,
 				endPoints: [],
 				thinkingConfig: modelInfo.thinkingConfig
-					? {
-							...modelInfo.thinkingConfig,
-							outputPriceTiers: modelInfo.thinkingConfig.outputPriceTiers || [],
-						}
+					? { ...modelInfo.thinkingConfig, outputPriceTiers: modelInfo.thinkingConfig.outputPriceTiers || [] }
 					: undefined,
 			}
 
@@ -53,7 +50,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 			setShowChatModelSelector(true)
 			onClose()
 		},
-		[handleFieldsChange, openRouterModels, setShowChatModelSelector, onClose],
+		[handleFieldsChange, shengSuanYunModels, setShowChatModelSelector, onClose],
 	)
 
 	const handleShowAccount = useCallback(() => {
