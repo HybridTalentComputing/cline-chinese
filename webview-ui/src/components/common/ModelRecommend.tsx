@@ -1,5 +1,6 @@
 import { Button } from "@components/ui/button"
 import { EmptyRequest } from "@shared/proto/cline/common"
+import { ShengSuanYunModelInfo } from "@shared/proto/cline/models"
 import React, { useCallback, useRef } from "react"
 import { useMount } from "react-use"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
@@ -15,20 +16,33 @@ interface WhatsNewModalProps {
 }
 
 export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, version }) => {
-	const { userInfo, openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
+	const { userInfo, shengSuanYunModels, setShowChatModelSelector, refreshShengSuanYunModels } = useExtensionState()
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 	const clickedModelsRef = useRef<Set<string>>(new Set())
 
 	// Get latest model list in case user hits shortcut button to set model
-	useMount(refreshOpenRouterModels)
+	useMount(refreshShengSuanYunModels)
 
 	const setModel = useCallback(
 		(modelId: string) => {
+			const modelInfo = shengSuanYunModels[modelId]
+			if (!modelInfo) {
+				return
+			}
+
+			const ssyModelInfo: ShengSuanYunModelInfo = {
+				...modelInfo,
+				endPoints: [],
+				thinkingConfig: modelInfo.thinkingConfig
+					? { ...modelInfo.thinkingConfig, outputPriceTiers: modelInfo.thinkingConfig.outputPriceTiers || [] }
+					: undefined,
+			}
+
 			handleFieldsChange({
-				planModeOpenRouterModelId: modelId,
-				actModeOpenRouterModelId: modelId,
-				planModeOpenRouterModelInfo: openRouterModels[modelId],
-				actModeOpenRouterModelInfo: openRouterModels[modelId],
+				planModeShengSuanYunModelId: modelId,
+				actModeShengSuanYunModelId: modelId,
+				planModeShengSuanYunModelInfo: ssyModelInfo,
+				actModeShengSuanYunModelInfo: ssyModelInfo,
 				planModeApiProvider: "shengsuanyun",
 				actModeApiProvider: "shengsuanyun",
 			})
@@ -36,7 +50,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 			setShowChatModelSelector(true)
 			onClose()
 		},
-		[handleFieldsChange, openRouterModels, setShowChatModelSelector, onClose],
+		[handleFieldsChange, shengSuanYunModels, setShowChatModelSelector, onClose],
 	)
 
 	const handleShowAccount = useCallback(() => {

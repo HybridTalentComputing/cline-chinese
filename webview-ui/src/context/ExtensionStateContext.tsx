@@ -7,12 +7,12 @@ import { DEFAULT_FOCUS_CHAIN_SETTINGS } from "@shared/FocusChainSettings"
 import { DEFAULT_MCP_DISPLAY_MODE } from "@shared/McpDisplayMode"
 import type { UserInfo } from "@shared/proto/cline/account"
 import { EmptyRequest } from "@shared/proto/cline/common"
-import type { OpenRouterCompatibleModelInfo } from "@shared/proto/cline/models"
+import type { OpenRouterCompatibleModelInfo, ShengSuanYunCompatibleModelInfo } from "@shared/proto/cline/models"
 import { ShengSuanYunModelInfo } from "@shared/proto/cline/models"
 import { OnboardingModelGroup, type TerminalProfile } from "@shared/proto/cline/state"
 import { convertProtoToClineMessage } from "@shared/proto-conversions/cline-message"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
-import { fromProtobufModels } from "@shared/proto-conversions/models/typeConversion"
+import { fromProtobufModels, fromProtobufShengSuanYunModels } from "@shared/proto-conversions/models/typeConversion"
 import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { Environment } from "../../../src/config"
@@ -90,6 +90,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setOnboardingModels: (value: OnboardingModelGroup | undefined) => void
 
 	// Refresh functions
+	refreshShengSuanYunModels: () => void
 	refreshOpenRouterModels: () => void
 	refreshHicapModels: () => void
 	refreshLiteLlmModels: () => void
@@ -683,6 +684,17 @@ export const ExtensionStateContextProvider: React.FC<{
 			.catch((error: Error) => console.error("Failed to refresh OpenRouter models:", error))
 	}, [])
 
+	const refreshShengSuanYunModels = useCallback(() => {
+		ModelsServiceClient.refreshShengSuanYunModels(EmptyRequest.create({}))
+			.then((response: ShengSuanYunCompatibleModelInfo) => {
+				const models = fromProtobufShengSuanYunModels(response.models)
+				setOpenRouterModels({
+					[shengSuanYunDefaultModelId]: shengSuanYunDefaultModelInfo,
+				})
+			})
+			.catch((error: Error) => console.error("Failed to refresh OpenRouter models:", error))
+	}, [])
+
 	const refreshHicapModels = useCallback(() => {
 		ModelsServiceClient.refreshHicapModels(EmptyRequest.create({}))
 			.then((response: OpenRouterCompatibleModelInfo) => {
@@ -820,6 +832,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		setMcpTab,
 		setTotalTasksSize,
 		refreshOpenRouterModels,
+		refreshShengSuanYunModels,
 		refreshHicapModels,
 		refreshLiteLlmModels,
 		onRelinquishControl,

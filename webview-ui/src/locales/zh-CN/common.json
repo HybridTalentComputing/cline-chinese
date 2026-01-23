@@ -443,6 +443,7 @@
 				"openai": "在设置中添加您的 OpenAI API 密钥和端点",
 				"vscode-lm": "在设置中选择 VS Code 语言模型",
 				"requesty": "在设置中添加您的 Requesty API 密钥",
+				"shengsuanyun": "在设置中添加您的胜算云 API 密钥",
 				"together": "在设置中添加您的 Together AI API 密钥",
 				"dify": "配置您的 Dify 工作流 URL 和 API 密钥",
 				"hicap": "在设置中添加您的 HiCap API 密钥",

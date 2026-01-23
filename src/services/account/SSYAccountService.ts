@@ -26,7 +26,7 @@ export class SSYAccountService {
 		const url = `${this.baseUrl}${endpoint}`
 		// console.log("SSYAccountService.authenticatedRequest():", url, reqConfig)
 		const res: any = await axios.get(url, reqConfig)
-		console.log(url, res.data)
+		// console.log(url, res.data)
 		if (!res.data || !res.data.data || res.data.code == 103) {
 			throw new Error(`Invalid response from ${endpoint} API`)
 		}
