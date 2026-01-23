@@ -1,6 +1,6 @@
 # Cline-Chinese (Cline中文汉化版) 🌏
 
-> 🎉 截止到2025.12.24，Cline Chinese在VS Code插件市场的下载量突破157k啦！感谢大家的支持！
+> 🎉 截止到2026.1.23，Cline Chinese在VS Code插件市场的下载量突破177k啦！感谢大家的支持！
 
 
 
@@ -19,20 +19,12 @@ https://github.com/HybridTalentComputing/cline-chinese
 https://www.mcp-home.com/
 欢迎大家注册，收藏、上传自己喜欢的MCP Server/Client.
 
-## 文档地址(包括使用方法，MCP知识，常见问题解答等)
-https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/
-
-## 活动
-<a href="https://tcnqigfvmci2.feishu.cn/wiki/Qui5wMIbdit8Jskjtz3cybwknVd" target="_blank" rel="noopener noreferrer">
-  <img src="https://github.com/user-attachments/assets/b0c02959-60c6-45f6-8114-03b269710582" alt="微信图片_20251215141911_125_566">
-</a>
-
 
 
 ## 赞助商
 <img width="100%" height="200" alt="胜算云" src="https://github.com/user-attachments/assets/5098e0e5-64e0-4184-b9bf-3f44da2f1f2c" />
 
-> 胜算云是获得长三角国家技术创新中心重大科研项目支持的 AI云平台，提供GPT-5, Claude Opus 4.1， Gemini 2.5Pro在内的顶尖编程模型，作为AmazonAWS、Microsoft Azure、Google Cloud 的官方授权合作商，因此速度更快、稳定性更高、命中缓存更便宜、TPM/RPM无限制
+> 胜算云是获得长三角国家技术创新中心重大科研项目支持的 AI云平台，提供GPT, Claude， Gemini在内的顶尖编程模型，作为AmazonAWS、Microsoft Azure、Google Cloud 的官方授权合作商，因此速度更快、稳定性更高、命中缓存更便宜、TPM/RPM无限制
 可试用，注册后扫码添加客服享百万 Tokens 免费试用额度：[胜算云](https://www.shengsuanyun.com/?from=cline-chinese)
 
 
@@ -64,9 +56,11 @@ Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下�
 另外，秉着学习的态度，未来将着手修改Cline的核心代码，增加新的功能，以提升体验。
 
 ## 特色功能
-1. 支持Dify Provider（2025.08.25已下线，请使用Dify MCP以获得更好的体验，使用方法请参考： [dify mcp](https://dify.ai/blog/turn-your-dify-app-into-an-mcp-server)）。
+1. 支持Dify Provider (已受cline官方支持，欢迎体验)
 
 ## 版本更新说明
+### 2026.01.23（ver.3.46.5）
+1. 同步近期cline更新。
 
 ### 2025.08.25（ver.3.25.2）
 1. 同步近期cline更新。(上下文压缩，添加claude code provider)
@@ -93,10 +87,6 @@ Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下�
 
 欢迎关注我的自媒体账号，获取更多AI开发和技术分享：
 
-- 知乎：[Leo聊AI](https://www.zhihu.com/people/HTCMAX)
-- B站：[Leo的AI世界](https://space.bilibili.com/23409884?spm_id_from=333.1007.0.0)
-- 头条号：Leo的AI世界
-- 小红书：Leo的AI世界
 - 公众号：Leo的AI世界
 
 ## 加入社群
@@ -111,17 +101,6 @@ GitHub 项目地址：https://github.com/HybridTalentComputing/cline-chinese
 
 Discord 频道：https://discord.gg/fhj9hqy89t
 
-
-## 赞赏支持
-
-如果您觉得这个项目对您有帮助，欢迎赞赏支持，您的支持是我持续开发的动力 ☕
-
-<div align="center" style="display: flex; justify-content: center; gap: 20px;">
-
-  <img src="https://github.com/user-attachments/assets/f01e4514-e8ec-48de-883a-9f6fbd05c2a0" alt="支付宝赞赏" width="250" />
-  <img src="https://github.com/user-attachments/assets/f4ee93ba-2960-46be-96a7-faaff3a0c38c" alt="微信赞赏" width="250" />
-
-</div>
 
 ## 免责声明
 
@@ -142,6 +121,11 @@ Discord 频道：https://discord.gg/fhj9hqy89t
 5. **更新和维护**：
    - 开发者将努力维护本项目，但不保证及时更新或修复所有问题。
    - 本项目可能随时变更或终止，会及时同步到本项目中。
+
+6. **合规使用**：
+   - 用户在使用本插件时，必须遵守当地法律法规。
+   - **严禁将本插件用于任何违法违规行为**（包括但不限于网络攻击、非法侵入、数据窃取、传播非法信息等）。
+   - 开发者对用户利用本插件进行的任何违法行为及其产生的后果不承担任何法律责任。
 ---
 
 > 注：本项目是个人维护的汉化版本，与原版 Cline 团队无关。如果您喜欢这个项目，也请给原版 [Cline](https://github.com/cline/cline) 一个 star ⭐️
