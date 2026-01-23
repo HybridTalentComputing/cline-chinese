@@ -660,7 +660,7 @@
 		"addLocalServer": {
 			"description": "Add a local MCP server by configuring it in <code>cline_mcp_settings.json</code>. You'll need to specify the server name, command, arguments, and any required environment variables in the JSON configuration. Learn more ",
 			"learnMore": "here.",
-			"openConfig": "Open cline_mcp_settings.json",
+			"openConfig": "Open cline_chinese_mcp_settings.json",
 			"serverName": "Server Name",
 			"command": "Command",
 			"args": "Args (comma separated)",

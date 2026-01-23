@@ -26,6 +26,7 @@
 		"Testing"
 	],
 	"keywords": [
+		"cline-chinese",
 		"cline",
 		"claude",
 		"dev",
@@ -57,7 +58,7 @@
 		],
 		"icons": {
 			"cline-icon": {
-				"description": "cline",
+				"description": "cline-chinese",
 				"default": {
 					"fontPath": "assets/icons/cline-bot.woff",
 					"fontCharacter": "\\e900"
@@ -120,7 +121,7 @@
 			"activitybar": [
 				{
 					"id": "cline-chinese-ActivityBar",
-					"title": "Cline",
+					"title": "CLINE CHINESE",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
@@ -130,104 +131,104 @@
 				{
 					"type": "webview",
 					"id": "cline-chinese.SidebarProvider",
-					"name": "",
+					"name": "CLINE CHINESE",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "cline.plusButtonClicked",
+				"command": "cline-chinese.plusButtonClicked",
 				"title": "%cline.command.newTask%",
 				"icon": "$(add)"
 			},
 			{
-				"command": "cline.mcpButtonClicked",
+				"command": "cline-chinese.mcpButtonClicked",
 				"title": "%cline.command.mcpServers%",
 				"icon": "$(server)"
 			},
 			{
-				"command": "cline.historyButtonClicked",
+				"command": "cline-chinese.historyButtonClicked",
 				"title": "%cline.command.history%",
 				"icon": "$(history)"
 			},
 			{
-				"command": "cline.accountButtonClicked",
+				"command": "cline-chinese.accountButtonClicked",
 				"title": "%cline.command.account%",
 				"icon": "$(account)"
 			},
 			{
-				"command": "cline.settingsButtonClicked",
+				"command": "cline-chinese.settingsButtonClicked",
 				"title": "%cline.command.settings%",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "cline.dev.createTestTasks",
+				"command": "cline-chinese.dev.createTestTasks",
 				"title": "Create Test Tasks",
 				"category": "Cline",
-				"when": "cline.isDevMode"
+				"when": "cline-chinese.isDevMode"
 			},
 			{
-				"command": "cline.dev.expireMcpOAuthTokens",
+				"command": "cline-chinese.dev.expireMcpOAuthTokens",
 				"title": "Expire MCP OAuth Tokens (for testing)",
 				"category": "Cline",
-				"when": "cline.isDevMode"
+				"when": "cline-chinese.isDevMode"
 			},
 			{
-				"command": "cline.addToChat",
+				"command": "cline-chinese.addToChat",
 				"title": "%cline.command.addToChat%",
 				"category": "Cline"
 			},
 			{
-				"command": "cline.addTerminalOutputToChat",
+				"command": "cline-chinese.addTerminalOutputToChat",
 				"title": "%cline.command.addTerminalOutputToChat%",
 				"category": "Cline"
 			},
 			{
-				"command": "cline.focusChatInput",
+				"command": "cline-chinese.focusChatInput",
 				"title": "%cline.command.focusChatInput%",
 				"category": "Cline"
 			},
 			{
-				"command": "cline.generateGitCommitMessage",
+				"command": "cline-chinese.generateGitCommitMessage",
 				"title": "%cline.command.generateGitCommitMessage%",
 				"category": "Cline",
 				"icon": "$(cline-icon)"
 			},
 			{
-				"command": "cline.abortGitCommitMessage",
+				"command": "cline-chinese.abortGitCommitMessage",
 				"title": "%cline.command.abortGitCommitMessage%",
 				"category": "Cline",
 				"icon": "$(debug-stop)"
 			},
 			{
-				"command": "cline.explainCode",
+				"command": "cline-chinese.explainCode",
 				"title": "%cline.command.explainCode%",
 				"category": "Cline"
 			},
 			{
-				"command": "cline.improveCode",
+				"command": "cline-chinese.improveCode",
 				"title": "%cline.command.improveCode%",
 				"category": "Cline"
 			},
 			{
-				"command": "cline.openWalkthrough",
+				"command": "cline-chinese.openWalkthrough",
 				"title": "%cline.command.openWalkthrough%",
 				"category": "Cline"
 			},
 			{
-				"command": "cline.reconstructTaskHistory",
+				"command": "cline-chinese.reconstructTaskHistory",
 				"title": "%cline.command.reconstructTaskHistory%",
 				"category": "Cline"
 			},
 			{
-				"command": "cline.reviewComment.reply",
+				"command": "cline-chinese.reviewComment.reply",
 				"title": "Reply",
 				"category": "Cline",
 				"enablement": "!commentIsEmpty"
 			},
 			{
-				"command": "cline.reviewComment.addToChat",
+				"command": "cline-chinese.reviewComment.addToChat",
 				"title": "Add to Cline Chat",
 				"category": "Cline",
 				"icon": "$(link-external)"
@@ -240,7 +241,7 @@
 				"when": "commentEditorFocused && commentController == cline-ai-review && !commentIsEmpty"
 			},
 			{
-				"command": "cline.addToChat",
+				"command": "cline-chinese.addToChat",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -248,11 +249,11 @@
 				"when": "editorHasSelection"
 			},
 			{
-				"command": "cline.generateGitCommitMessage",
+				"command": "cline-chinese.generateGitCommitMessage",
 				"when": "config.git.enabled && scmProvider == git"
 			},
 			{
-				"command": "cline.focusChatInput",
+				"command": "cline-chinese.focusChatInput",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -263,87 +264,87 @@
 		"menus": {
 			"view/title": [
 				{
-					"command": "cline.plusButtonClicked",
+					"command": "cline-chinese.plusButtonClicked",
 					"group": "navigation@1",
 					"when": "view == cline-chinese.SidebarProvider"
 				},
 				{
-					"command": "cline.mcpButtonClicked",
+					"command": "cline-chinese.mcpButtonClicked",
 					"group": "navigation@2",
 					"when": "view == cline-chinese.SidebarProvider"
 				},
 				{
-					"command": "cline.historyButtonClicked",
+					"command": "cline-chinese.historyButtonClicked",
 					"group": "navigation@3",
 					"when": "view == cline-chinese.SidebarProvider"
 				},
 				{
-					"command": "cline.accountButtonClicked",
+					"command": "cline-chinese.accountButtonClicked",
 					"group": "navigation@5",
 					"when": "view == cline-chinese.SidebarProvider"
 				},
 				{
-					"command": "cline.settingsButtonClicked",
+					"command": "cline-chinese.settingsButtonClicked",
 					"group": "navigation@6",
 					"when": "view == cline-chinese.SidebarProvider"
 				}
 			],
 			"editor/context": [
 				{
-					"command": "cline.addToChat",
+					"command": "cline-chinese.addToChat",
 					"group": "navigation",
 					"when": "editorHasSelection"
 				}
 			],
 			"terminal/context": [
 				{
-					"command": "cline.addTerminalOutputToChat",
+					"command": "cline-chinese.addTerminalOutputToChat",
 					"group": "navigation"
 				}
 			],
 			"scm/title": [
 				{
-					"command": "cline.generateGitCommitMessage",
+					"command": "cline-chinese.generateGitCommitMessage",
 					"group": "navigation",
-					"when": "config.git.enabled && scmProvider == git && !cline.isGeneratingCommit"
+					"when": "config.git.enabled && scmProvider == git && !cline-chinese.isGeneratingCommit"
 				},
 				{
-					"command": "cline.abortGitCommitMessage",
+					"command": "cline-chinese.abortGitCommitMessage",
 					"group": "navigation",
-					"when": "config.git.enabled && scmProvider == git && cline.isGeneratingCommit"
+					"when": "config.git.enabled && scmProvider == git && cline-chinese.isGeneratingCommit"
 				}
 			],
 			"commandPalette": [
 				{
-					"command": "cline.generateGitCommitMessage",
-					"when": "config.git.enabled && !cline.isGeneratingCommit"
+					"command": "cline-chinese.generateGitCommitMessage",
+					"when": "config.git.enabled && !cline-chinese.isGeneratingCommit"
 				},
 				{
-					"command": "cline.abortGitCommitMessage",
-					"when": "config.git.enabled && cline.isGeneratingCommit"
+					"command": "cline-chinese.abortGitCommitMessage",
+					"when": "config.git.enabled && cline-chinese.isGeneratingCommit"
 				},
 				{
-					"command": "cline.reviewComment.reply",
+					"command": "cline-chinese.reviewComment.reply",
 					"when": "false"
 				}
 			],
 			"comments/commentThread/context": [
 				{
-					"command": "cline.reviewComment.reply",
+					"command": "cline-chinese.reviewComment.reply",
 					"group": "inline",
 					"when": "commentController == cline-ai-review"
 				}
 			],
 			"comments/commentThread/title": [
 				{
-					"command": "cline.reviewComment.addToChat",
+					"command": "cline-chinese.reviewComment.addToChat",
 					"group": "inline",
 					"when": "commentController == cline-ai-review"
 				}
 			]
 		},
 		"configuration": {
-			"title": "Cline",
+			"title": "Cline Chinese",
 			"properties": {}
 		}
 	},
@@ -354,7 +355,7 @@
 		"compile-standalone-npm": "npm run protos && npm run protos-go && npm run check-types && npm run lint && node esbuild.mjs --standalone",
 		"compile-cli": "scripts/build-cli.sh",
 		"compile-cli-all-platforms": "scripts/build-cli-all-platforms.sh",
-		"compile-cli-man-page": "pandoc cli/man/cline.1.md -s -t man -o cli/man/cline.1",
+		"compile-cli-man-page": "pandoc cli/man/cline-chinese.1.md -s -t man -o cli/man/cline-chinese.1",
 		"build:npm": "scripts/build-npm-package.sh",
 		"test:install": "bash scripts/test-install.sh",
 		"dev:cli:watch": "node scripts/dev-cli-watch.mjs",

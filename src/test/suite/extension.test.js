@@ -37,7 +37,7 @@ describe("Extension Tests", function () {
 
 	it("should open sidebar view", async () => {
 		// Execute the command to open sidebar
-		await vscode.commands.executeCommand("cline.plusButtonClicked")
+		await vscode.commands.executeCommand("cline-chinese.plusButtonClicked")
 
 		// Wait for sidebar to be visible
 		await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -50,7 +50,7 @@ describe("Extension Tests", function () {
 
 	it("should handle basic commands", async () => {
 		// Test basic command execution
-		await vscode.commands.executeCommand("cline.historyButtonClicked")
+		await vscode.commands.executeCommand("cline-chinese.historyButtonClicked")
 		// Success if no error thrown
 	})
 })

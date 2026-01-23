@@ -48,14 +48,14 @@ export class VscodeCommentReviewController extends CommentReviewController imple
 
 		// Register reply command - this is called when user clicks the Reply button
 		this.disposables.push(
-			vscode.commands.registerCommand("cline.reviewComment.reply", async (reply: vscode.CommentReply) => {
+			vscode.commands.registerCommand("cline-chinese.reviewComment.reply", async (reply: vscode.CommentReply) => {
 				await this.handleReply(reply)
 			}),
 		)
 
 		// Register add to chat command - sends the conversation to Cline's main chat
 		this.disposables.push(
-			vscode.commands.registerCommand("cline.reviewComment.addToChat", async (thread: vscode.CommentThread) => {
+			vscode.commands.registerCommand("cline-chinese.reviewComment.addToChat", async (thread: vscode.CommentThread) => {
 				await this.handleAddToChat(thread)
 			}),
 		)

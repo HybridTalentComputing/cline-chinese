@@ -1,1 +1,8 @@
+#!/usr/bin/env sh
+# Load project-level husky configuration
+if [ -f "$(dirname "$0")/../.config/husky/init.sh" ]; then
+  . "$(dirname "$0")/../.config/husky/init.sh"
+fi
+
+# Run lint-staged
 lint-staged
