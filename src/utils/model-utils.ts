@@ -11,7 +11,8 @@ export function isNextGenModelProvider(providerInfo: ApiProviderInfo): boolean {
 		"gemini",
 		"vertex",
 		"openrouter",
-		"openai",
+		// Note: "openai" is excluded to use XML-based tool parsing for better compatibility
+		// with OpenAI-compatible providers. Use "openai-native" for native tool calling with official OpenAI.
 		"minimax",
 		"openai-native",
 		"baseten",
