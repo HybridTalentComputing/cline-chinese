@@ -103,6 +103,14 @@ export class OpenAiHandler implements ApiHandler {
 			reasoningEffort = (this.options.reasoningEffort as ChatCompletionReasoningEffort) || "medium"
 		}
 
+		const isOfficialOpenAi =
+			!this.options.openAiBaseUrl ||
+			this.options.openAiBaseUrl.toLowerCase().includes("api.openai.com") ||
+			this.options.openAiBaseUrl.toLowerCase().includes("azure.com") ||
+			this.options.openAiBaseUrl.toLowerCase().includes("azure.us")
+
+		const effectiveTools = isOfficialOpenAi ? tools : undefined
+
 		const stream = await client.chat.completions.create({
 			model: modelId,
 			messages: openAiMessages,
@@ -111,7 +119,7 @@ export class OpenAiHandler implements ApiHandler {
 			reasoning_effort: reasoningEffort,
 			stream: true,
 			stream_options: { include_usage: true },
-			...getOpenAIToolParams(tools),
+			...getOpenAIToolParams(effectiveTools),
 		})
 
 		const toolCallProcessor = new ToolCallProcessor()
