@@ -58,6 +58,9 @@ Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下�
 1. 支持Dify Provider (已受cline官方支持，欢迎体验)
 
 ## 版本更新说明
+### 2026.01.28（ver.3.46.6）
+修复openai compatible生成效果异常的问题
+
 ### 2026.01.23（ver.3.46.5）
 1. 同步近期cline更新。
 
