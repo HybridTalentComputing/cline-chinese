@@ -103,6 +103,8 @@ export class OpenAiHandler implements ApiHandler {
 			reasoningEffort = (this.options.reasoningEffort as ChatCompletionReasoningEffort) || "medium"
 		}
 
+		// Tools are passed through directly - the system prompt variant selection
+		// determines whether to use native tools or XML-based tools
 		const stream = await client.chat.completions.create({
 			model: modelId,
 			messages: openAiMessages,
