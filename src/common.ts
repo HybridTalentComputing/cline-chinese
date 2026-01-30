@@ -110,7 +110,7 @@ async function showVersionUpdateAnnouncement(context: vscode.ExtensionContext) {
 
 			if (lastShownAnnouncementId !== latestAnnouncementId) {
 				// Focus Cline when there's a new announcement to show (major/minor updates or fresh installs)
-				const message = previousVersion ? `Cline 中文版更新到 v${currentVersion}` : `Cline 中文版 v${currentVersion}`
+				const message = previousVersion ? `Cline Chinese更新到 v${currentVersion}` : `Cline Chinese v${currentVersion}`
 				await HostProvider.workspace.openClineSidebarPanel({})
 				await new Promise((resolve) => setTimeout(resolve, 200))
 				HostProvider.window.showMessage({
