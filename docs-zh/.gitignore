@@ -1,2 +1,9 @@
 
-node_modules
+node_modules# Mintlify files (不需要在 GitBook 中)
+mint.json
+.mint/
+
+# GitBook specific
+.gitbook/
+_book/
+SUMMARY.md.bak
