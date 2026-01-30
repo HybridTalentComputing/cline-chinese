@@ -121,22 +121,6 @@ export const CLINE_ONBOARDING_MODELS: OnboardingModel[] = [
 
 export const SSY_ONBOARDING_MODELS: OnboardingModel[] = [
 	{
-		group: "free",
-		id: "xiaomi/mimo-v2-flash",
-		name: "小米: Mimo V2 Flash",
-		score: 90,
-		latency: 1,
-		badge: "BEST",
-		info: {
-			contextWindow: 256_000,
-			supportsImages: true,
-			supportsPromptCache: true,
-			inputPrice: 0,
-			outputPrice: 0,
-			tiers: [],
-		},
-	},
-	{
 		group: "frontier",
 		id: "anthropic/claude-sonnet-4.5",
 		name: "Anthropic: Claude Sonnet 4.5",

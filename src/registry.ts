@@ -10,6 +10,7 @@ const prefix = "cline-chinese"
  */
 const ClineCommands = {
 	PlusButton: prefix + ".plusButtonClicked",
+	DocsButton: prefix + ".docsButtonClicked",
 	McpButton: prefix + ".mcpButtonClicked",
 	SettingsButton: prefix + ".settingsButtonClicked",
 	HistoryButton: prefix + ".historyButtonClicked",

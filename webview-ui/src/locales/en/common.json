@@ -27,7 +27,8 @@
 			"newTask": "New Task",
 			"startNewTask": "Start New Task",
 			"startNewTaskWithContext": "Start New Task with Context",
-			"startANewTask": "Start a New Task"
+			"startANewTask": "Start a New Task",
+			"viewDocs": "View Docs"
 		},
 		"errorImageSize": "Image dimensions exceed 7500px",
 		"errorUnsupportedFile": "Files other than images are currently disabled",

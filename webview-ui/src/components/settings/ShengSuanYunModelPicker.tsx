@@ -68,13 +68,6 @@ export const recommendedModels = [
 	},
 ]
 
-export const freeModels = [
-	{
-		id: "xiaomi/mimo-v2-flash",
-		descriptionKey: "MiMo V2 Flash (Free)",
-		labelKey: "free",
-	},
-]
 const ShengSuanYunModelPicker: React.FC<ShengSuanYunModelPickerProps> = ({ isPopup, currentMode }) => {
 	const { apiConfiguration, shengSuanYunModels, setShengSuanYunModels } = useExtensionState()
 	const { handleModeFieldsChange } = useApiConfigurationHandlers()

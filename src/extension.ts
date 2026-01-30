@@ -115,6 +115,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(
+		vscode.commands.registerCommand(commands.DocsButton, async () => {
+			// Open documentation URL in browser
+			const docsUrl = "https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/"
+			await vscode.env.openExternal(vscode.Uri.parse(docsUrl))
+		}),
+	)
+
+	context.subscriptions.push(
 		vscode.commands.registerCommand(commands.McpButton, () => {
 			sendMcpButtonClickedEvent()
 		}),

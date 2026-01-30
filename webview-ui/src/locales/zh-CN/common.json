@@ -27,7 +27,8 @@
 			"newTask": "新任务",
 			"startNewTask": "开始新任务",
 			"startNewTaskWithContext": "使用上下文开始新任务",
-			"startANewTask": "开始新任务"
+			"startANewTask": "开始新任务",
+			"viewDocs": "查看文档"
 		},
 		"errorImageSize": "图片尺寸超过 7500px",
 		"errorUnsupportedFile": "目前仅支持图片文件",

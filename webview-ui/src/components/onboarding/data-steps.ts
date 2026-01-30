@@ -1,5 +1,4 @@
 export enum NEW_USER_TYPE {
-	FREE = "free",
 	POWER = "power",
 	BYOK = "byok",
 }
@@ -17,13 +16,6 @@ export const STEP_CONFIG = {
 		buttons: [
 			{ text: "onboarding.button.continue", action: "next", variant: "default" },
 			{ text: "onboarding.button.login", action: "signin", variant: "secondary" },
-		],
-	},
-	[NEW_USER_TYPE.FREE]: {
-		title: "onboarding.step.free.title",
-		buttons: [
-			{ text: "onboarding.button.createAccount", action: "signup", variant: "default" },
-			{ text: "onboarding.button.back", action: "back", variant: "secondary" },
 		],
 	},
 	[NEW_USER_TYPE.POWER]: {
@@ -48,7 +40,6 @@ export const STEP_CONFIG = {
 } as const
 
 export const USER_TYPE_SELECTIONS: UserTypeSelection[] = [
-	{ title: "onboarding.userType.free.title", description: "onboarding.userType.free.description", type: NEW_USER_TYPE.FREE },
 	{ title: "onboarding.userType.power.title", description: "onboarding.userType.power.description", type: NEW_USER_TYPE.POWER },
 	{
 		title: "onboarding.userType.byok.title",

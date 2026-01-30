@@ -132,7 +132,7 @@ const OPENROUTER_MODEL_PROVIDERS: ApiProvider[] = ["cline", "openrouter", "verce
 
 import { SUPPORTED_ANTHROPIC_THINKING_MODELS } from "@/components/settings/providers/AnthropicProvider"
 import { SUPPORTED_BEDROCK_THINKING_MODELS } from "@/components/settings/providers/BedrockProvider"
-import { freeModels, recommendedModels } from "@/components/settings/ShengSuanYunModelPicker"
+import { recommendedModels } from "@/components/settings/ShengSuanYunModelPicker"
 import {
 	filterOpenRouterModelIds,
 	getModelsForProvider,
@@ -326,7 +326,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 
 		// For Cline when searching, also filter out featured models (they're shown separately)
 		if (isShengsuanyun) {
-			const featuredIds = new Set([...recommendedModels, ...freeModels].map((m) => m.id))
+			const featuredIds = new Set(recommendedModels.map((m) => m.id))
 			models = models.filter((m) => !featuredIds.has(m.id))
 		}
 
@@ -345,11 +345,11 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 		return models
 	}, [searchQuery, matchesSearch, selectedModelId, selectedProvider, allModels, favoritedModelIds])
 
-	// Featured models for Cline provider (recommended + free)
+	// Featured models for Cline provider (recommended)
 	const featuredModels = useMemo(() => {
 		// if (selectedProvider !== "cline") return []
 
-		const allFeatured = [...recommendedModels, ...freeModels].map((m) => ({
+		const allFeatured = recommendedModels.map((m) => ({
 			...m,
 			name: m.id.split("/").pop() || m.id,
 			provider: m.id.split("/")[0],
@@ -781,7 +781,7 @@ const ModelPickerModal: React.FC<ModelPickerModalProps> = ({ isOpen, onOpenChang
 									(() => {
 										// Check if current model has a featured label (only for Cline provider)
 										const currentFeaturedModel = isshengsuanyunProvider
-											? [...recommendedModels, ...freeModels].find((m) => m.id === selectedModelId)
+											? recommendedModels.find((m) => m.id === selectedModelId)
 											: undefined
 										const currentLabel = currentFeaturedModel
 											? t(`settings.providers.modelLabels.${currentFeaturedModel.labelKey}`)

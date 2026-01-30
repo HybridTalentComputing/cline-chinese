@@ -105,13 +105,6 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 							</AuthButton>
 						</li>
 						<li>
-							<strong>MiMo V2 Flash</strong>, 限时免费!
-							<br />
-							<AuthButton>
-								<ModelButton label="Try MiMo V2 Flash" modelId="xiaomi/mimo-v2-flash" />
-							</AuthButton>
-						</li>
-						<li>
 							<strong>Gemini 3 Flash Preview</strong> 现在可用！
 							<br />
 							<AuthButton>

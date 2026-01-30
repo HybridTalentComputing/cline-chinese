@@ -143,6 +143,11 @@
 				"icon": "$(add)"
 			},
 			{
+				"command": "cline-chinese.docsButtonClicked",
+				"title": "查看文档",
+				"icon": "$(book)"
+			},
+			{
 				"command": "cline-chinese.mcpButtonClicked",
 				"title": "%cline.command.mcpServers%",
 				"icon": "$(server)"

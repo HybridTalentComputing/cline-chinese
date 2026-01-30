@@ -24,7 +24,7 @@ import {
 import { NEW_USER_TYPE, STEP_CONFIG } from "./data-steps"
 
 type ModelSelectionProps = {
-	userType: NEW_USER_TYPE.FREE | NEW_USER_TYPE.POWER
+	userType: NEW_USER_TYPE.POWER
 	selectedModelId: string
 	onSelectModel: (modelId: string) => void
 	onboardingModels: OnboardingModelsByGroup
@@ -43,7 +43,7 @@ const ModelSelection = ({
 	onboardingModels,
 }: ModelSelectionProps) => {
 	const { t } = useTranslation()
-	const modelGroups = onboardingModels[userType === NEW_USER_TYPE.FREE ? "free" : "power"]
+	const modelGroups = onboardingModels["power"]
 
 	const searchedModels = useMemo(() => {
 		if (!models || !searchTerm) {
@@ -122,7 +122,7 @@ const ModelSelection = ({
 				{modelGroups.map((group) => (
 					<div className="flex flex-col gap-3" key={group.group}>
 						<h4 className="text-sm font-bold text-foreground/70 uppercase mb-2">
-							{group.group == "free" ? "免费模型" : group.group == "frontier" ? "前沿模型" : group.group}
+							{group.group == "frontier" ? "前沿模型" : group.group == "open source" ? "开源模型" : group.group}
 						</h4>
 						{group.models.map((model) => (
 							<ModelItem id={model.id} isSelected={selectedModelId === model.id} key={model.id} model={model} />
@@ -208,11 +208,6 @@ const UserTypeSelectionStep = ({ userType, onSelectUserType }: UserTypeSelection
 	const selections = useMemo(
 		() => [
 			{
-				title: t("onboarding.userType.free.title"),
-				description: t("onboarding.userType.free.description"),
-				type: NEW_USER_TYPE.FREE,
-			},
-			{
 				title: t("onboarding.userType.power.title"),
 				description: t("onboarding.userType.power.description"),
 				type: NEW_USER_TYPE.POWER,
@@ -283,7 +278,7 @@ const OnboardingStepContent = ({
 	if (step === 2) {
 		return null
 	}
-	if (userType === NEW_USER_TYPE.FREE || userType === NEW_USER_TYPE.POWER) {
+	if (userType === NEW_USER_TYPE.POWER) {
 		return (
 			<ModelSelection
 				models={models}
@@ -307,7 +302,7 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 
 	const [stepNumber, setStepNumber] = useState(0)
 	const [isActionLoading, setIsActionLoading] = useState(false)
-	const [userType, setUserType] = useState<NEW_USER_TYPE>(NEW_USER_TYPE.FREE)
+	const [userType, setUserType] = useState<NEW_USER_TYPE>(NEW_USER_TYPE.POWER)
 
 	const [selectedModelId, setSelectedModelId] = useState("")
 	const [searchTerm, setSearchTerm] = useState("")
@@ -316,20 +311,17 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 
 	useEffect(() => {
 		setSearchTerm("")
-		const userGroup = userType === NEW_USER_TYPE.POWER ? NEW_USER_TYPE.POWER : NEW_USER_TYPE.FREE
-		const modelGroup = models[userGroup][0]
-		const userGroupInitModel = modelGroup.models[0]
-		setSelectedModelId(userGroupInitModel.id)
+		// Only POWER users need to select a model
+		if (userType === NEW_USER_TYPE.POWER) {
+			const modelGroup = models.power[0]
+			const userGroupInitModel = modelGroup.models[0]
+			setSelectedModelId(userGroupInitModel.id)
+		}
 	}, [userType, models])
 
 	const onUserTypeClick = useCallback((userType: NEW_USER_TYPE) => {
 		setUserType(userType)
-		const action =
-			userType === NEW_USER_TYPE.POWER
-				? "power_user_selected"
-				: userType === NEW_USER_TYPE.FREE
-					? "free_user_selected"
-					: "byok_user_selected"
+		const action = userType === NEW_USER_TYPE.POWER ? "power_user_selected" : "byok_user_selected"
 		// User selection is available in step 0 only
 		StateServiceClient.captureOnboardingProgress({ step: 0, action })
 	}, [])

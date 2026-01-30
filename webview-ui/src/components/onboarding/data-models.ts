@@ -3,7 +3,6 @@ import type { OnboardingModel, OnboardingModelGroup } from "@shared/proto/cline/
 import { TFunction } from "i18next"
 
 export interface OnboardingModelsByGroup {
-	free: ModelGroup[]
 	power: ModelGroup[]
 }
 
@@ -15,12 +14,10 @@ interface ModelGroup {
 export function getClineUIOnboardingGroups(groupedModels: OnboardingModelGroup): OnboardingModelsByGroup {
 	const { models } = groupedModels
 
-	const freeModels = models.filter((m) => m.group === "free")
 	const frontierModels = models.filter((m) => m.group === "frontier")
 	const openSourceModels = models.filter((m) => m.group === "open source")
 
 	return {
-		free: freeModels.length > 0 ? [{ group: "free", models: freeModels }] : [],
 		power: [
 			...(frontierModels.length > 0 ? [{ group: "frontier", models: frontierModels }] : []),
 			...(openSourceModels.length > 0 ? [{ group: "open source", models: openSourceModels }] : []),
