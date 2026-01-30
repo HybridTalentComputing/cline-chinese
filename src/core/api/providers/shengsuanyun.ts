@@ -2,10 +2,10 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { ShengSuanYunModelInfo } from "@shared/proto/cline/models"
 import OpenAI from "openai"
 import type { ChatCompletionTool } from "openai/resources/chat/completions"
+import { HostProvider } from "@/hosts/host-provider"
 import { Logger } from "@/services/logging/Logger"
 import { ClineStorageMessage } from "@/shared/messages"
 import { calculateApiCostOpenAI } from "@/utils/cost"
-// import * as vscode from "vscode"
 import { shouldSkipReasoningForModel } from "@/utils/model-utils"
 import { shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "../../../shared/api"
 import { ApiHandler, CommonApiHandlerOptions } from "../"
@@ -26,13 +26,31 @@ interface ShengSuanYunHandlerOptions extends CommonApiHandlerOptions {
 export class ShengSuanYunHandler implements ApiHandler {
 	private options: ShengSuanYunHandlerOptions
 	private client: OpenAI | undefined
+	private httpReferer: string | undefined
 	lastGenerationId?: string
 
 	constructor(options: ShengSuanYunHandlerOptions) {
 		this.options = options
 	}
 
-	private ensureClient(): OpenAI {
+	private async getHttpReferer(): Promise<string> {
+		if (this.httpReferer) {
+			return this.httpReferer
+		}
+
+		try {
+			const callbackUrl = await HostProvider.get().getCallbackUrl()
+			this.httpReferer = `${callbackUrl}/ssy`
+		} catch (error) {
+			// Fallback to default if unable to get callback URL (e.g., in CLI mode)
+			console.warn("Failed to get callback URL for HTTP-Referer, using default:", error)
+			this.httpReferer = "cline-chinese"
+		}
+
+		return this.httpReferer
+	}
+
+	private async ensureClient(): Promise<OpenAI> {
 		if (!this.client) {
 			if (!this.options.shengSuanYunApiKey) {
 				throw new Error("shengsuanyun API key is required")
@@ -42,7 +60,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 					baseURL: "https://router.shengsuanyun.com/api/v1",
 					apiKey: this.options.shengSuanYunApiKey,
 					defaultHeaders: {
-						"HTTP-Referer": `vscode://HybridTalentComputing.cline-chinese/ssy`,
+						"HTTP-Referer": await this.getHttpReferer(),
 						"X-Title": "cline",
 					},
 				})
@@ -56,6 +74,8 @@ export class ShengSuanYunHandler implements ApiHandler {
 	@withRetry()
 	async *createMessage(systemPrompt: string, messages: ClineStorageMessage[], tools?: ChatCompletionTool[]): ApiStream {
 		const model = this.getModel()
+		// Ensure client is initialized before using it
+		await this.ensureClient()
 		if (model?.info?.endPoints?.includes("/v1/chat/completions")) {
 			yield* this.createCompletionStream(systemPrompt, messages)
 		} else if (model?.info?.endPoints?.includes("/v1/responses")) {
@@ -86,7 +106,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 	}
 
 	async *createCompletionStream(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
-		const client = this.ensureClient()
+		const client = await this.ensureClient()
 		const model = this.getModel()
 		try {
 			const stream = await createOpenRouterStream(
@@ -192,7 +212,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 		messages: ClineStorageMessage[],
 		tools: ChatCompletionTool[],
 	): ApiStream {
-		const client = this.ensureClient()
+		const client = await this.ensureClient()
 		const model = this.getModel()
 
 		try {

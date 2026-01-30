@@ -727,9 +727,10 @@ export class Controller {
 		try {
 			let shengSuanYunApiKey: string
 			let shengSuanYunToken: string
+			const callbackUrl = `${await HostProvider.get().getCallbackUrl()}/ssy`
 			const res = await axios.post("https://api.shengsuanyun.com/auth/keys", {
 				code: code,
-				callback_url: `vscode://HybridTalentComputing.cline-chinese/ssy`,
+				callback_url: callbackUrl,
 			})
 			// console.log("https://api.shengsuanyun.com/auth/keys :", res.data)
 			if (res.data && res.data.data && res.data.data.api_key) {
