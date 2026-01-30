@@ -1,5 +1,5 @@
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { updateSetting } from "@/components/settings/utils/settingsHandlers"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -44,27 +44,22 @@ const GeneralSettingsSection = ({ renderSectionHeader }: GeneralSettingsSectionP
 					</Tooltip>
 
 					<p className="text-sm mt-[5px] text-description">
-						<Trans
-							components={{
-								telemetryLink: (
-									<VSCodeLink
-										className="text-inherit"
-										href="https://docs.cline.bot/more-info/telemetry"
-										style={{ fontSize: "inherit", textDecoration: "underline" }}>
-										{t("settings.general.telemetryOverview")}
-									</VSCodeLink>
-								),
-								privacyLink: (
-									<VSCodeLink
-										className="text-inherit"
-										href="https://cline.bot/privacy"
-										style={{ fontSize: "inherit", textDecoration: "underline" }}>
-										{t("settings.general.privacyPolicy")}
-									</VSCodeLink>
-								),
-							}}
-							i18nKey="settings.general.telemetryDescription"
-						/>
+						通过发送使用数据和错误报告来帮助改进
+						Cline。绝不会发送代码、提示词或个人信息。有关更多详细信息，请参阅我们的
+						<VSCodeLink
+							className="text-inherit"
+							href="https://docs.cline.bot/more-info/telemetry"
+							style={{ fontSize: "inherit", textDecoration: "underline" }}>
+							{t("settings.general.telemetryOverview")}
+						</VSCodeLink>
+						和
+						<VSCodeLink
+							className="text-inherit"
+							href="https://cline.bot/privacy"
+							style={{ fontSize: "inherit", textDecoration: "underline" }}>
+							{t("settings.general.privacyPolicy")}
+						</VSCodeLink>
+						。
 					</p>
 				</div>
 			</Section>

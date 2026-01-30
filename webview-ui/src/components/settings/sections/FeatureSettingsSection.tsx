@@ -3,7 +3,7 @@ import { EmptyRequest } from "@shared/proto/index.cline"
 import { OpenaiReasoningEffort } from "@shared/storage/types"
 import { VSCodeButton, VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { memo, useEffect, useState } from "react"
-import { useTranslation, Trans } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import McpDisplayModeDropdown from "@/components/mcp/chat-display/McpDisplayModeDropdown"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { PLATFORM_CONFIG, PlatformType } from "@/config/platform.config"
@@ -102,31 +102,27 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 										className="codicon codicon-warning mr-1"
 										style={{ fontSize: "12px", marginTop: "1px", flexShrink: 0 }}></span>
 									<span>
-										<Trans
-											i18nKey="settings.features.subagentsDescription"
-											components={{
-												installCmd: (
-													<code
-														className="ml-1 px-1 rounded"
-														style={{
-															backgroundColor: "var(--vscode-editor-background)",
-															color: "var(--vscode-foreground)",
-															opacity: 0.9,
-														}}
-													/>
-												),
-												authCmd: (
-													<code
-														className="ml-1 px-1 rounded"
-														style={{
-															backgroundColor: "var(--vscode-editor-background)",
-															color: "var(--vscode-foreground)",
-															opacity: 0.9,
-														}}
-													/>
-												),
-											}}
-										/>
+										子代理需要安装 Cline CLI。请使用{" "}
+										<code
+											className="ml-1 px-1 rounded"
+											style={{
+												backgroundColor: "var(--vscode-editor-background)",
+												color: "var(--vscode-foreground)",
+												opacity: 0.9,
+											}}>
+											npm install -g cline
+										</code>{" "}
+										安装，然后运行{" "}
+										<code
+											className="ml-1 px-1 rounded"
+											style={{
+												backgroundColor: "var(--vscode-editor-background)",
+												color: "var(--vscode-foreground)",
+												opacity: 0.9,
+											}}>
+											cline auth
+										</code>{" "}
+										以使用 Cline 进行身份验证或配置 API 提供商。
 									</span>
 								</p>
 								{!isClineCliInstalled && (
@@ -156,14 +152,16 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 									updateSetting("subagentsEnabled", checked)
 								}}>
 								<span className="font-semibold">
-									{subagentsEnabled ? t("settings.features.subagentsEnabled") : t("settings.features.enableSubagents")}
+									{subagentsEnabled
+										? t("settings.features.subagentsEnabled")
+										: t("settings.features.enableSubagents")}
 								</span>
 							</VSCodeCheckbox>
 							<p className="text-xs mt-1 mb-0">
-								<span className="text-[var(--vscode-errorForeground)]">{t("settings.features.experimental")}</span>{" "}
-								<span className="text-description">
-									{t("settings.features.subagentsExplanation")}
-								</span>
+								<span className="text-[var(--vscode-errorForeground)]">
+									{t("settings.features.experimental")}
+								</span>{" "}
+								<span className="text-description">{t("settings.features.subagentsExplanation")}</span>
 							</p>
 							{subagentsEnabled && (
 								<div className="mt-3">
@@ -229,9 +227,13 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								const newValue = e.target.currentValue as OpenaiReasoningEffort
 								handleReasoningEffortChange(newValue)
 							}}>
-							<VSCodeOption value="minimal">{t("settings.features.openaiReasoningEffortOptions.minimal")}</VSCodeOption>
+							<VSCodeOption value="minimal">
+								{t("settings.features.openaiReasoningEffortOptions.minimal")}
+							</VSCodeOption>
 							<VSCodeOption value="low">{t("settings.features.openaiReasoningEffortOptions.low")}</VSCodeOption>
-							<VSCodeOption value="medium">{t("settings.features.openaiReasoningEffortOptions.medium")}</VSCodeOption>
+							<VSCodeOption value="medium">
+								{t("settings.features.openaiReasoningEffortOptions.medium")}
+							</VSCodeOption>
 							<VSCodeOption value="high">{t("settings.features.openaiReasoningEffortOptions.high")}</VSCodeOption>
 						</VSCodeDropdown>
 						<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
@@ -306,9 +308,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								}}>
 								{t("settings.features.enableDictation")}
 							</VSCodeCheckbox>
-							<p className="text-xs text-description mt-1">
-								{t("settings.features.dictationDescription")}
-							</p>
+							<p className="text-xs text-description mt-1">{t("settings.features.dictationDescription")}</p>
 						</div>
 					)}
 					<div style={{ marginTop: 10 }}>
@@ -321,20 +321,14 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							{t("settings.features.enableAutoCompact")}
 						</VSCodeCheckbox>
 						<p className="text-xs text-(--vscode-descriptionForeground)">
-							<Trans
-								i18nKey="settings.features.autoCompactDescription"
-								components={{
-									learnMore: (
-										<a
-											className="text-(--vscode-textLink-foreground) hover:text-(--vscode-textLink-activeForeground)"
-											href="https://docs.cline.bot/features/auto-compact"
-											rel="noopener noreferrer"
-											target="_blank">
-											{t("settings.features.learnMore")}
-										</a>
-									),
-								}}
-							/>
+							启用先进的上下文管理系统，为下一代模型使用基于 LLM 的压缩。
+							<a
+								className="text-(--vscode-textLink-foreground) hover:text-(--vscode-textLink-activeForeground)"
+								href="https://docs.cline.bot/features/auto-compact"
+								rel="noopener noreferrer"
+								target="_blank">
+								{t("settings.features.learnMore")}
+							</a>
 						</p>
 					</div>
 					{clineWebToolsEnabled?.featureFlag && (
@@ -376,9 +370,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 						</VSCodeCheckbox>
 						<p className="text-xs">
 							<span className="text-(--vscode-errorForeground)">{t("settings.features.experimental")}</span>{" "}
-							<span className="text-description">
-								{t("settings.features.parallelToolCallingDescription")}
-							</span>
+							<span className="text-description">{t("settings.features.parallelToolCallingDescription")}</span>
 						</p>
 					</div>
 					<div className="mt-2.5">
@@ -392,9 +384,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 						</VSCodeCheckbox>
 						<p className="text-xs">
 							<span className="text-error">{t("settings.features.experimental")}</span>
-							<span className="text-description">
-								{t("settings.features.backgroundEditDescription")}
-							</span>
+							<span className="text-description">{t("settings.features.backgroundEditDescription")}</span>
 						</p>
 					</div>
 					{multiRootSetting.featureFlag && (
@@ -430,9 +420,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 						) : (
 							<p className="text-xs">
 								<span className="text-(--vscode-errorForeground)">{t("settings.features.experimental")}</span>{" "}
-								<span className="text-description">
-									{t("settings.features.hooksDescription")}
-								</span>
+								<span className="text-description">{t("settings.features.hooksDescription")}</span>
 							</p>
 						)}
 					</div>
@@ -462,9 +450,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							</TooltipContent>
 						</Tooltip>
 
-						<p className="text-xs text-(--vscode-errorForeground)">
-							{t("settings.features.yoloDescription")}
-						</p>
+						<p className="text-xs text-(--vscode-errorForeground)">{t("settings.features.yoloDescription")}</p>
 					</div>
 				</div>
 			</Section>
