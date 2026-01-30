@@ -15,6 +15,9 @@
 https://github.com/HybridTalentComputing/cline-chinese
 欢迎大家star，fork，提出issue，贡献代码，一起完善这个项目。
 
+## 文档（感谢[@flyfreee](https://github.com/flyfreee)的翻译工作）
+https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/
+
 ## MCP市场（MCP信息以中文形式呈现）
 https://www.mcp-home.com/
 欢迎大家注册，收藏、上传自己喜欢的MCP Server/Client.
@@ -58,6 +61,11 @@ Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下�
 1. 支持Dify Provider (已受cline官方支持，欢迎体验)
 
 ## 版本更新说明
+## 2026.01.30 （ver.3.46.7）
+1.修复https代理失效的问题
+2.修复胜算云登录问题
+3.修复“claude code xxx” 报错问题
+
 ### 2026.01.28（ver.3.46.6）
 修复openai compatible生成效果异常的问题
 
