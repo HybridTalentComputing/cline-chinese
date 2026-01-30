@@ -50,7 +50,7 @@
 		"chatParticipants": [
 			{
 				"id": "claude-code",
-				"name": "Claude Code",
+				"name": "Claude-Code",
 				"description": "Chat with Claude Code",
 				"isDefault": true,
 				"icon": "assets/icons/icon.png"
