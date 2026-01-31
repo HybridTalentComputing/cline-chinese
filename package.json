@@ -284,6 +284,11 @@
 					"when": "view == cline-chinese.SidebarProvider"
 				},
 				{
+					"command": "cline-chinese.docsButtonClicked",
+					"group": "navigation@4",
+					"when": "view == cline-chinese.SidebarProvider"
+				},
+				{
 					"command": "cline-chinese.accountButtonClicked",
 					"group": "navigation@5",
 					"when": "view == cline-chinese.SidebarProvider"
