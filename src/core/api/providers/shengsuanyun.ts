@@ -76,9 +76,13 @@ export class ShengSuanYunHandler implements ApiHandler {
 		const model = this.getModel()
 		// Ensure client is initialized before using it
 		await this.ensureClient()
-		if (model?.info?.endPoints?.includes("/v1/chat/completions")) {
+
+		// 如果 endPoints 为空或未定义，默认使用 chat completions API
+		const endPoints = model?.info?.endPoints || ["/v1/chat/completions"]
+
+		if (endPoints.includes("/v1/chat/completions")) {
 			yield* this.createCompletionStream(systemPrompt, messages)
-		} else if (model?.info?.endPoints?.includes("/v1/responses")) {
+		} else if (endPoints.includes("/v1/responses")) {
 			// If tools is empty, create a default tool to prevent errors
 			const effectiveTools = tools?.length
 				? tools

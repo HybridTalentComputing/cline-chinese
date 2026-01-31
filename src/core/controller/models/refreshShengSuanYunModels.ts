@@ -31,6 +31,10 @@ export async function refreshShengSuanYunModels(
 				return undefined
 			}
 			for (const model of rawModels) {
+				// 如果 support_apis 为空或未定义，使用默认的 chat completions API
+				const endPoints =
+					model.support_apis && model.support_apis.length > 0 ? model.support_apis : ["/v1/chat/completions"]
+
 				const modelInfo: Partial<ShengSuanYunModelInfo> = {
 					maxTokens: model.max_tokens || undefined,
 					contextWindow: model.context_window,
@@ -41,7 +45,7 @@ export async function refreshShengSuanYunModels(
 					description: model.description,
 					cacheWritesPrice: 0,
 					cacheReadsPrice: parsePrice(model.pricing?.cache),
-					endPoints: model.support_apis || [],
+					endPoints: endPoints,
 				}
 				models[model.api_name] = modelInfo
 			}
@@ -61,6 +65,9 @@ export async function refreshShengSuanYunModels(
 
 	const typedModels: Record<string, ShengSuanYunModelInfo> = {}
 	for (const [key, model] of Object.entries(models)) {
+		// 确保 endPoints 至少包含一个默认值
+		const endPoints = model.endPoints && model.endPoints.length > 0 ? model.endPoints : ["/v1/chat/completions"]
+
 		typedModels[key] = {
 			maxTokens: model.maxTokens ?? 0,
 			contextWindow: model.contextWindow ?? 0,
@@ -71,7 +78,7 @@ export async function refreshShengSuanYunModels(
 			cacheWritesPrice: model.cacheWritesPrice ?? 0,
 			cacheReadsPrice: model.cacheReadsPrice ?? 0,
 			description: model.description ?? "",
-			endPoints: model.endPoints ?? [],
+			endPoints: endPoints,
 		}
 	}
 	return ShengSuanYunCompatibleModelInfo.create({ models: typedModels })
