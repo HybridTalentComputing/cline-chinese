@@ -736,6 +736,13 @@ export class Controller {
 			if (res.data && res.data.data && res.data.data.api_key) {
 				shengSuanYunApiKey = res.data.data.api_key
 				shengSuanYunToken = res.data.data.jwt_token
+			} else if (!res.data.data.api_key) {
+				shengSuanYunToken = res.data.data.jwt_token
+				shengSuanYunApiKey = ""
+				HostProvider.window.showMessage({
+					type: ShowMessageType.ERROR,
+					message: "登录账户成功，获取API_Key 失败，请先登录胜算云控制台创建 API_KEY 。",
+				})
 			} else {
 				throw new Error("Invalid response from handleShengSuanYunCallback()", { cause: res })
 			}
