@@ -39,8 +39,6 @@ https://www.mcp-home.com/
 > 🚀 推荐智谱 GLM Coding 超值订阅，邀你一起薅羊毛！Claude Code、Cline 等 10+ 大编程工具无缝支持，“码力”全开，越拼越爽！立即开拼，享限时惊喜价！
       链接：(https://www.bigmodel.cn/claude-code?ic=FKYWQWPUMQ)
 
->🚀 推荐使用硅基流动，欢迎通过我的邀请链接：https://cloud.siliconflow.cn/i/BKtAlqbk ，或者注册的时候填写邀请码：BKtAlqbk，注册后双方均可获得2000万tokens的免费额度。
-
 ## 安装使用
 Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下载体验。
 
@@ -61,6 +59,9 @@ Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下�
 1. 支持Dify Provider (已受cline官方支持，欢迎体验)
 
 ## 版本更新说明
+## 2026.02.03 （ver.3.46.8）
+修复胜算云登录失败问题
+
 ## 2026.01.31 （ver.3.46.7）
 1.修复https代理失效的问题
 2.修复胜算云登录及模型无法使用问题
@@ -104,7 +105,7 @@ Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下�
 感兴趣的可以扫码加入微信社群，一起交流学习AI（如果二维码失效，请查看github项目中的首页中，相同位置的群二维码, 或者加入Discord频道）：
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/e046c6de-bc79-48a4-a645-eb38f2b0f2ac" alt="微信群二维码" width="250" />
+  <img src="https://github.com/user-attachments/assets/8b6fe706-e90b-4e09-9ee0-b14a8d46be46" alt="微信群二维码" width="250" />
 </div>
 
 GitHub 项目地址：https://github.com/HybridTalentComputing/cline-chinese
