@@ -59,8 +59,8 @@ Cline-Chinese已发布到VSCode插件市场，欢迎感兴趣的小伙伴们下�
 1. 支持Dify Provider (已受cline官方支持，欢迎体验)
 
 ## 版本更新说明
-## 2026.02.03 （ver.3.46.8）
-修复胜算云登录失败问题
+## 2026.02.08 （ver.3.46.9）
+修复defaultChatParticipant报错问题
 
 ## 2026.01.31 （ver.3.46.7）
 1.修复https代理失效的问题
