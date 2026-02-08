@@ -2,14 +2,11 @@
 	"name": "cline-chinese",
 	"displayName": "Cline Chinese",
 	"description": "%cline.description%",
-	"version": "3.46.8",
+	"version": "3.46.9",
 	"icon": "assets/icons/icon.png",
 	"engines": {
 		"vscode": "^1.84.0"
 	},
-	"enabledApiProposals": [
-		"defaultChatParticipant"
-	],
 	"author": {
 		"name": "HybridTalentComputing"
 	},
@@ -55,7 +52,6 @@
 				"id": "claude-code",
 				"name": "Claude-Code",
 				"description": "Chat with Claude Code",
-				"isDefault": true,
 				"icon": "assets/icons/icon.png"
 			}
 		],
