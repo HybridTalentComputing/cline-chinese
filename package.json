@@ -47,14 +47,6 @@
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
-		"chatParticipants": [
-			{
-				"id": "claude-code",
-				"name": "Claude-Code",
-				"description": "Chat with Claude Code",
-				"icon": "assets/icons/icon.png"
-			}
-		],
 		"icons": {
 			"cline-icon": {
 				"description": "cline-chinese",
