@@ -61,7 +61,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 					apiKey: this.options.shengSuanYunApiKey,
 					defaultHeaders: {
 						"HTTP-Referer": await this.getHttpReferer(),
-						"X-Title": "cline",
+						"X-Title": "cline-chinese",
 					},
 				})
 			} catch (error: any) {
