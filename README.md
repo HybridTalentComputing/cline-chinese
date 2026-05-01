@@ -18,9 +18,9 @@ https://github.com/HybridTalentComputing/cline-chinese
 ## 文档（感谢[@flyfreee](https://github.com/flyfreee)的翻译工作）
 https://hybridtalentcomputing.gitbook.io/cline-chinese-doc/
 
-## MCP市场（MCP信息以中文形式呈现）
-https://www.mcp-home.com/
-欢迎大家注册，收藏、上传自己喜欢的MCP Server/Client.
+## Supremum（更适合Vibe Coding的AI终端）
+https://github.com/HybridTalentComputing/Supremum
+如果您也在使用Claude Code/Codex 等CLI工具, 不妨看看我这个新项目。
 
 
 
