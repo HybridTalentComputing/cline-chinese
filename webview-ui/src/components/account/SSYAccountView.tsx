@@ -136,7 +136,7 @@ export const SSYAccountView = () => {
 			) : (
 				<div className="flex flex-col items-center pr-3">
 					<ClineLogoWhite className="size-16 mb-4" />
-					<p style={{}}>注册帐户访问最新模型，进群联系客服，获得100万Tokens免费额度，以及更多即将推出的功能。</p>
+					<p style={{}}>注册账户访问最新模型以及探索新功能，新用户得10元模力与10%首充。</p>
 					<VSCodeButton
 						className="w-full mb-4"
 						onClick={() => {
