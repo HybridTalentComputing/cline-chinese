@@ -324,7 +324,7 @@ export const hicapModelInfoSaneDefaults: HicapCompatibleModelInfo = {
 // Anthropic
 // https://docs.anthropic.com/en/docs/about-claude/models // prices updated 2025-01-02
 export type AnthropicModelId = keyof typeof anthropicModels
-export const anthropicDefaultModelId: AnthropicModelId = "claude-sonnet-4-5-20250929"
+export const anthropicDefaultModelId: AnthropicModelId = "claude-opus-4-7"
 export const ANTHROPIC_MIN_THINKING_BUDGET = 1_024
 export const ANTHROPIC_MAX_THINKING_BUDGET = 6_000
 export const anthropicModels = {
