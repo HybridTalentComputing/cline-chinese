@@ -95,36 +95,22 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								style={{
 									backgroundColor: "color-mix(in srgb, var(--vscode-sideBar-background) 99%, black)",
 								}}>
-								<p
-									className="text-xs mb-2 flex items-start"
-									style={{ color: "var(--vscode-inputValidation-warningForeground)" }}>
-									<span
-										className="codicon codicon-warning mr-1"
-										style={{ fontSize: "12px", marginTop: "1px", flexShrink: 0 }}></span>
-									<span>
-										子代理需要安装 Cline CLI。请使用{" "}
-										<code
-											className="ml-1 px-1 rounded"
-											style={{
-												backgroundColor: "var(--vscode-editor-background)",
-												color: "var(--vscode-foreground)",
-												opacity: 0.9,
-											}}>
-											npm install -g cline
-										</code>{" "}
-										安装，然后运行{" "}
-										<code
-											className="ml-1 px-1 rounded"
-											style={{
-												backgroundColor: "var(--vscode-editor-background)",
-												color: "var(--vscode-foreground)",
-												opacity: 0.9,
-											}}>
-											cline auth
-										</code>{" "}
-										以使用 Cline 进行身份验证或配置 API 提供商。
-									</span>
-								</p>
+							<p
+								className="text-xs mb-2 flex items-start"
+								style={{ color: "var(--vscode-inputValidation-warningForeground)" }}>
+								<span
+									className="codicon codicon-warning mr-1"
+									style={{ fontSize: "12px", marginTop: "1px", flexShrink: 0 }}></span>
+								<span
+									dangerouslySetInnerHTML={{
+										__html: t("settings.features.subagentsDescription", {
+											installCmd: `<code class="ml-1 px-1 rounded" style="background-color: var(--vscode-editor-background); color: var(--vscode-foreground); opacity: 0.9;">npm install -g cline</code>`,
+											authCmd: `<code class="ml-1 px-1 rounded" style="background-color: var(--vscode-editor-background); color: var(--vscode-foreground); opacity: 0.9;">cline auth</code>`,
+											interpolation: { escapeValue: false },
+										}),
+									}}
+								/>
+							</p>
 								{!isClineCliInstalled && (
 									<VSCodeButton
 										appearance="secondary"
@@ -321,14 +307,14 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							{t("settings.features.enableAutoCompact")}
 						</VSCodeCheckbox>
 						<p className="text-xs text-(--vscode-descriptionForeground)">
-							启用先进的上下文管理系统，为下一代模型使用基于 LLM 的压缩。
-							<a
-								className="text-(--vscode-textLink-foreground) hover:text-(--vscode-textLink-activeForeground)"
-								href="https://docs.cline.bot/features/auto-compact"
-								rel="noopener noreferrer"
-								target="_blank">
-								{t("settings.features.learnMore")}
-							</a>
+							<span
+								dangerouslySetInnerHTML={{
+									__html: t("settings.features.autoCompactDescription", {
+										learnMore: `<a class="text-(--vscode-textLink-foreground) hover:text-(--vscode-textLink-activeForeground)" href="https://docs.cline.bot/features/auto-compact" rel="noopener noreferrer" target="_blank">${t("settings.features.learnMore")}</a>`,
+										interpolation: { escapeValue: false },
+									}),
+								}}
+							/>
 						</p>
 					</div>
 					{clineWebToolsEnabled?.featureFlag && (
