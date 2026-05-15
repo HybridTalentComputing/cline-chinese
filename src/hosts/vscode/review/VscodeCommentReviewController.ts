@@ -1,6 +1,7 @@
 import * as vscode from "vscode"
 import { sendAddToInputEvent } from "@/core/controller/ui/subscribeToAddToInput"
 import { CommentReviewController, type OnReplyCallback, type ReviewComment } from "@/integrations/editor/CommentReviewController"
+import { Logger } from "@/shared/services/Logger"
 import { DIFF_VIEW_URI_SCHEME } from "../VscodeDiffViewProvider"
 
 /**
@@ -48,14 +49,14 @@ export class VscodeCommentReviewController extends CommentReviewController imple
 
 		// Register reply command - this is called when user clicks the Reply button
 		this.disposables.push(
-			vscode.commands.registerCommand("cline-chinese.reviewComment.reply", async (reply: vscode.CommentReply) => {
+			vscode.commands.registerCommand("cline.reviewComment.reply", async (reply: vscode.CommentReply) => {
 				await this.handleReply(reply)
 			}),
 		)
 
 		// Register add to chat command - sends the conversation to Cline's main chat
 		this.disposables.push(
-			vscode.commands.registerCommand("cline-chinese.reviewComment.addToChat", async (thread: vscode.CommentThread) => {
+			vscode.commands.registerCommand("cline.reviewComment.addToChat", async (thread: vscode.CommentThread) => {
 				await this.handleAddToChat(thread)
 			}),
 		)
@@ -198,7 +199,7 @@ export class VscodeCommentReviewController extends CommentReviewController imple
 			editor.revealRange(commentPosition, vscode.TextEditorRevealType.InCenter)
 		} catch (error) {
 			// Ignore errors - this is not critical
-			console.error("[VscodeCommentReviewController] Error revealing comment:", error)
+			Logger.error("[VscodeCommentReviewController] Error revealing comment:", error)
 		}
 	}
 
@@ -254,9 +255,7 @@ export class VscodeCommentReviewController extends CommentReviewController imple
 	 * Add multiple review comments at once
 	 */
 	addReviewComments(comments: ReviewComment[]): void {
-		comments.forEach((comment) => {
-			this.addReviewComment(comment)
-		})
+		comments.forEach((comment) => this.addReviewComment(comment))
 	}
 
 	/**
@@ -436,7 +435,7 @@ Please continue helping the user with their question about this code.`
 				await vscode.window.tabGroups.close(tab)
 			} catch (error) {
 				// Tab might already be closed
-				console.warn("Failed to close diff tab:", error)
+				Logger.warn("Failed to close diff tab:", error)
 			}
 		}
 	}

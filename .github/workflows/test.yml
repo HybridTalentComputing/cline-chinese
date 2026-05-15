@@ -13,8 +13,6 @@ on:
 # Set default permissions for all jobs
 permissions:
     contents: read # Needed to check out code
-    checks: write # Needed to report test results
-    pull-requests: write # Needed to add comments/annotations to PRs
 
 jobs:
     quality-checks:
@@ -28,27 +26,17 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 22
-
-            - name: Cache root dependencies
-              uses: actions/cache@v4
-              id: root-cache
-              with:
-                  path: node_modules
-                  key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
-
-            - name: Cache webview-ui dependencies
-              uses: actions/cache@v4
-              id: webview-cache
-              with:
-                  path: webview-ui/node_modules
-                  key: ${{ runner.os }}-npm-webview-${{ hashFiles('webview-ui/package-lock.json') }}
+                  cache: 'npm'
+                  cache-dependency-path: |
+                      package-lock.json
+                      webview-ui/package-lock.json
 
             - name: Install root dependencies
-              if: steps.root-cache.outputs.cache-hit != 'true'
               run: npm ci
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Install webview-ui dependencies
-              if: steps.webview-cache.outputs.cache-hit != 'true'
               run: cd webview-ui && npm ci
 
             - name: Run Quality Checks (Parallel)
@@ -56,6 +44,8 @@ jobs:
 
     test:
         needs: quality-checks
+        env:
+            VSCODE_TEST_VERSION: 1.103.0
         strategy:
             fail-fast: false
             matrix:
@@ -73,33 +63,30 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 22
-
-            - name: Cache root dependencies
-              uses: actions/cache@v4
-              id: root-cache
-              with:
-                  path: node_modules
-                  key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
-
-            - name: Cache webview-ui dependencies
-              uses: actions/cache@v4
-              id: webview-cache
-              with:
-                  path: webview-ui/node_modules
-                  key: ${{ runner.os }}-npm-webview-${{ hashFiles('webview-ui/package-lock.json') }}
+                  cache: 'npm'
+                  cache-dependency-path: |
+                      package-lock.json
+                      webview-ui/package-lock.json
 
             - name: Install root dependencies
-              if: steps.root-cache.outputs.cache-hit != 'true'
               run: npm ci
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Install webview-ui dependencies
-              if: steps.webview-cache.outputs.cache-hit != 'true'
               run: cd webview-ui && npm ci
 
             - name: Set up NPM on Windows
               if: runner.os == 'Windows'
               run: |
                   npm config set script-shell "C:\\Program Files\\Git\\bin\\bash.exe"
+
+            - name: Cache VS Code test runtime
+              if: runner.os == 'Windows'
+              uses: actions/cache@v4
+              with:
+                  path: .vscode-test
+                  key: vscode-test-runtime-${{ runner.os }}-${{ env.VSCODE_TEST_VERSION }}
 
             # Build the extension and tests (without redundant checks)
             - name: Build Tests and Extension
@@ -126,7 +113,21 @@ jobs:
             - name: Extension Integration Tests - Non-Linux
               id: integration_tests_non_linux
               if: ${{ !cancelled() && steps.build_step.outcome == 'success' && runner.os != 'Linux' }}
-              run: npm run test:integration
+              run: |
+                  for attempt in 1 2 3; do
+                    echo "Running extension integration tests (attempt ${attempt}/3)"
+                    if npm run test:integration; then
+                      exit 0
+                    fi
+
+                    if [ "$attempt" -eq 3 ]; then
+                      echo "Extension integration tests failed after 3 attempts"
+                      exit 1
+                    fi
+
+                    echo "Extension integration tests failed; retrying after short delay"
+                    sleep 5
+                  done
 
             - name: Webview Tests with Coverage
               id: webview_tests
@@ -134,6 +135,11 @@ jobs:
               run: |
                   cd webview-ui
                   npm run test:coverage
+
+            - name: CLI Tests
+              id: cli_tests
+              if: ${{ !cancelled() && steps.build_step.outcome == 'success' }}
+              run: cd cli && npm run test:run
 
             - name: Save Coverage Reports
               uses: actions/upload-artifact@v4
@@ -156,64 +162,32 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 22
-                  
-            - name: Cache root dependencies
-              uses: actions/cache@v4
-              id: root-cache
-              with:
-                  path: node_modules
-                  key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
-
-            - name: Cache webview-ui dependencies
-              uses: actions/cache@v4
-              id: webview-cache
-              with:
-                  path: webview-ui/node_modules
-                  key: ${{ runner.os }}-npm-webview-${{ hashFiles('webview-ui/package-lock.json') }}
-
-            # Cache testing-platform dependencies
-            - name: Cache testing-platform dependencies
-              uses: actions/cache@v4
-              id: testing-platform-cache
-              with:
-                path: testing-platform/node_modules
-                key: ${{ runner.os }}-npm-testing-platform-${{ hashFiles('testing-platform/package-lock.json') }}
+                  cache: 'npm'
+                  cache-dependency-path: |
+                      package-lock.json
+                      webview-ui/package-lock.json
+                      testing-platform/package-lock.json
 
             - name: Install root dependencies
-              if: steps.root-cache.outputs.cache-hit != 'true'
               run: npm ci
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Install webview-ui dependencies
-              if: steps.webview-cache.outputs.cache-hit != 'true'
               run: cd webview-ui && npm ci
-
-            - name: Setup Go
-              uses: actions/setup-go@v5
-              with:
-                  go-version: '1.24'
-                  cache-dependency-path: cli/go.sum
-
-            - name: Build CLI binaries
-              run: npm run compile-cli-all-platforms
 
             - name: Download ripgrep binaries
               run: npm run download-ripgrep
 
-            - name: Compile NPM package
-              run: npm run compile-standalone-npm
+            - name: Compile Standalone
+              run: npm run compile-standalone
 
             - name: Install testing platform dependencies
-              if: steps.testing-platform-cache.outputs.cache-hit != 'true'
               run: cd testing-platform && npm ci
 
             - name: Running testing platform integration spec tests
-              continue-on-error: true
               timeout-minutes: 7
-              # Temporarily wrapping the test command to always return a neutral exit code.
-              # This prevents the job from showing as failed and avoids distracting developers
-              # until the integration tests are ready to be enforced.
-              run: |
-                npm run test:tp-orchestrator -- tests/specs/ --count=1 --coverage || true
+              run: npm run test:tp-orchestrator -- tests/specs/ --count=1 --coverage
 
             - name: Save Coverage Reports
               uses: actions/upload-artifact@v4

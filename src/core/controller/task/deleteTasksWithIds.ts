@@ -3,6 +3,7 @@ import fs from "fs/promises"
 import path from "path"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
+import { Logger } from "@/shared/services/Logger"
 import { fileExistsAtPath } from "../../../utils/fs"
 import { Controller } from ".."
 
@@ -20,7 +21,9 @@ export async function deleteTasksWithIds(controller: Controller, request: String
 
 	const taskCount = request.value.length
 	const message =
-		taskCount === 1 ? "您确定要删除此任务吗？此操作无法撤销。" : `您确定要删除这 ${taskCount} 个任务吗？此操作无法撤销。`
+		taskCount === 1
+			? "Are you sure you want to delete this task? This action cannot be undone."
+			: `Are you sure you want to delete these ${taskCount} tasks? This action cannot be undone.`
 
 	const userChoice = await HostProvider.window.showMessage({
 		type: ShowMessageType.WARNING,
@@ -49,7 +52,7 @@ async function deleteTaskWithId(controller: Controller, id: string): Promise<voi
 		// Clear current task if it matches the ID being deleted
 		if (id === controller.task?.taskId) {
 			await controller.clearTask()
-			console.debug("cleared task")
+			Logger.debug("cleared task")
 		}
 
 		// Get task file paths
@@ -73,7 +76,7 @@ async function deleteTaskWithId(controller: Controller, id: string): Promise<voi
 		try {
 			await fs.rmdir(taskDirPath) // succeeds if the dir is empty
 		} catch (error) {
-			console.debug("Could not remove task directory (may not be empty):", error)
+			Logger.debug("Could not remove task directory (may not be empty):", error)
 		}
 
 		// If no tasks remain, clean up everything
@@ -89,7 +92,7 @@ async function deleteTaskWithId(controller: Controller, id: string): Promise<voi
 			}
 		}
 	} catch (error) {
-		console.debug(`Error deleting task ${id}:`, error)
+		Logger.debug(`Error deleting task ${id}:`, error)
 		throw error // Re-throw to let caller handle the error
 	}
 

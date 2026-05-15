@@ -3,6 +3,7 @@ import fs from "fs/promises"
 import path from "path"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageRequest, ShowMessageType } from "@/shared/proto/host/window"
+import { Logger } from "@/shared/services/Logger"
 import { fileExistsAtPath } from "../../../utils/fs"
 import { Controller } from ".."
 
@@ -25,10 +26,10 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 			await HostProvider.window.showMessage(
 				ShowMessageRequest.create({
 					type: ShowMessageType.WARNING,
-					message: "您想删除什么?",
+					message: "What would you like to delete?",
 					options: {
 						modal: true,
-						items: ["删除除收藏夹以外的所有内容", "删除所有内容"],
+						items: ["Delete All Except Favorites", "Delete Everything"],
 					},
 				}),
 			)
@@ -42,7 +43,7 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 		}
 
 		// If preserving favorites, filter out non-favorites
-		if (userChoice === "删除除收藏夹以外的所有内容") {
+		if (userChoice === "Delete All Except Favorites") {
 			const favoritedTasks = taskHistory.filter((task) => task.isFavorited === true)
 
 			// If there are favorited tasks, update state
@@ -57,7 +58,7 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 				try {
 					await controller.postStateToWebview()
 				} catch (webviewErr) {
-					console.error("Error posting to webview:", webviewErr)
+					Logger.error("Error posting to webview:", webviewErr)
 				}
 
 				return DeleteAllTaskHistoryCount.create({
@@ -68,10 +69,10 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 				const answer = (
 					await HostProvider.window.showMessage({
 						type: ShowMessageType.WARNING,
-						message: "未找到已收藏的任务。是否仍然要删除所有任务？?",
+						message: "No favorited tasks found. Would you like to delete all tasks anyway?",
 						options: {
 							modal: true,
-							items: ["删除所有任务"],
+							items: ["Delete All Tasks"],
 						},
 					})
 				).selectedOption
@@ -104,7 +105,7 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 		} catch (error) {
 			HostProvider.window.showMessage({
 				type: ShowMessageType.ERROR,
-				message: `删除任务历史记录时遇到错误，可能会残留一些文件。Error: ${error instanceof Error ? error.message : String(error)}`,
+				message: `Encountered error while deleting task history, there may be some files left behind. Error: ${error instanceof Error ? error.message : String(error)}`,
 			})
 		}
 
@@ -112,14 +113,14 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 		try {
 			await controller.postStateToWebview()
 		} catch (webviewErr) {
-			console.error("Error posting to webview:", webviewErr)
+			Logger.error("Error posting to webview:", webviewErr)
 		}
 
 		return DeleteAllTaskHistoryCount.create({
 			tasksDeleted: totalTasks,
 		})
 	} catch (error) {
-		console.error("Error in deleteAllTaskHistory:", error)
+		Logger.error("Error in deleteAllTaskHistory:", error)
 		throw error
 	}
 }
@@ -133,7 +134,7 @@ async function cleanupTaskFiles(preserveTaskIds: string[]) {
 	try {
 		if (await fileExistsAtPath(taskDirPath)) {
 			const taskDirs = await fs.readdir(taskDirPath)
-			console.debug(`[cleanupTaskFiles] Found ${taskDirs.length} task directories`)
+			Logger.debug(`[cleanupTaskFiles] Found ${taskDirs.length} task directories`)
 
 			// Delete only non-preserved task directories
 			for (const dir of taskDirs) {
@@ -147,7 +148,7 @@ async function cleanupTaskFiles(preserveTaskIds: string[]) {
 			}
 		}
 	} catch (error) {
-		console.error("Error cleaning up task files:", error)
+		Logger.error("Error cleaning up task files:", error)
 	}
 
 	return true

@@ -2,16 +2,17 @@ import path from "node:path"
 import { Controller } from "@core/controller/index"
 import axios from "axios"
 import { readFile } from "fs/promises"
-import * as vscode from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
+import { ClineExtensionContext } from "@/shared/cline"
 import { ShowMessageType } from "@/shared/proto/host/window"
+import { Logger } from "@/shared/services/Logger"
 import { getNonce } from "./getNonce"
 
 export abstract class WebviewProvider {
 	private static instance: WebviewProvider | null = null
 	controller: Controller
 
-	constructor(readonly context: vscode.ExtensionContext) {
+	constructor(readonly context: ClineExtensionContext) {
 		WebviewProvider.instance = this
 
 		// Create controller with cache service
@@ -110,10 +111,11 @@ export abstract class WebviewProvider {
 				<link rel="stylesheet" type="text/css" href="${stylesUrl}">
 				<link href="${codiconsUrl}" rel="stylesheet" />
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none';
-					connect-src https://*.posthog.com https://*.cline.bot  https://*.shengsuanyun.com; 
+					connect-src https://*.posthog.com https://*.cline.bot; 
 					font-src ${this.getCspSource()} data:; 
 					style-src ${this.getCspSource()} 'unsafe-inline'; 
 					img-src ${this.getCspSource()} https: data:; 
+					media-src ${this.getCspSource()} https: data: blob:;
 					script-src 'nonce-${nonce}' 'unsafe-eval';">
 				<title>Cline</title>
 			</head>
@@ -139,13 +141,13 @@ export abstract class WebviewProvider {
 
 		return readFile(portFilePath, "utf8")
 			.then((portFile) => {
-				const port = parseInt(portFile.trim()) || DEFAULT_PORT
-				console.info(`[getDevServerPort] Using dev server port ${port} from .vite-port file`)
+				const port = Number.parseInt(portFile.trim()) || DEFAULT_PORT
+				Logger.info(`[getDevServerPort] Using dev server port ${port} from .vite-port file`)
 
 				return port
 			})
 			.catch((_err) => {
-				console.warn(
+				Logger.warn(
 					`[getDevServerPort] Port file not found or couldn't be read at ${portFilePath}, using default port: ${DEFAULT_PORT}`,
 				)
 				return DEFAULT_PORT
@@ -172,7 +174,7 @@ export abstract class WebviewProvider {
 				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
 					message:
-						"Cline：本地 WebView 开发服务器未运行，HMR 将无法工作。请在启动扩展程序之前运行“npm run dev:webview”以启用 HMR。正在使用捆绑资源。",
+						"Cline: Local webview dev server is not running, HMR will not work. Please run 'npm run dev:webview' before launching the extension to enable HMR. Using bundled assets.",
 				})
 			}
 
@@ -201,6 +203,7 @@ export abstract class WebviewProvider {
 			`font-src ${this.getCspSource()}`,
 			`style-src ${this.getCspSource()} 'unsafe-inline' https://* http://${localServerUrl} http://0.0.0.0:${localPort}`,
 			`img-src ${this.getCspSource()} https: data:`,
+			`media-src ${this.getCspSource()} https: data: blob: http://${localServerUrl} http://0.0.0.0:${localPort}`,
 			`script-src 'unsafe-eval' https://* http://${localServerUrl} http://0.0.0.0:${localPort} 'nonce-${nonce}'`,
 			`connect-src https://* ws://${localServerUrl} ws://0.0.0.0:${localPort} http://${localServerUrl} http://0.0.0.0:${localPort}`,
 		]

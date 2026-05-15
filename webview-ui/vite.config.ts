@@ -38,6 +38,10 @@ if (!VALID_PLATFORMS.includes(platform)) {
 console.log("Building webview for", platform)
 
 export default defineConfig({
+	base: "./",
+	optimizeDeps: {
+		force: true, // Forces re-optimization
+	},
 	plugins: [react(), tailwindcss(), writePortToFile()],
 	test: {
 		environment: "jsdom",

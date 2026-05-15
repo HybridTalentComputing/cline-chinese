@@ -1,6 +1,5 @@
 import { fireworksModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -21,7 +20,6 @@ interface FireworksProviderProps {
  * The Fireworks provider configuration component
  */
 export const FireworksProvider = ({ currentMode, isPopup, showModelOptions }: FireworksProviderProps) => {
-	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleModeFieldChange, handleFieldChange } = useApiConfigurationHandlers()
 
@@ -35,27 +33,23 @@ export const FireworksProvider = ({ currentMode, isPopup, showModelOptions }: Fi
 				providerName="Fireworks"
 				signupUrl="https://fireworks.ai/"
 			/>
-			{showModelOptions && (
-				<>
-					<ModelSelector
-						label={t("settings.providers.model")}
-						models={fireworksModels}
-						onChange={(e: any) => {
-							handleModeFieldChange(
-								{
-									plan: "planModeFireworksModelId",
-									act: "actModeFireworksModelId",
-								},
-								e.target.value,
-								currentMode,
-							)
-						}}
-						selectedModelId={selectedModelId}
-					/>
+			<ModelSelector
+				label="Model"
+				models={fireworksModels}
+				onChange={(e: any) => {
+					handleModeFieldChange(
+						{
+							plan: "planModeFireworksModelId",
+							act: "actModeFireworksModelId",
+						},
+						e.target.value,
+						currentMode,
+					)
+				}}
+				selectedModelId={selectedModelId}
+			/>
 
-					<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
-				</>
-			)}
+			<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
 		</div>
 	)
 }

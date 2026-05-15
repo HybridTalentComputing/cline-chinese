@@ -3,8 +3,8 @@ import { BrowserAction, BrowserActionResult, ClineMessage, ClineSayBrowserAction
 import { StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import deepEqual from "fast-deep-equal"
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import React, { CSSProperties, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useSize } from "react-use"
 import styled from "styled-components"
 import { BrowserSettingsMenu } from "@/components/browser/BrowserSettingsMenu"
@@ -347,7 +347,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	}, [messages])
 
 	// Calculate maxWidth
-	const maxWidth = browserSettings.viewport.width < BROWSER_VIEWPORT_PRESETS["小型桌面 (900x600)"].width ? 200 : undefined
+	const maxWidth = browserSettings.viewport.width < BROWSER_VIEWPORT_PRESETS["Small Desktop (900x600)"].width ? 200 : undefined
 
 	const [browserSessionRow, { height }] = useSize(
 		// We don't declare a constant for the inline style here because `useSize` will try to modify the style object
@@ -359,7 +359,9 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 				) : (
 					<span className="codicon codicon-inspect" style={browserIconStyle}></span>
 				)}
-				<span style={approveTextStyle}>{isAutoApproved ? "Cline 正在使用浏览器:" : "Cline 想要使用浏览器:"}</span>
+				<span style={approveTextStyle}>
+					{isAutoApproved ? "Cline is using the browser:" : "Cline wants to use the browser:"}
+				</span>
 			</div>
 			<div
 				style={{
@@ -437,8 +439,8 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 							cursor: "pointer",
 							padding: `9px 8px ${consoleLogsExpanded ? 0 : 8}px 8px`,
 						}}>
-						<span className={`codicon codicon-chevron-${consoleLogsExpanded ? "down" : "right"}`}></span>
-						<span style={consoleLogsTextStyle}>控制台日志</span>
+						{consoleLogsExpanded ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
+						<span style={consoleLogsTextStyle}>Console Logs</span>
 					</div>
 					{consoleLogsExpanded && (
 						<CodeBlock source={`${"```"}shell\n${displayState.consoleLogs || "(No new logs)"}\n${"```"}`} />
@@ -453,18 +455,18 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 			{pages.length > 1 && (
 				<div style={paginationContainerStyle}>
 					<div>
-						进度 {currentPageIndex + 1} / {pages.length}
+						Step {currentPageIndex + 1} of {pages.length}
 					</div>
 					<div style={paginationButtonGroupStyle}>
 						<VSCodeButton
 							disabled={currentPageIndex === 0 || isBrowsing}
 							onClick={() => setCurrentPageIndex((i) => i - 1)}>
-							上一步
+							Previous
 						</VSCodeButton>
 						<VSCodeButton
 							disabled={currentPageIndex === pages.length - 1 || isBrowsing}
 							onClick={() => setCurrentPageIndex((i) => i + 1)}>
-							下一步
+							Next
 						</VSCodeButton>
 					</div>
 				</div>
@@ -515,7 +517,7 @@ const BrowserSessionRowContent = memo(
 			return (
 				<>
 					<div style={headerStyle}>
-						<span style={browserSessionStartedTextStyle}>浏览器会话已经启动</span>
+						<span style={browserSessionStartedTextStyle}>Browser Session Started</span>
 					</div>
 					<div style={codeBlockContainerStyle}>
 						<CodeBlock forceWrap={true} source={`${"```"}shell\n${message.text}\n${"```"}`} />
@@ -569,21 +571,20 @@ const BrowserSessionRowContent = memo(
 )
 
 const BrowserActionBox = ({ action, coordinate, text }: { action: BrowserAction; coordinate?: string; text?: string }) => {
-	const { t } = useTranslation()
 	const getBrowserActionText = (action: BrowserAction, coordinate?: string, text?: string) => {
 		switch (action) {
 			case "launch":
-				return t("chatRow.browserAction.launch", { text })
+				return `Launch browser at ${text}`
 			case "click":
-				return t("chatRow.browserAction.click", { coordinate: coordinate?.replace(",", ", ") })
+				return `Click (${coordinate?.replace(",", ", ")})`
 			case "type":
-				return t("chatRow.browserAction.type", { text })
+				return `Type "${text}"`
 			case "scroll_down":
-				return t("chatRow.browserAction.scrollDown")
+				return "Scroll down"
 			case "scroll_up":
-				return t("chatRow.browserAction.scrollUp")
+				return "Scroll up"
 			case "close":
-				return t("chatRow.browserAction.close")
+				return "Close browser"
 			default:
 				return action
 		}
@@ -593,7 +594,7 @@ const BrowserActionBox = ({ action, coordinate, text }: { action: BrowserAction;
 			<div style={browserActionBoxContainerInnerStyle}>
 				<div style={browseActionRowContainerStyle}>
 					<span style={browseActionRowStyle}>
-						<span style={browseActionTextStyle}>{t("chatRow.browseAction")}: </span>
+						<span style={browseActionTextStyle}>Browse Action: </span>
 						{getBrowserActionText(action, coordinate, text)}
 					</span>
 				</div>

@@ -2,7 +2,6 @@ import { ANTHROPIC_MAX_THINKING_BUDGET, ANTHROPIC_MIN_THINKING_BUDGET } from "@s
 import { Mode } from "@shared/storage/types"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { memo, useCallback, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { getModeSpecificFields } from "./utils/providerUtils"
@@ -65,10 +64,10 @@ const RangeInput = styled.input<{ $value: number; $min: number; $max: number }>`
 interface ThinkingBudgetSliderProps {
 	maxBudget?: number
 	currentMode: Mode
+	showEnableToggle?: boolean
 }
 
-const ThinkingBudgetSlider = ({ currentMode }: ThinkingBudgetSliderProps) => {
-	const { t } = useTranslation()
+const ThinkingBudgetSlider = ({ currentMode, maxBudget, showEnableToggle = true }: ThinkingBudgetSliderProps) => {
 	const { apiConfiguration } = useExtensionState()
 	const { handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -78,6 +77,28 @@ const ThinkingBudgetSlider = ({ currentMode }: ThinkingBudgetSliderProps) => {
 	const [localValue, setLocalValue] = useState(modeFields.thinkingBudgetTokens || 0)
 
 	const [isEnabled, setIsEnabled] = useState<boolean>((modeFields.thinkingBudgetTokens || 0) > 0)
+
+	const onToggle = useCallback((isChecked: boolean) => {
+		const newThinkingBudgetValue = isChecked ? ANTHROPIC_MIN_THINKING_BUDGET : 0
+		setIsEnabled(isChecked)
+		setLocalValue(newThinkingBudgetValue)
+
+		handleModeFieldChange(
+			{ plan: "planModeThinkingBudgetTokens", act: "actModeThinkingBudgetTokens" },
+			newThinkingBudgetValue,
+			currentMode,
+		)
+	}, [])
+
+	useEffect(() => {
+		// Extremely hacky solution to handle the case where
+		// because the model always uses thinking, we can't use enabling it to set the minimum budget tokens
+		const isToggleAlwaysOn = !showEnableToggle
+		const hasThinkingConfig = !!modeFields.thinkingBudgetTokens && modeFields.thinkingBudgetTokens > 0
+		if (isToggleAlwaysOn && !hasThinkingConfig) {
+			onToggle(true)
+		}
+	}, [showEnableToggle, modeFields.thinkingBudgetTokens])
 
 	useEffect(() => {
 		const newThinkingBudgetValue = modeFields.thinkingBudgetTokens || 0
@@ -93,7 +114,7 @@ const ThinkingBudgetSlider = ({ currentMode }: ThinkingBudgetSliderProps) => {
 	}, [modeFields.thinkingBudgetTokens])
 
 	const handleSliderChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-		const value = parseInt(event.target.value, 10)
+		const value = Number.parseInt(event.target.value, 10)
 		const clampedValue = Math.max(value, ANTHROPIC_MIN_THINKING_BUDGET)
 		setLocalValue(clampedValue)
 	}, [])
@@ -108,39 +129,35 @@ const ThinkingBudgetSlider = ({ currentMode }: ThinkingBudgetSliderProps) => {
 
 	const handleToggleChange = (event: any) => {
 		const isChecked = (event.target as HTMLInputElement).checked
-		const newThinkingBudgetValue = isChecked ? ANTHROPIC_MIN_THINKING_BUDGET : 0
-		setIsEnabled(isChecked)
-		setLocalValue(newThinkingBudgetValue)
 
-		handleModeFieldChange(
-			{ plan: "planModeThinkingBudgetTokens", act: "actModeThinkingBudgetTokens" },
-			newThinkingBudgetValue,
-			currentMode,
-		)
+		onToggle(isChecked)
 	}
 
 	return (
-		<>
-			<VSCodeCheckbox checked={isEnabled} onClick={handleToggleChange}>
-				{t("settings.features.enableThinking")}
-				{localValue && localValue > 0 ? ` (${localValue.toLocaleString()} ${t("settings.features.tokens")})` : ""}
-			</VSCodeCheckbox>
+		<div className="w-full">
+			{showEnableToggle ? (
+				<VSCodeCheckbox checked={isEnabled} onClick={handleToggleChange}>
+					Enable thinking{localValue && localValue > 0 ? ` (${localValue.toLocaleString()} tokens)` : ""}
+				</VSCodeCheckbox>
+			) : (
+				<p className="text-[var(--vscode-descriptionForeground)] text-sm">
+					Thinking is enabled by default for this model. ({localValue.toLocaleString()} tokens)
+				</p>
+			)}
 
 			{isEnabled && (
 				<Container>
 					<RangeInput
-						$max={ANTHROPIC_MAX_THINKING_BUDGET}
+						$max={maxBudget || ANTHROPIC_MAX_THINKING_BUDGET}
 						$min={0}
 						$value={localValue}
 						aria-describedby="thinking-budget-description"
-						aria-label={t("settings.providers.thinkingBudgetPlaceholder", {
-							max: ANTHROPIC_MAX_THINKING_BUDGET,
-						})}
-						aria-valuemax={ANTHROPIC_MAX_THINKING_BUDGET}
+						aria-label={`Thinking budget: ${localValue.toLocaleString()} tokens`}
+						aria-valuemax={maxBudget || ANTHROPIC_MAX_THINKING_BUDGET}
 						aria-valuemin={ANTHROPIC_MIN_THINKING_BUDGET}
 						aria-valuenow={localValue}
 						id="thinking-budget-slider"
-						max={ANTHROPIC_MAX_THINKING_BUDGET}
+						max={maxBudget || ANTHROPIC_MAX_THINKING_BUDGET}
 						min={0}
 						onChange={handleSliderChange}
 						onMouseUp={handleSliderComplete}
@@ -151,7 +168,7 @@ const ThinkingBudgetSlider = ({ currentMode }: ThinkingBudgetSliderProps) => {
 					/>
 				</Container>
 			)}
-		</>
+		</div>
 	)
 }
 

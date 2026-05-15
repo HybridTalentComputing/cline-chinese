@@ -1,5 +1,4 @@
 import { McpServer } from "@shared/mcp"
-import { useTranslation } from "react-i18next"
 import ServerRow from "./server-row/ServerRow"
 
 const ServersToggleList = ({
@@ -13,7 +12,6 @@ const ServersToggleList = ({
 	hasTrashIcon: boolean
 	listGap?: "small" | "medium" | "large"
 }) => {
-	const { t } = useTranslation()
 	const gapClasses = {
 		small: "gap-0",
 		medium: "gap-2.5",
@@ -30,7 +28,7 @@ const ServersToggleList = ({
 		</div>
 	) : (
 		<div className="flex flex-col items-center gap-3 my-5 text-(--vscode-descriptionForeground)">
-			{t("mcp.serversToggle.noServersInstalled")}
+			No MCP servers installed
 		</div>
 	)
 }

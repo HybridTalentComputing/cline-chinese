@@ -120,7 +120,7 @@ export class WebSearchToolHandler implements IFullyManagedTool {
 						undefined,
 						block.isNativeToolCall,
 					)
-					return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
+					return formatResponse.toolDenied()
 				} else {
 					telemetryService.captureToolUsage(
 						config.ulid,
@@ -142,7 +142,7 @@ export class WebSearchToolHandler implements IFullyManagedTool {
 			} catch (error) {
 				const { PreToolUseHookCancellationError } = await import("@core/hooks/PreToolUseHookCancellationError")
 				if (error instanceof PreToolUseHookCancellationError) {
-					return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
+					return formatResponse.toolDenied()
 				}
 				throw error
 			}

@@ -1,7 +1,6 @@
-import { CreateHookRequest, RuleFileRequest } from "@shared/proto/index.cline"
+import { CreateHookRequest, CreateSkillRequest, RuleFileRequest } from "@shared/proto/index.cline"
 import { PlusIcon } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useClickAway } from "react-use"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -26,7 +25,6 @@ const HOOK_TYPES = [
 ]
 
 const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHooks = [], workspaceName }) => {
-	const { t } = useTranslation()
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [filename, setFilename] = useState("")
 	const inputRef = useRef<HTMLInputElement>(null)
@@ -85,10 +83,35 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 
 		if (filename.trim()) {
 			const trimmedFilename = filename.trim()
+
+			// Skills use directory names, not file extensions
+			if (ruleType === "skill") {
+				// Validate skill name - only allow alphanumeric, dashes, underscores
+				if (!/^[a-zA-Z0-9_-]+$/.test(trimmedFilename)) {
+					setError("Skill name can only contain letters, numbers, dashes, and underscores")
+					return
+				}
+
+				try {
+					await FileServiceClient.createSkillFile(
+						CreateSkillRequest.create({
+							skillName: trimmedFilename,
+							isGlobal,
+						}),
+					)
+					setFilename("")
+					setError(null)
+					setIsExpanded(false)
+				} catch (err) {
+					setError(err instanceof Error ? err.message : "Failed to create skill")
+				}
+				return
+			}
+
 			const extension = getExtension(trimmedFilename)
 
 			if (!isValidExtension(extension)) {
-				setError(t("clineRules.newRuleRow.invalidExtension"))
+				setError("Only .md, .txt, or no file extension allowed")
 				return
 			}
 
@@ -141,14 +164,15 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 					{ruleType === "hook" ? (
 						<>
 							<label className="sr-only" htmlFor="hook-type-select">
-								{t("clineRules.hooks.selectHookType")}
+								Select hook type to create
 							</label>
 							<span className="sr-only" id="hook-select-description">
-								{t("clineRules.hooks.chooseHookType")} {availableHookTypes.map((h) => h.name).join(", ")}
+								Choose a hook type to create. Hooks execute at specific points in Cline's lifecycle. Available:{" "}
+								{availableHookTypes.map((h) => h.name).join(", ")}
 							</span>
 							<select
 								aria-describedby="hook-select-description"
-								aria-label={t("clineRules.hooks.selectHookType")}
+								aria-label="Select hook type to create"
 								className="flex-1 bg-input-background text-input-foreground border-0 outline-0 rounded focus:outline-none focus:ring-0 focus:border-transparent px-2 cursor-pointer"
 								disabled={availableHookTypes.length === 0}
 								id="hook-type-select"
@@ -169,9 +193,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 								}}
 								value="">
 								<option disabled value="">
-									{availableHookTypes.length === 0
-										? t("clineRules.hooks.allHooksCreated")
-										: t("clineRules.hooks.newHook")}
+									{availableHookTypes.length === 0 ? "All hooks created" : "New hook..."}
 								</option>
 								{availableHookTypes.map((hook) => (
 									<option key={hook.name} title={hook.description} value={hook.name}>
@@ -193,11 +215,15 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 								placeholder={
 									isExpanded
 										? ruleType === "workflow"
-											? t("clineRules.newRuleRow.workflowPlaceholder")
-											: t("clineRules.newRuleRow.rulePlaceholder")
+											? "workflow-name (.md, .txt, or no extension)"
+											: ruleType === "skill"
+												? "skill-name (letters, numbers, dashes, underscores)"
+												: "rule-name (.md, .txt, or no extension)"
 										: ruleType === "workflow"
-											? t("clineRules.newRuleRow.newWorkflowFile")
-											: t("clineRules.newRuleRow.newRuleFile")
+											? "New workflow file..."
+											: ruleType === "skill"
+												? "New skill..."
+												: "New rule file..."
 								}
 								ref={inputRef}
 								type="text"
@@ -207,10 +233,14 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 							<Button
 								aria-label={
 									isExpanded
-										? t("clineRules.newRuleRow.createFile")
+										? ruleType === "skill"
+											? "Create skill"
+											: "Create file"
 										: ruleType === "workflow"
-											? t("clineRules.newRuleRow.newWorkflowFile")
-											: t("clineRules.newRuleRow.newRuleFile")
+											? "New workflow file..."
+											: ruleType === "skill"
+												? "New skill..."
+												: "New rule file..."
 								}
 								className="mx-0.5"
 								onClick={(e) => {
@@ -220,7 +250,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 									}
 								}}
 								size="icon"
-								title={isExpanded ? t("clineRules.newRuleRow.createFile") : t("clineRules.newRuleRow.newFile")}
+								title={isExpanded ? (ruleType === "skill" ? "Create skill" : "Create file") : "New file"}
 								type={isExpanded ? "submit" : "button"}
 								variant="icon">
 								<PlusIcon />

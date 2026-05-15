@@ -1,9 +1,9 @@
+import { AgentConfigLoader } from "@core/task/tools/subagent/AgentConfigLoader"
 import { CLINE_MCP_TOOL_IDENTIFIER, McpServer } from "@/shared/mcp"
 import { ModelFamily } from "@/shared/prompts"
 import { ClineDefaultTool } from "@/shared/tools"
 import { type ClineToolSpec, toolSpecFunctionDeclarations, toolSpecFunctionDefinition, toolSpecInputSchema } from "../spec"
 import { PromptVariant, SystemPromptContext } from "../types"
-import { getPromptTranslation } from "../../i18n"
 
 export class ClineToolSet {
 	// A list of tools mapped by model group
@@ -102,34 +102,47 @@ export class ClineToolSet {
 			(tool) => !tool.config.contextRequirements || tool.config.contextRequirements(context),
 		)
 
-		// Localize tool specifications
-		const t = getPromptTranslation(context)
-		return enabledTools.map((tool) => {
-			const toolTranslations = (t as any).tools?.[tool.config.name]
-			if (!toolTranslations) {
-				return tool
-			}
+		return enabledTools
+	}
 
-			const localizedConfig = { ...tool.config }
-			if (toolTranslations.description) {
-				localizedConfig.description = toolTranslations.description
-			}
+	private static getDynamicSubagentToolSpecs(variant: PromptVariant, context: SystemPromptContext): ClineToolSpec[] {
+		if (context.subagentsEnabled !== true || context.isSubagentRun) {
+			return []
+		}
 
-			if (toolTranslations.parameters && localizedConfig.parameters) {
-				localizedConfig.parameters = localizedConfig.parameters.map((param) => {
-					const paramTranslation = toolTranslations.parameters[param.name]
-					if (paramTranslation?.instruction) {
-						return { ...param, instruction: paramTranslation.instruction }
-					}
-					return param
-				})
-			}
+		const requestedIds = variant.tools ? [...variant.tools] : []
+		const shouldIncludeSubagentTools = requestedIds.length === 0 || requestedIds.includes(ClineDefaultTool.USE_SUBAGENTS)
+		if (!shouldIncludeSubagentTools) {
+			return []
+		}
 
-			// Return a new object with localized config to avoid mutating shared state
-			return Object.create(tool, {
-				config: { value: localizedConfig, enumerable: true },
-			})
-		})
+		const agentConfigs = AgentConfigLoader.getInstance().getAllCachedConfigsWithToolNames()
+		return agentConfigs.map(({ toolName, config }) => ({
+			variant: variant.family,
+			id: ClineDefaultTool.USE_SUBAGENTS,
+			name: toolName,
+			description: `Use the "${config.name}" subagent: ${config.description}`,
+			contextRequirements: (ctx) => ctx.subagentsEnabled === true && !ctx.isSubagentRun,
+			parameters: [
+				{
+					name: "prompt",
+					required: true,
+					instruction: "Helpful instruction for the task that the subagent will perform.",
+				},
+			],
+		}))
+	}
+
+	public static getEnabledToolSpecs(variant: PromptVariant, context: SystemPromptContext): ClineToolSpec[] {
+		const registeredTools = ClineToolSet.getEnabledTools(variant, context).map((tool) => tool.config)
+		const dynamicSubagentTools = ClineToolSet.getDynamicSubagentToolSpecs(variant, context)
+
+		const includesDynamicSubagents = dynamicSubagentTools.length > 0
+		const filteredRegistered = includesDynamicSubagents
+			? registeredTools.filter((tool) => tool.id !== ClineDefaultTool.USE_SUBAGENTS)
+			: registeredTools
+
+		return [...filteredRegistered, ...dynamicSubagentTools]
 	}
 
 	/**
@@ -139,6 +152,7 @@ export class ClineToolSet {
 		switch (providerId) {
 			case "minimax":
 			case "anthropic":
+			case "bedrock":
 				return toolSpecInputSchema
 			case "gemini":
 				return toolSpecFunctionDeclarations
@@ -158,19 +172,20 @@ export class ClineToolSet {
 		// via the "use_native_tools" label set to 1
 		// This avoids exposing tools to models that don't support them
 		// or variants that aren't designed for tool use
-		if (variant.labels["use_native_tools"] !== 1 || !context.enableNativeToolCalls) {
+		if (variant.labels.use_native_tools !== 1 || !context.enableNativeToolCalls) {
 			return undefined
 		}
 
 		// Base set
-		const toolsets = ClineToolSet.getEnabledTools(variant, context)
-		const toolConfigs = toolsets.map((tool) => tool.config)
+		const toolConfigs = ClineToolSet.getEnabledToolSpecs(variant, context)
 
 		// MCP tools
 		const mcpServers = context.mcpHub?.getServers()?.filter((s) => s.disabled !== true) || []
 		const mcpTools = mcpServers?.flatMap((server) => mcpToolToClineToolSpec(variant.family, server))
 
-		const enabledTools = [...toolConfigs, ...mcpTools]
+		const enabledTools = [...toolConfigs, ...mcpTools].filter(
+			(tool) => typeof tool.description === "string" && tool.description.trim().length > 0,
+		)
 		const converter = ClineToolSet.getNativeConverter(context.providerInfo.providerId, context.providerInfo.model.id)
 
 		return enabledTools.map((tool) => converter(tool, context))

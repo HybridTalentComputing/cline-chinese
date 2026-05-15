@@ -1,9 +1,7 @@
 import { EmptyRequest } from "@shared/proto/cline/common"
-import { InfoIcon } from "lucide-react"
-import { useTranslation } from "react-i18next"
 import ClineLogoSanta from "@/assets/ClineLogoSanta"
+import ClineLogoTired from "@/assets/ClineLogoTired"
 import ClineLogoVariable from "@/assets/ClineLogoVariable"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { UiServiceClient } from "@/services/grpc-client"
 
@@ -12,8 +10,7 @@ interface HomeHeaderProps {
 }
 
 const HomeHeader = ({ shouldShowQuickWins = false }: HomeHeaderProps) => {
-	const { t } = useTranslation()
-	const { environment } = useExtensionState()
+	const { environment, lazyTeammateModeEnabled } = useExtensionState()
 
 	const handleTakeATour = async () => {
 		try {
@@ -23,44 +20,18 @@ const HomeHeader = ({ shouldShowQuickWins = false }: HomeHeaderProps) => {
 		}
 	}
 
-	// Check if it's December for festive logo
+	// Lazy Teammate Mode takes priority, then December festive logo, then default
 	const isDecember = new Date().getMonth() === 11 // 11 = December (0-indexed)
-	const LogoComponent = isDecember ? ClineLogoSanta : ClineLogoVariable
+	const LogoComponent = lazyTeammateModeEnabled ? ClineLogoTired : isDecember ? ClineLogoSanta : ClineLogoVariable
+	const headingText = lazyTeammateModeEnabled ? "I guess I'm here to help" : "What can I do for you?"
 
 	return (
 		<div className="flex flex-col items-center mb-5">
-			<style>
-				{`
-					@keyframes logo-pop-in {
-						0% {
-							opacity: 0;
-							transform: scale(0.95);
-						}
-						60% {
-							opacity: 1;
-							transform: scale(1.02);
-						}
-						100% {
-							opacity: 1;
-							transform: scale(1);
-						}
-					}
-					.logo-animate {
-						animation: logo-pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-					}
-				`}
-			</style>
-			<div className="my-7 logo-animate">
+			<div className="my-7">
 				<LogoComponent className="size-20" environment={environment} />
 			</div>
 			<div className="text-center flex items-center justify-center px-4">
-				<h1 className="m-0 font-bold">{t("chat.whatCanIDo")}</h1>
-				<Tooltip>
-					<TooltipContent side="bottom">{t("chat.infoTooltip")}</TooltipContent>
-					<TooltipTrigger asChild>
-						<InfoIcon className="ml-2 cursor-pointer text-link text-sm size-2 shrink-0" />
-					</TooltipTrigger>
-				</Tooltip>
+				<h1 className="m-0 font-bold">{headingText}</h1>
 			</div>
 			{shouldShowQuickWins && (
 				<div className="mt-4">
@@ -68,8 +39,8 @@ const HomeHeader = ({ shouldShowQuickWins = false }: HomeHeaderProps) => {
 						className="flex items-center gap-2 px-4 py-2 rounded-full border border-border-panel bg-white/2 hover:bg-list-background-hover transition-colors duration-150 ease-in-out text-code-foreground text-sm font-medium cursor-pointer"
 						onClick={handleTakeATour}
 						type="button">
-						{t("chat.takeATour")}
-						<span className="codicon codicon-play scale-90"></span>
+						Take a Tour
+						<span className="codicon codicon-play scale-90" />
 					</button>
 				</div>
 			)}

@@ -18,16 +18,6 @@ export enum BannerActionType {
 }
 
 /**
- * Backend banner format returned from server API
- */
-export interface BackendBanner {
-	id: string
-	titleMd: string
-	bodyMd: string
-	rulesJson: string
-}
-
-/**
  * Banner data structure for backend-to-frontend communication.
  * Backend constructs this JSON, frontend renders it via BannerCarousel.
  */
@@ -84,10 +74,16 @@ export interface BannerAction {
 	 * - Others: generally unused
 	 */
 	arg?: string
+
+	/**
+	 * Optional model picker tab to open when using SetModel action
+	 */
+	tab?: "recommended" | "free"
 }
 
 /**
  * The list of predefined banner config rendered by the Welcome Section UI.
  * TODO: Backend would return a similar JSON structure in the future which we will replace this with.
  */
+
 export const BANNER_DATA: BannerCardData[] = []

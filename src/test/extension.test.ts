@@ -8,7 +8,7 @@ const packagePath = path.join(__dirname, "..", "..", "package.json")
 
 describe("Cline Extension", () => {
 	after(() => {
-		vscode.window.showInformationMessage("完成所有测试!")
+		vscode.window.showInformationMessage("All tests done!")
 	})
 
 	it("should verify extension ID matches package.json", async () => {
@@ -21,7 +21,7 @@ describe("Cline Extension", () => {
 
 	it("should successfully execute the plus button command", async () => {
 		await new Promise((resolve) => setTimeout(resolve, 400))
-		await vscode.commands.executeCommand("cline-chinese.plusButtonClicked")
+		await vscode.commands.executeCommand("cline.plusButtonClicked")
 	})
 
 	// New test to verify xvfb and webview functionality

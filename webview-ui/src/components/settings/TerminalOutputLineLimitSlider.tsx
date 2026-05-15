@@ -1,10 +1,8 @@
 import React from "react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { updateSetting } from "./utils/settingsHandlers"
 
 const TerminalOutputLineLimitSlider: React.FC = () => {
-	const { t } = useTranslation()
 	const { terminalOutputLineLimit } = useExtensionState()
 
 	const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -15,7 +13,7 @@ const TerminalOutputLineLimitSlider: React.FC = () => {
 	return (
 		<div style={{ marginBottom: 15 }}>
 			<label htmlFor="terminal-output-limit" style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>
-				{t("settings.terminal.outputLimit")}
+				Terminal output limit
 			</label>
 			<div style={{ display: "flex", alignItems: "center" }}>
 				<input
@@ -31,7 +29,8 @@ const TerminalOutputLineLimitSlider: React.FC = () => {
 				<span>{terminalOutputLineLimit ?? 500}</span>
 			</div>
 			<p style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", margin: "5px 0 0 0" }}>
-				{t("settings.terminal.outputLimitDescription")}
+				Maximum number of lines to include in terminal output when executing commands. When exceeded, lines will be
+				removed from the middle, saving tokens.
 			</p>
 		</div>
 	)

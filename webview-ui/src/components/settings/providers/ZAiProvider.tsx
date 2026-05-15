@@ -2,7 +2,6 @@ import { internationalZAiModels, mainlandZAiModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -23,7 +22,6 @@ interface ZAiProviderProps {
  * The Z AI provider configuration component
  */
 export const ZAiProvider = ({ showModelOptions, isPopup, currentMode }: ZAiProviderProps) => {
-	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -40,7 +38,7 @@ export const ZAiProvider = ({ showModelOptions, isPopup, currentMode }: ZAiProvi
 		<div>
 			<DropdownContainer className="dropdown-container" style={{ position: "inherit" }}>
 				<label htmlFor="zai-entrypoint">
-					<span style={{ fontWeight: 500, marginTop: 5 }}>{t("settings.apiConfig.zAiEntrypoint")}</span>
+					<span style={{ fontWeight: 500, marginTop: 5 }}>Z AI Entrypoint</span>
 				</label>
 				<VSCodeDropdown
 					id="zai-entrypoint"
@@ -60,7 +58,8 @@ export const ZAiProvider = ({ showModelOptions, isPopup, currentMode }: ZAiProvi
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				{t("settings.apiConfig.zAiEntrypointDescription")}
+				Please select the appropriate API entrypoint based on your location. If you are in China, choose open.bigmodel.cn
+				. Otherwise, choose api.z.ai.
 			</p>
 			<ApiKeyField
 				initialValue={apiConfiguration?.zaiApiKey || ""}
@@ -76,7 +75,7 @@ export const ZAiProvider = ({ showModelOptions, isPopup, currentMode }: ZAiProvi
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label="Model"
 						models={zaiModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

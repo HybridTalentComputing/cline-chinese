@@ -9,7 +9,7 @@ export async function openImage(dataUri: string) {
 	if (!matches) {
 		HostProvider.window.showMessage({
 			type: ShowMessageType.ERROR,
-			message: "无效的 Data URI 格式",
+			message: "Invalid data URI format",
 		})
 		return
 	}
@@ -24,7 +24,7 @@ export async function openImage(dataUri: string) {
 	} catch (error) {
 		HostProvider.window.showMessage({
 			type: ShowMessageType.ERROR,
-			message: `打开图片错误: ${error}`,
+			message: `Error opening image: ${error}`,
 		})
 	}
 }
@@ -38,7 +38,7 @@ export async function openFile(absolutePath: string, preserveFocus: boolean = fa
 	} catch (_error) {
 		HostProvider.window.showMessage({
 			type: ShowMessageType.ERROR,
-			message: `打开文件错误!`,
+			message: `Could not open file!`,
 		})
 	}
 }

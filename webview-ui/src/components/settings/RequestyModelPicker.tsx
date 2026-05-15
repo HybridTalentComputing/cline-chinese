@@ -172,7 +172,6 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 	}, [selectedIndex])
 
 	const showBudgetSlider = useMemo(() => {
-		setSearchTerm(selectedModelId)
 		return selectedModelId?.includes("claude-3-7-sonnet")
 	}, [selectedModelId])
 
@@ -188,7 +187,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 			</style>
 			<div style={{ display: "flex", flexDirection: "column" }}>
 				<label htmlFor="model-search">
-					<span style={{ fontWeight: 500 }}>模型</span>
+					<span style={{ fontWeight: 500 }}>Model</span>
 				</label>
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField
@@ -199,7 +198,8 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder="选择模型..."
+						placeholder="Search and select a model..."
+						role="combobox"
 						style={{
 							width: "100%",
 							zIndex: REQUESTY_MODEL_PICKER_Z_INDEX,
@@ -208,7 +208,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 						value={searchTerm}>
 						{searchTerm && (
 							<div
-								aria-label="清除"
+								aria-label="Clear search"
 								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									handleModelChange("")
@@ -225,7 +225,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 						)}
 					</VSCodeTextField>
 					{isDropdownVisible && (
-						<DropdownList ref={dropdownListRef}>
+						<DropdownList ref={dropdownListRef} role="listbox">
 							{modelSearchResults.map((item, index) => (
 								<DropdownItem
 									dangerouslySetInnerHTML={{
@@ -239,6 +239,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 									}}
 									onMouseEnter={() => setSelectedIndex(index)}
 									ref={(el) => (itemRefs.current[index] = el)}
+									role="option"
 								/>
 							))}
 						</DropdownList>
@@ -259,11 +260,11 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					<>
-						插件从{" "}
+						The extension automatically fetches the latest list of models available on{" "}
 						<VSCodeLink href={requestyModelListUrl?.toString()} style={{ display: "inline", fontSize: "inherit" }}>
 							Requesty.
 						</VSCodeLink>
-						自动获取最新的模型列表 如果你不确定使用哪个模型, Cline 可以使用{" "}
+						If you're unsure which model to choose, Cline works best with{" "}
 						<VSCodeLink
 							onClick={() => handleModelChange("anthropic/claude-3-7-sonnet-latest")}
 							style={{ display: "inline", fontSize: "inherit" }}>

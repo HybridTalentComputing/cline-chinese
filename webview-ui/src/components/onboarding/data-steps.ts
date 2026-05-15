@@ -1,4 +1,5 @@
 export enum NEW_USER_TYPE {
+	FREE = "free",
 	POWER = "power",
 	BYOK = "byok",
 }
@@ -11,39 +12,43 @@ type UserTypeSelection = {
 
 export const STEP_CONFIG = {
 	0: {
-		title: "onboarding.userType.title",
-		description: "onboarding.userType.description",
+		title: "How will you use Cline?",
+		description: "Select an option below to get started.",
 		buttons: [
-			{ text: "onboarding.button.continue", action: "next", variant: "default" },
-			{ text: "onboarding.button.login", action: "signin", variant: "secondary" },
+			{ text: "Continue", action: "next", variant: "default" },
+			{ text: "Login to Cline", action: "signin", variant: "secondary" },
+		],
+	},
+	[NEW_USER_TYPE.FREE]: {
+		title: "Select a free model",
+		buttons: [
+			{ text: "Create my Account", action: "signup", variant: "default" },
+			{ text: "Back", action: "back", variant: "secondary" },
 		],
 	},
 	[NEW_USER_TYPE.POWER]: {
-		title: "onboarding.step.power.title",
+		title: "Select your model",
 		buttons: [
-			{ text: "onboarding.button.createAccount", action: "signup", variant: "default" },
-			{ text: "onboarding.button.back", action: "back", variant: "secondary" },
+			{ text: "Create my Account", action: "signup", variant: "default" },
+			{ text: "Back", action: "back", variant: "secondary" },
 		],
 	},
 	[NEW_USER_TYPE.BYOK]: {
-		title: "onboarding.step.byok.title",
+		title: "Configure your provider",
 		buttons: [
-			{ text: "onboarding.button.continue", action: "done", variant: "default" },
-			{ text: "onboarding.button.back", action: "back", variant: "secondary" },
+			{ text: "Continue", action: "done", variant: "default" },
+			{ text: "Back", action: "back", variant: "secondary" },
 		],
 	},
 	2: {
-		title: "onboarding.step.almost.title",
-		description: "onboarding.step.almost.description",
-		buttons: [{ text: "onboarding.button.back", action: "back", variant: "secondary" }],
+		title: "Almost there!",
+		description: "Complete account creation in your browser. Then come back here to finish up.",
+		buttons: [{ text: "Back", action: "back", variant: "secondary" }],
 	},
 } as const
 
 export const USER_TYPE_SELECTIONS: UserTypeSelection[] = [
-	{ title: "onboarding.userType.power.title", description: "onboarding.userType.power.description", type: NEW_USER_TYPE.POWER },
-	{
-		title: "onboarding.userType.byok.title",
-		description: "onboarding.userType.byok.description",
-		type: NEW_USER_TYPE.BYOK,
-	},
+	{ title: "Absolutely Free", description: "Get started at no cost", type: NEW_USER_TYPE.FREE },
+	{ title: "Frontier Model", description: "Claude, GPT Codex, Gemini, etc.", type: NEW_USER_TYPE.POWER },
+	{ title: "Bring my own API key", description: "Use Cline with your provider of choice", type: NEW_USER_TYPE.BYOK },
 ]

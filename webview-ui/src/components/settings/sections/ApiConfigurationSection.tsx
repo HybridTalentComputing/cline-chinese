@@ -2,7 +2,6 @@ import { UpdateSettingsRequest } from "@shared/proto/cline/state"
 import { Mode } from "@shared/storage/types"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import { TabButton } from "../../mcp/configuration/McpConfigurationView"
@@ -13,10 +12,10 @@ import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandler
 
 interface ApiConfigurationSectionProps {
 	renderSectionHeader?: (tabId: string) => JSX.Element | null
+	initialModelTab?: "recommended" | "free"
 }
 
-const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectionProps) => {
-	const { t } = useTranslation()
+const ApiConfigurationSection = ({ renderSectionHeader, initialModelTab }: ApiConfigurationSectionProps) => {
 	const { planActSeparateModelsSetting, mode, apiConfiguration } = useExtensionState()
 	const [currentTab, setCurrentTab] = useState<Mode>(mode)
 	const { handleFieldsChange } = useApiConfigurationHandlers()
@@ -36,7 +35,7 @@ const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectio
 									opacity: 1,
 									cursor: "pointer",
 								}}>
-								{t("settings.apiConfig.planMode")}
+								Plan Mode
 							</TabButton>
 							<TabButton
 								disabled={currentTab === "act"}
@@ -46,17 +45,17 @@ const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectio
 									opacity: 1,
 									cursor: "pointer",
 								}}>
-								{t("settings.apiConfig.actMode")}
+								Act Mode
 							</TabButton>
 						</div>
 
 						{/* Content container */}
 						<div className="-mb-3">
-							<ApiOptions currentMode={currentTab} showModelOptions={true} />
+							<ApiOptions currentMode={currentTab} initialModelTab={initialModelTab} showModelOptions={true} />
 						</div>
 					</div>
 				) : (
-					<ApiOptions currentMode={mode} showModelOptions={true} />
+					<ApiOptions currentMode={mode} initialModelTab={initialModelTab} showModelOptions={true} />
 				)}
 
 				<div className="mb-[5px]">
@@ -79,10 +78,11 @@ const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectio
 								console.error("Failed to update separate models setting:", error)
 							}
 						}}>
-						{t("settings.apiConfig.separateModels")}
+						Use different models for Plan and Act modes
 					</VSCodeCheckbox>
-					<p className="text-sm mt-[5px] text-description">
-						{t("settings.apiConfig.separateModelsDescription")}
+					<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
+						Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be
+						helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on.
 					</p>
 				</div>
 			</Section>

@@ -1,7 +1,6 @@
 import { CheckpointRestoreRequest } from "@shared/proto/cline/checkpoints"
 import { ClineCheckpointRestore } from "@shared/WebviewMessage"
 import React, { forwardRef, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import DynamicTextArea from "react-textarea-autosize"
 import Thumbnails from "@/components/common/Thumbnails"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -17,7 +16,6 @@ interface UserMessageProps {
 }
 
 const UserMessage: React.FC<UserMessageProps> = ({ text, images, files, messageTs, sendMessageFromChatRow }) => {
-	const { t } = useTranslation()
 	const [isEditing, setIsEditing] = useState(false)
 	const [editedText, setEditedText] = useState(text || "")
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -91,12 +89,10 @@ const UserMessage: React.FC<UserMessageProps> = ({ text, images, files, messageT
 
 	return (
 		<div
-			className="py-2 px-2.5"
+			className="p-2.5 pr-1 my-1 text-badge-foreground rounded-xs"
 			onClick={handleClick}
 			style={{
 				backgroundColor: isEditing ? "unset" : "var(--vscode-badge-background)",
-				color: "var(--vscode-badge-foreground)",
-				borderRadius: "3px",
 				whiteSpace: "pre-line",
 				wordWrap: "break-word",
 			}}>
@@ -131,19 +127,19 @@ const UserMessage: React.FC<UserMessageProps> = ({ text, images, files, messageT
 						{!checkpointManagerErrorMessage && (
 							<RestoreButton
 								isPrimary={false}
-								label={t("chatRow.restoreAll")}
+								label="Restore All"
 								onClick={handleRestoreWorkspace}
 								ref={restoreAllButtonRef}
-								title={t("chatRow.restoreAllTooltip")}
+								title="Restore both the chat and workspace files to this checkpoint and send your edited message"
 								type="taskAndWorkspace"
 							/>
 						)}
 						<RestoreButton
 							isPrimary={true}
-							label={t("chatRow.restoreChat")}
+							label="Restore Chat"
 							onClick={handleRestoreWorkspace}
 							ref={restoreChatButtonRef}
-							title={t("chatRow.restoreChatTooltip")}
+							title="Restore just the chat to this checkpoint and send your edited message"
 							type="task"
 						/>
 					</div>

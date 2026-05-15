@@ -1,6 +1,8 @@
 # Default
 .vscode/**
 .vscode-test/**
+.worktrees/**
+CLAUDE.local.md
 out/
 dist-standalone/
 node_modules/
@@ -23,6 +25,15 @@ eslint-rules/**
 # cli
 cli/**
 
+# sdk (separate monorepo with its own build/release pipeline)
+sdk/**
+
+# Source-of-truth for the marketplace README (the .vsix only ever sees the
+# README.md that scripts/marketplace-readme.mjs swaps into place). The backup
+# only exists if a publish aborts mid-swap; neither should ship in the .vsix.
+README.marketplace.md
+.README.github.bak
+
 # Custom
 **/demo.gif
 .nvmrc
@@ -33,11 +44,9 @@ cli/**
 eslint-rules/
 old_docs/
 evals/
-.changie.yaml
 .codespellrc
 .mocharc.json
 buf.yaml
-.changeset/
 .clinerules/
 
 # Ignore all webview-ui files except the build directory (https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/frameworks/hello-world-react-cra/.vscodeignore)
@@ -52,7 +61,6 @@ webview-ui/node_modules/**
 
 # Ignore docs
 docs/**
-assets/docs/**
 old_docs/**
 
 # Fix issue where codicons don't get packaged (https://github.com/microsoft/vscode-extension-samples/issues/692)

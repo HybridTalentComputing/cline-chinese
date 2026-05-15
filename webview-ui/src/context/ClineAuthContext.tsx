@@ -1,6 +1,6 @@
 import type { UserOrganization } from "@shared/proto/cline/account"
 import { EmptyRequest } from "@shared/proto/cline/common"
-// import deepEqual from "fast-deep-equal"
+import deepEqual from "fast-deep-equal"
 import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { AccountServiceClient } from "@/services/grpc-client"
@@ -27,14 +27,18 @@ export const ClineAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	const [userOrganizations, setUserOrganizations] = useState<UserOrganization[] | null>(null)
 
 	const getUserOrganizations = useCallback(async () => {
-		// try {
-		// const response = await AccountServiceClient.getUserOrganizations(EmptyRequest.create())
-		// if (!deepEqual(response.organizations, userOrganizations)) {
-		// 	setUserOrganizations(response.organizations)
-		// }
-		// } catch (error) {
-		// 	console.error("Failed to fetch user organizations:", error)
-		// }
+		try {
+			const response = await AccountServiceClient.getUserOrganizations(EmptyRequest.create())
+			setUserOrganizations((old) => {
+				if (!deepEqual(response.organizations, old)) {
+					return response.organizations
+				}
+
+				return old
+			})
+		} catch (error) {
+			console.error("Failed to fetch user organizations:", error)
+		}
 	}, [])
 
 	const activeOrganization = useMemo(() => {
@@ -48,17 +52,22 @@ export const ClineAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	// Handle auth status update events
 	useEffect(() => {
 		const cancelSubscription = AccountServiceClient.subscribeToAuthStatusUpdate(EmptyRequest.create(), {
-			onResponse: async (response: any) => {
-				if (!response?.user?.uid) {
-					setUser(null)
-				}
-				if (response?.user && user?.uid !== response.user.uid) {
-					setUser(response.user)
-					// Once we have a new user, fetch organizations that
-					// allow us to display the active account in account view UI
-					// and fetch the correct credit balance to display on mount
-					await getUserOrganizations()
-				}
+			onResponse: async (response) => {
+				setUser((oldUser) => {
+					if (!response?.user?.uid) {
+						return null
+					}
+
+					if (response?.user && oldUser?.uid !== response.user.uid) {
+						// Once we have a new user, fetch organizations that
+						// allow us to display the active account in account view UI
+						// and fetch the correct credit balance to display on mount
+						getUserOrganizations()
+						return response.user
+					}
+
+					return oldUser
+				})
 			},
 			onError: (error: Error) => {
 				console.error("Error in auth callback subscription:", error)
@@ -72,7 +81,7 @@ export const ClineAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		return () => {
 			cancelSubscription()
 		}
-	}, [])
+	}, [getUserOrganizations])
 
 	return (
 		<ClineAuthContext.Provider

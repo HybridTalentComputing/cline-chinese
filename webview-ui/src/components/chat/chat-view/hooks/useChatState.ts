@@ -1,5 +1,5 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ChatState } from "../types/chatTypes"
 
 /**
@@ -17,8 +17,8 @@ export function useChatState(messages: ClineMessage[]): ChatState {
 	// UI state
 	const [sendingDisabled, setSendingDisabled] = useState(false)
 	const [enableButtons, setEnableButtons] = useState<boolean>(false)
-	const [primaryButtonText, setPrimaryButtonText] = useState<string | undefined>("批准")
-	const [secondaryButtonText, setSecondaryButtonText] = useState<string | undefined>("拒绝")
+	const [primaryButtonText, setPrimaryButtonText] = useState<string | undefined>("Approve")
+	const [secondaryButtonText, setSecondaryButtonText] = useState<string | undefined>("Reject")
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
 
 	// Refs
@@ -47,6 +47,11 @@ export function useChatState(messages: ClineMessage[]): ChatState {
 	const handleFocusChange = useCallback((isFocused: boolean) => {
 		setIsTextAreaFocused(isFocused)
 	}, [])
+
+	// Auto-expand last message row when task or messages first changed.
+	useEffect(() => {
+		clearExpandedRows()
+	}, [task?.ts, clearExpandedRows])
 
 	return {
 		// State values

@@ -6,6 +6,7 @@ import * as path from "path"
 import * as vscode from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
+import { Logger } from "@/shared/services/Logger"
 
 /**
  * Registers development-only commands for task manipulation.
@@ -13,7 +14,7 @@ import { ShowMessageType } from "@/shared/proto/host/window"
  */
 export function registerTaskCommands(controller: Controller): vscode.Disposable[] {
 	return [
-		vscode.commands.registerCommand("cline-chinese.dev.expireMcpOAuthTokens", async () => {
+		vscode.commands.registerCommand("cline.dev.expireMcpOAuthTokens", async () => {
 			try {
 				const stateManager = controller.stateManager
 				const secretsJson = stateManager.getSecretKey("mcpOAuthSecrets")
@@ -31,7 +32,7 @@ export function registerTaskCommands(controller: Controller): vscode.Disposable[
 					if (secrets[hash].tokens_saved_at) {
 						secrets[hash].tokens_saved_at = Date.now() - 2 * 60 * 60 * 1000 // 2 hours ago
 						expiredCount++
-						console.log(`[Dev] Expired tokens for hash: ${hash}`)
+						Logger.log(`[Dev] Expired tokens for hash: ${hash}`)
 					}
 				}
 
@@ -48,10 +49,10 @@ export function registerTaskCommands(controller: Controller): vscode.Disposable[
 				}
 			} catch (error) {
 				vscode.window.showErrorMessage(`Failed to expire tokens: ${error}`)
-				console.error("[Dev] Error expiring MCP OAuth tokens:", error)
+				Logger.error("[Dev] Error expiring MCP OAuth tokens:", error)
 			}
 		}),
-		vscode.commands.registerCommand("cline-chinese.dev.createTestTasks", async () => {
+		vscode.commands.registerCommand("cline.dev.createTestTasks", async () => {
 			const count = (
 				await HostProvider.window.showInputBox({
 					title: "Test Tasks",
@@ -138,7 +139,7 @@ export function registerTaskCommands(controller: Controller): vscode.Disposable[
 					// Update the UI to show the new tasks
 					await controller.postStateToWebview()
 
-					const message = `创建 ${tasksCount} 测试任务`
+					const message = `Created ${tasksCount} test tasks`
 					HostProvider.window.showMessage({
 						type: ShowMessageType.INFORMATION,
 						message,

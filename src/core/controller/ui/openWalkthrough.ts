@@ -2,7 +2,8 @@ import type { EmptyRequest } from "@shared/proto/cline/common"
 import { Empty } from "@shared/proto/cline/common"
 import * as vscode from "vscode"
 import { ExtensionRegistryInfo } from "@/registry"
-// import { telemetryService } from "@/services/telemetry"
+import { telemetryService } from "@/services/telemetry"
+import { Logger } from "@/shared/services/Logger"
 import type { Controller } from "../index"
 
 /**
@@ -15,12 +16,12 @@ export async function openWalkthrough(_controller: Controller, _request: EmptyRe
 	try {
 		await vscode.commands.executeCommand(
 			"workbench.action.openWalkthrough",
-			`HybridTalentComputing.${ExtensionRegistryInfo.name}#ClineWalkthrough`,
+			`saoudrizwan.${ExtensionRegistryInfo.name}#ClineWalkthrough`,
 		)
-		// telemetryService.captureButtonClick("webview_openWalkthrough")
+		telemetryService.captureButtonClick("webview_openWalkthrough")
 		return Empty.create({})
 	} catch (error) {
-		console.error(`Failed to open walkthrough: ${error}`)
+		Logger.error(`Failed to open walkthrough: ${error}`)
 		throw error
 	}
 }

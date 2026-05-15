@@ -2,7 +2,6 @@ import { xaiModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { VSCodeCheckbox, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { DROPDOWN_Z_INDEX } from "../ApiOptions"
 import { ApiKeyField } from "../common/ApiKeyField"
@@ -21,7 +20,6 @@ interface XaiProviderProps {
 }
 
 export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProviderProps) => {
-	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -49,8 +47,8 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					<span style={{ color: "var(--vscode-errorForeground)" }}>
-						(<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.note")}</span>{" "}
-						{t("settings.apiConfig.clineBestWithClaude")})
+						(<span style={{ fontWeight: 500 }}>Note:</span> Cline uses complex prompts and works best with Claude
+						models. Less capable models may not work as expected.)
 					</span>
 				</p>
 			</div>
@@ -58,7 +56,7 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label="Model"
 						models={xaiModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(
@@ -86,13 +84,13 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 									}
 								}}
 								style={{ marginTop: 0 }}>
-								{t("settings.apiConfig.modifyReasoningEffort")}
+								Modify reasoning effort
 							</VSCodeCheckbox>
 
 							{reasoningEffortSelected && (
 								<div>
 									<label htmlFor="reasoning-effort-dropdown">
-										<span style={{}}>{t("settings.apiConfig.reasoningEffort")}</span>
+										<span style={{}}>Reasoning Effort</span>
 									</label>
 									<DropdownContainer className="dropdown-container" zIndex={DROPDOWN_Z_INDEX - 100}>
 										<VSCodeDropdown
@@ -106,8 +104,8 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 											}}
 											style={{ width: "100%", marginTop: 3 }}
 											value={modeFields.reasoningEffort || "high"}>
-											<VSCodeOption value="low">{t("settings.providers.low")}</VSCodeOption>
-											<VSCodeOption value="high">{t("settings.providers.high")}</VSCodeOption>
+											<VSCodeOption value="low">low</VSCodeOption>
+											<VSCodeOption value="high">high</VSCodeOption>
 										</VSCodeDropdown>
 									</DropdownContainer>
 									<p
@@ -117,7 +115,7 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 											marginBottom: 0,
 											color: "var(--vscode-descriptionForeground)",
 										}}>
-										{t("settings.apiConfig.reasoningEffortDescription")}
+										High effort may produce more thorough analysis but takes longer and uses more tokens.
 									</p>
 								</div>
 							)}

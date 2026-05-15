@@ -8,10 +8,12 @@ import * as chromeLauncher from "chrome-launcher"
 import os from "os"
 import pWaitFor from "p-wait-for"
 import * as path from "path"
-import type { ConsoleMessage, ScreenshotOptions } from "puppeteer-core"
+// @ts-ignore
+import type { LoggerMessage, ScreenshotOptions } from "puppeteer-core"
 import { Browser, connect, launch, Page, TimeoutError } from "puppeteer-core"
 import { StateManager } from "@/core/storage/StateManager"
-// import { telemetryService } from "@/services/telemetry"
+import { telemetryService } from "@/services/telemetry"
+import { Logger } from "@/shared/services/Logger"
 import { discoverChromeInstances, isPortOpen, testBrowserConnection } from "./BrowserDiscovery"
 import { ensureChromiumExists } from "./utils"
 
@@ -89,7 +91,7 @@ export class BrowserSession {
 				return { path: systemPath, isBundled: false }
 			}
 		} catch (error) {
-			console.info("Could not find system Chrome:", error)
+			Logger.info("Could not find system Chrome:", error)
 		}
 
 		// Finally fall back to PCR's bundled version
@@ -104,7 +106,7 @@ export class BrowserSession {
 			if (!installation) {
 				throw new Error("Could not find Chrome installation on this system")
 			}
-			console.info("chrome installation", installation)
+			Logger.info("chrome installation", installation)
 
 			const userArgs = splitArgs(this.stateManager.getGlobalSettingsKey("browserSettings").customArgs)
 
@@ -165,46 +167,46 @@ export class BrowserSession {
 		const browserSettings = this.stateManager.getGlobalSettingsKey("browserSettings")
 
 		if (browserSettings.remoteBrowserEnabled) {
-			console.log(`launch browser called -- remote host mode (non-headless)`)
+			Logger.log(`launch browser called -- remote host mode (non-headless)`)
 			try {
 				await this.launchRemoteBrowser()
 				// Don't create a new page here, as we'll create it in launchRemoteBrowser
 
 				// Send telemetry for browser tool start
 				if (this.ulid) {
-					// telemetryService.captureBrowserToolStart(this.ulid, browserSettings)
+					telemetryService.captureBrowserToolStart(this.ulid, browserSettings)
 				}
 
 				return
 			} catch (error) {
-				console.error("Failed to launch remote browser, falling back to local mode:", error)
+				Logger.error("Failed to launch remote browser, falling back to local mode:", error)
 
 				// Capture error telemetry
-				// if (this.ulid) {
-				// 	// telemetryService.captureBrowserError(
-				// 	// 	this.ulid,
-				// 	// 	"remote_browser_launch_error",
-				// 	// 	error instanceof Error ? error.message : String(error),
-				// 	// 	{
-				// 	// 		isRemote: true,
-				// 	// 		remoteBrowserHost: browserSettings.remoteBrowserHost,
-				// 	// 	},
-				// 	// )
-				// }
+				if (this.ulid) {
+					telemetryService.captureBrowserError(
+						this.ulid,
+						"remote_browser_launch_error",
+						error instanceof Error ? error.message : String(error),
+						{
+							isRemote: true,
+							remoteBrowserHost: browserSettings.remoteBrowserHost,
+						},
+					)
+				}
 
 				await this.launchLocalBrowser()
 			}
 		} else {
-			console.log(`launch browser called -- local mode (headless)`)
+			Logger.log(`launch browser called -- local mode (headless)`)
 			await this.launchLocalBrowser()
 		}
 
 		this.page = await this.browser?.newPage()
 
 		// Send telemetry for browser tool start
-		// if (this.ulid) {
-		// 	telemetryService.captureBrowserToolStart(this.ulid, browserSettings)
-		// }
+		if (this.ulid) {
+			telemetryService.captureBrowserToolStart(this.ulid, browserSettings)
+		}
 	}
 
 	async launchLocalBrowser() {
@@ -236,22 +238,22 @@ export class BrowserSession {
 		// First try auto-discovery if no host is provided
 		if (!remoteBrowserHost) {
 			try {
-				console.info("No remote browser host provided, trying auto-discovery")
+				Logger.info("No remote browser host provided, trying auto-discovery")
 				const discoveredHost = await discoverChromeInstances()
 
 				if (discoveredHost) {
-					console.info(`Auto-discovered Chrome at ${discoveredHost}`)
+					Logger.info(`Auto-discovered Chrome at ${discoveredHost}`)
 					remoteBrowserHost = discoveredHost
 				}
 			} catch (error) {
-				console.log(`Auto-discovery failed: ${error}`)
+				Logger.log(`Auto-discovery failed: ${error}`)
 			}
 		}
 
 		// Try to connect with cached endpoint first if it exists and is recent (less than 1 hour old)
 		if (browserWSEndpoint && Date.now() - this.lastConnectionAttempt < 3600000) {
 			try {
-				console.info(`Attempting to connect using cached WebSocket endpoint: ${browserWSEndpoint}`)
+				Logger.info(`Attempting to connect using cached WebSocket endpoint: ${browserWSEndpoint}`)
 				this.browser = await connect({
 					browserWSEndpoint,
 					defaultViewport: getViewport(),
@@ -260,20 +262,20 @@ export class BrowserSession {
 				this.isConnectedToRemote = true
 				return
 			} catch (error) {
-				console.log(`Failed to connect using cached endpoint: ${error}`)
+				Logger.log(`Failed to connect using cached endpoint: ${error}`)
 
 				// Capture error telemetry
-				// if (this.ulid) {
-				// 	telemetryService.captureBrowserError(
-				// 		this.ulid,
-				// 		"cached_endpoint_connection_error",
-				// 		error instanceof Error ? error.message : String(error),
-				// 		{
-				// 			isRemote: true,
-				// 			endpoint: browserWSEndpoint,
-				// 		},
-				// 	)
-				// }
+				if (this.ulid) {
+					telemetryService.captureBrowserError(
+						this.ulid,
+						"cached_endpoint_connection_error",
+						error instanceof Error ? error.message : String(error),
+						{
+							isRemote: true,
+							endpoint: browserWSEndpoint,
+						},
+					)
+				}
 
 				// Clear the cached endpoint since it's no longer valid
 				this.cachedWebSocketEndpoint = undefined
@@ -289,7 +291,7 @@ export class BrowserSession {
 			try {
 				// Fetch the WebSocket endpoint from the Chrome DevTools Protocol
 				const versionUrl = `${remoteBrowserHost.replace(/\/$/, "")}/json/version`
-				console.info(`Fetching WebSocket endpoint from ${versionUrl}`)
+				Logger.info(`Fetching WebSocket endpoint from ${versionUrl}`)
 
 				const response = await axios.get(versionUrl)
 				browserWSEndpoint = response.data.webSocketDebuggerUrl
@@ -298,7 +300,7 @@ export class BrowserSession {
 					throw new Error("Could not find webSocketDebuggerUrl in the response")
 				}
 
-				console.info(`Found WebSocket browser endpoint: ${browserWSEndpoint}`)
+				Logger.info(`Found WebSocket browser endpoint: ${browserWSEndpoint}`)
 
 				// Cache the successful endpoint
 				this.cachedWebSocketEndpoint = browserWSEndpoint
@@ -312,20 +314,20 @@ export class BrowserSession {
 				this.isConnectedToRemote = true
 				return
 			} catch (error) {
-				console.log(`Failed to connect to remote browser: ${error}`)
+				Logger.log(`Failed to connect to remote browser: ${error}`)
 
 				// Capture error telemetry
-				// if (this.ulid) {
-				// 	telemetryService.captureBrowserError(
-				// 		this.ulid,
-				// 		"remote_host_connection_error",
-				// 		error instanceof Error ? error.message : String(error),
-				// 		{
-				// 			isRemote: true,
-				// 			remoteBrowserHost,
-				// 		},
-				// 	)
-				// }
+				if (this.ulid) {
+					telemetryService.captureBrowserError(
+						this.ulid,
+						"remote_host_connection_error",
+						error instanceof Error ? error.message : String(error),
+						{
+							isRemote: true,
+							remoteBrowserHost,
+						},
+					)
+				}
 			}
 		}
 
@@ -338,27 +340,27 @@ export class BrowserSession {
 	async closeBrowser(): Promise<BrowserActionResult> {
 		if (this.browser || this.page) {
 			// Send telemetry for browser tool end if we have a task ID and session was started
-			// if (this.ulid && this.sessionStartTime > 0) {
-			// 	const sessionDuration = Date.now() - this.sessionStartTime
-			// 	telemetryService.captureBrowserToolEnd(this.ulid, {
-			// 		actionCount: this.browserActions.length,
-			// 		duration: sessionDuration,
-			// 		actions: this.browserActions,
-			// 	})
-			// }
+			if (this.ulid && this.sessionStartTime > 0) {
+				const sessionDuration = Date.now() - this.sessionStartTime
+				telemetryService.captureBrowserToolEnd(this.ulid, {
+					actionCount: this.browserActions.length,
+					duration: sessionDuration,
+					actions: this.browserActions,
+				})
+			}
 
 			if (this.isConnectedToRemote && this.browser) {
 				// Close the page/tab first if it exists
 				if (this.page) {
 					await this.page.close().catch(() => {})
-					console.info("closed remote browser tab...")
+					Logger.info("closed remote browser tab...")
 				}
 				await this.browser.disconnect().catch(() => {})
-				console.info("disconnected from remote browser...")
+				Logger.info("disconnected from remote browser...")
 				// do not close the browser
 			} else if (this.isConnectedToRemote === false) {
 				await this.browser?.close().catch(() => {})
-				console.info("closed local browser...")
+				Logger.info("closed local browser...")
 			}
 
 			this.browser = undefined
@@ -383,7 +385,7 @@ export class BrowserSession {
 		const logs: string[] = []
 		let lastLogTs = Date.now()
 
-		const consoleListener = (msg: ConsoleMessage) => {
+		const LoggerListener = (msg: LoggerMessage) => {
 			if (msg.type() === "log") {
 				logs.push(msg.text())
 			} else {
@@ -398,7 +400,7 @@ export class BrowserSession {
 		}
 
 		// Add the listeners
-		this.page.on("console", consoleListener)
+		this.page.on("Logger", LoggerListener)
 		this.page.on("pageerror", errorListener)
 
 		try {
@@ -410,16 +412,16 @@ export class BrowserSession {
 				logs.push(`[Error] ${errorMessage}`)
 
 				// Capture error telemetry
-				// if (this.ulid) {
-				// 	telemetryService.captureBrowserError(this.ulid, "browser_action_error", errorMessage, {
-				// 		isRemote: this.isConnectedToRemote,
-				// 		action: this.browserActions[this.browserActions.length - 1],
-				// 	})
-				// }
+				if (this.ulid) {
+					telemetryService.captureBrowserError(this.ulid, "browser_action_error", errorMessage, {
+						isRemote: this.isConnectedToRemote,
+						action: this.browserActions[this.browserActions.length - 1],
+					})
+				}
 			}
 		}
 
-		// Wait for console inactivity, with a timeout
+		// Wait for Logger inactivity, with a timeout
 		await pWaitFor(() => Date.now() - lastLogTs >= 500, {
 			timeout: 3_000,
 			interval: 100,
@@ -445,7 +447,7 @@ export class BrowserSession {
 
 		if (!screenshotBase64) {
 			// choosing to try screenshot again, regardless of the initial type
-			console.info(`${screenshotType} screenshot failed, trying png`)
+			Logger.info(`${screenshotType} screenshot failed, trying png`)
 			screenshotBase64 = await this.page.screenshot({
 				...options,
 				type: "png",
@@ -455,17 +457,17 @@ export class BrowserSession {
 
 		if (!screenshotBase64) {
 			// Capture error telemetry
-			// if (this.ulid) {
-			// 	telemetryService.captureBrowserError(this.ulid, "screenshot_error", "Failed to take screenshot", {
-			// 		isRemote: this.isConnectedToRemote,
-			// 		action: this.browserActions[this.browserActions.length - 1],
-			// 	})
-			// }
+			if (this.ulid) {
+				telemetryService.captureBrowserError(this.ulid, "screenshot_error", "Failed to take screenshot", {
+					isRemote: this.isConnectedToRemote,
+					action: this.browserActions[this.browserActions.length - 1],
+				})
+			}
 			throw new Error("Failed to take screenshot.")
 		}
 
 		// this.page.removeAllListeners() <- causes the page to crash!
-		this.page.off("console", consoleListener)
+		this.page.off("Logger", LoggerListener)
 		this.page.off("pageerror", errorListener)
 
 		return {
@@ -505,7 +507,7 @@ export class BrowserSession {
 			const currentHTMLSize = html.length
 
 			// let bodyHTMLSize = await page.evaluate(() => document.body.innerHTML.length)
-			console.info("last: ", lastHTMLSize, " <> curr: ", currentHTMLSize)
+			Logger.info("last: ", lastHTMLSize, " <> curr: ", currentHTMLSize)
 
 			if (lastHTMLSize !== 0 && currentHTMLSize === lastHTMLSize) {
 				countStableSizeIterations++
@@ -514,7 +516,7 @@ export class BrowserSession {
 			}
 
 			if (countStableSizeIterations >= minStableSizeIterations) {
-				console.info("Page rendered fully...")
+				Logger.info("Page rendered fully...")
 				break
 			}
 

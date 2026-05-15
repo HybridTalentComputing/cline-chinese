@@ -2,6 +2,7 @@ import type { ToolUse } from "@core/assistant-message"
 import { formatResponse } from "@core/prompts/responses"
 import { ClineAsk, ClineAskUseMcpServer } from "@shared/ExtensionMessage"
 import { telemetryService } from "@/services/telemetry"
+import { truncateContent } from "@/shared/content-limits"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
 import { showNotificationForApproval } from "../../utils"
@@ -89,22 +90,22 @@ export class UseMcpToolHandler implements IFullyManagedTool {
 			?.find((conn: any) => conn.server.name === server_name)
 			?.server.tools?.find((tool: any) => tool.name === tool_name)?.autoApprove
 
-		if (config.callbacks.shouldAutoApproveTool(block.name) && isToolAutoApproved) {
+		if (config.callbacks.shouldAutoApproveTool(block.name) || isToolAutoApproved) {
 			// Auto-approval flow
 			await config.callbacks.removeLastPartialMessageIfExistsWithType("ask", "use_mcp_server")
 			await config.callbacks.say("use_mcp_server", completeMessage, undefined, undefined, false)
 
 			// Capture telemetry
-			// telemetryService.captureToolUsage(
-			// 	config.ulid,
-			// 	block.name,
-			// 	config.api.getModel().id,
-			// 	provider,
-			// 	true,
-			// 	true,
-			// 	undefined,
-			// 	block.isNativeToolCall,
-			// )
+			telemetryService.captureToolUsage(
+				config.ulid,
+				block.name,
+				config.api.getModel().id,
+				provider,
+				true,
+				true,
+				undefined,
+				block.isNativeToolCall,
+			)
 		} else {
 			// Manual approval flow
 			const notificationMessage = `Cline wants to use ${tool_name || "unknown tool"} on ${server_name || "unknown server"}`
@@ -126,7 +127,7 @@ export class UseMcpToolHandler implements IFullyManagedTool {
 					undefined,
 					block.isNativeToolCall,
 				)
-				return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
+				return formatResponse.toolDenied()
 			} else {
 				telemetryService.captureToolUsage(
 					config.ulid,
@@ -148,7 +149,7 @@ export class UseMcpToolHandler implements IFullyManagedTool {
 		} catch (error) {
 			const { PreToolUseHookCancellationError } = await import("@core/hooks/PreToolUseHookCancellationError")
 			if (error instanceof PreToolUseHookCancellationError) {
-				return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
+				return formatResponse.toolDenied()
 			}
 			throw error
 		}
@@ -203,6 +204,9 @@ export class UseMcpToolHandler implements IFullyManagedTool {
 			if (toolResultImages.length > 0 && !supportsImages) {
 				toolResultText += `\n\n[${toolResultImages.length} images were provided in the response, and while they are displayed to the user, you do not have the ability to view them.]`
 			}
+
+			// Truncate response if it exceeds 400KB to prevent context overflow
+			toolResultText = truncateContent(toolResultText)
 
 			// Return formatted result (only pass images if model supports them)
 			return formatResponse.toolResult(toolResultText, supportsImages ? toolResultImages : undefined)

@@ -2,7 +2,6 @@ import { SapAiCoreModelDeployment, SapAiCoreModelsRequest } from "@shared/proto/
 import { Mode } from "@shared/storage/types"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useCallback, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ModelsServiceClient } from "@/services/grpc-client"
 import { DebouncedTextField } from "../common/DebouncedTextField"
@@ -24,7 +23,6 @@ interface SapAiCoreProviderProps {
  * The SAP AI Core provider configuration component
  */
 export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: SapAiCoreProviderProps) => {
-	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldsChange } = useApiConfigurationHandlers()
 
@@ -83,7 +81,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 			}
 		} catch (error) {
 			console.error("Error fetching SAP AI Core models:", error)
-			setModelError(t("settings.apiConfig.sapAiCore.failedToFetchModelsError"))
+			setModelError("Failed to fetch models. Please check your configuration.")
 			setSapAiCoreModelDeployments([])
 			setOrchestrationAvailable(false)
 			setHasCheckedOrchestration(true)
@@ -133,61 +131,61 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 			<DebouncedTextField
 				initialValue={apiConfiguration?.sapAiCoreClientId || ""}
 				onChange={(value) => handleFieldChange("sapAiCoreClientId", value)}
-				placeholder={t("settings.apiConfig.sapAiCore.enterClientId")}
+				placeholder="Enter AI Core Client Id..."
 				style={{ width: "100%" }}
 				type="password">
-				<span className="font-medium">{t("settings.apiConfig.sapAiCore.clientId")}</span>
+				<span className="font-medium">AI Core Client Id</span>
 			</DebouncedTextField>
 			{apiConfiguration?.sapAiCoreClientId && (
 				<p className="text-xs text-(--vscode-descriptionForeground)">
-					{t("settings.apiConfig.sapAiCore.clientIdSet")}
+					Client Id is set. To change it, please re-enter the value.
 				</p>
 			)}
 
 			<DebouncedTextField
 				initialValue={apiConfiguration?.sapAiCoreClientSecret || ""}
 				onChange={(value) => handleFieldChange("sapAiCoreClientSecret", value)}
-				placeholder={t("settings.apiConfig.sapAiCore.enterClientSecret")}
+				placeholder="Enter AI Core Client Secret..."
 				style={{ width: "100%" }}
 				type="password">
-				<span className="font-medium">{t("settings.apiConfig.sapAiCore.clientSecret")}</span>
+				<span className="font-medium">AI Core Client Secret</span>
 			</DebouncedTextField>
 			{apiConfiguration?.sapAiCoreClientSecret && (
 				<p className="text-xs text-(--vscode-descriptionForeground)">
-					{t("settings.apiConfig.sapAiCore.clientSecretSet")}
+					Client Secret is set. To change it, please re-enter the value.
 				</p>
 			)}
 
 			<DebouncedTextField
 				initialValue={apiConfiguration?.sapAiCoreBaseUrl || ""}
 				onChange={(value) => handleFieldChange("sapAiCoreBaseUrl", value)}
-				placeholder={t("settings.apiConfig.sapAiCore.enterBaseUrl")}
+				placeholder="Enter AI Core Base URL..."
 				style={{ width: "100%" }}>
-				<span className="font-medium">{t("settings.apiConfig.sapAiCore.baseUrl")}</span>
+				<span className="font-medium">AI Core Base URL</span>
 			</DebouncedTextField>
 
 			<DebouncedTextField
 				initialValue={apiConfiguration?.sapAiCoreTokenUrl || ""}
 				onChange={(value) => handleFieldChange("sapAiCoreTokenUrl", value)}
-				placeholder={t("settings.apiConfig.sapAiCore.enterTokenUrl")}
+				placeholder="Enter AI Core Auth URL..."
 				style={{ width: "100%" }}>
-				<span className="font-medium">{t("settings.apiConfig.sapAiCore.tokenUrl")}</span>
+				<span className="font-medium">AI Core Auth URL</span>
 			</DebouncedTextField>
 
 			<DebouncedTextField
 				initialValue={apiConfiguration?.sapAiResourceGroup || ""}
 				onChange={(value) => handleFieldChange("sapAiResourceGroup", value)}
-				placeholder={t("settings.apiConfig.sapAiCore.enterResourceGroup")}
+				placeholder="Enter AI Core Resource Group..."
 				style={{ width: "100%" }}>
-				<span className="font-medium">{t("settings.apiConfig.sapAiCore.resourceGroup")}</span>
+				<span className="font-medium">AI Core Resource Group</span>
 			</DebouncedTextField>
 
 			<p className="text-xs mt-1.5 text-(--vscode-descriptionForeground)">
-				{t("settings.apiConfig.sapAiCore.credentialsStoredLocally")}{" "}
+				These credentials are stored locally and only used to make API requests from this extension.
 				<VSCodeLink
 					className="inline"
 					href="https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/access-sap-ai-core-via-api">
-					{t("settings.apiConfig.sapAiCore.findMoreInfo")}
+					You can find more information about SAP AI Core API access here.
 				</VSCodeLink>
 			</p>
 
@@ -195,15 +193,18 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 				<div className="flex flex-col gap-2.5 mt-[15px]">
 					<div className="flex items-center gap-2">
 						<VSCodeCheckbox
-							aria-label={t("settings.apiConfig.sapAiCore.orchestrationMode")}
+							aria-label="Orchestration Mode"
 							checked={apiConfiguration?.sapAiCoreUseOrchestrationMode}
 							onChange={(e) => handleOrchestrationChange((e.target as HTMLInputElement).checked)}
 						/>
-						<span className="font-medium">{t("settings.apiConfig.sapAiCore.orchestrationMode")}</span>
+						<span className="font-medium">Orchestration Mode</span>
 					</div>
 
 					<p className="text-xs text-(--vscode-descriptionForeground)">
-						{t("settings.apiConfig.sapAiCore.orchestrationDescription")}
+						When enabled, provides access to all available models without requiring individual deployments.
+						<br />
+						<br />
+						When disabled, provides access only to deployed models in your AI Core service instance.
 					</p>
 				</div>
 			)}
@@ -212,26 +213,27 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 				<>
 					<div className="flex flex-col gap-1.5">
 						{isLoadingModels ? (
-							<div className="text-xs text-(--vscode-descriptionForeground)">{t("settings.apiConfig.sapAiCore.loadingModels")}</div>
+							<div className="text-xs text-(--vscode-descriptionForeground)">Loading models...</div>
 						) : modelError ? (
 							<div className="text-xs text-(--vscode-errorForeground)">
 								{modelError}
 								<button
 									className="ml-2 text-[11px] px-1.5 py-0.5 bg-(--vscode-button-background) text-(--vscode-button-foreground) border-none rounded-sm cursor-pointer"
 									onClick={fetchSapAiCoreModels}>
-									{t("settings.apiConfig.sapAiCore.retry")}
+									Retry
 								</button>
 							</div>
 						) : hasRequiredCredentials ? (
 							<>
 								{sapAiCoreModelDeployments.length === 0 && (
 									<div className="text-xs text-(--vscode-errorForeground) mb-2">
-										{t("settings.apiConfig.sapAiCore.failedToFetchModels")}
+										Unable to fetch models from SAP AI Core service instance. Please check your SAP AI Core
+										configuration or ensure your deployments are deployed and running in the service instance
 									</div>
 								)}
 								<SapAiCoreModelPicker
 									onModelChange={handleModelChange}
-									placeholder={t("settings.apiConfig.sapAiCore.selectModel")}
+									placeholder="Select a model..."
 									sapAiCoreModelDeployments={sapAiCoreModelDeployments}
 									selectedDeploymentId={
 										apiConfiguration?.[
@@ -246,7 +248,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 							</>
 						) : (
 							<div className="text-xs text-(--vscode-errorForeground)">
-								{t("settings.apiConfig.sapAiCore.configureCredentials")}
+								Please configure your SAP AI Core credentials to see available models.
 							</div>
 						)}
 					</div>

@@ -1,11 +1,11 @@
 import { minimaxModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
 import { DropdownContainer, ModelSelector } from "../common/ModelSelector"
+import ThinkingBudgetSlider from "../ThinkingBudgetSlider"
 import { normalizeApiConfiguration } from "../utils/providerUtils"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
 
@@ -22,7 +22,6 @@ interface MinimaxProviderProps {
  * The Minimax AI Studio provider configuration component
  */
 export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: MinimaxProviderProps) => {
-	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -33,7 +32,7 @@ export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: Mini
 		<div>
 			<DropdownContainer className="dropdown-container" style={{ position: "inherit" }}>
 				<label htmlFor="minimax-entrypoint">
-					<span style={{ fontWeight: 500, marginTop: 5 }}>{t("settings.apiConfig.minimaxEntrypoint")}</span>
+					<span style={{ fontWeight: 500, marginTop: 5 }}>MiniMax Entrypoint</span>
 				</label>
 				<VSCodeDropdown
 					id="minimax-entrypoint"
@@ -53,7 +52,8 @@ export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: Mini
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				{t("settings.apiConfig.minimaxEndpointDescription")}
+				Select the API endpoint according to your region: <code>api.minimaxi.com</code> for China, or{" "}
+				<code>api.minimax.io</code> for all other locations.
 			</p>
 			<ApiKeyField
 				initialValue={apiConfiguration?.minimaxApiKey || ""}
@@ -69,7 +69,7 @@ export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: Mini
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label="Model"
 						models={minimaxModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(
@@ -80,6 +80,10 @@ export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: Mini
 						}
 						selectedModelId={selectedModelId}
 					/>
+
+					{selectedModelInfo?.supportsReasoning && (
+						<ThinkingBudgetSlider currentMode={currentMode} showEnableToggle={false} />
+					)}
 
 					<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
 				</>

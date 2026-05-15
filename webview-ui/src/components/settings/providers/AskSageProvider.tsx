@@ -1,7 +1,6 @@
 import { askSageDefaultURL, askSageModels, ModelInfo } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { DebouncedTextField } from "../common/DebouncedTextField"
@@ -23,7 +22,6 @@ interface AskSageProviderProps {
  * The AskSage provider configuration component
  */
 export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskSageProviderProps) => {
-	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 	const [availableModels, setAvailableModels] = useState<Record<string, ModelInfo>>(askSageModels)
@@ -72,7 +70,7 @@ export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskS
 	return (
 		<div>
 			<ApiKeyField
-				helpText={t("settings.apiConfig.apiKeyStoredLocally")}
+				helpText="This key is stored locally and only used to make API requests from this extension."
 				initialValue={apiConfiguration?.asksageApiKey || ""}
 				onChange={(value) => handleFieldChange("asksageApiKey", value)}
 				providerName="AskSage"
@@ -81,16 +79,16 @@ export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskS
 			<DebouncedTextField
 				initialValue={apiConfiguration?.asksageApiUrl || askSageDefaultURL}
 				onChange={(value) => handleFieldChange("asksageApiUrl", value)}
-				placeholder={t("settings.apiConfig.enterAskSageApiUrl")}
+				placeholder="Enter AskSage API URL..."
 				style={{ width: "100%" }}
 				type="text">
-				<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.askSageApiUrl")}</span>
+				<span style={{ fontWeight: 500 }}>AskSage API URL</span>
 			</DebouncedTextField>
 
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label="Model"
 						models={availableModels}
 						onChange={(e) =>
 							handleModeFieldChange(

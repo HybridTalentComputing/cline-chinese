@@ -1,6 +1,9 @@
+import { EmptyRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
-import { useTranslation } from "react-i18next"
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { useEffect } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { AccountServiceClient } from "@/services/grpc-client"
 import { DebouncedTextField } from "../common/DebouncedTextField"
 import HicapModelPicker from "../HicapModelPicker"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
@@ -18,9 +21,14 @@ interface HicapProviderProps {
  * The Hicap provider configuration component
  */
 export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapProviderProps) => {
-	const { t } = useTranslation()
 	const { apiConfiguration, refreshHicapModels } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
+
+	useEffect(() => {
+		if (apiConfiguration?.hicapApiKey && apiConfiguration?.hicapApiKey.length === 32) {
+			refreshHicapModels()
+		}
+	}, [apiConfiguration?.hicapApiKey])
 
 	return (
 		<div>
@@ -33,7 +41,7 @@ export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapP
 							refreshHicapModels()
 						}
 					}}
-					placeholder={t("settings.apiConfig.apiKeyPlaceholder")}
+					placeholder="Enter API Key..."
 					style={{ width: "100%" }}
 					type="password">
 					<div
@@ -44,9 +52,24 @@ export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapP
 							width: "100%",
 							margin: "10px 0 0 0",
 						}}>
-						<span style={{ fontWeight: 500 }}>Hicap {t("settings.providers.apiKey")}</span>
+						<span style={{ fontWeight: 500 }}>Hicap API Key</span>
 					</div>
 				</DebouncedTextField>
+
+				{!apiConfiguration?.hicapApiKey && (
+					<VSCodeButton
+						appearance="secondary"
+						onClick={async () => {
+							try {
+								await AccountServiceClient.hicapAuthClicked(EmptyRequest.create())
+							} catch (error) {
+								console.error("Failed to open Hicap auth:", error)
+							}
+						}}
+						style={{ margin: "5px 0 0 0" }}>
+						Generate API Key
+					</VSCodeButton>
+				)}
 			</div>
 
 			{showModelOptions && (

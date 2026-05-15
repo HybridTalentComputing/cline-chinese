@@ -1,14 +1,27 @@
 import { buildApiHandler } from "@core/api"
 import * as path from "path"
 import * as vscode from "vscode"
-import { StateManager } from "@/core/storage/StateManager"
+import { Controller } from "@/core/controller"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
+import { Logger } from "@/shared/services/Logger"
 import { getGitDiff } from "@/utils/git"
 
 /**
  * Git commit message generator module
  */
+
+/**
+ * Gets git diff prioritizing staged changes. If staged changes exist, returns only those.
+ * Falls back to all changes when nothing is staged.
+ */
+export async function getGitDiffStagedFirst(cwd: string): Promise<string> {
+	try {
+		return await getGitDiff(cwd, true)
+	} catch {
+		return await getGitDiff(cwd, false)
+	}
+}
 
 let commitGenerationAbortController: AbortController | undefined
 
@@ -24,16 +37,16 @@ The commit message should:
 4. Be clear and informative`,
 }
 
-export async function generateCommitMsg(stateManager: StateManager, scm?: vscode.SourceControl) {
+export async function generateCommitMsg(controller: Controller, scm?: vscode.SourceControl) {
 	try {
 		const gitExtension = vscode.extensions.getExtension("vscode.git")?.exports
 		if (!gitExtension) {
-			throw new Error(vscode.l10n.t("commit.gitExtensionNotFound"))
+			throw new Error("Git extension not found")
 		}
 
 		const git = gitExtension.getAPI(1)
 		if (git.repositories.length === 0) {
-			throw new Error(vscode.l10n.t("commit.noGitRepos"))
+			throw new Error("No Git repositories available")
 		}
 
 		// If scm is provided, then the user specified one repository by clicking the "Source Control" menu button
@@ -44,27 +57,27 @@ export async function generateCommitMsg(stateManager: StateManager, scm?: vscode
 				throw new Error("Repository not found for provided SCM")
 			}
 
-			await generateCommitMsgForRepository(stateManager, repository)
+			await generateCommitMsgForRepository(controller, repository)
 			return
 		}
 
-		await orchestrateWorkspaceCommitMsgGeneration(stateManager, git.repositories)
+		await orchestrateWorkspaceCommitMsgGeneration(controller, git.repositories)
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error)
 		HostProvider.window.showMessage({
 			type: ShowMessageType.ERROR,
-			message: vscode.l10n.t("commit.generationFailed", errorMessage),
+			message: `[Commit Generation Failed] ${errorMessage}`,
 		})
 	}
 }
 
-async function orchestrateWorkspaceCommitMsgGeneration(stateManager: StateManager, repos: any[]) {
+async function orchestrateWorkspaceCommitMsgGeneration(controller: Controller, repos: any[]) {
 	const reposWithChanges = await filterForReposWithChanges(repos)
 
 	if (reposWithChanges.length === 0) {
 		HostProvider.window.showMessage({
 			type: ShowMessageType.INFORMATION,
-			message: vscode.l10n.t("commit.noChangesFound"),
+			message: "No changes found in any workspace repositories",
 		})
 		return
 	}
@@ -72,7 +85,7 @@ async function orchestrateWorkspaceCommitMsgGeneration(stateManager: StateManage
 	if (reposWithChanges.length === 1) {
 		// Only one repo with changes, generate for it
 		const repo = reposWithChanges[0]
-		await generateCommitMsgForRepository(stateManager, repo)
+		await generateCommitMsgForRepository(controller, repo)
 		return
 	}
 
@@ -87,28 +100,28 @@ async function orchestrateWorkspaceCommitMsgGeneration(stateManager: StateManage
 		// Generate for all repositories with changes
 		for (const repo of reposWithChanges) {
 			try {
-				await generateCommitMsgForRepository(stateManager, repo)
+				await generateCommitMsgForRepository(controller, repo)
 			} catch (error) {
-				console.error(`Failed to generate commit message for ${repo.rootUri.fsPath}:`, error)
+				Logger.error(`Failed to generate commit message for ${repo.rootUri.fsPath}:`, error)
 			}
 		}
 	} else {
 		// Generate for selected repository
-		await generateCommitMsgForRepository(stateManager, selection.repo)
+		await generateCommitMsgForRepository(controller, selection.repo)
 	}
 }
 
 async function filterForReposWithChanges(repos: any[]) {
 	const reposWithChanges = []
 
-	// Check which repositories have changes
+	// Check which repositories have changes (prefer staged, fall back to all)
 	for (const repo of repos) {
 		try {
-			const gitDiff = await getGitDiff(repo.rootUri.fsPath)
+			const gitDiff = await getGitDiffStagedFirst(repo.rootUri.fsPath)
 			if (gitDiff) {
 				reposWithChanges.push(repo)
 			}
-		} catch (error) {
+		} catch {
 			// Skip repositories with errors (no changes, etc.)
 		}
 	}
@@ -124,20 +137,20 @@ async function promptRepoSelection(repos: any[]) {
 	}))
 
 	repoItems.unshift({
-		label: vscode.l10n.t("commit.generateForAll"),
-		description: vscode.l10n.t("commit.generateForCount", repos.length),
+		label: "$(git-commit) Generate for all repositories with changes",
+		description: `Generate commit messages for ${repos.length} repositories`,
 		repo: null as any,
 	})
 
 	return await vscode.window.showQuickPick(repoItems, {
-		placeHolder: vscode.l10n.t("commit.selectRepo"),
+		placeHolder: "Select repository for commit message generation",
 	})
 }
 
-async function generateCommitMsgForRepository(stateManager: StateManager, repository: any) {
+async function generateCommitMsgForRepository(controller: Controller, repository: any) {
 	const inputBox = repository.inputBox
 	const repoPath = repository.rootUri.fsPath
-	const gitDiff = await getGitDiff(repoPath)
+	const gitDiff = await getGitDiffStagedFirst(repoPath)
 
 	if (!gitDiff) {
 		throw new Error(`No changes in repository ${repoPath.split(path.sep).pop() || "repository"} for commit message`)
@@ -146,18 +159,26 @@ async function generateCommitMsgForRepository(stateManager: StateManager, reposi
 	await vscode.window.withProgress(
 		{
 			location: vscode.ProgressLocation.SourceControl,
-			title: vscode.l10n.t("commit.generatingFor", repoPath.split(path.sep).pop() || "repository"),
+			title: `Generating commit message for ${repoPath.split(path.sep).pop() || "repository"}...`,
 			cancellable: true,
 		},
-		() => performCommitMsgGeneration(stateManager, gitDiff, inputBox),
+		() => performCommitMsgGeneration(controller, gitDiff, inputBox),
 	)
 }
 
-async function performCommitMsgGeneration(stateManager: StateManager, gitDiff: string, inputBox: any) {
+async function performCommitMsgGeneration(controller: Controller, gitDiff: string, inputBox: any) {
 	try {
-		vscode.commands.executeCommand("setContext", "cline-chinese.isGeneratingCommit", true)
+		vscode.commands.executeCommand("setContext", "cline.isGeneratingCommit", true)
 
 		const prompts = [PROMPT.instruction]
+
+		const workspaceManager = await controller.ensureWorkspaceManager()
+		if (workspaceManager) {
+			const workspacesJson = await workspaceManager.buildWorkspacesJson()
+			if (workspacesJson) {
+				prompts.push(`# Workspace Configuration\n${workspacesJson}`)
+			}
+		}
 
 		const currentInput = inputBox.value?.trim() || ""
 		if (currentInput) {
@@ -166,11 +187,12 @@ async function performCommitMsgGeneration(stateManager: StateManager, gitDiff: s
 
 		const truncatedDiff = gitDiff.length > 5000 ? gitDiff.substring(0, 5000) + "\n\n[Diff truncated due to size]" : gitDiff
 		prompts.push(truncatedDiff)
+
 		const prompt = prompts.join("\n\n")
 
 		// Get the current API configuration
 		// Set to use Act mode for now by default
-		const apiConfiguration = stateManager.getApiConfiguration()
+		const apiConfiguration = controller.stateManager.getApiConfiguration()
 		const currentMode = "act"
 
 		// Build the API handler
@@ -201,16 +223,16 @@ async function performCommitMsgGeneration(stateManager: StateManager, gitDiff: s
 		const errorMessage = error instanceof Error ? error.message : String(error)
 		HostProvider.window.showMessage({
 			type: ShowMessageType.ERROR,
-			message: vscode.l10n.t("commit.failed", errorMessage),
+			message: `Failed to generate commit message: ${errorMessage}`,
 		})
 	} finally {
-		vscode.commands.executeCommand("setContext", "cline-chinese.isGeneratingCommit", false)
+		vscode.commands.executeCommand("setContext", "cline.isGeneratingCommit", false)
 	}
 }
 
 export function abortCommitGeneration() {
 	commitGenerationAbortController?.abort()
-	vscode.commands.executeCommand("setContext", "cline-chinese.isGeneratingCommit", false)
+	vscode.commands.executeCommand("setContext", "cline.isGeneratingCommit", false)
 }
 
 /**

@@ -1,8 +1,8 @@
 import type { OpenRouterModelInfo } from "@shared/proto/cline/models"
 import type { OnboardingModel, OnboardingModelGroup } from "@shared/proto/cline/state"
-import { TFunction } from "i18next"
 
 export interface OnboardingModelsByGroup {
+	free: ModelGroup[]
 	power: ModelGroup[]
 }
 
@@ -14,10 +14,12 @@ interface ModelGroup {
 export function getClineUIOnboardingGroups(groupedModels: OnboardingModelGroup): OnboardingModelsByGroup {
 	const { models } = groupedModels
 
+	const freeModels = models.filter((m) => m.group === "free")
 	const frontierModels = models.filter((m) => m.group === "frontier")
 	const openSourceModels = models.filter((m) => m.group === "open source")
 
 	return {
+		free: freeModels.length > 0 ? [{ group: "free", models: freeModels }] : [],
 		power: [
 			...(frontierModels.length > 0 ? [{ group: "frontier", models: frontierModels }] : []),
 			...(openSourceModels.length > 0 ? [{ group: "open source", models: openSourceModels }] : []),
@@ -25,12 +27,12 @@ export function getClineUIOnboardingGroups(groupedModels: OnboardingModelGroup):
 	}
 }
 
-export function getPriceRange(modelInfo: OpenRouterModelInfo, t: TFunction): string {
+export function getPriceRange(modelInfo: OpenRouterModelInfo): string {
 	const prompt = Number(modelInfo.inputPrice ?? 0)
 	const completion = Number(modelInfo.outputPrice ?? 0)
 	const cost = prompt + completion
 	if (cost === 0) {
-		return t("onboarding.model.priceRange.free")
+		return "Free"
 	}
 	if (cost < 10) {
 		return "$"
@@ -41,47 +43,47 @@ export function getPriceRange(modelInfo: OpenRouterModelInfo, t: TFunction): str
 	return "$$"
 }
 
-export function getOverviewLabel(overview: number, t: TFunction): string {
+export function getOverviewLabel(overview: number): string {
 	if (overview >= 95) {
-		return t("onboarding.model.overviewLabels.topPerformer")
+		return "Top Performer"
 	}
 	if (overview >= 80) {
-		return t("onboarding.model.overviewLabels.great")
+		return "Great"
 	}
 	if (overview >= 60) {
-		return t("onboarding.model.overviewLabels.good")
+		return "Good"
 	}
 	if (overview >= 50) {
-		return t("onboarding.model.overviewLabels.average")
+		return "Average"
 	}
-	return t("onboarding.model.overviewLabels.belowAverage")
+	return "Below Average"
 }
 
-export function getCapabilities(modelInfo: OpenRouterModelInfo, t: TFunction): string[] {
+export function getCapabilities(modelInfo: OpenRouterModelInfo): string[] {
 	const capabilities = new Set<string>()
 	if (modelInfo.supportsImages) {
-		capabilities.add(t("onboarding.model.capabilities.images"))
+		capabilities.add("Images")
 	}
 	if (modelInfo.supportsPromptCache) {
-		capabilities.add(t("onboarding.model.capabilities.promptCache"))
+		capabilities.add("Prompt Cache")
 	}
-	capabilities.add(t("onboarding.model.capabilities.tools"))
+	capabilities.add("Tools")
 	return Array.from(capabilities)
 }
 
-export function getSpeedLabel(t: TFunction, latency?: number): string {
+export function getSpeedLabel(latency?: number): string {
 	if (!latency) {
-		return t("onboarding.model.speedLabels.average")
+		return "Average"
 	}
 	if (latency < 1) {
-		return t("onboarding.model.speedLabels.instant")
+		return "Instant"
 	}
 	if (latency < 2) {
-		return t("onboarding.model.speedLabels.fast")
+		return "Fast"
 	}
 	if (latency > 5) {
-		return t("onboarding.model.speedLabels.slow")
+		return "Slow"
 	}
 
-	return t("onboarding.model.speedLabels.average")
+	return "Average"
 }

@@ -48,6 +48,14 @@ export const toolParamNames = [
 	"input",
 	"from_ref",
 	"to_ref",
+	"skill_name",
+	"prompt_1",
+	"prompt_2",
+	"prompt_3",
+	"prompt_4",
+	"prompt_5",
+	"start_line",
+	"end_line",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]

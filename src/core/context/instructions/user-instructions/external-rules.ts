@@ -6,13 +6,13 @@ import {
 } from "@core/context/instructions/user-instructions/rule-helpers"
 import { formatResponse } from "@core/prompts/responses"
 import { GlobalFileNames } from "@core/storage/disk"
-import { StateManager } from "@core/storage/StateManager"
 import { listFiles } from "@services/glob/list-files"
 import { ClineRulesToggles } from "@shared/cline-rules"
 import { fileExistsAtPath, isDirectory } from "@utils/fs"
 import fs from "fs/promises"
 import path from "path"
 import { Controller } from "@/core/controller"
+import { Logger } from "@/shared/services/Logger"
 
 /**
  * Refreshes the toggles for windsurf, cursor, and agents rules
@@ -62,7 +62,6 @@ export async function refreshExternalRulesToggles(
  * Gather formatted windsurf rules
  */
 export const getLocalWindsurfRules = async (cwd: string, toggles: ClineRulesToggles) => {
-	const preferredLanguage = StateManager.get().getGlobalSettingsKey("preferredLanguage")
 	const windsurfRulesFilePath = path.resolve(cwd, GlobalFileNames.windsurfRules)
 
 	let windsurfRulesFileInstructions: string | undefined
@@ -73,15 +72,11 @@ export const getLocalWindsurfRules = async (cwd: string, toggles: ClineRulesTogg
 				if (windsurfRulesFilePath in toggles && toggles[windsurfRulesFilePath] !== false) {
 					const ruleFileContent = (await fs.readFile(windsurfRulesFilePath, "utf8")).trim()
 					if (ruleFileContent) {
-						windsurfRulesFileInstructions = formatResponse.windsurfRulesLocalFileInstructions(
-							cwd,
-							ruleFileContent,
-							preferredLanguage,
-						)
+						windsurfRulesFileInstructions = formatResponse.windsurfRulesLocalFileInstructions(cwd, ruleFileContent)
 					}
 				}
 			} catch {
-				console.error(`Failed to read .windsurfrules file at ${windsurfRulesFilePath}`)
+				Logger.error(`Failed to read .windsurfrules file at ${windsurfRulesFilePath}`)
 			}
 		}
 	}
@@ -93,7 +88,6 @@ export const getLocalWindsurfRules = async (cwd: string, toggles: ClineRulesTogg
  * Gather formatted cursor rules, which can come from two sources
  */
 export const getLocalCursorRules = async (cwd: string, toggles: ClineRulesToggles) => {
-	const preferredLanguage = StateManager.get().getGlobalSettingsKey("preferredLanguage")
 	// we first check for the .cursorrules file
 	const cursorRulesFilePath = path.resolve(cwd, GlobalFileNames.cursorRulesFile)
 	let cursorRulesFileInstructions: string | undefined
@@ -104,15 +98,11 @@ export const getLocalCursorRules = async (cwd: string, toggles: ClineRulesToggle
 				if (cursorRulesFilePath in toggles && toggles[cursorRulesFilePath] !== false) {
 					const ruleFileContent = (await fs.readFile(cursorRulesFilePath, "utf8")).trim()
 					if (ruleFileContent) {
-						cursorRulesFileInstructions = formatResponse.cursorRulesLocalFileInstructions(
-							cwd,
-							ruleFileContent,
-							preferredLanguage,
-						)
+						cursorRulesFileInstructions = formatResponse.cursorRulesLocalFileInstructions(cwd, ruleFileContent)
 					}
 				}
 			} catch {
-				console.error(`Failed to read .cursorrules file at ${cursorRulesFilePath}`)
+				Logger.error(`Failed to read .cursorrules file at ${cursorRulesFilePath}`)
 			}
 		}
 	}
@@ -127,14 +117,10 @@ export const getLocalCursorRules = async (cwd: string, toggles: ClineRulesToggle
 				const rulesFilePaths = await readDirectoryRecursive(cursorRulesDirPath, ".mdc")
 				const rulesFilesTotalContent = await getRuleFilesTotalContent(rulesFilePaths, cwd, toggles)
 				if (rulesFilesTotalContent) {
-					cursorRulesDirInstructions = formatResponse.cursorRulesLocalDirectoryInstructions(
-						cwd,
-						rulesFilesTotalContent,
-						preferredLanguage,
-					)
+					cursorRulesDirInstructions = formatResponse.cursorRulesLocalDirectoryInstructions(cwd, rulesFilesTotalContent)
 				}
 			} catch {
-				console.error(`Failed to read .cursor/rules directory at ${cursorRulesDirPath}`)
+				Logger.error(`Failed to read .cursor/rules directory at ${cursorRulesDirPath}`)
 			}
 		}
 	}
@@ -164,7 +150,7 @@ async function findAgentsMdFiles(cwd: string): Promise<string[]> {
 			return basename === GlobalFileNames.agentsRulesFile.toLowerCase()
 		})
 	} catch (error) {
-		console.error(`Failed to find agents.md files in ${cwd}:`, error)
+		Logger.error(`Failed to find agents.md files in ${cwd}:`, error)
 		return []
 	}
 }
@@ -173,7 +159,6 @@ async function findAgentsMdFiles(cwd: string): Promise<string[]> {
  * Gather formatted agents rules - searches recursively and combines all agents.md files
  */
 export const getLocalAgentsRules = async (cwd: string, toggles: ClineRulesToggles) => {
-	const preferredLanguage = StateManager.get().getGlobalSettingsKey("preferredLanguage")
 	const agentsRulesFilePath = path.resolve(cwd, GlobalFileNames.agentsRulesFile)
 
 	// Check if the top-level agents.md file is enabled
@@ -200,17 +185,17 @@ export const getLocalAgentsRules = async (cwd: string, toggles: ClineRulesToggle
 					}
 					return null
 				} catch (error) {
-					console.error(`Failed to read agents.md file at ${filePath}:`, error)
+					Logger.error(`Failed to read agents.md file at ${filePath}:`, error)
 					return null
 				}
 			}),
 		).then((contents) => contents.filter(Boolean).join("\n\n"))
 
 		if (combinedContent) {
-			return formatResponse.agentsRulesLocalFileInstructions(cwd, combinedContent, preferredLanguage)
+			return formatResponse.agentsRulesLocalFileInstructions(cwd, combinedContent)
 		}
 	} catch (error) {
-		console.error("Failed to read agents.md files:", error)
+		Logger.error("Failed to read agents.md files:", error)
 	}
 
 	return undefined

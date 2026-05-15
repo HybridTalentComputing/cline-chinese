@@ -1,7 +1,7 @@
 import { fileExistsAtPath } from "@utils/fs"
 import * as fs from "fs/promises"
 import * as path from "path"
-// @ts-expect-error
+// @ts-ignore
 import PCR from "puppeteer-chromium-resolver"
 import { launch } from "puppeteer-core"
 import { HostProvider } from "@/hosts/host-provider"

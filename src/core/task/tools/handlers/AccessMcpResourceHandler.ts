@@ -2,6 +2,7 @@ import type { ToolUse } from "@core/assistant-message"
 import { formatResponse } from "@core/prompts/responses"
 import { ClineAsk, ClineAskUseMcpServer } from "@shared/ExtensionMessage"
 import { telemetryService } from "@/services/telemetry"
+import { truncateContent } from "@/shared/content-limits"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
 import { showNotificationForApproval } from "../../utils"
@@ -80,16 +81,16 @@ export class AccessMcpResourceHandler implements IFullyManagedTool {
 			await config.callbacks.say("use_mcp_server", completeMessage, undefined, undefined, false)
 
 			// Capture telemetry
-			// telemetryService.captureToolUsage(
-			// 	config.ulid,
-			// 	block.name,
-			// 	config.api.getModel().id,
-			// 	provider,
-			// 	true,
-			// 	true,
-			// 	undefined,
-			// 	block.isNativeToolCall,
-			// )
+			telemetryService.captureToolUsage(
+				config.ulid,
+				block.name,
+				config.api.getModel().id,
+				provider,
+				true,
+				true,
+				undefined,
+				block.isNativeToolCall,
+			)
 		} else {
 			// Manual approval flow
 			const notificationMessage = `Cline wants to access ${uri || "unknown resource"} on ${server_name || "unknown server"}`
@@ -111,7 +112,7 @@ export class AccessMcpResourceHandler implements IFullyManagedTool {
 					undefined,
 					block.isNativeToolCall,
 				)
-				return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
+				return formatResponse.toolDenied()
 			} else {
 				telemetryService.captureToolUsage(
 					config.ulid,
@@ -133,7 +134,7 @@ export class AccessMcpResourceHandler implements IFullyManagedTool {
 		} catch (error) {
 			const { PreToolUseHookCancellationError } = await import("@core/hooks/PreToolUseHookCancellationError")
 			if (error instanceof PreToolUseHookCancellationError) {
-				return formatResponse.toolDenied(config.services.stateManager.getGlobalSettingsKey("preferredLanguage"))
+				return formatResponse.toolDenied()
 			}
 			throw error
 		}
@@ -158,7 +159,10 @@ export class AccessMcpResourceHandler implements IFullyManagedTool {
 		// Display result to user
 		await config.callbacks.say("mcp_server_response", resourceResultPretty)
 
+		// Truncate response if it exceeds 400KB to prevent context overflow
+		const truncatedResult = truncateContent(resourceResultPretty)
+
 		// Return formatted result
-		return formatResponse.toolResult(resourceResultPretty)
+		return formatResponse.toolResult(truncatedResult)
 	}
 }

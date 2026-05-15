@@ -1,11 +1,11 @@
 import { openAiNativeModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
 import { ModelSelector } from "../common/ModelSelector"
-import { normalizeApiConfiguration } from "../utils/providerUtils"
+import ReasoningEffortSelector from "../ReasoningEffortSelector"
+import { normalizeApiConfiguration, supportsReasoningEffortForModelId } from "../utils/providerUtils"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
 
 /**
@@ -21,12 +21,12 @@ interface OpenAINativeProviderProps {
  * The OpenAI (native) provider configuration component
  */
 export const OpenAINativeProvider = ({ showModelOptions, isPopup, currentMode }: OpenAINativeProviderProps) => {
-	const { t } = useTranslation()
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
 	// Get the normalized configuration
 	const { selectedModelId, selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, currentMode)
+	const showReasoningEffort = supportsReasoningEffortForModelId(selectedModelId, true)
 
 	return (
 		<div>
@@ -40,7 +40,7 @@ export const OpenAINativeProvider = ({ showModelOptions, isPopup, currentMode }:
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label="Model"
 						models={openAiNativeModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(
@@ -51,6 +51,7 @@ export const OpenAINativeProvider = ({ showModelOptions, isPopup, currentMode }:
 						}
 						selectedModelId={selectedModelId}
 					/>
+					{showReasoningEffort && <ReasoningEffortSelector currentMode={currentMode} />}
 
 					<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
 				</>

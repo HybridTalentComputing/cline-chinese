@@ -35,8 +35,10 @@
  *
  * ## Proxy Support
  *
- * Cline uses undici fetch with explicit ProxyAgent for all platforms.
- * This ensures consistent proxy support across VSCode, JetBrains, and CLI.
+ * Cline uses platform-specific fetch implementations to handle proxy
+ * configuration:
+ * - **VSCode**: Uses global fetch (VSCode provides proxy configuration)
+ * - **JetBrains, CLI**: Uses undici fetch with explicit ProxyAgent
  *
  * Proxy configuration via standard environment variables:
  * - `http_proxy` / `HTTP_PROXY` - Proxy for HTTP requests
@@ -46,10 +48,6 @@
  * Note, `http_proxy` etc. MUST specify the protocol to use for the proxy,
  * for example, `https_proxy=http://proxy.corp.example:3128`. Simply specifying
  * the proxy hostname will result in errors.
- *
- * **Why not use global fetch?** Node.js's global fetch (which uses undici)
- * does not automatically read proxy environment variables. We must explicitly
- * configure EnvHttpProxyAgent to enable proxy support for HTTPS connections.
  *
  * ## Certificate Trust
  *
@@ -66,7 +64,7 @@
  * CLI users should set the NODE_EXTRA_CA_CERTS environment variable if
  * necessary, because node does not automatically use the OS' trusted certs.
  *
- * ## Limitations
+ * ## Limitations in JetBrains & CLI
  *
  * - Proxy settings are static at startup--restart required for changes
  * - SOCKS proxies, PAC files not supported
@@ -95,7 +93,9 @@
  * ```
  */
 
+import OpenAI, { ClientOptions as OpenAIClientOptions } from "openai"
 import { EnvHttpProxyAgent, setGlobalDispatcher, fetch as undiciFetch } from "undici"
+import { buildExternalBasicHeaders } from "@/services/EnvUtils"
 
 let mockFetch: typeof globalThis.fetch | undefined
 
@@ -112,14 +112,16 @@ let mockFetch: typeof globalThis.fetch | undefined
 export const fetch: typeof globalThis.fetch = (() => {
 	// Note: Don't use Logger here; it may not be initialized.
 
-	// Configure undici with ProxyAgent for ALL platforms
-	// Node.js global fetch (which uses undici internally) does not
-	// automatically read proxy environment variables. We must explicitly
-	// configure EnvHttpProxyAgent to enable proxy support for HTTPS.
-	const agent = new EnvHttpProxyAgent({})
-	setGlobalDispatcher(agent)
-
-	const baseFetch = undiciFetch as unknown as typeof globalThis.fetch
+	let baseFetch: typeof globalThis.fetch = globalThis.fetch
+	// Note: See esbuild.mjs, process.env.IS_STANDALONE is statically rewritten
+	// to "true" or "false" (as strings) in the JetBrains/CLI build.
+	// We must use explicit string comparison because "false" is truthy in JS.
+	if (process.env.IS_STANDALONE === "true") {
+		// Configure undici with ProxyAgent
+		const agent = new EnvHttpProxyAgent({})
+		setGlobalDispatcher(agent)
+		baseFetch = undiciFetch as any as typeof globalThis.fetch
+	}
 
 	return (input: string | URL | Request, init?: RequestInit): Promise<Response> => (mockFetch || baseFetch)(input, init)
 })()
@@ -174,4 +176,21 @@ export function getAxiosSettings(): { adapter?: any; fetch?: typeof globalThis.f
 		adapter: "fetch" as any,
 		fetch, // Use our configured fetch
 	}
+}
+
+/**
+ * Creates an OpenAI client with proper proxy support and external headers.
+ * Use this instead of creating OpenAI clients directly to ensure consistent
+ * configuration across all providers.
+ */
+export function createOpenAIClient(options: OpenAIClientOptions): OpenAI {
+	const externalHeaders = buildExternalBasicHeaders()
+	return new OpenAI({
+		...options,
+		defaultHeaders: {
+			...externalHeaders,
+			...options.defaultHeaders,
+		},
+		fetch, // Use configured fetch with proxy support
+	})
 }
