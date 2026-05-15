@@ -1,7 +1,7 @@
 {
-	"name": "claude-dev",
-	"displayName": "Cline",
-	"description": "Autonomous coding agent right in your IDE, capable of creating/editing files, running commands, using the browser, and more with your permission every step of the way.",
+	"name": "cline-chinese",
+	"displayName": "Cline Chinese",
+	"description": "%cline.description%",
 	"version": "3.83.0",
 	"icon": "assets/icons/icon.png",
 	"workspaces": [
@@ -12,15 +12,15 @@
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "Cline Bot Inc."
+		"name": "HybridTalentComputing"
 	},
 	"license": "Apache-2.0",
-	"publisher": "saoudrizwan",
+	"publisher": "HybridTalentComputing",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cline/cline"
+		"url": "https://github.com/HybridTalentComputing/cline-chinese"
 	},
-	"homepage": "https://cline.bot",
+	"homepage": "https://github.com/HybridTalentComputing/cline-chinese",
 	"categories": [
 		"AI",
 		"Chat",
@@ -63,45 +63,45 @@
 		"walkthroughs": [
 			{
 				"id": "ClineWalkthrough",
-				"title": "Meet Cline, your new coding partner",
-				"description": "Cline codes like a developer because it thinks like one. Here are 5 ways to put it to work:",
+				"title": "%cline.walkthrough.title%",
+				"description": "%cline.walkthrough.description%",
 				"steps": [
 					{
 						"id": "welcome",
-						"title": "Start with a Goal, Not Just a Prompt",
-						"description": "Tell Cline what you want to achieve. It plans, asks, and then codes, like a true partner.",
+						"title": "%cline.walkthrough.step1.title%",
+						"description": "%cline.walkthrough.step1.description%",
 						"media": {
 							"markdown": "walkthrough/step1.md"
 						}
 					},
 					{
 						"id": "learn",
-						"title": "Let Cline Learn Your Codebase",
-						"description": "Point Cline to your project. It builds understanding to make smart, context-aware changes.",
+						"title": "%cline.walkthrough.step2.title%",
+						"description": "%cline.walkthrough.step2.description%",
 						"media": {
 							"markdown": "walkthrough/step2.md"
 						}
 					},
 					{
 						"id": "advanced-features",
-						"title": "Always Use the Best AI Models",
-						"description": "Cline empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
+						"title": "%cline.walkthrough.step3.title%",
+						"description": "%cline.walkthrough.step3.description%",
 						"media": {
 							"markdown": "walkthrough/step3.md"
 						}
 					},
 					{
 						"id": "mcp",
-						"title": "Extend with Powerful Tools (MCP)",
-						"description": "Connect to databases, APIs, or discover new capabilities in the MCP Marketplace.",
+						"title": "%cline.walkthrough.step4.title%",
+						"description": "%cline.walkthrough.step4.description%",
 						"media": {
 							"markdown": "walkthrough/step4.md"
 						}
 					},
 					{
 						"id": "getting-started",
-						"title": "You're Always in Control",
-						"description": "Review Cline's plans and diffs. Approve changes before they happen. No surprises.",
+						"title": "%cline.walkthrough.step5.title%",
+						"description": "%cline.walkthrough.step5.description%",
 						"media": {
 							"markdown": "walkthrough/step5.md"
 						},
@@ -134,115 +134,115 @@
 		"commands": [
 			{
 				"command": "cline.plusButtonClicked",
-				"title": "New Task",
+				"title": "%cline.command.newTask%",
 				"icon": "$(add)"
 			},
 			{
 				"command": "cline.mcpButtonClicked",
-				"title": "MCP Servers",
+				"title": "%cline.command.mcpServers%",
 				"icon": "$(server)"
 			},
 			{
 				"command": "cline.historyButtonClicked",
-				"title": "History",
+				"title": "%cline.command.history%",
 				"icon": "$(history)"
 			},
 			{
 				"command": "cline.accountButtonClicked",
-				"title": "Account",
+				"title": "%cline.command.account%",
 				"icon": "$(account)"
 			},
 			{
 				"command": "cline.settingsButtonClicked",
-				"title": "Settings",
+				"title": "%cline.command.settings%",
 				"icon": "$(settings-gear)"
 			},
 			{
 				"command": "cline.dev.createTestTasks",
-				"title": "Create Test Tasks",
+				"title": "%cline.command.createTestTasks%",
 				"category": "Cline",
 				"when": "cline.isDevMode"
 			},
 			{
 				"command": "cline.dev.expireMcpOAuthTokens",
-				"title": "Expire MCP OAuth Tokens (for testing)",
+				"title": "%cline.command.expireMcpOAuthTokens%",
 				"category": "Cline",
 				"when": "cline.isDevMode"
 			},
 			{
 				"command": "cline.addToChat",
-				"title": "Add to Cline",
+				"title": "%cline.command.addToChat%",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.addTerminalOutputToChat",
-				"title": "Add to Cline",
+				"title": "%cline.command.addTerminalToChat%",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.focusChatInput",
-				"title": "Jump to Chat Input",
+				"title": "%cline.command.focusChatInput%",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.generateGitCommitMessage",
-				"title": "Generate Commit Message with Cline",
+				"title": "%cline.command.generateCommitMessage%",
 				"category": "Cline",
 				"icon": "$(cline-icon)"
 			},
 			{
 				"command": "cline.abortGitCommitMessage",
-				"title": "Generate Commit Message with Cline - Stop",
+				"title": "%cline.command.abortCommitMessage%",
 				"category": "Cline",
 				"icon": "$(debug-stop)"
 			},
 			{
 				"command": "cline.explainCode",
-				"title": "Explain with Cline",
+				"title": "%cline.command.explainCode%",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.improveCode",
-				"title": "Improve with Cline",
+				"title": "%cline.command.improveCode%",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.jupyterGenerateCell",
-				"title": "Generate Jupyter Cell with Cline",
+				"title": "%cline.command.jupyterGenerate%",
 				"category": "Cline",
 				"icon": "$(sparkle)"
 			},
 			{
 				"command": "cline.jupyterExplainCell",
-				"title": "Explain Jupyter Cell with Cline",
+				"title": "%cline.command.jupyterExplain%",
 				"category": "Cline",
 				"icon": "$(question)"
 			},
 			{
 				"command": "cline.jupyterImproveCell",
-				"title": "Improve Jupyter Cell with Cline",
+				"title": "%cline.command.jupyterImprove%",
 				"category": "Cline",
 				"icon": "$(lightbulb)"
 			},
 			{
 				"command": "cline.openWalkthrough",
-				"title": "Open Walkthrough",
+				"title": "%cline.command.openWalkthrough%",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.reconstructTaskHistory",
-				"title": "Reconstruct Task History",
+				"title": "%cline.command.reconstructHistory%",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.reviewComment.reply",
-				"title": "Reply",
+				"title": "%cline.command.reply%",
 				"category": "Cline",
 				"enablement": "!commentIsEmpty"
 			},
 			{
 				"command": "cline.reviewComment.addToChat",
-				"title": "Add to Cline Chat",
+				"title": "%cline.command.addToChat%",
 				"category": "Cline",
 				"icon": "$(link-external)"
 			}

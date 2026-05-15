@@ -15,11 +15,11 @@ interface ErrorBlockTitleProps {
 }
 
 export const ErrorBlockTitle = ({
-	cost,
 	apiReqCancelReason,
 	apiRequestFailedMessage,
 	retryStatus,
 }: ErrorBlockTitleProps): [React.ReactElement, React.ReactElement] => {
+	const { t } = useTranslation("common")
 	const getIconSpan = (iconName: string, colorClass: string) => (
 		<div className="w-4 h-4 flex items-center justify-center">
 			<span className={`codicon codicon-${iconName} text-base -mb-0.5 ${colorClass}`} />
@@ -43,31 +43,31 @@ export const ErrorBlockTitle = ({
 
 	const title = (() => {
 		// Default loading state
-		const details = { title: "API Request...", classNames: ["font-bold"] }
+		const details = { title: t("errorBlock.apiRequestLoading"), classNames: ["font-bold"] }
 		// Handle cancellation states first
 		if (apiReqCancelReason === "user_cancelled") {
-			details.title = "API Request Cancelled"
+			details.title = t("errorBlock.apiRequestCancelled")
 			details.classNames.push("text-(--vscode-foreground)")
 		} else if (apiReqCancelReason != null) {
-			details.title = "API Request Failed"
+			details.title = t("errorBlock.apiRequestFailed")
 			details.classNames.push("text-(--vscode-errorForeground)")
 		} else if (cost != null) {
 			// Handle completed request
-			details.title = "API Request"
+			details.title = t("errorBlock.apiRequest")
 			details.classNames.push("text-(--vscode-foreground)")
 		} else if (apiRequestFailedMessage) {
 			// Handle failed request
 			const clineError = ClineError.parse(apiRequestFailedMessage)
 			const titleText = clineError?.isErrorType(ClineErrorType.Balance)
-				? "Credit Limit Reached"
+				? t("errorBlock.creditLimitReached")
 				: clineError?.isErrorType(ClineErrorType.SpendLimit)
-					? "Spend Limit Reached"
-					: "API Request Failed"
+					? t("errorBlock.spendLimitReached")
+					: t("errorBlock.apiRequestFailed")
 			details.title = titleText
 			details.classNames.push("font-bold text-(--vscode-errorForeground)")
 		} else if (retryStatus) {
 			// Handle retry state
-			details.title = "API Request"
+			details.title = t("errorBlock.apiRequest")
 			details.classNames.push("text-(--vscode-foreground)")
 		}
 

@@ -1,3 +1,5 @@
+import type { TFunction } from "i18next"
+
 export enum NEW_USER_TYPE {
 	FREE = "free",
 	POWER = "power",
@@ -10,45 +12,45 @@ type UserTypeSelection = {
 	type: NEW_USER_TYPE
 }
 
-export const STEP_CONFIG = {
+export const getStepConfig = (t: TFunction) => ({
 	0: {
-		title: "How will you use Cline?",
-		description: "Select an option below to get started.",
+		title: t("onboarding.howWillYouUse"),
+		description: t("onboarding.selectOption"),
 		buttons: [
-			{ text: "Continue", action: "next", variant: "default" },
-			{ text: "Login to Cline", action: "signin", variant: "secondary" },
+			{ text: t("onboarding.continue"), action: "next", variant: "default" },
+			{ text: t("onboarding.loginToCline"), action: "signin", variant: "secondary" },
 		],
 	},
 	[NEW_USER_TYPE.FREE]: {
-		title: "Select a free model",
+		title: t("onboarding.selectFreeModel"),
 		buttons: [
-			{ text: "Create my Account", action: "signup", variant: "default" },
-			{ text: "Back", action: "back", variant: "secondary" },
+			{ text: t("onboarding.createMyAccount"), action: "signup", variant: "default" },
+			{ text: t("onboarding.back"), action: "back", variant: "secondary" },
 		],
 	},
 	[NEW_USER_TYPE.POWER]: {
-		title: "Select your model",
+		title: t("onboarding.selectYourModel"),
 		buttons: [
-			{ text: "Create my Account", action: "signup", variant: "default" },
-			{ text: "Back", action: "back", variant: "secondary" },
+			{ text: t("onboarding.createMyAccount"), action: "signup", variant: "default" },
+			{ text: t("onboarding.back"), action: "back", variant: "secondary" },
 		],
 	},
 	[NEW_USER_TYPE.BYOK]: {
-		title: "Configure your provider",
+		title: t("onboarding.configureYourProvider"),
 		buttons: [
-			{ text: "Continue", action: "done", variant: "default" },
-			{ text: "Back", action: "back", variant: "secondary" },
+			{ text: t("onboarding.continue"), action: "done", variant: "default" },
+			{ text: t("onboarding.back"), action: "back", variant: "secondary" },
 		],
 	},
 	2: {
-		title: "Almost there!",
-		description: "Complete account creation in your browser. Then come back here to finish up.",
-		buttons: [{ text: "Back", action: "back", variant: "secondary" }],
+		title: t("onboarding.almostThere"),
+		description: t("onboarding.completeInBrowser"),
+		buttons: [{ text: t("onboarding.back"), action: "back", variant: "secondary" }],
 	},
-} as const
+})
 
-export const USER_TYPE_SELECTIONS: UserTypeSelection[] = [
-	{ title: "Absolutely Free", description: "Get started at no cost", type: NEW_USER_TYPE.FREE },
-	{ title: "Frontier Model", description: "Claude, GPT Codex, Gemini, etc.", type: NEW_USER_TYPE.POWER },
-	{ title: "Bring my own API key", description: "Use Cline with your provider of choice", type: NEW_USER_TYPE.BYOK },
+export const getUserTypeSelections = (t: TFunction): UserTypeSelection[] => [
+	{ title: t("onboarding.absolutelyFree"), description: t("onboarding.getStartedNoCost"), type: NEW_USER_TYPE.FREE },
+	{ title: t("onboarding.frontierModel"), description: t("onboarding.frontierModelDescription"), type: NEW_USER_TYPE.POWER },
+	{ title: t("onboarding.bringOwnKey"), description: t("onboarding.bringOwnKeyDescription"), type: NEW_USER_TYPE.BYOK },
 ]

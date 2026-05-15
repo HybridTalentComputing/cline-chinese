@@ -1,5 +1,6 @@
 import { isOpenaiReasoningEffort, Mode, OPENAI_REASONING_EFFORT_OPTIONS, OpenaiReasoningEffort } from "@shared/storage/types"
 import { memo } from "react"
+import { useTranslation } from "react-i18next"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -16,11 +17,14 @@ interface ReasoningEffortSelectorProps {
 
 const ReasoningEffortSelector = ({
 	currentMode,
-	label = "Reasoning Effort",
-	description = "Higher effort improves depth, but uses more tokens.",
+	label,
+	description,
 	allowedEfforts = OPENAI_REASONING_EFFORT_OPTIONS,
 	defaultEffort = "medium",
 }: ReasoningEffortSelectorProps) => {
+	const { t } = useTranslation("settings")
+	const resolvedLabel = label ?? t("settings.reasoningEffort")
+	const resolvedDescription = description ?? t("settings.reasoningEffortDescription")
 	const { apiConfiguration } = useExtensionState()
 	const { handleModeFieldChange } = useApiConfigurationHandlers()
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
@@ -31,7 +35,7 @@ const ReasoningEffortSelector = ({
 
 	return (
 		<div style={{ marginTop: 10, marginBottom: 5 }}>
-			<Label className="text-xs font-medium">{label}</Label>
+			<Label className="text-xs font-medium">{resolvedLabel}</Label>
 			<Select
 				onValueChange={(value) =>
 					handleModeFieldChange({ plan: "planModeReasoningEffort", act: "actModeReasoningEffort" }, value, currentMode)
@@ -55,7 +59,7 @@ const ReasoningEffortSelector = ({
 					marginBottom: 0,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				{description}
+				{resolvedDescription}
 			</p>
 		</div>
 	)

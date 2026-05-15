@@ -1,0 +1,18 @@
+{
+	"name": "docs-zh",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"dev": "mint dev",
+		"check": "mint broken-links",
+		"rename": "mint rename"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"dependencies": {
+		"mint": "^4.2.305"
+	}
+}

@@ -1,5 +1,6 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { AccountServiceClient } from "@/services/grpc-client"
 
 const COOLDOWN_MS = 5 * 60 * 1000 // 5 minutes
@@ -37,6 +38,8 @@ interface SpendLimitErrorProps {
 }
 
 const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod, limitUsd, spentUsd, resetsAt }) => {
+	tconst
+	t = useTranslation("common")
 	const displayMessage =
 		limitUsd != null && budgetPeriod ? `$${limitUsd.toFixed(2)} ${budgetPeriod} limit has been reached.` : message
 
@@ -96,7 +99,7 @@ const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod
 				<div className="mb-3">
 					{spentUsd != null && limitUsd != null && (
 						<div className="text-foreground" style={{ fontSize: "var(--vscode-font-size)", lineHeight: 1.3 }}>
-							{periodLabel ? `${periodLabel} usage` : "Usage"}:{" "}
+							{periodLabel ? `${periodLabel} ${t("spendLimit.usage")}` : t("spendLimit.usage")}:{" "}
 							<span className="font-bold">
 								${spentUsd.toFixed(2)} / ${limitUsd.toFixed(2)}
 							</span>
@@ -111,7 +114,7 @@ const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod
 
 					<div className="text-(--vscode-descriptionForeground) mt-2 text-xs inline-flex items-center">
 						<span className="codicon codicon-organization mr-1" />
-						Limits set by your organization.
+						{t("spendLimit.limitsByOrg")}
 					</div>
 				</div>
 			</div>

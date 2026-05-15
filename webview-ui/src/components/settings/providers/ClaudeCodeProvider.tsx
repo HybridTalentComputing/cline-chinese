@@ -1,5 +1,6 @@
 import { claudeCodeModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { DebouncedTextField } from "../common/DebouncedTextField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -34,6 +35,7 @@ interface ClaudeCodeProviderProps {
  * The Claude Code provider configuration component
  */
 export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: ClaudeCodeProviderProps) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -48,7 +50,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 				placeholder="Default: claude"
 				style={{ width: "100%", marginTop: 3 }}
 				type="text">
-				<span style={{ fontWeight: 500 }}>Claude Code CLI Path</span>
+				<span style={{ fontWeight: 500 }}>{t("providers.claudeCode.cliPath")}</span>
 			</DebouncedTextField>
 
 			<p

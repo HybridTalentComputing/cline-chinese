@@ -1,6 +1,7 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { AlertTriangle } from "lucide-react"
 import React, { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 import { OPENROUTER_MODEL_PICKER_Z_INDEX } from "../settings/OpenRouterModelPicker"
 
 interface AlertDialogProps {
@@ -79,10 +80,10 @@ export function UnsavedChangesDialog({
 	onConfirm,
 	onCancel,
 	onSave,
-	title = "Unsaved Changes",
-	description = "You have unsaved changes. Are you sure you want to discard them?",
-	confirmText = "Discard Changes",
-	saveText = "Save & Continue",
+	title,
+	description,
+	confirmText,
+	saveText,
 	showSaveOption = false,
 }: {
 	open: boolean
@@ -96,21 +97,26 @@ export function UnsavedChangesDialog({
 	saveText?: string
 	showSaveOption?: boolean
 }) {
+	const { t } = useTranslation("misc")
+	const resolvedTitle = title ?? t("common.alert.unsavedTitle")
+	const resolvedDescription = description ?? t("common.alert.unsavedDescription")
+	const resolvedConfirmText = confirmText ?? t("common.alert.discardChanges")
+	const resolvedSaveText = saveText ?? t("common.alert.saveAndContinue")
 	return (
 		<AlertDialog onOpenChange={onOpenChange} open={open}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>
 						<AlertTriangle className="w-5 h-5 text-(--vscode-errorForeground)" />
-						{title}
+						{resolvedTitle}
 					</AlertDialogTitle>
-					<AlertDialogDescription>{description}</AlertDialogDescription>
+					<AlertDialogDescription>{resolvedDescription}</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
-					{showSaveOption && onSave && <AlertDialogAction onClick={onSave}>{saveText}</AlertDialogAction>}
+					<AlertDialogCancel onClick={onCancel}>{t("common.alert.cancel")}</AlertDialogCancel>
+					{showSaveOption && onSave && <AlertDialogAction onClick={onSave}>{resolvedSaveText}</AlertDialogAction>}
 					<AlertDialogAction appearance={showSaveOption ? "secondary" : "primary"} onClick={onConfirm}>
-						{confirmText}
+						{resolvedConfirmText}
 					</AlertDialogAction>
 				</AlertDialogFooter>
 			</AlertDialogContent>

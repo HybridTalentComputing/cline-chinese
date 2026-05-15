@@ -42,10 +42,10 @@ const getActivityText = (tool: ClineSayTool): string | null => {
 	const cleanedPath = cleanPathPrefix(tool.path || "")
 	switch (tool.tool) {
 		case "readFile":
-			return tool.path ? `Reading ${cleanedPath}...` : null
+			return tool.path ? t("requestStart.reading", { path: cleanPathPrefix(tool.path || "") }) : null
 		case "listFilesTopLevel":
 		case "listFilesRecursive":
-			return tool.path ? `Exploring ${cleanedPath}/...` : null
+			return tool.path ? t("requestStart.exploring", { path: cleanedPath }) : null
 		case "searchFiles":
 			return tool.regex && tool.path ? `Searching ${formatSearchRegex(tool.regex, tool.path, tool.filePattern)}...` : null
 		case "listCodeDefinitionNames":

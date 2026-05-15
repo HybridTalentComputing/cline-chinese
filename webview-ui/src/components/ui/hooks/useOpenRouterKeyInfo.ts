@@ -86,7 +86,7 @@ export const useOpenRouterKeyInfo = (apiKey?: string) => {
 		}
 
 		const now = Date.now()
-		const cacheAge = moduleLastFetchTime ? now - moduleLastFetchTime : Infinity
+		const cacheAge = moduleLastFetchTime ? now - moduleLastFetchTime : Number.POSITIVE_INFINITY
 		const isCacheStale = cacheAge >= CACHE_DURATION_MS
 		const hasCache = !!moduleCachedData
 

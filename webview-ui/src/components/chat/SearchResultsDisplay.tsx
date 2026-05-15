@@ -90,7 +90,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
 				border: "1px solid var(--vscode-editorGroup-border)",
 			}}>
 			<div
-				aria-label={isExpanded ? "Collapse search results" : "Expand search results"}
+				aria-label={isExpanded ? t("searchResults.collapseResults") : t("searchResults.expandResults")}
 				onClick={onToggleExpand}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" || e.key === " ") {
@@ -121,7 +121,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
 					}}>
 					{path + (filePattern ? `/(${filePattern})` : "")}
 				</span>
-				<div style={{ flexGrow: 1 }}></div>
+				<div style={{ flexGrow: 1 }} />
 				{isExpanded ? (
 					<ChevronDownIcon size={16} style={{ margin: "1px 0" }} />
 				) : (
@@ -162,7 +162,8 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
 									style={{
 										fontSize: "14px",
 										color: "var(--vscode-symbolIcon-folderForeground)",
-									}}></span>
+									}}
+								/>
 								<span
 									style={{
 										fontWeight: "500",

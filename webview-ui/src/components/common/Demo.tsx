@@ -19,33 +19,35 @@ import {
 	VSCodeTextArea,
 	VSCodeTextField,
 } from "@vscode/webview-ui-toolkit/react"
+import { useTranslation } from "react-i18next"
 
 function Demo() {
+	const { t } = useTranslation("misc")
 	const rowData = [
 		{
-			cell1: "Cell Data",
-			cell2: "Cell Data",
-			cell3: "Cell Data",
-			cell4: "Cell Data",
+			cell1: t("demo.cellData"),
+			cell2: t("demo.cellData"),
+			cell3: t("demo.cellData"),
+			cell4: t("demo.cellData"),
 		},
 		{
-			cell1: "Cell Data",
-			cell2: "Cell Data",
-			cell3: "Cell Data",
-			cell4: "Cell Data",
+			cell1: t("demo.cellData"),
+			cell2: t("demo.cellData"),
+			cell3: t("demo.cellData"),
+			cell4: t("demo.cellData"),
 		},
 		{
-			cell1: "Cell Data",
-			cell2: "Cell Data",
-			cell3: "Cell Data",
-			cell4: "Cell Data",
+			cell1: t("demo.cellData"),
+			cell2: t("demo.cellData"),
+			cell3: t("demo.cellData"),
+			cell4: t("demo.cellData"),
 		},
 	]
 
 	return (
 		<main>
-			<h1>Hello World!</h1>
-			<VSCodeButton>Howdy!</VSCodeButton>
+			<h1>{t("demo.helloWorld")}</h1>
+			<VSCodeButton>{t("demo.howdy")}</VSCodeButton>
 
 			<div className="grid gap-3 p-2 place-items-start">
 				<VSCodeDataGrid>
@@ -76,17 +78,17 @@ function Demo() {
 				<VSCodeTextField>
 					<section slot="end" style={{ display: "flex", alignItems: "center" }}>
 						<VSCodeButton appearance="icon" aria-label="Match Case">
-							<span className="codicon codicon-case-sensitive"></span>
+							<span className="codicon codicon-case-sensitive" />
 						</VSCodeButton>
 						<VSCodeButton appearance="icon" aria-label="Match Whole Word">
-							<span className="codicon codicon-whole-word"></span>
+							<span className="codicon codicon-whole-word" />
 						</VSCodeButton>
 						<VSCodeButton appearance="icon" aria-label="Use Regular Expression">
-							<span className="codicon codicon-regex"></span>
+							<span className="codicon codicon-regex" />
 						</VSCodeButton>
 					</section>
 				</VSCodeTextField>
-				<span className="codicon codicon-chevron-right" slot="end"></span>
+				<span className="codicon codicon-chevron-right" slot="end" />
 
 				<span className="flex gap-3">
 					<VSCodeProgressRing />

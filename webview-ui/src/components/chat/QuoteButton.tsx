@@ -21,18 +21,20 @@ const ButtonContainer = styled.div<ButtonContainerProps>`
 `
 
 const QuoteButton: React.FC<QuoteButtonProps> = ({ top, left, onClick }) => {
+	tconst
+	t = useTranslation("common")
 	return (
 		// Pass transient props to the styled component
 		<ButtonContainer $left={left} $top={top} className="quote-button-class absolute">
 			<Button
-				aria-label="Quote selection"
+				aria-label={t("quoteButton.quoteSelection")}
 				className="p-3 h-auto min-w-auto rounded-md shadow-sm transition-transform hover:scale-105 z-10"
 				onClick={(e) => {
 					e.stopPropagation() // Prevent triggering mouseup on the parent
 					onClick()
 				}}
 				size="sm"
-				title="Quote selection in reply">
+				title={t("quoteButton.quoteInReply")}>
 				<QuoteIcon className="size-2 fill-button-foreground rotate-180 stroke-1" />
 			</Button>
 		</ButtonContainer>

@@ -4,6 +4,7 @@ import { SquareArrowOutUpRightIcon } from "lucide-react"
 import { marked } from "marked"
 import type { ComponentProps } from "react"
 import React, { memo, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import ReactMarkdown from "react-markdown"
 import rehypeHighlight, { Options } from "rehype-highlight"
 import remarkGfm from "remark-gfm"
@@ -118,6 +119,7 @@ MemoizedMarkdown.displayName = "MemoizedMarkdown"
  * A component for Act Mode text that contains a clickable toggle and keyboard shortcut hint.
  */
 const ActModeHighlight: React.FC = () => {
+	const { t } = useTranslation("misc")
 	const { mode } = useExtensionState()
 
 	return (
@@ -136,7 +138,7 @@ const ActModeHighlight: React.FC = () => {
 					)
 				}
 			}}
-			title={mode === "plan" ? "Click to toggle to Act Mode" : "Already in Act Mode"}>
+			title={mode === "plan" ? t("common.markdownBlock.clickToToggleActMode") : t("common.markdownBlock.alreadyInActMode")}>
 			<div className="p-1 rounded-md bg-code flex items-center justify-end w-7 border border-input-border">
 				<div className="rounded-full bg-link w-2 h-2" />
 			</div>
@@ -312,6 +314,7 @@ const remarkPreventBoldFilenames = () => {
 }
 
 const PreWithCopyButton = ({ children, ...preProps }: React.HTMLAttributes<HTMLPreElement>) => {
+	const { t } = useTranslation("misc")
 	const preRef = useRef<HTMLPreElement>(null)
 
 	const handleCopy = () => {
@@ -328,7 +331,7 @@ const PreWithCopyButton = ({ children, ...preProps }: React.HTMLAttributes<HTMLP
 	}
 
 	return (
-		<WithCopyButton ariaLabel="Copy code" onCopy={handleCopy} position="top-right">
+		<WithCopyButton ariaLabel={t("common.markdownBlock.copyCode")} onCopy={handleCopy} position="top-right">
 			<pre {...preProps} ref={preRef}>
 				{children}
 			</pre>
@@ -361,6 +364,7 @@ const remarkMarkPotentialFilePaths = () => {
  * Shows the code immediately, then adds the file link icon when confirmed
  */
 const InlineCodeWithFileCheck: React.FC<ComponentProps<"code"> & { [key: string]: any }> = (props) => {
+	const { t } = useTranslation("misc")
 	const [isFilePath, setIsFilePath] = useState<boolean | null>(null)
 	const filePath = typeof props.children === "string" ? props.children : String(props.children || "")
 	const isPotentialFilePath = props["data-potential-file-path"] === "true"
@@ -398,7 +402,7 @@ const InlineCodeWithFileCheck: React.FC<ComponentProps<"code"> & { [key: string]
 				className="p-0 ml-0.5 leading-none align-middle transition-opacity text-preformat gap-0.5 inline text-left"
 				onClick={() => FileServiceClient.openFileRelativePath({ value: filePath })}
 				size="icon"
-				title={`Open ${filePath} in editor`}
+				title={t("common.markdownBlock.openInEditor", { path: filePath })}
 				type="button"
 				variant="icon">
 				<code {...props} />

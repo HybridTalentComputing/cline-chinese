@@ -1,6 +1,7 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { FilePlus, FileText, FileX, SquareArrowOutUpRightIcon } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
 import { FileServiceClient } from "@/services/grpc-client"
 
@@ -37,6 +38,8 @@ interface DiffEditRowProps {
 }
 
 export const DiffEditRow = memo<DiffEditRowProps>(({ patch, path, isLoading, startLineNumbers }) => {
+	tconst
+	t = useTranslation("common")
 	const { parsedFiles, isStreaming } = useMemo(() => {
 		const parsed = parsePatch(patch, path)
 		return {
@@ -148,7 +151,7 @@ const FileBlock = memo<{ file: Patch; isStreaming: boolean; startLineNumber?: nu
 							<span
 								className="font-medium truncate hover:underline hover:text-link"
 								onClick={handleOpenFile}
-								title="Open file in editor">
+								title={t("diffEdit.openFileInEditor")}>
 								{file.path}
 							</span>
 						</div>
@@ -158,7 +161,7 @@ const FileBlock = memo<{ file: Patch; isStreaming: boolean; startLineNumber?: nu
 						<span
 							className="p-1 hover:bg-description/20 rounded-xs transition-colors"
 							onClick={handleOpenFile}
-							title="Open file in editor">
+							title={t("diffEdit.openFileInEditor")}>
 							<SquareArrowOutUpRightIcon className="size-2 text-description hover:text-foreground" />
 						</span>
 					</div>

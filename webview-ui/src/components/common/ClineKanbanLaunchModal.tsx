@@ -1,6 +1,7 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import kanbanDemoVideoMp4 from "@/assets/cline_kanban_demo.mp4"
 import kanbanDemoVideoWebm from "@/assets/cline_kanban_demo.webm"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
@@ -21,6 +22,7 @@ interface ClineKanbanLaunchModalProps {
 }
 
 export const ClineKanbanLaunchModal: React.FC<ClineKanbanLaunchModalProps> = ({ open, onClose }) => {
+	const { t } = useTranslation("misc")
 	const [doNotShowAgain, setDoNotShowAgain] = useState(false)
 	const [isInstalling, setIsInstalling] = useState(false)
 	const [copied, setCopied] = useState(false)
@@ -68,7 +70,7 @@ export const ClineKanbanLaunchModal: React.FC<ClineKanbanLaunchModalProps> = ({ 
 							className="m-0 text-lg font-semibold"
 							id="cline-kanban-title"
 							style={{ color: "var(--vscode-editor-foreground)" }}>
-							Introducing Cline Kanban
+							{t("common.kanban.introducing")}
 						</h2>
 					</div>
 
@@ -83,9 +85,7 @@ export const ClineKanbanLaunchModal: React.FC<ClineKanbanLaunchModalProps> = ({ 
 					</video>
 
 					<p className="text-sm" style={{ color: "var(--vscode-descriptionForeground)" }}>
-						A replacement for your IDE better suited for running many agents in parallel and reviewing diffs. Enable
-						auto-commit and link cards together to create dependency chains that complete large amounts of work
-						autonomously.
+						{t("common.kanban.description")}
 					</p>
 
 					<div className="p-1">
@@ -96,11 +96,11 @@ export const ClineKanbanLaunchModal: React.FC<ClineKanbanLaunchModalProps> = ({ 
 							<VSCodeButton disabled={isInstalling} onClick={handleAction}>
 								{isVsCode
 									? isInstalling
-										? "Running install command..."
-										: "Run in terminal"
+										? t("common.kanban.runningInstallCommand")
+										: t("common.kanban.runInTerminal")
 									: copied
-										? "Copied"
-										: "Copy command"}
+										? t("common.kanban.copied")
+										: t("common.kanban.copyCommand")}
 							</VSCodeButton>
 						</div>
 					</div>
@@ -111,7 +111,7 @@ export const ClineKanbanLaunchModal: React.FC<ClineKanbanLaunchModalProps> = ({ 
 							onChange={(e: any) => {
 								setDoNotShowAgain(e.target.checked === true)
 							}}>
-							Do not show again
+							{t("common.kanban.doNotShowAgain")}
 						</VSCodeCheckbox>
 					</div>
 				</div>

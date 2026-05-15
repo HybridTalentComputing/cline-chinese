@@ -12,6 +12,7 @@ import {
 } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -48,6 +49,7 @@ interface BedrockProviderProps {
 }
 
 export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: BedrockProviderProps) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration, remoteConfigSettings } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange, handleModeFieldsChange } = useApiConfigurationHandlers()
 
@@ -168,9 +170,9 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 					handleFieldChange("awsAuthentication", value)
 				}}
 				value={apiConfiguration?.awsAuthentication ?? (apiConfiguration?.awsProfile ? "profile" : "credentials")}>
-				<VSCodeRadio value="apikey">API Key</VSCodeRadio>
-				<VSCodeRadio value="profile">AWS Profile</VSCodeRadio>
-				<VSCodeRadio value="credentials">AWS Credentials</VSCodeRadio>
+				<VSCodeRadio value="apikey">{t("providers.bedrock.apiKeyOption")}</VSCodeRadio>
+				<VSCodeRadio value="profile">{t("providers.bedrock.awsProfileOption")}</VSCodeRadio>
+				<VSCodeRadio value="credentials">{t("providers.bedrock.awsCredentialsOption")}</VSCodeRadio>
 			</VSCodeRadioGroup>
 
 			{(apiConfiguration?.awsAuthentication === undefined && apiConfiguration?.awsUseProfile) ||
@@ -181,7 +183,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 					key="profile"
 					onChange={(value) => handleFieldChange("awsProfile", value)}
 					placeholder="Enter profile name (default if empty)">
-					<span className="font-medium">AWS Profile Name</span>
+					<span className="font-medium">{t("providers.bedrock.awsProfileName")}</span>
 				</DebouncedTextField>
 			) : apiConfiguration?.awsAuthentication === "apikey" ? (
 				<DebouncedTextField
@@ -191,7 +193,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 					onChange={(value) => handleFieldChange("awsBedrockApiKey", value)}
 					placeholder="Enter Bedrock Api Key"
 					type="password">
-					<span className="font-medium">AWS Bedrock Api Key</span>
+					<span className="font-medium">{t("providers.bedrock.awsBedrockApiKey")}</span>
 				</DebouncedTextField>
 			) : (
 				<>
@@ -202,7 +204,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 						onChange={(value) => handleFieldChange("awsAccessKey", value)}
 						placeholder="Enter Access Key..."
 						type="password">
-						<span className="font-medium">AWS Access Key</span>
+						<span className="font-medium">{t("providers.bedrock.awsAccessKey")}</span>
 					</DebouncedTextField>
 					<DebouncedTextField
 						className="w-full"
@@ -210,7 +212,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 						onChange={(value) => handleFieldChange("awsSecretKey", value)}
 						placeholder="Enter Secret Key..."
 						type="password">
-						<span className="font-medium">AWS Secret Key</span>
+						<span className="font-medium">{t("providers.bedrock.awsSecretKey")}</span>
 					</DebouncedTextField>
 					<DebouncedTextField
 						className="w-full"
@@ -218,7 +220,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 						onChange={(value) => handleFieldChange("awsSessionToken", value)}
 						placeholder="Enter Session Token..."
 						type="password">
-						<span className="font-medium">AWS Session Token</span>
+						<span className="font-medium">{t("providers.bedrock.awsSessionToken")}</span>
 					</DebouncedTextField>
 				</>
 			)}
@@ -231,7 +233,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 					<DropdownContainer className="dropdown-container mb-2.5" zIndex={DROPDOWN_Z_INDEX - 1}>
 						<div className="flex items-center gap-2 mb-1">
 							<label htmlFor="aws-region">
-								<span className="font-medium">AWS Region</span>
+								<span className="font-medium">{t("providers.bedrock.awsRegion")}</span>
 							</label>
 							{remoteConfigSettings?.awsRegion !== undefined && (
 								<i className="codicon codicon-lock text-description text-sm flex items-center" />
@@ -258,7 +260,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 									setIsDropdownVisible(true)
 								}}
 								onKeyDown={handleKeyDown}
-								placeholder="Search or enter custom region..."
+								placeholder={t("providers.bedrock.searchOrEnterRegion")}
 								role="combobox"
 								style={{
 									width: "100%",
@@ -345,7 +347,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 								disabled={remoteConfigSettings?.awsBedrockEndpoint !== undefined}
 								initialValue={apiConfiguration?.awsBedrockEndpoint || ""}
 								onChange={(value) => handleFieldChange("awsBedrockEndpoint", value)}
-								placeholder="Enter VPC Endpoint URL (optional)"
+								placeholder={t("providers.bedrock.enterVpcEndpoint")}
 								type="text"
 							/>
 						)}
@@ -497,7 +499,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 								<span className="font-medium">Model ID</span>
 							</DebouncedTextField>
 							<label htmlFor="bedrock-base-model-dropdown">
-								<span className="font-medium">Base Inference Model</span>
+								<span className="font-medium">{t("providers.bedrock.baseInferenceModel")}</span>
 							</label>
 							<DropdownContainer className="dropdown-container" zIndex={DROPDOWN_Z_INDEX - 3}>
 								<VSCodeDropdown
@@ -533,8 +535,8 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 							allowedEfforts={["none", "low", "medium", "high", "xhigh"] as const}
 							currentMode={currentMode}
 							defaultEffort={adaptiveThinkingDefaultEffort}
-							description="Use None to disable adaptive thinking. Higher effort increases response detail and token usage."
-							label="Adaptive Thinking"
+							description={t("settings.adaptiveThinkingDescription")}
+							label={t("settings.adaptiveThinking")}
 						/>
 					) : SUPPORTED_BEDROCK_THINKING_MODELS.includes(selectedModelId) ||
 						(modeFields.awsBedrockCustomSelected &&

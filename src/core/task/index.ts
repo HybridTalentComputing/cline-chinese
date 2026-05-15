@@ -59,7 +59,7 @@ import { combineApiRequests } from "@shared/combineApiRequests"
 import { combineCommandSequences } from "@shared/combineCommandSequences"
 import { ClineApiReqCancelReason, ClineApiReqInfo, ClineAsk, ClineMessage, ClineSay } from "@shared/ExtensionMessage"
 import { HistoryItem } from "@shared/HistoryItem"
-import { DEFAULT_LANGUAGE_SETTINGS, getLanguageKey, LanguageDisplay } from "@shared/Languages"
+import { getLanguageKey, LanguageDisplay } from "@shared/Languages"
 import { USER_CONTENT_TAGS } from "@shared/messages/constants"
 import { convertClineMessageToProto } from "@shared/proto-conversions/cline-message"
 import { ClineDefaultTool, READ_ONLY_TOOLS } from "@shared/tools"
@@ -1882,9 +1882,31 @@ export class Task {
 		const supportsBrowserUse = modelSupportsBrowserUse && !disableBrowserTool // only enable browser use if the model supports it and the user hasn't disabled it
 		const preferredLanguageRaw = this.stateManager.getGlobalSettingsKey("preferredLanguage")
 		const preferredLanguage = getLanguageKey(preferredLanguageRaw as LanguageDisplay)
+		const languageInstructionMap: Record<string, string> = {
+			"zh-CN": "Simplified Chinese (简体中文)",
+			"zh-TW": "Traditional Chinese (繁體中文)",
+			ja: "Japanese (日本語)",
+			ko: "Korean (한국어)",
+			fr: "French (Français)",
+			de: "German (Deutsch)",
+			es: "Spanish (Español)",
+			"pt-BR": "Brazilian Portuguese (Português Brasileiro)",
+			"pt-PT": "Portuguese (Português)",
+			it: "Italian (Italiano)",
+			ru: "Russian (Русский)",
+			ar: "Arabic (العربية)",
+			hi: "Hindi (हिन्दी)",
+			cs: "Czech (Čeština)",
+			hu: "Hungarian (Magyar)",
+			pl: "Polish (Polski)",
+			tr: "Turkish (Türkçe)",
+			en: "English",
+		}
 		const preferredLanguageInstructions =
-			preferredLanguage && preferredLanguage !== DEFAULT_LANGUAGE_SETTINGS
-				? `# Preferred Language\n\nSpeak in ${preferredLanguage}.`
+			preferredLanguage && preferredLanguage !== "en"
+				? `# Preferred Language
+
+Speak in ${languageInstructionMap[preferredLanguage] || preferredLanguage}.`
 				: ""
 
 		const { globalToggles, localToggles } = await refreshClineRulesToggles(this.controller, this.cwd)

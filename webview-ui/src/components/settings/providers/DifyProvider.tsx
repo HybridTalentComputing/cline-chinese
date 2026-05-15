@@ -1,4 +1,5 @@
 import { Mode } from "@shared/storage/types"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { DebouncedTextField } from "../common/DebouncedTextField"
@@ -14,6 +15,7 @@ interface DifyProviderProps {
 }
 
 export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyProviderProps) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
@@ -40,7 +42,7 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 					placeholder={"Enter base URL..."}
 					style={{ width: "100%", marginBottom: 10 }}
 					type="text">
-					<span style={{ fontWeight: 500 }}>Base URL</span>
+					<span style={{ fontWeight: 500 }}>{t("providers.dify.baseUrl")}</span>
 				</DebouncedTextField>
 
 				<ApiKeyField
@@ -57,7 +59,7 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 						instance URL and API key to get started.
 					</p>
 					<p style={{ marginTop: "8px" }}>
-						<strong>Note:</strong> The model selection is handled within your Dify application configuration.
+						<strong>Note:</strong> {t("providers.dify.noteModelSelection")}
 					</p>
 				</div>
 			</div>
