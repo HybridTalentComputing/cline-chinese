@@ -48,6 +48,26 @@ git commit -m "Sync with upstream <版本号>"
 
 **坑 2**: 不要在 main 分支上操作，应在专用同步分支（如 `v3.83.0-sync`）上工作。
 
+**坑 6**: Git LFS 推送被拒绝。使用 `GIT_LFS_SKIP_SMUDGE=1` checkout 后，LFS 对象（`.mp4`、`.webm`）并未下载到本地。当推送到 origin 时，远程仓库找不到这些 LFS 对象，会拒绝推送：
+
+```
+remote: GitLab: LFS objects are missing. Ensure LFS objects are pushed before pushing branches.
+error: failed to push some refs to 'https://github.com/HybridTalentComputing/cline-chinese.git'
+```
+
+**解决方案**: 在 `git push` 之前，先从上游获取并推送 LFS 对象：
+
+```bash
+# 从上游获取 LFS 对象
+git lfs fetch upstream <新版本tag>
+
+# 推送 LFS 对象到自己的仓库
+git lfs push --all origin <工作分支>
+
+# 然后再推送代码
+git push origin <工作分支>
+```
+
 ### Step 3: 修改 package.json
 
 只改以下字段，其余保持上游原样：
@@ -65,6 +85,45 @@ git commit -m "Sync with upstream <版本号>"
 ```
 
 版本号保持与上游一致。
+
+**坑 7**: 扩展标识符冲突。package.json 中所有以 `cline.` 开头的命令 ID（如 `cline.newTask`）、视图容器 ID（如 `claude-dev-ActivityBar`）、以及源码中硬编码的发布者引用（如 `saoudrizwan.claude-dev`），必须全部改为 `cline-chinese.` 前缀。否则与原版 Cline 扩展共存时会产生严重冲突（命令互相覆盖、视图混乱、配置串扰）。
+
+**需要修改的地方**:
+
+1. **package.json** — 所有命令标识符:
+   ```
+   "cline.newTask"        → "cline-chinese.newTask"
+   "cline.openInNewTab"   → "cline-chinese.openInNewTab"
+   ...（所有 contributes.commands、menus、keybindings 中的引用）
+   ```
+   ActivityBar 和视图 ID:
+   ```
+   "claude-dev-ActivityBar"          → "cline-chinese-ActivityBar"
+   "claude-dev.SidebarProvider"      → "cline-chinese.SidebarProvider"
+   ```
+
+2. **源码中硬编码的命令引用** — 以下文件需要全局替换 `"cline.` 为 `"cline-chinese.`:
+   - `src/extension.ts`
+   - `src/dev/commands/tasks.ts`
+   - `src/hosts/vscode/VscodeWebviewProvider.ts`
+   - `src/hosts/vscode/commit-message-generator.ts`
+   - `src/hosts/vscode/review/VscodeCommentReviewController.ts`
+   - `src/services/test/TestMode.ts`
+
+3. **其他身份引用**:
+   - `src/core/controller/ui/openWalkthrough.ts` — walkthrough 发布者改为 `HybridTalentComputing`
+   - `src/hosts/vscode/hostbridge/env/getIdeRedirectUri.ts` — OAuth URI 改为 `HybridTalentComputing.cline-chinese`
+   - `src/core/storage/state-migrations.ts` — `getConfiguration("cline")` 改为 `getConfiguration("cline-chinese")`
+
+**注意**: `src/registry.ts` 中有动态前缀逻辑 `const prefix = name === "claude-dev" ? "cline" : name`，这意味着只要 package.json 的 `name` 改为 `cline-chinese`，命令注册会自动使用正确前缀。但硬编码在字符串中的 `"cline.` 引用仍需手动修改。
+
+**验证方法**:
+```bash
+# 确认没有残留的旧标识符
+grep -rn '"cline\.' src/ --include="*.ts" | grep -v "node_modules"
+grep -rn 'saoudrizwan' src/ --include="*.ts"
+grep -rn 'claude-dev' src/ package.json --include="*.ts" --include="*.json" | grep -v "node_modules"
+```
 
 ### Step 4: 创建 NLS 文件
 
@@ -269,6 +328,10 @@ grep -rL "useTranslation" webview-ui/src/components/ --include="*.tsx" | grep -v
 - [ ] 确认上游 tag 存在: `git tag -l | grep <版本>`
 - [ ] 替换文件并提交
 - [ ] 修改 package.json 身份（6 个字段）
+- [ ] 修改所有扩展标识符避免冲突（`cline.` → `cline-chinese.`，详见坑 7）
+- [ ] 修改源码中硬编码的命令引用（6+ 个文件）
+- [ ] 修改 OAuth URI、walkthrough 发布者、configuration scope
+- [ ] 推送前先处理 LFS 对象: `git lfs fetch upstream <tag> && git lfs push --all origin <branch>`（详见坑 6）
 - [ ] 更新 NLS 文件（检查上游新增的 VS Code 命令）
 - [ ] 确认默认语言设置
 - [ ] 对比上游组件变化：新增/删除/重命名
