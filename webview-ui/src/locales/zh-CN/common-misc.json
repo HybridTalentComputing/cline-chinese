@@ -390,15 +390,21 @@
 		"mostRelevant": "最相关",
 		"workspaceOnly": "仅工作区",
 		"favoritesOnly": "仅收藏",
-		"searchPlaceholder": "模糊搜索历史..."
+		"searchPlaceholder": "模糊搜索历史...",
+		"deleteSelected": "删除选中项",
+		"deleteAll": "删除所有历史"
 	},
 	"historyView": {
 		"tokens": "Token",
 		"model": "模型",
 		"size": "大小",
-		"export": "导出"
+		"export": "导出",
+		"delete": "删除",
+		"removeFromFavorites": "取消收藏",
+		"addToFavorites": "添加收藏"
 	},
 	"historyPreview": {
-		"viewAll": "查看全部"
+		"viewAll": "查看全部",
+		"favorited": "已收藏"
 	}
 }

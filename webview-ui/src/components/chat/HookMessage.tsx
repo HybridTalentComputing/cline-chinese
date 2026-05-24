@@ -261,7 +261,7 @@ const HookMessage = memo(({ message, CommandOutput }: HookMessageProps) => {
 							fontSize: "13px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						t("hookMessage.timeoutError")
+						{t("hookMessage.timeoutError")}
 					</div>
 				)}
 
@@ -273,7 +273,7 @@ const HookMessage = memo(({ message, CommandOutput }: HookMessageProps) => {
 							fontSize: "13px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						t("hookMessage.validationError")
+						{t("hookMessage.validationError")}
 					</div>
 				)}
 

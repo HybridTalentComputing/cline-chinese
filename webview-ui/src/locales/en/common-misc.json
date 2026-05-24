@@ -390,15 +390,21 @@
 		"mostRelevant": "Most Relevant",
 		"workspaceOnly": "Workspace Only",
 		"favoritesOnly": "Favorites Only",
-		"searchPlaceholder": "Fuzzy search history..."
+		"searchPlaceholder": "Fuzzy search history...",
+		"deleteSelected": "Delete selected items",
+		"deleteAll": "Delete all history"
 	},
 	"historyView": {
 		"tokens": "Tokens",
 		"model": "Model",
 		"size": "Size",
-		"export": "Export"
+		"export": "Export",
+		"delete": "Delete",
+		"removeFromFavorites": "Remove from favorites",
+		"addToFavorites": "Add to favorites"
 	},
 	"historyPreview": {
-		"viewAll": "View All"
+		"viewAll": "View All",
+		"favorited": "Favorited"
 	}
 }
