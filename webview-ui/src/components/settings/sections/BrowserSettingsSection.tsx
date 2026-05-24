@@ -24,6 +24,7 @@ const ConnectionStatusIndicator = ({
 	isConnected: boolean | null
 	remoteBrowserEnabled?: boolean
 }) => {
+	const { t } = useTranslation("common")
 	if (!remoteBrowserEnabled) {
 		return null
 	}

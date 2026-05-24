@@ -1,5 +1,6 @@
 import { QuoteIcon } from "lucide-react"
 import React from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { Button } from "@/components/ui/button"
 
@@ -21,8 +22,7 @@ const ButtonContainer = styled.div<ButtonContainerProps>`
 `
 
 const QuoteButton: React.FC<QuoteButtonProps> = ({ top, left, onClick }) => {
-	tconst
-	t = useTranslation("common")
+	const { t } = useTranslation("common")
 	return (
 		// Pass transient props to the styled component
 		<ButtonContainer $left={left} $top={top} className="quote-button-class absolute">

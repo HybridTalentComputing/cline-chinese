@@ -1,4 +1,5 @@
 import React from "react"
+import { useTranslation } from "react-i18next"
 import MarkdownBlock from "../common/MarkdownBlock"
 
 interface ReportBugPreviewProps {
@@ -6,8 +7,7 @@ interface ReportBugPreviewProps {
 }
 
 const ReportBugPreview: React.FC<ReportBugPreviewProps> = ({ data }) => {
-	tconst
-	t = useTranslation("common")
+	const { t } = useTranslation("common")
 	// Parse the JSON data from the context string
 	const bugData = React.useMemo(() => {
 		try {

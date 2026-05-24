@@ -13,6 +13,7 @@ import {
 	TrashIcon,
 } from "lucide-react"
 import { memo, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { TaskServiceClient } from "@/services/grpc-client"
@@ -36,6 +37,7 @@ const HistoryViewItem = ({
 	handleHistorySelect,
 	selectedItems,
 }: HistoryViewItemProps) => {
+	const { t } = useTranslation("common")
 	const [expanded, setExpanded] = useState(false)
 
 	const isFavoritedItem = useMemo(
@@ -161,7 +163,7 @@ const HistoryViewItem = ({
 							<div className="flex items-center justify-between w-full">
 								<div className="flex items-center gap-1 flex-wrap w-full">
 									<div className="flex justify-between items-center w-full gap-1 text-xs">
-										<span className="font-medium text-description">Tokens:</span>
+										<span className="font-medium text-description">{t("historyView.tokens")}:</span>
 										<div className="flex items-center gap-1 text-description text-xs">
 											<span className="flex items-center gap-1 text-description">
 												<ArrowUpIcon className="text-description !size-1" />
@@ -192,17 +194,17 @@ const HistoryViewItem = ({
 
 									{item.modelId && (
 										<div className="flex justify-between items-center w-full gap-1 text-xs">
-											<span className="font-medium text-description">Model:</span>
+											<span className="font-medium text-description">{t("historyView.model")}:</span>
 											<span className="text-description">{item.modelId}</span>
 										</div>
 									)}
 
 									<div className="flex justify-between items-center w-full gap-1 text-xs">
-										<span className="font-medium text-description">Size:</span>
+										<span className="font-medium text-description">{t("historyView.size")}:</span>
 										<span className="items-center gap-2 flex text-description">
 											{formatSize(item.size)}
 											<Button
-												aria-label="Export"
+												aria-label={t("historyView.export")}
 												className="m-0 p-0"
 												onClick={(e) => {
 													e.stopPropagation()

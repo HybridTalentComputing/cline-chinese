@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { cleanPathPrefix } from "@/components/common/CodeAccordian"
 import ScreenReaderAnnounce from "@/components/common/ScreenReaderAnnounce"
 import { useMenuAnnouncement } from "@/hooks/useMenuAnnouncement"
@@ -28,6 +29,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	isLoading = false,
 }) => {
 	const menuRef = useRef<HTMLDivElement>(null)
+	const { t } = useTranslation("common")
 
 	// State to show delayed loading indicator
 	const [showDelayedLoading, setShowDelayedLoading] = useState(false)

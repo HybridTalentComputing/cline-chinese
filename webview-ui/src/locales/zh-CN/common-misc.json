@@ -381,5 +381,24 @@
 		"helloWorld": "你好，世界！",
 		"howdy": "你好！",
 		"cellData": "单元格数据"
+	},
+	"history": {
+		"newest": "最新",
+		"oldest": "最旧",
+		"mostExpensive": "最贵",
+		"mostTokens": "最多Token",
+		"mostRelevant": "最相关",
+		"workspaceOnly": "仅工作区",
+		"favoritesOnly": "仅收藏",
+		"searchPlaceholder": "模糊搜索历史..."
+	},
+	"historyView": {
+		"tokens": "Token",
+		"model": "模型",
+		"size": "大小",
+		"export": "导出"
+	},
+	"historyPreview": {
+		"viewAll": "查看全部"
 	}
 }

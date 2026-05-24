@@ -1,6 +1,7 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import React, { useCallback, useLayoutEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import Thumbnails from "@/components/common/Thumbnails"
 import { getModeSpecificFields, normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -46,6 +47,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 	onClose,
 	onSendMessage,
 }) => {
+	const { t } = useTranslation("common")
 	const {
 		apiConfiguration,
 		currentTaskItem,

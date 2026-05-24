@@ -49,6 +49,7 @@ const ImagePreviewInner: React.FC<ImagePreviewProps> = (props) => {
 		setState({
 			loading: false,
 			error: `Failed to load image: ${props.url}`,
+			fetchStartTime: Date.now(),
 		})
 		cleanup()
 	}, [props.url, cleanup])
@@ -101,6 +102,7 @@ const ImagePreviewInner: React.FC<ImagePreviewProps> = (props) => {
 				setState({
 					loading: false,
 					error: `Timeout loading image: ${props.url}`,
+					fetchStartTime: Date.now(),
 				})
 			}
 		}, 15000)

@@ -22,8 +22,7 @@ const ButtonWrapper = styled.div`
 `
 
 const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, isFromHistory = false, classNames }) => {
-	tconst
-	t = useTranslation("common")
+	const { t } = useTranslation("common")
 	const [feedback, setFeedback] = useState<TaskFeedbackType | null>(null)
 	const [shouldShow, setShouldShow] = useState<boolean>(true)
 

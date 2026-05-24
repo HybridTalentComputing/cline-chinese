@@ -1,5 +1,6 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const PreviewContainer = styled.div`
@@ -70,8 +71,7 @@ interface QuotedMessagePreviewProps {
 }
 
 const QuotedMessagePreview: React.FC<QuotedMessagePreviewProps> = ({ text, onDismiss, isFocused }) => {
-	tconst
-	t = useTranslation("common")
+	const { t } = useTranslation("common")
 	const _cardClassName = `reply-card ${isFocused ? "reply-card--focused" : ""}`
 
 	return (

@@ -38,8 +38,7 @@ interface DiffEditRowProps {
 }
 
 export const DiffEditRow = memo<DiffEditRowProps>(({ patch, path, isLoading, startLineNumbers }) => {
-	tconst
-	t = useTranslation("common")
+	const { t } = useTranslation("common")
 	const { parsedFiles, isStreaming } = useMemo(() => {
 		const parsed = parsePatch(patch, path)
 		return {
@@ -68,6 +67,7 @@ export const DiffEditRow = memo<DiffEditRowProps>(({ patch, path, isLoading, sta
 
 const FileBlock = memo<{ file: Patch; isStreaming: boolean; startLineNumber?: number }>(
 	({ file, isStreaming, startLineNumber }) => {
+		const { t } = useTranslation("common")
 		const [isExpanded, setIsExpanded] = useState(true)
 		const scrollContainerRef = useRef<HTMLDivElement>(null)
 		const shouldFollowRef = useRef(true)

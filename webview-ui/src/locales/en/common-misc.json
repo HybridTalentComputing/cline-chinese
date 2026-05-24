@@ -381,5 +381,24 @@
 		"helloWorld": "Hello World!",
 		"howdy": "Howdy!",
 		"cellData": "Cell Data"
+	},
+	"history": {
+		"newest": "Newest",
+		"oldest": "Oldest",
+		"mostExpensive": "Most Expensive",
+		"mostTokens": "Most Tokens",
+		"mostRelevant": "Most Relevant",
+		"workspaceOnly": "Workspace Only",
+		"favoritesOnly": "Favorites Only",
+		"searchPlaceholder": "Fuzzy search history..."
+	},
+	"historyView": {
+		"tokens": "Tokens",
+		"model": "Model",
+		"size": "Size",
+		"export": "Export"
+	},
+	"historyPreview": {
+		"viewAll": "View All"
 	}
 }

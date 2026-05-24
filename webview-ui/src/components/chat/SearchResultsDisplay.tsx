@@ -1,5 +1,6 @@
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import React, { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import CodeAccordian from "../common/CodeAccordian"
 
 interface SearchResultsDisplayProps {
@@ -17,6 +18,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
 	path,
 	filePattern,
 }) => {
+	const { t } = useTranslation("common")
 	const parsedData = useMemo(() => {
 		// Check if this is a multi-workspace result
 		const multiWorkspaceMatch = content.match(/^Found \d+ results? across \d+ workspaces?\./m)

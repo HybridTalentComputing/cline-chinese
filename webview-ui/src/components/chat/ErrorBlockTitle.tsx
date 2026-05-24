@@ -1,4 +1,5 @@
 import React from "react"
+import { useTranslation } from "react-i18next"
 import { ClineError, ClineErrorType } from "../../../../src/services/error/ClineError"
 import { ProgressIndicator } from "./ChatRow"
 
@@ -15,6 +16,7 @@ interface ErrorBlockTitleProps {
 }
 
 export const ErrorBlockTitle = ({
+	cost,
 	apiReqCancelReason,
 	apiRequestFailedMessage,
 	retryStatus,
