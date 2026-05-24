@@ -151,7 +151,7 @@ const CreateWorktreeModal = ({ open, onClose, openAfterCreate = false, onSuccess
 							value={newBranchName}>
 							{newBranchName && (
 								<div
-									aria-label="Clear"
+									aria-label={t("worktrees.clear")}
 									className="input-icon-button codicon codicon-close"
 									onClick={() => setNewBranchName("")}
 									slot="end"
@@ -177,7 +177,7 @@ const CreateWorktreeModal = ({ open, onClose, openAfterCreate = false, onSuccess
 							value={newWorktreePath}>
 							{newWorktreePath && (
 								<div
-									aria-label="Clear"
+									aria-label={t("worktrees.clear")}
 									className="input-icon-button codicon codicon-close"
 									onClick={() => setNewWorktreePath("")}
 									slot="end"

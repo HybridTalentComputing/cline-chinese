@@ -122,7 +122,11 @@
 		"resources": "资源",
 		"documentation": "文档",
 		"issues": "问题反馈",
-		"featureRequests": "功能请求"
+		"featureRequests": "功能请求",
+		"browser": {
+			"chromeExecutablePath": "Chrome 可执行文件路径（可选）",
+			"customBrowserArgs": "自定义浏览器参数（可选）"
+		}
 	},
 	"featureSettings": {
 		"agent": "智能体",
@@ -344,7 +348,8 @@
 			"requestTimeoutDescription": "等待 API 响应的最大超时时间（毫秒）。",
 			"quickstartGuide": "快速入门指南。",
 			"ollamaInstructions": "Ollama 允许您在本地计算机上运行模型。有关如何入门的说明，请参阅其",
-			"noteComplexPrompts": "注意：Cline 使用复杂的提示词，与 Claude 模型配合效果最佳。能力较弱的模型可能无法按预期工作。"
+			"noteComplexPrompts": "注意：Cline 使用复杂的提示词，与 Claude 模型配合效果最佳。能力较弱的模型可能无法按预期工作。",
+			"seeQuickstart": "Ollama 允许您在本地计算机上运行模型。有关如何开始使用的说明，请参见他们的快速入门指南。"
 		},
 		"lmstudio": {
 			"useCustomBaseUrl": "使用自定义基础 URL"
@@ -389,7 +394,12 @@
 			"alibabaApiLine": "阿里云 API 线路"
 		},
 		"qwenCode": {
-			"title": "通义千问代码 API 配置"
+			"title": "Qwen Code",
+			"oauthCredsPath": "OAuth 凭证路径",
+			"credsPathDescription": "您的 Qwen OAuth 凭证文件路径。使用 ~/.qwen/oauth_creds.json 或提供自定义路径。",
+			"oauthExplanation": "Qwen Code 是一个基于 OAuth 的 API，需要通过官方 Qwen 客户端进行身份验证。您需要先设置 OAuth 凭证。",
+			"getStartedSteps": "开始使用：<br />1. 安装官方 Qwen 客户端<br />2. 使用您的账户进行身份验证<br />3. OAuth 凭证将自动存储",
+			"setupInstructions": "安装说明"
 		},
 		"moonshot": {
 			"name": "Moonshot",
@@ -413,7 +423,8 @@
 			"name": "Baseten"
 		},
 		"claudeCode": {
-			"cliPath": "Claude Code CLI 路径"
+			"cliPath": "Claude Code CLI 路径",
+			"defaultClaudePlaceholder": "默认：claude"
 		},
 		"cline": {
 			"name": "Cline"
@@ -431,7 +442,10 @@
 		},
 		"litellm": {
 			"baseUrlOptional": "基础 URL（可选）",
-			"apiKey": "API 密钥"
+			"apiKey": "API 密钥",
+			"defaultNoopPlaceholder": "默认：noop",
+			"searchModelPlaceholder": "搜索或输入自定义模型 ID...",
+			"seeQuickstart": "LiteLLM 提供了统一的接口来访问各种 LLM 提供商的模型。参见他们的快速入门指南了解更多信息。"
 		},
 		"requesty": {
 			"name": "Requesty",
@@ -452,8 +466,19 @@
 		},
 		"oca": {
 			"signedIn": "已登录",
+			"signIn": "使用 Oracle Code Assist 登录",
+			"signInAgain": "重新登录",
+			"logOut": "退出登录",
+			"retry": "重试",
+			"oracleEmployment": "Oracle 员工",
+			"oracleEmployee": "我是 Oracle 员工",
+			"itAdminMessage": "请联系您的 IT 管理员设置 Oracle Code Assist 作为模型提供商。Oracle 员工请参见",
+			"quickstartGuide": "快速入门指南",
 			"failedRefreshModels": "刷新模型失败。请检查您的会话或网络。",
-			"oracleEmployment": "Oracle 就业"
+			"customBaseUrlOptional": "自定义 Base URL（可选）",
+			"haveIdea": "对 Oracle Code Assist 有建议？",
+			"provideFeedback": "提供反馈",
+			"pleaseSeeThe": "请参见"
 		},
 		"wandb": {
 			"name": "Wandb"
@@ -505,7 +530,11 @@
 		"clineEnvironment": "Cline 环境",
 		"owner": "所有者",
 		"admin": "管理员",
-		"member": "成员"
+		"member": "成员",
+		"production": "生产环境",
+		"staging": "预发布环境",
+		"local": "本地",
+		"profile": "头像"
 	},
 	"onboarding": {
 		"howWillYouUse": "您将如何使用 Cline？",
@@ -540,5 +569,23 @@
 		"instant": "即时",
 		"fast": "快速",
 		"slow": "较慢"
+	},
+	"history": {
+		"newest": "最新",
+		"oldest": "最旧",
+		"mostExpensive": "最贵",
+		"mostTokens": "最多令牌",
+		"mostRelevant": "最相关",
+		"workspaceOnly": "仅工作区",
+		"favoritesOnly": "仅收藏",
+		"searchPlaceholder": "模糊搜索历史记录...",
+		"deleteSelected": "删除选中项",
+		"deleteAll": "删除所有历史记录",
+		"today": "今天",
+		"older": "更早",
+		"selectAll": "全选",
+		"selectNone": "取消全选",
+		"deleteSelectedCount": "删除 {{count}} 已选中",
+		"deleteAllHistory": "删除所有历史记录"
 	}
 }

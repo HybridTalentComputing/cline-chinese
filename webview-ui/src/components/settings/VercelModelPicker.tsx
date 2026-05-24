@@ -152,7 +152,7 @@ const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentM
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [searchTerm])
+	}, [])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
@@ -269,7 +269,7 @@ const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentM
 								<DropdownItem isSelected={false}>
 									<span style={{ color: "var(--vscode-descriptionForeground)" }}>
 										{Object.keys(vercelAiGatewayModels).length === 0
-											? "Loading models..."
+											? t("modelPicker.refreshing")
 											: t("modelPicker.noModelsFound")}
 									</span>
 								</DropdownItem>

@@ -176,7 +176,13 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				setIsLoading(false)
 			}
 		},
-		[isLoading, uid, fetchUserCredit, loadCachedData],
+		[
+			isLoading,
+			uid,
+			fetchUserCredit,
+			loadCachedData, // Cache the updated data
+			cacheCurrentData,
+		],
 	)
 
 	const handleOrganizationChange = useCallback(
@@ -241,7 +247,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 			initialFetchCompleteRef.current = true
 		}
 		initialFetch()
-	}, [])
+	}, [dropdownValue, fetchCreditBalance])
 
 	useEffect(() => {
 		// Handle organization changes with 500ms debounce
@@ -310,7 +316,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				<div className="flex flex-col w-full gap-1 mb-6">
 					<div className="flex items-center flex-wrap gap-y-4">
 						{/* {user.photoUrl ? (
-								<img src={user.photoUrl} alt="Profile" className="size-16 rounded-full mr-4" />
+								<img src={user.photoUrl} alt={t("account.profile")} className="size-16 rounded-full mr-4" />
 							) : ( */}
 						<div className="size-16 rounded-full bg-button-background flex items-center justify-center text-2xl text-button-foreground mr-4">
 							{displayName?.[0] || email?.[0] || "?"}
@@ -360,11 +366,11 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				<div className="w-full flex gap-2 flex-col min-[225px]:flex-row">
 					<div className="w-full min-[225px]:w-1/2">
 						<VSCodeButtonLink appearance="primary" className="w-full" href={getClineUris(clineUrl, "dashboard").href}>
-							Dashboard
+							{t("account.dashboard")}
 						</VSCodeButtonLink>
 					</div>
 					<VSCodeButton appearance="secondary" className="w-full min-[225px]:w-1/2" onClick={() => handleSignOut()}>
-						Log out
+						{t("account.logOut")}
 					</VSCodeButton>
 				</div>
 

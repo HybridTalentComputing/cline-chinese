@@ -4,6 +4,7 @@ import { EmptyRequest, StringRequest } from "@shared/proto/index.cline"
 import { Mode } from "@shared/storage/types"
 import { VSCodeButton, VSCodeCheckbox, VSCodeLink, VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react"
 import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ModelsServiceClient, OcaAccountServiceClient } from "@/services/grpc-client"
 import { VSC_BUTTON_BACKGROUND, VSC_BUTTON_FOREGROUND, VSC_DESCRIPTION_FOREGROUND } from "@/utils/vscStyles"
@@ -220,6 +221,7 @@ function useOcaModels({
  * The Oca provider configuration component
  */
 export const OcaProvider = ({ isPopup, currentMode }: OcaProviderProps) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
@@ -266,12 +268,14 @@ export const OcaProvider = ({ isPopup, currentMode }: OcaProviderProps) => {
 			{!ready ? (
 				<div aria-live="polite" className="flex items-center gap-2 py-2" role="status">
 					<VSCodeProgressRing />
-					<span className={`text-[13px] [color:var(${VSC_DESCRIPTION_FOREGROUND})]`}>Connecting…</span>
+					<span className={`text-[13px] [color:var(${VSC_DESCRIPTION_FOREGROUND})]`}>
+						{t("providers.oca.connecting")}
+					</span>
 				</div>
 			) : !isAuthenticated ? (
 				<div>
 					<div
-						aria-label="Oracle employment"
+						aria-label={t("providers.oca.oracleEmployment")}
 						style={{
 							marginTop: 12,
 							marginBottom: 4,
@@ -282,7 +286,7 @@ export const OcaProvider = ({ isPopup, currentMode }: OcaProviderProps) => {
 								const checked = (e?.target as HTMLInputElement)?.checked
 								handleToggleMode(checked ? "internal" : "external")
 							}}>
-							I’m an Oracle Employee
+							{t("providers.oca.oracleEmployee")}
 						</VSCodeCheckbox>
 					</div>
 					<VSCodeButton
@@ -297,16 +301,16 @@ export const OcaProvider = ({ isPopup, currentMode }: OcaProviderProps) => {
 							minWidth: 0,
 							margin: "12px 0",
 						}}>
-						Sign in with Oracle Code Assist
+						{t("providers.oca.signIn")}
 					</VSCodeButton>
 					<p className="text-xs mt-0 text-(--vscode-descriptionForeground)">
-						Please ask your IT administrator to set up Oracle Code Assist as a model provider. Oracle Employees,
-						please see the{" "}
+						{t("providers.oca.itAdminMessage")}
+						{t("providers.oca.pleaseSeeThe")}{" "}
 						<VSCodeLink
 							href="https://confluence.oraclecorp.com/confluence/display/AICODE/Oracle+Code+Assist+via+Cline"
 							rel="noopener noreferrer"
 							target="_blank">
-							quickstart guide
+							{t("providers.oca.quickstartGuide")}
 						</VSCodeLink>
 					</p>
 				</div>
@@ -314,20 +318,20 @@ export const OcaProvider = ({ isPopup, currentMode }: OcaProviderProps) => {
 				<div>
 					<div className={`flex items-center justify-between mt-0 mb-0 [color:var(${VSC_DESCRIPTION_FOREGROUND})]`}>
 						<div className="flex flex-col gap-0 font-semibold text-[13px]">
-							<span>Signed in</span>
+							<span>{t("providers.oca.signedIn")}</span>
 							{ocaUser?.email ? (
 								<span className="font-semibold opacity-95 mt-2">{ocaUser.email}</span>
 							) : ocaUser?.uid ? (
 								<span className="font-semibold opacity-95 mt-2">{ocaUser.uid}</span>
 							) : (
-								<span className="font-semibold opacity-95 mt-2">Unknown User</span>
+								<span className="font-semibold opacity-95 mt-2">{t("providers.oca.unknownUser")}</span>
 							)}
 						</div>
 						<VSCodeButton
 							onClick={async () => {
 								await logout()
 							}}>
-							Log out
+							{t("providers.oca.logOut")}
 						</VSCodeButton>
 					</div>
 
@@ -335,7 +339,7 @@ export const OcaProvider = ({ isPopup, currentMode }: OcaProviderProps) => {
 						<BaseUrlField
 							defaultValue={undefined}
 							initialValue={ocaBaseUrl}
-							label="Custom Base URL (optional)"
+							label={t("providers.oca.customBaseUrlOptional")}
 							onChange={(value) => handleFieldChange("ocaBaseUrl", value)}
 						/>
 					</div>
@@ -355,17 +359,17 @@ export const OcaProvider = ({ isPopup, currentMode }: OcaProviderProps) => {
 							aria-live="polite"
 							className={`mt-2 text-[13px] [color:var(${VSC_DESCRIPTION_FOREGROUND})]`}
 							role="status">
-							<div>Failed to refresh models. Check your session or network.</div>
+							<div>{t("providers.oca.failedRefreshModels")}</div>
 							<div className="mt-2 flex gap-2">
 								<VSCodeButton appearance="secondary" onClick={handleRefresh}>
-									Retry
+									{t("providers.oca.retry")}
 								</VSCodeButton>
 								<VSCodeButton
 									appearance="secondary"
 									onClick={async () => {
 										await login()
 									}}>
-									Sign in again
+									{t("providers.oca.signInAgain")}
 								</VSCodeButton>
 							</div>
 						</div>
@@ -431,7 +435,7 @@ export const OcaProvider = ({ isPopup, currentMode }: OcaProviderProps) => {
 									marginBottom: 18,
 									marginTop: 2,
 								}}>
-								Have an idea for Oracle Code Assist?
+								{t("providers.oca.haveIdea")}
 							</div>
 						</div>
 						<div
@@ -466,7 +470,7 @@ export const OcaProvider = ({ isPopup, currentMode }: OcaProviderProps) => {
 									cursor: "pointer",
 								}}
 								target="_blank">
-								Provide feedback
+								{t("providers.oca.provideFeedback")}
 							</a>
 						</div>
 					</InfoCard>

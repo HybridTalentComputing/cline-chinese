@@ -88,6 +88,12 @@
 			"restoreFilesOnlyDesc": "将文件恢复到此检查点",
 			"restoreTaskOnlyAlt": "仅恢复任务",
 			"restoreTaskOnlyAltDesc": "清除此时间点之后的消息"
+		},
+		"environment": {
+			"production": "生产环境",
+			"staging": "预发布",
+			"local": "本地",
+			"selfHosted": "自托管"
 		}
 	},
 	"mcp": {
@@ -233,6 +239,7 @@
 		"title": "工作树",
 		"done": "完成",
 		"description": "Git 工作树允许您同时在多个分支上工作，每个分支都有自己的文件夹。在各自的窗口中打开工作树，以便 Cline 可以并行处理多个任务。",
+		"clear": "清除",
 		"learnMore": "了解更多",
 		"worktreeIncludeDetected": "检测到 .worktreeinclude。 ",
 		"tipCreateFile": "提示：创建一个 ",
@@ -391,8 +398,13 @@
 		"workspaceOnly": "仅工作区",
 		"favoritesOnly": "仅收藏",
 		"searchPlaceholder": "模糊搜索历史...",
-		"deleteSelected": "删除选中项",
-		"deleteAll": "删除所有历史"
+		"deleteSelected": "删除 {{count}} 已选中",
+		"deleteAll": "删除所有历史",
+		"today": "今天",
+		"older": "更早",
+		"selectAll": "全选",
+		"selectNone": "取消全选",
+		"deleteAllHistory": "删除所有历史记录"
 	},
 	"historyView": {
 		"tokens": "Token",

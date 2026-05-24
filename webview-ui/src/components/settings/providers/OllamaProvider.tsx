@@ -1,6 +1,5 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useInterval } from "react-use"
@@ -26,7 +25,7 @@ interface OllamaProviderProps {
 /**
  * The Ollama provider configuration component
  */
-export const OllamaProvider = ({ showModelOptions, isPopup, currentMode }: OllamaProviderProps) => {
+export const OllamaProvider = ({ showModelOptions, currentMode }: OllamaProviderProps) => {
 	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
@@ -43,7 +42,7 @@ export const OllamaProvider = ({ showModelOptions, isPopup, currentMode }: Ollam
 					value: apiConfiguration?.ollamaBaseUrl || "",
 				}),
 			)
-			if (response && response.values) {
+			if (response?.values) {
 				setOllamaModels(response.values)
 			}
 		} catch (error) {
@@ -86,7 +85,7 @@ export const OllamaProvider = ({ showModelOptions, isPopup, currentMode }: Ollam
 				onModelChange={(modelId) => {
 					handleModeFieldChange({ plan: "planModeOllamaModelId", act: "actModeOllamaModelId" }, modelId, currentMode)
 				}}
-				placeholder={ollamaModels.length > 0 ? "Search and select a model..." : "e.g. llama3.1"}
+				placeholder={ollamaModels.length > 0 ? t("settings.searchSelectModel") : "e.g. llama3.1"}
 				selectedModelId={ollamaModelId || ""}
 			/>
 
@@ -130,12 +129,7 @@ export const OllamaProvider = ({ showModelOptions, isPopup, currentMode }: Ollam
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				Ollama allows you to run models locally on your computer. For instructions on how to get started, see their{" "}
-				<VSCodeLink
-					href="https://github.com/ollama/ollama/blob/main/README.md"
-					style={{ display: "inline", fontSize: "inherit" }}>
-					quickstart guide.
-				</VSCodeLink>{" "}
+				{t("providers.ollama.seeQuickstart")}{" "}
 				<span style={{ color: "var(--vscode-errorForeground)" }}>
 					{t("providers.openaiCompatible.noteComplexPrompts")}
 				</span>

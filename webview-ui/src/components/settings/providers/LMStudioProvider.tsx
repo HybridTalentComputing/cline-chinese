@@ -73,7 +73,7 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 
 	useEffect(() => {
 		requestLmStudioModels()
-	}, [])
+	}, [requestLmStudioModels])
 
 	const lmStudioMaxTokens = currentLMStudioModel?.max_context_length?.toString()
 	const currentLoadedContext = currentLMStudioModel?.loaded_context_length?.toString()
@@ -100,7 +100,7 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 				initialValue={apiConfiguration?.lmStudioBaseUrl}
 				label={t("providers.lmStudio.useCustomBaseUrl")}
 				onChange={(value) => handleFieldChange("lmStudioBaseUrl", value)}
-				placeholder="Default: http://localhost:1234"
+				placeholder={t("providers.lmstudio.defaultBaseUrl")}
 			/>
 
 			<div className="font-semibold">{t("settings.model")}</div>
@@ -108,8 +108,8 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 				<DropdownContainer className="dropdown-container" zIndex={10}>
 					<VSCodeDropdown
 						className="w-full mb-3"
-						onChange={(e: any) => {
-							const value = e?.target?.value
+						onChange={(e: Event) => {
+							const value = (e.target as HTMLSelectElement)?.value
 							handleModeFieldChange(
 								{
 									plan: "planModeLmStudioModelId",
@@ -149,7 +149,7 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 			<VSCodeTextField
 				className="w-full pointer-events-none"
 				disabled={true}
-				title="Not editable - the value is returned by the connected endpoint"
+				title={t("providers.lmstudio.notEditable")}
 				value={String(currentLoadedContext ?? lmStudioMaxTokens ?? "0")}
 			/>
 

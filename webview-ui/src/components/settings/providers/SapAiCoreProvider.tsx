@@ -96,6 +96,8 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 		apiConfiguration?.sapAiCoreBaseUrl,
 		apiConfiguration?.sapAiCoreTokenUrl,
 		apiConfiguration?.sapAiResourceGroup,
+		hasRequiredCredentials,
+		t,
 	])
 
 	// Fetch models when configuration changes
@@ -191,7 +193,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 				<div className="flex flex-col gap-2.5 mt-[15px]">
 					<div className="flex items-center gap-2">
 						<VSCodeCheckbox
-							aria-label="Orchestration Mode"
+							aria-label={t("providers.sapaicore.orchestrationMode")}
 							checked={apiConfiguration?.sapAiCoreUseOrchestrationMode}
 							onChange={(e) => handleOrchestrationChange((e.target as HTMLInputElement).checked)}
 						/>
@@ -233,7 +235,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 								)}
 								<SapAiCoreModelPicker
 									onModelChange={handleModelChange}
-									placeholder="Select a model..."
+									placeholder={t("settings.selectModel")}
 									sapAiCoreModelDeployments={sapAiCoreModelDeployments}
 									selectedDeploymentId={
 										apiConfiguration?.[

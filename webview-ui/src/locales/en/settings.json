@@ -122,7 +122,11 @@
 		"resources": "Resources",
 		"documentation": "Documentation",
 		"issues": "Issues",
-		"featureRequests": "Feature Requests"
+		"featureRequests": "Feature Requests",
+		"browser": {
+			"chromeExecutablePath": "Chrome Executable Path (Optional)",
+			"customBrowserArgs": "Custom Browser Arguments (Optional)"
+		}
 	},
 	"featureSettings": {
 		"agent": "Agent",
@@ -344,7 +348,8 @@
 			"requestTimeoutDescription": "Maximum time in milliseconds to wait for API responses before timing out.",
 			"quickstartGuide": "quickstart guide.",
 			"ollamaInstructions": "Ollama allows you to run models locally on your computer. For instructions on how to get started, see their",
-			"noteComplexPrompts": "Note: Cline uses complex prompts and works best with Claude models. Less capable models may not work as expected."
+			"noteComplexPrompts": "Note: Cline uses complex prompts and works best with Claude models. Less capable models may not work as expected.",
+			"seeQuickstart": "Ollama allows you to run models locally on your computer. For instructions on how to get started, see their quickstart guide."
 		},
 		"lmstudio": {
 			"useCustomBaseUrl": "Use custom base URL"
@@ -389,7 +394,12 @@
 			"alibabaApiLine": "Alibaba API Line"
 		},
 		"qwenCode": {
-			"title": "Qwen Code API Configuration"
+			"title": "Qwen Code",
+			"oauthCredsPath": "OAuth Credentials Path",
+			"credsPathDescription": "Path to your Qwen OAuth credentials file. Use ~/.qwen/oauth_creds.json or provide a custom path.",
+			"oauthExplanation": "Qwen Code is an OAuth-based API that requires authentication through the official Qwen client. You'll need to set up OAuth credentials first.",
+			"getStartedSteps": "To get started:<br />1. Install the official Qwen client<br />2. Authenticate using your account<br />3. OAuth credentials will be stored automatically",
+			"setupInstructions": "Setup Instructions"
 		},
 		"moonshot": {
 			"name": "Moonshot",
@@ -413,7 +423,8 @@
 			"name": "Baseten"
 		},
 		"claudeCode": {
-			"cliPath": "Claude Code CLI Path"
+			"cliPath": "Claude Code CLI Path",
+			"defaultClaudePlaceholder": "Default: claude"
 		},
 		"cline": {
 			"name": "Cline"
@@ -431,7 +442,10 @@
 		},
 		"litellm": {
 			"baseUrlOptional": "Base URL (optional)",
-			"apiKey": "API Key"
+			"apiKey": "API Key",
+			"defaultNoopPlaceholder": "Default: noop",
+			"searchModelPlaceholder": "Search or enter a custom model ID...",
+			"seeQuickstart": "LiteLLM provides a unified interface to access various LLM providers' models. See their quickstart guide for more information."
 		},
 		"requesty": {
 			"name": "Requesty",
@@ -452,8 +466,19 @@
 		},
 		"oca": {
 			"signedIn": "Signed in",
+			"signIn": "Sign in with Oracle Code Assist",
+			"signInAgain": "Sign in again",
+			"logOut": "Log out",
+			"retry": "Retry",
+			"oracleEmployment": "Oracle employment",
+			"oracleEmployee": "I'm an Oracle Employee",
+			"itAdminMessage": "Please ask your IT administrator to set up Oracle Code Assist as a model provider. Oracle Employees, please see the",
+			"quickstartGuide": "quickstart guide",
 			"failedRefreshModels": "Failed to refresh models. Check your session or network.",
-			"oracleEmployment": "Oracle employment"
+			"customBaseUrlOptional": "Custom Base URL (optional)",
+			"haveIdea": "Have an idea for Oracle Code Assist?",
+			"provideFeedback": "Provide feedback",
+			"pleaseSeeThe": "please see the"
 		},
 		"wandb": {
 			"name": "Wandb"
@@ -505,7 +530,11 @@
 		"clineEnvironment": "Cline Environment",
 		"owner": "Owner",
 		"admin": "Admin",
-		"member": "Member"
+		"member": "Member",
+		"production": "Production",
+		"staging": "Staging",
+		"local": "Local",
+		"profile": "Profile"
 	},
 	"onboarding": {
 		"howWillYouUse": "How will you use Cline?",
@@ -540,5 +569,23 @@
 		"instant": "Instant",
 		"fast": "Fast",
 		"slow": "Slow"
+	},
+	"history": {
+		"newest": "Newest",
+		"oldest": "Oldest",
+		"mostExpensive": "Most Expensive",
+		"mostTokens": "Most Tokens",
+		"mostRelevant": "Most Relevant",
+		"workspaceOnly": "Workspace Only",
+		"favoritesOnly": "Favorites Only",
+		"searchPlaceholder": "Fuzzy search history...",
+		"deleteSelected": "Delete selected items",
+		"deleteAll": "Delete all history",
+		"today": "Today",
+		"older": "Older",
+		"selectAll": "Select All",
+		"selectNone": "Select None",
+		"deleteSelectedCount": "Delete {{count}} Selected",
+		"deleteAllHistory": "Delete All History"
 	}
 }

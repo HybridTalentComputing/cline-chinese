@@ -47,7 +47,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 			<DebouncedTextField
 				initialValue={apiConfiguration?.claudeCodePath || ""}
 				onChange={(value) => handleFieldChange("claudeCodePath", value)}
-				placeholder="Default: claude"
+				placeholder={t("providers.claudeCode.defaultClaudePlaceholder")}
 				style={{ width: "100%", marginTop: 3 }}
 				type="text">
 				<span style={{ fontWeight: 500 }}>{t("providers.claudeCode.cliPath")}</span>
@@ -67,7 +67,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 					<ModelSelector
 						label={t("settings.model")}
 						models={claudeCodeModels}
-						onChange={(e: any) =>
+						onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
 							handleModeFieldChange(
 								{ plan: "planModeApiModelId", act: "actModeApiModelId" },
 								e.target.value,

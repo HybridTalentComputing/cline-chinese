@@ -100,7 +100,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 							}),
 						)
 					}}
-					placeholder="Default: noop"
+					placeholder={t("providers.litellm.defaultNoopPlaceholder")}
 					style={{ width: "100%" }}
 					type="password">
 					<div className="flex items-center gap-2 mb-1">
@@ -115,7 +115,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 						label={t("settings.model")}
 						models={liteLlmModels}
 						onChange={handleModelChange}
-						placeholder="Search or enter a custom model ID..."
+						placeholder={t("providers.litellm.searchModelPlaceholder")}
 						selectedModelId={selectedModelId}
 					/>
 					<VSCodeButton
@@ -156,11 +156,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				LiteLLM provides a unified interface to access various LLM providers' models. See their{" "}
-				<VSCodeLink href="https://docs.litellm.ai/docs/" style={{ display: "inline", fontSize: "inherit" }}>
-					quickstart guide
-				</VSCodeLink>{" "}
-				for more information.
+				{t("providers.litellm.seeQuickstart")}
 			</p>
 		</div>
 	)

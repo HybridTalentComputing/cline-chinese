@@ -88,6 +88,12 @@
 			"restoreFilesOnlyDesc": "Revert files to this checkpoint",
 			"restoreTaskOnlyAlt": "Restore Task Only",
 			"restoreTaskOnlyAltDesc": "Clear messages after this point"
+		},
+		"environment": {
+			"production": "Production",
+			"staging": "Staging",
+			"local": "Local",
+			"selfHosted": "Self-hosted"
 		}
 	},
 	"mcp": {
@@ -233,6 +239,7 @@
 		"title": "Worktrees",
 		"done": "Done",
 		"description": "Git worktrees let you work on multiple branches at the same time, each in its own folder. Open worktrees in their own windows so Cline can work on multiple tasks in parallel. ",
+		"clear": "Clear",
 		"learnMore": "Learn more",
 		"worktreeIncludeDetected": ".worktreeinclude detected. ",
 		"tipCreateFile": "Tip: Create a ",
@@ -391,8 +398,13 @@
 		"workspaceOnly": "Workspace Only",
 		"favoritesOnly": "Favorites Only",
 		"searchPlaceholder": "Fuzzy search history...",
-		"deleteSelected": "Delete selected items",
-		"deleteAll": "Delete all history"
+		"deleteSelected": "Delete {{count}} Selected",
+		"deleteAll": "Delete all history",
+		"today": "Today",
+		"older": "Older",
+		"selectAll": "Select All",
+		"selectNone": "Select None",
+		"deleteAllHistory": "Delete All History"
 	},
 	"historyView": {
 		"tokens": "Tokens",
