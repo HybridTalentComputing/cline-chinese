@@ -67,7 +67,8 @@
 		"planMode": "计划模式",
 		"actMode": "执行模式",
 		"useDifferentModels": "为计划和执行模式使用不同的模型",
-		"useDifferentModelsDescription": "在计划和执行模式之间切换时，将保留之前模式使用的 API 和模型。这在使用强推理模型为更便宜的编码模型制定计划时可能会有帮助。"
+		"useDifferentModelsDescription": "在计划和执行模式之间切换时，将保留之前模式使用的 API 和模型。这在使用强推理模型为更便宜的编码模型制定计划时可能会有帮助。",
+		"modeSwitchPersistDescription": "在计划和执行模式之间切换时，将保留上一模式使用的 API 和模型。例如，这在使用强推理模型为更便宜的编码模型制定计划时很有帮助。"
 	},
 	"settingsSections": {
 		"allowErrorReporting": "允许错误和使用数据报告",
@@ -256,7 +257,8 @@
 		"remove": "移除",
 		"addHeader": "添加请求头",
 		"headerName": "请求头名称",
-		"headerValue": "请求头值"
+		"headerValue": "请求头值",
+		"addHeaderButton": "添加请求头"
 	},
 	"providers": {
 		"anthropic": {
@@ -484,7 +486,28 @@
 			"recommendedModel": "时效果最佳。"
 		},
 		"sapaicore": {
-			"orchestrationMode": "编排模式"
+			"orchestrationMode": "编排模式",
+			"credentialsStoredLocally": "您的凭证存储在本地，仅用于从此扩展发起 API 请求。",
+			"moreInfoLink": "更多信息",
+			"configureCredentials": "请先配置您的 SAP AI Core 凭证。",
+			"clientId": "客户端 ID",
+			"clientIdSet": "客户端 ID 已设置",
+			"enterClientId": "输入您的 SAP AI Core 客户端 ID",
+			"clientSecret": "客户端密钥",
+			"clientSecretSet": "客户端密钥已设置",
+			"enterClientSecret": "输入您的 SAP AI Core 客户端密钥",
+			"baseUrl": "基础 URL",
+			"enterBaseUrl": "例如，https://api.ai.prod.eu-central-1.aws.ml.hana.ondemand.com",
+			"authUrl": "认证 URL",
+			"enterAuthUrl": "例如，https://<subaccount>.authentication.sap.hana.ondemand.com",
+			"resourceGroup": "资源组",
+			"enterResourceGroup": "输入您的 SAP AI Core 资源组",
+			"fetchModelsFailed": "从 SAP AI Core 获取模型失败",
+			"loadingModels": "正在加载模型...",
+			"orchestrationDescription": "编排模式允许 SAP AI Core 在单个请求中编排多个模型和工具。",
+			"orchestrationDisabled": "编排模式仅在您的 SAP AI Core 服务实例支持时可用。",
+			"retry": "重试",
+			"unableToFetchModels": "无法从 SAP AI Core 服务实例获取模型。请检查您的 SAP AI Core 配置，或确保您的部署已在服务实例中部署并运行。"
 		},
 		"vercelAiGateway": {
 			"apiKey": "Vercel AI Gateway API 密钥",
@@ -497,7 +520,8 @@
 		},
 		"openAiCodex": {
 			"signedIn": "已登录 OpenAI Codex",
-			"signIn": "登录 OpenAI Codex"
+			"signIn": "登录 OpenAI Codex",
+			"signInDescription": "登录以使用 OpenAI Codex（需要 ChatGPT Plus/Pro 订阅）"
 		},
 		"oca": {
 			"signedIn": "已登录",
@@ -519,7 +543,9 @@
 			"name": "Wandb"
 		},
 		"zai": {
-			"name": "Z AI"
+			"name": "Z AI",
+			"entrypoint": "API 入口",
+			"entrypointDescription": "请根据您所在地区选择合适的 API 入口。如果您在中国大陆，请选择 open.bigmodel.cn。否则，请选择 api.z.ai。"
 		},
 		"lmStudio": {
 			"name": "LM Studio"

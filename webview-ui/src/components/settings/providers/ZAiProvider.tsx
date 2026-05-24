@@ -60,8 +60,7 @@ export const ZAiProvider = ({ showModelOptions, isPopup, currentMode }: ZAiProvi
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				Please select the appropriate API entrypoint based on your location. If you are in China, choose open.bigmodel.cn
-				. Otherwise, choose api.z.ai.
+				{t("providers.zai.entrypointDescription")}
 			</p>
 			<ApiKeyField
 				initialValue={apiConfiguration?.zaiApiKey || ""}

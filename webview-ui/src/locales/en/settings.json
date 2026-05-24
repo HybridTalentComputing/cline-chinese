@@ -67,7 +67,8 @@
 		"planMode": "Plan Mode",
 		"actMode": "Act Mode",
 		"useDifferentModels": "Use different models for Plan and Act modes",
-		"useDifferentModelsDescription": "Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on."
+		"useDifferentModelsDescription": "Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on.",
+		"modeSwitchPersistDescription": "Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on."
 	},
 	"settingsSections": {
 		"allowErrorReporting": "Allow error and usage reporting",
@@ -256,7 +257,8 @@
 		"remove": "Remove",
 		"addHeader": "Add Header",
 		"headerName": "Header name",
-		"headerValue": "Header value"
+		"headerValue": "Header value",
+		"addHeaderButton": "Add Header"
 	},
 	"providers": {
 		"anthropic": {
@@ -484,7 +486,28 @@
 			"recommendedModel": "anthropic/claude-3-7-sonnet-latest"
 		},
 		"sapaicore": {
-			"orchestrationMode": "Orchestration Mode"
+			"orchestrationMode": "Orchestration Mode",
+			"credentialsStoredLocally": "Your credentials are stored locally and are only used to make API requests from this extension.",
+			"moreInfoLink": "More information",
+			"configureCredentials": "Please configure your SAP AI Core credentials first.",
+			"clientId": "Client ID",
+			"clientIdSet": "Client ID is set",
+			"enterClientId": "Enter your SAP AI Core Client ID",
+			"clientSecret": "Client Secret",
+			"clientSecretSet": "Client Secret is set",
+			"enterClientSecret": "Enter your SAP AI Core Client Secret",
+			"baseUrl": "Base URL",
+			"enterBaseUrl": "e.g., https://api.ai.prod.eu-central-1.aws.ml.hana.ondemand.com",
+			"authUrl": "Authentication URL",
+			"enterAuthUrl": "e.g., https://<subaccount>.authentication.sap.hana.ondemand.com",
+			"resourceGroup": "Resource Group",
+			"enterResourceGroup": "Enter your SAP AI Core Resource Group",
+			"fetchModelsFailed": "Failed to fetch models from SAP AI Core",
+			"loadingModels": "Loading models...",
+			"orchestrationDescription": "Orchestration mode allows the SAP AI Core to orchestrate multiple models and tools in a single request.",
+			"orchestrationDisabled": "Orchestration mode is only available when your SAP AI Core service instance supports it.",
+			"retry": "Retry",
+			"unableToFetchModels": "Unable to fetch models from SAP AI Core service instance. Please check your SAP AI Core configuration or ensure your deployments are deployed and running in the service instance."
 		},
 		"vercelAiGateway": {
 			"apiKey": "Vercel AI Gateway API Key",
@@ -497,7 +520,8 @@
 		},
 		"openAiCodex": {
 			"signedIn": "Signed in to OpenAI Codex",
-			"signIn": "Sign in to OpenAI Codex"
+			"signIn": "Sign in to OpenAI Codex",
+			"signInDescription": "Sign in to use OpenAI Codex (ChatGPT Plus/Pro subscription required)"
 		},
 		"oca": {
 			"signedIn": "Signed in",
@@ -519,7 +543,9 @@
 			"name": "Wandb"
 		},
 		"zai": {
-			"name": "Z AI"
+			"name": "Z AI",
+			"entrypoint": "API Entrypoint",
+			"entrypointDescription": "Please select the appropriate API entrypoint based on your location. If you are in China, choose open.bigmodel.cn. Otherwise, choose api.z.ai."
 		},
 		"lmStudio": {
 			"name": "LM Studio"
