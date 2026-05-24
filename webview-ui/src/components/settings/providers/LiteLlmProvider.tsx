@@ -112,7 +112,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 			{showModelOptions && (
 				<>
 					<ModelAutocomplete
-						label="Model"
+						label={t("settings.model")}
 						models={liteLlmModels}
 						onChange={handleModelChange}
 						placeholder="Search or enter a custom model ID..."
@@ -123,7 +123,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 						disabled={isLoading}
 						onClick={onRefreshModels}>
 						{isLoading ? (
-							"Loading..."
+							t("commonFields.loading")
 						) : (
 							<>
 								Refresh models <RefreshCwIcon className="ml-1" />

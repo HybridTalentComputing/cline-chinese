@@ -71,7 +71,7 @@ export const VertexProvider = ({ showModelOptions, isPopup, currentMode }: Verte
 					disabled={remoteConfigSettings?.vertexProjectId !== undefined}
 					initialValue={apiConfiguration?.vertexProjectId || ""}
 					onChange={(value) => handleFieldChange("vertexProjectId", value)}
-					placeholder="Enter Project ID..."
+					placeholder={t("providers.vertex.enterProjectId")}
 					style={{ width: "100%" }}>
 					<div className="flex items-center gap-2 mb-1">
 						<span style={{ fontWeight: 500 }}>{t("providers.vertex.googleCloudProjectId")}</span>
@@ -128,7 +128,7 @@ export const VertexProvider = ({ showModelOptions, isPopup, currentMode }: Verte
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.model")}
 						models={modelsToUse}
 						onChange={(e: any) =>
 							handleModeFieldChange(

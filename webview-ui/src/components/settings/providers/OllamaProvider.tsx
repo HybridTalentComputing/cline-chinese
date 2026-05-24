@@ -79,7 +79,7 @@ export const OllamaProvider = ({ showModelOptions, isPopup, currentMode }: Ollam
 
 			{/* Model selection - use filterable picker */}
 			<label htmlFor="ollama-model-selection">
-				<span className="font-semibold">Model</span>
+				<span className="font-semibold">{t("settings.model")}</span>
 			</label>
 			<OllamaModelPicker
 				ollamaModels={ollamaModels}
@@ -92,10 +92,7 @@ export const OllamaProvider = ({ showModelOptions, isPopup, currentMode }: Ollam
 
 			{/* Show status message based on model availability */}
 			{ollamaModels.length === 0 && (
-				<p className="text-sm mt-1 text-description italic">
-					Unable to fetch models from Ollama server. Please ensure Ollama is running and accessible, or enter the model
-					ID manually above.
-				</p>
+				<p className="text-sm mt-1 text-description italic">{t("providers.ollama.unableToFetch")}</p>
 			)}
 
 			<DebouncedTextField

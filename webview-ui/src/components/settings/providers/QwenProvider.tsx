@@ -95,7 +95,7 @@ export const QwenProvider = ({ showModelOptions, isPopup, currentMode }: QwenPro
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.model")}
 						models={qwenModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

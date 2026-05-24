@@ -59,7 +59,7 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 						instance URL and API key to get started.
 					</p>
 					<p style={{ marginTop: "8px" }}>
-						<strong>Note:</strong> {t("providers.dify.noteModelSelection")}
+						<strong>{t("commonFields.note")}:</strong> {t("providers.dify.noteModelSelection")}
 					</p>
 				</div>
 			</div>

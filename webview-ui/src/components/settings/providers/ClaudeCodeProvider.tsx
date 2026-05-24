@@ -65,7 +65,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.model")}
 						models={claudeCodeModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(
@@ -85,7 +85,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 								marginTop: 2,
 								color: "var(--vscode-descriptionForeground)",
 							}}>
-							Use the latest version of {selectedModelId} by default.
+							{t("providers.lmStudio.useLatestVersion")} {selectedModelId} {t("providers.lmStudio.byDefault")}
 						</p>
 					)}
 

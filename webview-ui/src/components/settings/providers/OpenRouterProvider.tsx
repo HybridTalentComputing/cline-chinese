@@ -74,7 +74,7 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: O
 				<DebouncedTextField
 					initialValue={apiConfiguration?.openRouterApiKey || ""}
 					onChange={(value) => handleFieldChange("openRouterApiKey", value)}
-					placeholder="Enter API Key..."
+					placeholder={t("commonFields.enterApiKey")}
 					style={{ width: "100%" }}
 					type="password">
 					<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
@@ -95,7 +95,7 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: O
 							}
 						}}
 						style={{ margin: "5px 0 0 0" }}>
-						Get OpenRouter API Key
+						{t("providers.openRouter.getApiKey")}
 					</VSCodeButton>
 				)}
 				<p
