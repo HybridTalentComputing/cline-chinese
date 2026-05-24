@@ -108,7 +108,7 @@ const CompletionOutputActionRow = memo(
 						width: "100%",
 					}}>
 					<i className="codicon codicon-new-file" style={{ marginRight: 6 }} />
-					View Changes
+					{t("completionOutput.viewChanges")}
 				</SuccessButton>
 
 				{PLATFORM_CONFIG.type === PlatformType.VSCODE && (

@@ -102,7 +102,7 @@
 		"shellIntegrationPlaceholder": "输入超时秒数",
 		"enterPositiveNumber": "请输入一个正数",
 		"shellIntegrationDescription": "设置 Cline 等待 Shell 集成激活后再执行命令的时间。如果您遇到终端连接超时，请增加此值。",
-		"enableAggressiveTerminalReuse": "启用激进的终端复用",
+		"enableAggressiveTerminalReuse": "启用激进终端复用",
 		"terminalReuseDescription": "启用后，Cline 将复用不在当前工作目录中的现有终端窗口。如果您在终端命令后遇到任务锁定问题，请禁用此选项。",
 		"terminalExecutionMode": "终端执行模式",
 		"vsCodeTerminal": "VS Code 终端",
@@ -126,7 +126,10 @@
 		"browser": {
 			"chromeExecutablePath": "Chrome 可执行文件路径（可选）",
 			"customBrowserArgs": "自定义浏览器参数（可选）"
-		}
+		},
+		"disableBrowserToolUsage": "禁用浏览器工具",
+		"useRemoteBrowserConnection": "使用远程浏览器连接",
+		"allowErrorUsageReporting": "允许错误和使用情况报告"
 	},
 	"featureSettings": {
 		"agent": "智能体",
@@ -288,7 +291,12 @@
 			"getApiKey": "获取 OpenRouter API 密钥",
 			"balance": "余额：",
 			"loading": "加载中...",
-			"keyStoredLocally": "此密钥存储在本地，仅用于从此扩展发起 API 请求。"
+			"keyStoredLocally": "此密钥存储在本地，仅用于从此扩展发起 API 请求。",
+			"autoFetchModels": "扩展会自动获取",
+			"openRouter": "OpenRouter",
+			"unsureModelChoice": "上可用的最新模型列表。如果您不确定选择哪个模型，Cline 在使用",
+			"recommendedModel": "时效果最佳。",
+			"trySearchingFree": "您也可以尝试搜索「免费」以查找当前可用的免费选项。"
 		},
 		"deepseek": {
 			"name": "DeepSeek"
@@ -352,7 +360,11 @@
 			"seeQuickstart": "Ollama 允许您在本地计算机上运行模型。有关如何开始使用的说明，请参见他们的快速入门指南。"
 		},
 		"lmstudio": {
-			"useCustomBaseUrl": "使用自定义基础 URL"
+			"useCustomBaseUrl": "使用自定义基础 URL",
+			"runModelsLocally": "LM Studio 允许您在本地计算机上运行模型。有关如何入门的说明，请参阅其",
+			"needToStartServer": "您还需要启动 LM Studio 的",
+			"serverFeatureWithCode": "功能，使用",
+			"contextWindow": "上下文窗口"
 		},
 		"together": {
 			"name": "Together",
@@ -365,7 +377,11 @@
 			"reasoningEffort": "推理力度"
 		},
 		"groq": {
-			"name": "Groq"
+			"name": "Groq",
+			"autoFetchModels": "扩展会自动获取",
+			"groq": "Groq",
+			"unsureModelChoice": "上可用的最新模型列表。如果您不确定选择哪个模型，Cline 在使用",
+			"recommendedModel": "时效果最佳。"
 		},
 		"fireworks": {
 			"name": "Fireworks"
@@ -407,7 +423,10 @@
 		},
 		"minimax": {
 			"name": "MiniMax",
-			"entrypoint": "MiniMax 入口地址"
+			"entrypoint": "MiniMax 入口地址",
+			"selectApiEndpoint": "根据您的区域选择 API 端点：",
+			"forChina": "用于中国，或",
+			"forOtherLocations": "用于所有其他位置。"
 		},
 		"huaweiCloudMaas": {
 			"name": "华为云 MaaS"
@@ -420,11 +439,16 @@
 			"apiUrl": "AskSage API URL"
 		},
 		"baseten": {
-			"name": "Baseten"
+			"name": "Baseten",
+			"autoFetchModels": "扩展会自动获取",
+			"baseten": "Baseten",
+			"unsureModelChoice": "上可用的最新模型列表。如果您不确定选择哪个模型，Cline 在使用",
+			"recommendedModel": "时效果最佳。"
 		},
 		"claudeCode": {
 			"cliPath": "Claude Code CLI 路径",
-			"defaultClaudePlaceholder": "默认：claude"
+			"defaultClaudePlaceholder": "默认：claude",
+			"cliPathDescription": "Claude Code CLI 的路径。"
 		},
 		"cline": {
 			"name": "Cline"
@@ -432,30 +456,41 @@
 		"dify": {
 			"name": "Dify",
 			"baseUrl": "基础 URL",
-			"noteModelSelection": "注意：模型选择在您的 Dify 应用配置中处理。"
+			"noteModelSelection": "注意：模型选择在您的 Dify 应用配置中处理。",
+			"platformDescription": "Dify 是一个平台，通过统一的 API 提供对各种 AI 模型的访问。配置您的 Dify 实例 URL 和 API 密钥以开始使用。"
 		},
 		"hicap": {
 			"apiKey": "Hicap API 密钥"
 		},
 		"huggingface": {
-			"apiKey": "Hugging Face API 密钥"
+			"apiKey": "Hugging Face API 密钥",
+			"keyStoredLocally": "此密钥存储在本地，仅用于从此扩展发起 API 请求。我们在此不显示定价，因为它取决于您的 Hugging Face 提供商设置，并且无法通过其 API 一致获取"
 		},
 		"litellm": {
 			"baseUrlOptional": "基础 URL（可选）",
 			"apiKey": "API 密钥",
 			"defaultNoopPlaceholder": "默认：noop",
 			"searchModelPlaceholder": "搜索或输入自定义模型 ID...",
-			"seeQuickstart": "LiteLLM 提供了统一的接口来访问各种 LLM 提供商的模型。参见他们的快速入门指南了解更多信息。"
+			"seeQuickstart": "LiteLLM 提供了统一的接口来访问各种 LLM 提供商的模型。参见他们的快速入门指南了解更多信息。",
+			"extendedThinkingAvailable": "扩展思考功能可用于 Sonnet-4、o3-mini、Deepseek R1 等模型。更多信息请参见",
+			"thinkingModeConfiguration": "思考模式配置"
 		},
 		"requesty": {
 			"name": "Requesty",
-			"customBaseUrl": "自定义基础 URL"
+			"customBaseUrl": "自定义基础 URL",
+			"autoFetchModels": "扩展会自动获取",
+			"requesty": "Requesty",
+			"unsureModelChoice": "上可用的最新模型列表。如果您不确定选择哪个模型，Cline 在使用",
+			"recommendedModel": "时效果最佳。"
 		},
 		"sapaicore": {
 			"orchestrationMode": "编排模式"
 		},
 		"vercelAiGateway": {
-			"apiKey": "Vercel AI Gateway API 密钥"
+			"apiKey": "Vercel AI Gateway API 密钥",
+			"enterApiKeyToLoadModels": "在上方输入您的 Vercel AI Gateway API 密钥以加载可用模型。您可以从中获取 API 密钥",
+			"vercelAiGateway": "Vercel AI Gateway",
+			"selectModelFromDropdown": "从上面的下拉列表中选择一个模型。扩展从您的 Vercel AI Gateway 配置中获取可用模型。"
 		},
 		"vscodeLm": {
 			"languageModel": "语言模型"

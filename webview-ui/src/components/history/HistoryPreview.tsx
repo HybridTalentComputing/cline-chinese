@@ -180,7 +180,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 								fontSize: "var(--vscode-font-size)",
 								padding: "10px 0",
 							}}>
-							No recent tasks
+							{t("historyPreview.noRecentTasks")}
 						</div>
 					)}
 				</div>

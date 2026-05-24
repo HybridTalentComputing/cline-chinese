@@ -83,7 +83,7 @@ const HicapModelPicker: React.FC<HicapModelPickerProps> = ({ isPopup, currentMod
 		const unfilteredModelIds = Object.keys(hicapModels).sort((a, b) => a.localeCompare(b))
 
 		return unfilteredModelIds
-	}, [hicapModels, modeFields.apiProvider])
+	}, [hicapModels])
 
 	const searchableItems = useMemo(() => {
 		return modelIds.map((id) => ({
@@ -152,7 +152,7 @@ const HicapModelPicker: React.FC<HicapModelPickerProps> = ({ isPopup, currentMod
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [searchTerm])
+	}, [])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {

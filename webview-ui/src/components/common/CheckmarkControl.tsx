@@ -54,7 +54,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 				closeMenuTimeoutRef.current = null
 			}
 		}
-	}, [showRestoreConfirm])
+	}, [])
 
 	// Clear "Restore Files" button when checkpoint is no longer checked out
 	useEffect(() => {

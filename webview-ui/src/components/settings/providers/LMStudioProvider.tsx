@@ -108,8 +108,8 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 				<DropdownContainer className="dropdown-container" zIndex={10}>
 					<VSCodeDropdown
 						className="w-full mb-3"
-						onChange={(e: Event) => {
-							const value = (e.target as HTMLSelectElement)?.value
+						onChange={(e: any) => {
+							const value = e?.target?.value
 							handleModeFieldChange(
 								{
 									plan: "planModeLmStudioModelId",
@@ -156,15 +156,15 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 			<UseCustomPromptCheckbox providerId="lmstudio" />
 
 			<div className="text-xs text-description">
-				LM Studio allows you to run models locally on your computer. For instructions on how to get started, see their
+				{t("providers.lmStudio.runModelsLocally")}{" "}
 				<VSCodeLink href="https://lmstudio.ai/docs" style={{ display: "inline", fontSize: "inherit" }}>
 					{t("providers.lmStudio.quickstartGuide")}
 				</VSCodeLink>
-				You will also need to start LM Studio's{" "}
+				{t("providers.lmStudio.needToStartServer")}{" "}
 				<VSCodeLink className="inline" href="https://lmstudio.ai/docs/basics/server">
 					{t("providers.lmStudio.localServer")}
 				</VSCodeLink>{" "}
-				feature with <code>lms server start</code> to use it with this extension.{" "}
+				{t("providers.lmStudio.serverFeatureWithCode")}{" "}
 				<div className="text-error">
 					<span className="font-semibold">{t("commonFields.note")}:</span> {t("providers.lmStudio.noteComplexPrompts")}
 				</div>

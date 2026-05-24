@@ -34,7 +34,7 @@ export const CreditBalance = ({ balance, fetchCreditBalance, creditUrl, lastFetc
 
 			<div className="w-full">
 				<VSCodeButtonLink className="w-full" href={creditUrl.href}>
-					Add Credits
+					{t("account.addCredits")}
 				</VSCodeButtonLink>
 			</div>
 		</div>

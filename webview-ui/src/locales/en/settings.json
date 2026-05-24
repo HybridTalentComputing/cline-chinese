@@ -126,7 +126,10 @@
 		"browser": {
 			"chromeExecutablePath": "Chrome Executable Path (Optional)",
 			"customBrowserArgs": "Custom Browser Arguments (Optional)"
-		}
+		},
+		"disableBrowserToolUsage": "Disable browser tool usage",
+		"useRemoteBrowserConnection": "Use remote browser connection",
+		"allowErrorUsageReporting": "Allow error and usage reporting"
 	},
 	"featureSettings": {
 		"agent": "Agent",
@@ -288,7 +291,12 @@
 			"getApiKey": "Get OpenRouter API Key",
 			"balance": "Balance:",
 			"loading": "Loading...",
-			"keyStoredLocally": "This key is stored locally and only used to make API requests from this extension."
+			"keyStoredLocally": "This key is stored locally and only used to make API requests from this extension.",
+			"autoFetchModels": "The extension automatically fetches the latest list of models available on",
+			"openRouter": "OpenRouter",
+			"unsureModelChoice": "If you're unsure which model to choose, Cline works best with",
+			"recommendedModel": "anthropic/claude-sonnet-4.6",
+			"trySearchingFree": "You can also try searching \"free\" for no-cost options currently available."
 		},
 		"deepseek": {
 			"name": "DeepSeek"
@@ -352,7 +360,11 @@
 			"seeQuickstart": "Ollama allows you to run models locally on your computer. For instructions on how to get started, see their quickstart guide."
 		},
 		"lmstudio": {
-			"useCustomBaseUrl": "Use custom base URL"
+			"useCustomBaseUrl": "Use custom base URL",
+			"runModelsLocally": "LM Studio allows you to run models locally on your computer. For instructions on how to get started, see their",
+			"needToStartServer": "You will also need to start LM Studio's",
+			"serverFeatureWithCode": "feature with",
+			"contextWindow": "Context Window"
 		},
 		"together": {
 			"name": "Together",
@@ -365,7 +377,11 @@
 			"reasoningEffort": "Reasoning Effort"
 		},
 		"groq": {
-			"name": "Groq"
+			"name": "Groq",
+			"autoFetchModels": "The extension automatically fetches the latest list of models available on",
+			"groq": "Groq",
+			"unsureModelChoice": "If you're unsure which model to choose, Cline works best with",
+			"recommendedModel": "llama-3.3-70b-versatile"
 		},
 		"fireworks": {
 			"name": "Fireworks"
@@ -407,7 +423,10 @@
 		},
 		"minimax": {
 			"name": "MiniMax",
-			"entrypoint": "MiniMax Entrypoint"
+			"entrypoint": "MiniMax Entrypoint",
+			"selectApiEndpoint": "Select the API endpoint according to your region:",
+			"forChina": "for China, or",
+			"forOtherLocations": "for all other locations."
 		},
 		"huaweiCloudMaas": {
 			"name": "Huawei Cloud MaaS"
@@ -420,11 +439,16 @@
 			"apiUrl": "AskSage API URL"
 		},
 		"baseten": {
-			"name": "Baseten"
+			"name": "Baseten",
+			"autoFetchModels": "The extension automatically fetches the latest list of models available on",
+			"baseten": "Baseten",
+			"unsureModelChoice": "If you're unsure which model to choose, Cline works best with",
+			"recommendedModel": "moonshotai/Kimi-K2-Instruct"
 		},
 		"claudeCode": {
 			"cliPath": "Claude Code CLI Path",
-			"defaultClaudePlaceholder": "Default: claude"
+			"defaultClaudePlaceholder": "Default: claude",
+			"cliPathDescription": "Path to the Claude Code CLI."
 		},
 		"cline": {
 			"name": "Cline"
@@ -432,30 +456,41 @@
 		"dify": {
 			"name": "Dify",
 			"baseUrl": "Base URL",
-			"noteModelSelection": "Note: The model selection is handled within your Dify application configuration."
+			"noteModelSelection": "Note: The model selection is handled within your Dify application configuration.",
+			"platformDescription": "Dify is a platform that provides access to various AI models through a unified API. Configure your Dify instance URL and API key to get started."
 		},
 		"hicap": {
 			"apiKey": "Hicap API Key"
 		},
 		"huggingface": {
-			"apiKey": "Hugging Face API Key"
+			"apiKey": "Hugging Face API Key",
+			"keyStoredLocally": "This key is stored locally and only used to make API requests from this extension. We don't show pricing here because it depends on your Hugging Face provider settings and isn't consistently available via their API"
 		},
 		"litellm": {
 			"baseUrlOptional": "Base URL (optional)",
 			"apiKey": "API Key",
 			"defaultNoopPlaceholder": "Default: noop",
 			"searchModelPlaceholder": "Search or enter a custom model ID...",
-			"seeQuickstart": "LiteLLM provides a unified interface to access various LLM providers' models. See their quickstart guide for more information."
+			"seeQuickstart": "LiteLLM provides a unified interface to access various LLM providers' models. See their quickstart guide for more information.",
+			"extendedThinkingAvailable": "Extended thinking is available for models such as Sonnet-4, o3-mini, Deepseek R1, etc. More info on",
+			"thinkingModeConfiguration": "thinking mode configuration"
 		},
 		"requesty": {
 			"name": "Requesty",
-			"customBaseUrl": "Custom base URL"
+			"customBaseUrl": "Custom base URL",
+			"autoFetchModels": "The extension automatically fetches the latest list of models available on",
+			"requesty": "Requesty",
+			"unsureModelChoice": "If you're unsure which model to choose, Cline works best with",
+			"recommendedModel": "anthropic/claude-3-7-sonnet-latest"
 		},
 		"sapaicore": {
 			"orchestrationMode": "Orchestration Mode"
 		},
 		"vercelAiGateway": {
-			"apiKey": "Vercel AI Gateway API Key"
+			"apiKey": "Vercel AI Gateway API Key",
+			"enterApiKeyToLoadModels": "Enter your Vercel AI Gateway API key above to load available models. You can get an API key from",
+			"vercelAiGateway": "Vercel AI Gateway",
+			"selectModelFromDropdown": "Select a model from the dropdown above. The extension fetches available models from your Vercel AI Gateway configuration."
 		},
 		"vscodeLm": {
 			"languageModel": "Language Model"

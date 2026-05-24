@@ -194,7 +194,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [searchTerm])
+	}, [])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
@@ -402,17 +402,17 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 						marginTop: 0,
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					The extension automatically fetches the latest list of models available on{" "}
+					{t("providers.openRouter.autoFetchModels")}{" "}
 					<VSCodeLink href="https://openrouter.ai/models" style={{ display: "inline", fontSize: "inherit" }}>
-						OpenRouter.
+						{t("providers.openRouter.openRouter")}
 					</VSCodeLink>
-					If you're unsure which model to choose, Cline works best with{" "}
+					{t("providers.openRouter.unsureModelChoice")}{" "}
 					<VSCodeLink
 						onClick={() => handleModelChange("anthropic/claude-sonnet-4.6")}
 						style={{ display: "inline", fontSize: "inherit" }}>
-						anthropic/claude-sonnet-4.6.
+						{t("providers.openRouter.recommendedModel")}
 					</VSCodeLink>
-					You can also try searching "free" for no-cost options currently available.
+					{t("providers.openRouter.trySearchingFree")}
 				</p>
 			)}
 		</div>

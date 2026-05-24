@@ -83,7 +83,7 @@ const CodeAccordian = ({
 						<span className="whitespace-nowrap overflow-hidden text-ellipsis mr-2 [direction: rtl] text-left">
 							{path?.startsWith(".") && <span>.</span>}
 							{path && !path.startsWith(".") && <span>/</span>}
-							{cleanPathPrefix(path ?? "") + "‎"}
+							{`${cleanPathPrefix(path ?? "")}‎`}
 						</span>
 					)}
 					<div className="grow" />

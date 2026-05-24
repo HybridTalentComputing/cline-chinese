@@ -15,7 +15,7 @@ const TerminalOutputLineLimitSlider: React.FC = () => {
 	return (
 		<div style={{ marginBottom: 15 }}>
 			<label htmlFor="terminal-output-limit" style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>
-				Terminal output limit
+				{t("settings.terminalOutputLimit")}
 			</label>
 			<div style={{ display: "flex", alignItems: "center" }}>
 				<input

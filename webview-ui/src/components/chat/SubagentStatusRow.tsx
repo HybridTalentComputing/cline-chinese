@@ -151,7 +151,7 @@ function SubagentPromptText({ prompt, isExpanded, onShowMore }: SubagentPromptTe
 		observer.observe(element)
 
 		return () => observer.disconnect()
-	}, [prompt, isExpanded])
+	}, [isExpanded])
 
 	return (
 		<div className="relative">
@@ -172,7 +172,7 @@ function SubagentPromptText({ prompt, isExpanded, onShowMore }: SubagentPromptTe
 						className="pointer-events-none absolute inset-y-0 -left-[6px] w-[6px]"
 						style={{ background: "linear-gradient(to left, var(--vscode-editor-background), transparent)" }}
 					/>
-					Show more
+					{t("subagentStatus.showMore")}
 				</button>
 			)}
 		</div>

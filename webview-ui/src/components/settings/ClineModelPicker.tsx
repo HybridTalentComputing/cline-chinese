@@ -341,7 +341,7 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [searchTerm])
+	}, [])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
@@ -399,49 +399,47 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 					<span style={{ fontWeight: 500 }}>{t("settings.model")}</span>
 				</label>
 
-				<>
-					{/* Tabs */}
-					<TabsContainer style={{ marginTop: 4 }}>
-						<Tab active={activeTab === "recommended"} onClick={() => setActiveTab("recommended")}>
-							Recommended
-						</Tab>
-						<Tab active={activeTab === "free"} onClick={() => setActiveTab("free")}>
-							Free
-						</Tab>
-					</TabsContainer>
+				{/* Tabs */}
+				<TabsContainer style={{ marginTop: 4 }}>
+					<Tab active={activeTab === "recommended"} onClick={() => setActiveTab("recommended")}>
+						Recommended
+					</Tab>
+					<Tab active={activeTab === "free"} onClick={() => setActiveTab("free")}>
+						Free
+					</Tab>
+				</TabsContainer>
 
-					{/* Model Cards */}
-					<div style={{ marginBottom: "6px" }}>
-						{activeTab === "recommended" &&
-							recommendedModels.map((model) => (
-								<FeaturedModelCard
-									description={model.description}
-									isSelected={selectedModelId === model.id}
-									key={model.id}
-									label={model.label}
-									modelId={model.id}
-									onClick={() => {
-										handleModelChange(model.id)
-										setIsDropdownVisible(false)
-									}}
-								/>
-							))}
-						{activeTab === "free" &&
-							freeModels.map((model) => (
-								<FeaturedModelCard
-									description={model.description}
-									isSelected={selectedModelId === model.id}
-									key={model.id}
-									label={model.label}
-									modelId={model.id}
-									onClick={() => {
-										handleModelChange(model.id)
-										setIsDropdownVisible(false)
-									}}
-								/>
-							))}
-					</div>
-				</>
+				{/* Model Cards */}
+				<div style={{ marginBottom: "6px" }}>
+					{activeTab === "recommended" &&
+						recommendedModels.map((model) => (
+							<FeaturedModelCard
+								description={model.description}
+								isSelected={selectedModelId === model.id}
+								key={model.id}
+								label={model.label}
+								modelId={model.id}
+								onClick={() => {
+									handleModelChange(model.id)
+									setIsDropdownVisible(false)
+								}}
+							/>
+						))}
+					{activeTab === "free" &&
+						freeModels.map((model) => (
+							<FeaturedModelCard
+								description={model.description}
+								isSelected={selectedModelId === model.id}
+								key={model.id}
+								label={model.label}
+								modelId={model.id}
+								onClick={() => {
+									handleModelChange(model.id)
+									setIsDropdownVisible(false)
+								}}
+							/>
+						))}
+				</div>
 
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField

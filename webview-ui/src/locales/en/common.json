@@ -425,5 +425,11 @@
 	"stickyUserMessage": {
 		"scrollToMessage": "Scroll to your message: {{text}}",
 		"clickToScroll": "Click to scroll to your message"
+	},
+	"subagentStatus": {
+		"showMore": "Show more"
+	},
+	"historyPreview": {
+		"noRecentTasks": "No recent tasks"
 	}
 }

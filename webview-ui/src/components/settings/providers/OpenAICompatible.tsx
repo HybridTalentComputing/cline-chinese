@@ -99,7 +99,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 					</div>
 				</TooltipTrigger>
 				<TooltipContent hidden={remoteConfigSettings?.openAiBaseUrl === undefined}>
-					This setting is managed by your organization's remote configuration
+					{t("settings.remotelyConfiguredMessage")}
 				</TooltipContent>
 			</Tooltip>
 

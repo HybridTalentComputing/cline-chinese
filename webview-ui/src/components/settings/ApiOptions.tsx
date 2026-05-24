@@ -117,7 +117,7 @@ const ApiOptions = ({
 						value: apiConfiguration?.ollamaBaseUrl || "",
 					}),
 				)
-				if (response && response.values) {
+				if (response?.values) {
 					setOllamaModels(response.values)
 				}
 			} catch (error) {
@@ -247,7 +247,7 @@ const ApiOptions = ({
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [searchTerm])
+	}, [])
 
 	// Scroll selected item into view
 	useEffect(() => {

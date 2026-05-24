@@ -12,7 +12,7 @@ function formatResetsAt(resetsAt?: string): string | null {
 	if (!resetsAt) return null
 	try {
 		const date = new Date(resetsAt)
-		if (isNaN(date.getTime())) return null
+		if (Number.isNaN(date.getTime())) return null
 		return date.toLocaleDateString(undefined, {
 			month: "short",
 			day: "numeric",
@@ -107,7 +107,8 @@ const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod
 
 					{resetsAtFormatted && (
 						<div className="text-foreground" style={{ fontSize: "var(--vscode-font-size)", lineHeight: 1.3 }}>
-							Resets: <span className="font-bold">{resetsAtFormatted}</span>
+							{t("spendLimit.resets")}
+							<span className="font-bold">{resetsAtFormatted}</span>
 						</div>
 					)}
 
@@ -126,17 +127,17 @@ const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod
 				{buttonState === "sending" ? (
 					<>
 						<span className="codicon codicon-loading codicon-modifier-spin mr-1.5" />
-						Sending…
+						{t("spendLimit.sending")}
 					</>
 				) : buttonState === "sent" ? (
 					<>
 						<span className="codicon codicon-check mr-1.5" />
-						Request Sent
+						{t("spendLimit.requestSent")}
 					</>
 				) : (
 					<>
 						<span className="codicon codicon-arrow-up mr-1.5" />
-						Request Increase
+						{t("spendLimit.requestIncrease")}
 					</>
 				)}
 			</VSCodeButton>

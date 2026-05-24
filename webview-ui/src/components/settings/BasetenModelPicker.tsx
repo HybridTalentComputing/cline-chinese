@@ -166,7 +166,7 @@ const BasetenModelPicker: React.FC<BasetenModelPickerProps> = ({ isPopup, curren
 	}
 
 	const hasInfo = useMemo(() => {
-		return selectedModelInfo && selectedModelInfo.description
+		return selectedModelInfo?.description
 	}, [selectedModelInfo])
 
 	useEffect(() => {
@@ -174,7 +174,7 @@ const BasetenModelPicker: React.FC<BasetenModelPickerProps> = ({ isPopup, curren
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [searchTerm])
+	}, [])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
@@ -264,13 +264,13 @@ const BasetenModelPicker: React.FC<BasetenModelPickerProps> = ({ isPopup, curren
 				<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
 			) : (
 				<p className="text-xs mt-0 text-(--vscode-descriptionForeground)">
-					The extension automatically fetches the latest list of models available on{" "}
+					{t("providers.baseten.autoFetchModels")}{" "}
 					<VSCodeLink className="inline text-inherit" href="https://www.baseten.co/products/model-apis/">
-						Baseten.
+						{t("providers.baseten.baseten")}
 					</VSCodeLink>
-					If you're unsure which model to choose, Cline works best with{" "}
+					{t("providers.baseten.unsureModelChoice")}{" "}
 					<VSCodeLink className="inline text-inherit" onClick={() => handleModelChange("moonshotai/Kimi-K2-Instruct")}>
-						moonshotai/Kimi-K2-Instruct.
+						{t("providers.baseten.recommendedModel")}
 					</VSCodeLink>
 				</p>
 			)}

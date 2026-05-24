@@ -425,5 +425,11 @@
 	"stickyUserMessage": {
 		"scrollToMessage": "滚动到你的消息：{{text}}",
 		"clickToScroll": "点击滚动到你的消息"
+	},
+	"subagentStatus": {
+		"showMore": "展开更多"
+	},
+	"historyPreview": {
+		"noRecentTasks": "暂无最近任务"
 	}
 }

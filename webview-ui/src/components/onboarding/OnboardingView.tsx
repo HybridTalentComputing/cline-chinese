@@ -375,7 +375,7 @@ const OnboardingViewContent = ({ onboardingModels }: { onboardingModels: Onboard
 		const description = step ? step.description : null
 		const buttons = step ? step.buttons : userType ? getStepConfig(t)[userType].buttons : getStepConfig(t)[0].buttons
 		return { title, description, buttons }
-	}, [stepNumber, userType])
+	}, [stepNumber, userType, t])
 
 	return (
 		<div className="fixed inset-0 p-0 flex flex-col w-full">

@@ -59,7 +59,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				Path to the Claude Code CLI.
+				{t("providers.claudeCode.cliPathDescription")}
 			</p>
 
 			{showModelOptions && (
