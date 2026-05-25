@@ -99,8 +99,8 @@ const GPT_5: ClineToolSpec = {
 				isZhCN(context.locale) ? INSTRUCTION_TASK_PROGRESS_GENERIC_ZH_CN : INSTRUCTION_TASK_PROGRESS_GENERIC_EN,
 			usage: "Checklist here (required if you used task_progress in previous tool uses)",
 			dependencies: [ClineDefaultTool.TODO],
-			description: (context: SystemPromptContext) =>
-				isZhCN(context.locale) ? INSTRUCTION_TASK_PROGRESS_DEPENDENCY_ZH_CN : INSTRUCTION_TASK_PROGRESS_DEPENDENCY_EN,
+			description:
+				"If you were using task_progress to update the task progress, you must include the completed list in the result as well.",
 		},
 	],
 }
