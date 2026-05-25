@@ -105,10 +105,10 @@
 		},
 		"addLocalServer": {
 			"description": "通过在 ",
-			"settingsFileName": "cline_mcp_settings.json",
+			"settingsFileName": "cline_chinese_mcp_settings.json",
 			"descriptionSuffix": " 中配置来添加本地 MCP 服务器。您需要在 JSON 配置中指定服务器名称、命令、参数和所需的环境变量。了解更多 ",
 			"here": "此处。",
-			"openSettings": "打开 cline_mcp_settings.json"
+			"openSettings": "打开 cline_chinese_mcp_settings.json"
 		},
 		"addRemoteServer": {
 			"description": "通过提供名称和 URL 端点来添加远程 MCP 服务器。了解更多 ",
