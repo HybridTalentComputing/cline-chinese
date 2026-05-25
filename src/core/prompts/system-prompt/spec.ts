@@ -11,7 +11,7 @@ export interface ClineToolSpec {
 	variant: ModelFamily
 	id: ClineDefaultTool
 	name: string
-	description: string
+	description: string | ((context: SystemPromptContext) => string)
 	instruction?: string
 	contextRequirements?: (context: SystemPromptContext) => boolean
 	parameters?: Array<ClineToolSpecParameter>
@@ -125,7 +125,7 @@ export function toolSpecFunctionDefinition(tool: ClineToolSpec, context: SystemP
 		type: "function",
 		function: {
 			name: tool.name,
-			description: replacer(tool.description, context),
+			description: replacer(resolveDescription(tool.description, context), context),
 			strict: false,
 			parameters: {
 				type: "object",
@@ -216,7 +216,7 @@ export function toolSpecInputSchema(tool: ClineToolSpec, context: SystemPromptCo
 	// Build the Tool object
 	const toolInputSchema: AnthropicTool = {
 		name: tool.name,
-		description: replacer(tool.description, context),
+		description: replacer(resolveDescription(tool.description, context), context),
 		input_schema: {
 			type: "object",
 			properties,
@@ -302,7 +302,7 @@ export function toolSpecFunctionDeclarations(tool: ClineToolSpec, context: Syste
 
 	const googleTool: GoogleTool = {
 		name: tool.name,
-		description: replacer(tool.description, context),
+		description: replacer(resolveDescription(tool.description, context), context),
 		parameters: {
 			type: GoogleToolParamType.OBJECT,
 			properties,
@@ -422,4 +422,14 @@ export function resolveInstruction(
 	context: SystemPromptContext,
 ): string {
 	return typeof instruction === "function" ? instruction(context) : instruction
+}
+
+/**
+ * Resolves a description that may be a string or a function.
+ */
+export function resolveDescription(
+	description: string | ((context: SystemPromptContext) => string),
+	context: SystemPromptContext,
+): string {
+	return typeof description === "function" ? description(context) : description
 }

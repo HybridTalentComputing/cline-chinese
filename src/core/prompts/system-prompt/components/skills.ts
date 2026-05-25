@@ -1,3 +1,4 @@
+import { isZhCN } from "../i18n/getLocaleText"
 import type { PromptVariant, SystemPromptContext } from "../types"
 
 /**
@@ -8,6 +9,20 @@ export async function getSkillsSection(_variant: PromptVariant, context: SystemP
 	if (!skills || skills.length === 0) return undefined
 
 	const skillsList = skills.map((skill) => `  - "${skill.name}": ${skill.description}`).join("\n")
+
+	if (isZhCN(context.locale)) {
+		return `SKILLS
+
+以下技能为特定任务提供专业指导。当用户的请求与技能描述匹配时，使用 use_skill 工具加载并激活该技能。
+
+可用技能：
+${skillsList}
+
+使用技能的方法：
+1. 根据描述将用户的请求匹配到一个技能
+2. 调用 use_skill，将 skill_name 参数设置为确切的技能名称
+3. 遵循工具返回的指令`
+	}
 
 	return `SKILLS
 

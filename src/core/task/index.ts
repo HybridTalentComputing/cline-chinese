@@ -2011,6 +2011,7 @@ Speak in ${languageInstructionMap[preferredLanguage] || preferredLanguage}.`
 				this.stateManager.getGlobalStateKey("nativeToolCallEnabled"),
 			enableParallelToolCalling: this.isParallelToolCallingEnabled(),
 			terminalExecutionMode: this.terminalExecutionMode,
+			locale: preferredLanguage,
 		}
 
 		// Notify user if any conditional rules were applied for this request
