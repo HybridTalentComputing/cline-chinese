@@ -44,20 +44,20 @@ const GeneralSettingsSection = ({ renderSectionHeader }: GeneralSettingsSectionP
 					</Tooltip>
 
 					<p className="text-sm mt-[5px] text-description">
-						Help improve Cline by sending usage data and error reports. No code, prompts, or personal information are
-						ever sent. See our{" "}
+						{t("settingsSections.telemetryDescription")}{" "}
 						<VSCodeLink
 							className="text-inherit"
 							href="https://docs.cline.bot/more-info/telemetry"
 							style={{ fontSize: "inherit", textDecoration: "underline" }}>
-							telemetry overview
+							{t("settingsSections.telemetryOverview")}
 						</VSCodeLink>{" "}
-						{t("settingsSections.telemetryDescription").split(".")[1] ? "" : ""}{" "}
+						{t("settingsSections.telemetryAnd")}
+						{" "}
 						<VSCodeLink
 							className="text-inherit"
 							href="https://cline.bot/privacy"
 							style={{ fontSize: "inherit", textDecoration: "underline" }}>
-							privacy policy
+							{t("settingsSections.privacyPolicy")}
 						</VSCodeLink>{" "}
 					</p>
 				</div>

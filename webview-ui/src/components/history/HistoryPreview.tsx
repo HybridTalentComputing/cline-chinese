@@ -9,7 +9,7 @@ type HistoryPreviewProps = {
 }
 
 const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
-	const { t } = useTranslation("common")
+	const { t } = useTranslation("misc")
 	const { taskHistory } = useExtensionState()
 	const handleHistorySelect = (id: string) => {
 		TaskServiceClient.showTaskWithId(StringRequest.create({ value: id })).catch((error) =>

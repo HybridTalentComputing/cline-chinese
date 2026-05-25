@@ -131,7 +131,8 @@
 		},
 		"disableBrowserToolUsage": "禁用浏览器工具",
 		"useRemoteBrowserConnection": "使用远程浏览器连接",
-		"allowErrorUsageReporting": "允许错误和使用情况报告"
+		"allowErrorUsageReporting": "允许错误和使用情况报告",
+		"telemetryAnd": "和"
 	},
 	"featureSettings": {
 		"agent": "智能体",

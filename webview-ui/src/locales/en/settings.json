@@ -131,7 +131,8 @@
 		},
 		"disableBrowserToolUsage": "Disable browser tool usage",
 		"useRemoteBrowserConnection": "Use remote browser connection",
-		"allowErrorUsageReporting": "Allow error and usage reporting"
+		"allowErrorUsageReporting": "Allow error and usage reporting",
+		"telemetryAnd": ""
 	},
 	"featureSettings": {
 		"agent": "Agent",
