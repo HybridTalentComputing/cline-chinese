@@ -124,7 +124,9 @@
 			"failedToAdd": "Failed to add server",
 			"connecting": "Connecting...",
 			"addServer": "Add Server",
-			"editConfiguration": "Edit Configuration"
+			"editConfiguration": "Edit Configuration",
+			"serverNamePlaceholder": "mcp-server",
+			"serverUrlPlaceholder": "https://example.com/mcp-server"
 		},
 		"configureView": {
 			"protocolIntro": "The ",
@@ -206,7 +208,9 @@
 			"networkError": "Network error loading preview",
 			"noTitle": "No title",
 			"noDescription": "No description available",
-			"somethingWrongLink": "Something went wrong displaying this link preview"
+			"somethingWrongLink": "Something went wrong displaying this link preview",
+			"failedToFetchOpenGraph": "Failed to fetch Open Graph data",
+			"unknownError": "Unknown error occurred"
 		},
 		"timeout": {
 			"30seconds": "30 seconds",
@@ -255,6 +259,13 @@
 		"requireGit": "Worktrees require a git repository. Please initialize git to use worktrees.",
 		"retry": "Retry",
 		"noWorktrees": "No worktrees found.",
+		"errors": {
+			"failedToLoad": "Failed to load worktrees",
+			"failedToDelete": "Failed to delete worktree",
+			"failedToMerge": "Failed to merge worktree",
+			"failedToCreateTask": "Failed to create task for Cline",
+			"failedToCreate": "Failed to create worktree"
+		},
 		"primary": "Primary",
 		"primaryTooltip": "The original worktree where your .git directory lives.",
 		"current": "Current",
@@ -373,7 +384,8 @@
 			"createFile": "Create file",
 			"newFile": "New file",
 			"skillNameInvalid": "Skill name can only contain letters, numbers, dashes, and underscores",
-			"extensionInvalid": "Only .md, .txt, or no file extension allowed"
+			"extensionInvalid": "Only .md, .txt, or no file extension allowed",
+			"failedToCreateSkill": "Failed to create skill"
 		},
 		"ruleRow": {
 			"agentsTooltip": "Searches recursively for all AGENTS.md files in the workspace when a top-level AGENTS.md exists",
@@ -387,7 +399,29 @@
 	"demo": {
 		"helloWorld": "Hello World!",
 		"howdy": "Howdy!",
-		"cellData": "Cell Data"
+		"cellData": "Cell Data",
+		"customHeaderTitle": "A Custom Header Title",
+		"anotherCustomTitle": "Another Custom Title",
+		"titleIsCustom": "Title Is Custom",
+		"customTitle": "Custom Title",
+		"matchCase": "Match Case",
+		"matchWholeWord": "Match Whole Word",
+		"useRegularExpression": "Use Regular Expression",
+		"add": "Add",
+		"remove": "Remove",
+		"badge": "Badge",
+		"checkbox": "Checkbox",
+		"option1": "Option 1",
+		"option2": "Option 2",
+		"link": "Link",
+		"tab1": "Tab 1",
+		"tab2": "Tab 2",
+		"panelView1": "Panel View 1",
+		"panelView2": "Panel View 2",
+		"radio1": "Radio 1",
+		"radio2": "Radio 2",
+		"tag": "Tag",
+		"textAreaPlaceholder": "Text Area"
 	},
 	"history": {
 		"newest": "Newest",

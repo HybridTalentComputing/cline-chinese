@@ -39,7 +39,7 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 					onChange={(value) => {
 						handleFieldChange("difyBaseUrl", value)
 					}}
-					placeholder={"Enter base URL..."}
+					placeholder={t("providers.dify.baseUrlPlaceholder")}
 					style={{ width: "100%", marginBottom: 10 }}
 					type="text">
 					<span style={{ fontWeight: 500 }}>{t("providers.dify.baseUrl")}</span>

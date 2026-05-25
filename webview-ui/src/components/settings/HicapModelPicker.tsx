@@ -187,7 +187,7 @@ const HicapModelPicker: React.FC<HicapModelPickerProps> = ({ isPopup, currentMod
 						value={searchTerm}>
 						{searchTerm && (
 							<div
-								aria-label="Clear search"
+								aria-label={t("clearSearch")}
 								className="flex justify-center items-center h-full input-icon-button codicon codicon-close"
 								onClick={() => {
 									setSearchTerm("")

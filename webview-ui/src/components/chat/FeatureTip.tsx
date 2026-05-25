@@ -13,37 +13,37 @@ const FEATURE_TIPS: FeatureTipItem[] = [
 		text: i18next.t("featureTips.doubleCheckCompletion"),
 	},
 	{
-		text: "Add a .clinerules file to your project root to give Cline project-specific instructions.",
+		text: i18next.t("featureTips.clinerulesFile"),
 	},
 	{
-		text: "Switch to Plan Mode to discuss and plan an approach before Cline takes action.",
+		text: i18next.t("featureTips.planMode"),
 	},
 	{
-		text: "Use @ in the chat input to add files, folders, or URLs as context for your task.",
+		text: i18next.t("featureTips.useAtContext"),
 	},
 	{
-		text: "Set up MCP Servers to give Cline access to external tools and APIs.",
+		text: i18next.t("featureTips.mcpServers"),
 	},
 	{
-		text: "Cline creates checkpoints after changes — you can always restore to a previous state.",
+		text: i18next.t("featureTips.checkpoints"),
 	},
 	{
-		text: "Use /compact to condense long conversations and free up context window space.",
+		text: i18next.t("featureTips.compactCommand"),
 	},
 	{
-		text: "Enable auto-approve for read-only tools like file reads to speed up exploration.",
+		text: i18next.t("featureTips.autoApprove"),
 	},
 	{
-		text: "Use the quote button to select text from Cline's response and reference it in your reply.",
+		text: i18next.t("featureTips.quoteButton"),
 	},
 	{
-		text: "You can drag and drop images into the chat to share screenshots with Cline.",
+		text: i18next.t("featureTips.dragDropImages"),
 	},
 	{
-		text: "Cline can browse websites — ask it to test your local dev server in the browser.",
+		text: i18next.t("featureTips.browseWebsites"),
 	},
 	{
-		text: "Use /reportbug to quickly file a GitHub issue with diagnostic context included.",
+		text: i18next.t("featureTips.reportBug"),
 	},
 	{
 		text: i18next.t("featureTips.disableTips"),

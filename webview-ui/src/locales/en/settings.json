@@ -68,7 +68,8 @@
 		"actMode": "Act Mode",
 		"useDifferentModels": "Use different models for Plan and Act modes",
 		"useDifferentModelsDescription": "Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on.",
-		"modeSwitchPersistDescription": "Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on."
+		"modeSwitchPersistDescription": "Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on.",
+		"thinkingBudgetLabel": "Thinking budget: {{value}} tokens"
 	},
 	"settingsSections": {
 		"allowErrorReporting": "Allow error and usage reporting",
@@ -359,7 +360,9 @@
 			"quickstartGuide": "quickstart guide.",
 			"ollamaInstructions": "Ollama allows you to run models locally on your computer. For instructions on how to get started, see their",
 			"noteComplexPrompts": "Note: Cline uses complex prompts and works best with Claude models. Less capable models may not work as expected.",
-			"seeQuickstart": "Ollama allows you to run models locally on your computer. For instructions on how to get started, see their quickstart guide."
+			"seeQuickstart": "Ollama allows you to run models locally on your computer. For instructions on how to get started, see their quickstart guide.",
+			"modelExample": "e.g. llama3.1",
+			"contextLengthExample": "e.g. 32768"
 		},
 		"lmstudio": {
 			"useCustomBaseUrl": "Use custom base URL",
@@ -371,7 +374,8 @@
 		"together": {
 			"name": "Together",
 			"modelId": "Model ID",
-			"noteComplexPrompts": "Note: Cline uses complex prompts and works best with Claude models. Less capable models may not work as expected."
+			"noteComplexPrompts": "Note: Cline uses complex prompts and works best with Claude models. Less capable models may not work as expected.",
+			"modelIdPlaceholder": "Enter Model ID..."
 		},
 		"xai": {
 			"name": "X AI",
@@ -459,7 +463,8 @@
 			"name": "Dify",
 			"baseUrl": "Base URL",
 			"noteModelSelection": "Note: The model selection is handled within your Dify application configuration.",
-			"platformDescription": "Dify is a platform that provides access to various AI models through a unified API. Configure your Dify instance URL and API key to get started."
+			"platformDescription": "Dify is a platform that provides access to various AI models through a unified API. Configure your Dify instance URL and API key to get started.",
+			"baseUrlPlaceholder": "Enter base URL..."
 		},
 		"hicap": {
 			"apiKey": "Hicap API Key"
@@ -516,7 +521,10 @@
 			"selectModelFromDropdown": "Select a model from the dropdown above. The extension fetches available models from your Vercel AI Gateway configuration."
 		},
 		"vscodeLm": {
-			"languageModel": "Language Model"
+			"languageModel": "Language Model",
+			"description": "Use models from your GitHub Copilot subscription. Install the",
+			"copilotExtension": "Copilot extension",
+			"enableClaudeModels": "and enable Claude models in Copilot settings to get started."
 		},
 		"openAiCodex": {
 			"signedIn": "Signed in to OpenAI Codex",
@@ -548,7 +556,11 @@
 			"entrypointDescription": "Please select the appropriate API entrypoint based on your location. If you are in China, choose open.bigmodel.cn. Otherwise, choose api.z.ai."
 		},
 		"lmStudio": {
-			"name": "LM Studio"
+			"name": "LM Studio",
+			"modelExample": "e.g. meta-llama-3.1-8b-instruct"
+		},
+		"liteLlm": {
+			"defaultBaseUrl": "Default: http://localhost:4000"
 		}
 	},
 	"modelPicker": {
@@ -558,6 +570,12 @@
 		"searchModel": "Search model...",
 		"otherOptions": "other options",
 		"noResultFound": "No result found for \"{{term}}\""
+	},
+	"modelAutocomplete": {
+		"modelLabel": "Model",
+		"searchPlaceholder": "Search and select a model...",
+		"clearSearch": "Clear search",
+		"modelSuggestions": "Model suggestions"
 	},
 	"account": {
 		"title": "Account",

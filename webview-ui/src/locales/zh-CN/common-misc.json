@@ -124,7 +124,9 @@
 			"failedToAdd": "添加服务器失败",
 			"connecting": "正在连接...",
 			"addServer": "添加服务器",
-			"editConfiguration": "编辑配置"
+			"editConfiguration": "编辑配置",
+			"serverNamePlaceholder": "mcp-server",
+			"serverUrlPlaceholder": "https://example.com/mcp-server"
 		},
 		"configureView": {
 			"protocolIntro": "",
@@ -206,7 +208,9 @@
 			"networkError": "加载预览时出现网络错误",
 			"noTitle": "无标题",
 			"noDescription": "无可用描述",
-			"somethingWrongLink": "显示此链接预览时出了点问题"
+			"somethingWrongLink": "显示此链接预览时出了点问题",
+			"failedToFetchOpenGraph": "获取 Open Graph 数据失败",
+			"unknownError": "发生未知错误"
 		},
 		"timeout": {
 			"30seconds": "30 秒",
@@ -255,6 +259,13 @@
 		"requireGit": "工作树需要 Git 仓库。请初始化 Git 以使用工作树。",
 		"retry": "重试",
 		"noWorktrees": "未找到工作树。",
+		"errors": {
+			"failedToLoad": "加载工作树失败",
+			"failedToDelete": "删除工作树失败",
+			"failedToMerge": "合并工作树失败",
+			"failedToCreateTask": "为 Cline 创建任务失败",
+			"failedToCreate": "创建工作树失败"
+		},
 		"primary": "主要",
 		"primaryTooltip": "原始工作树，.git 目录所在位置。",
 		"current": "当前",
@@ -373,7 +384,8 @@
 			"createFile": "创建文件",
 			"newFile": "新文件",
 			"skillNameInvalid": "技能名称只能包含字母、数字、短横线和下划线",
-			"extensionInvalid": "仅允许 .md、.txt 或无文件扩展名"
+			"extensionInvalid": "仅允许 .md、.txt 或无文件扩展名",
+			"failedToCreateSkill": "创建技能失败"
 		},
 		"ruleRow": {
 			"agentsTooltip": "当存在顶层 AGENTS.md 文件时，递归搜索工作区中所有 AGENTS.md 文件",
@@ -387,7 +399,29 @@
 	"demo": {
 		"helloWorld": "你好，世界！",
 		"howdy": "你好！",
-		"cellData": "单元格数据"
+		"cellData": "单元格数据",
+		"customHeaderTitle": "自定义标题",
+		"anotherCustomTitle": "另一个自定义标题",
+		"titleIsCustom": "标题是自定义的",
+		"customTitle": "自定义标题",
+		"matchCase": "区分大小写",
+		"matchWholeWord": "全字匹配",
+		"useRegularExpression": "使用正则表达式",
+		"add": "添加",
+		"remove": "移除",
+		"badge": "徽章",
+		"checkbox": "复选框",
+		"option1": "选项 1",
+		"option2": "选项 2",
+		"link": "链接",
+		"tab1": "标签 1",
+		"tab2": "标签 2",
+		"panelView1": "面板视图 1",
+		"panelView2": "面板视图 2",
+		"radio1": "单选 1",
+		"radio2": "单选 2",
+		"tag": "标签",
+		"textAreaPlaceholder": "文本区域"
 	},
 	"history": {
 		"newest": "最新",

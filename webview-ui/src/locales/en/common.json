@@ -431,5 +431,13 @@
 	},
 	"historyPreview": {
 		"noRecentTasks": "No recent tasks"
+	},
+	"providers": {
+		"baseten": {
+			"modelDescription": "Baseten model"
+		},
+		"dify": {
+			"workflowDescription": "Dify workflow - model selection is configured in your Dify application"
+		}
 	}
 }

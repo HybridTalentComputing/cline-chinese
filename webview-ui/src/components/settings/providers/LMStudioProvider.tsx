@@ -140,7 +140,7 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 							currentMode,
 						)
 					}
-					placeholder={"e.g. meta-llama-3.1-8b-instruct"}
+					placeholder={t("providers.lmStudio.modelExample")}
 					style={{ width: "100%" }}
 				/>
 			)}

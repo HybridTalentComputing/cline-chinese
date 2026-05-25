@@ -75,7 +75,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 							}),
 						)
 					}}
-					placeholder={"Default: http://localhost:4000"}
+					placeholder={t("providers.liteLlm.defaultBaseUrl")}
 					style={{ width: "100%" }}
 					type="text">
 					<div className="flex items-center gap-2 mb-1">

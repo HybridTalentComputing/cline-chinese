@@ -75,7 +75,7 @@ const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 			setGitRootPath((prev) => (prev === response.gitRootPath ? prev : response.gitRootPath))
 			setError((prev) => (response.error ? response.error : prev === null ? null : prev))
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Failed to load worktrees")
+			setError(err instanceof Error ? err.message : t("worktrees.errors.failedToLoad"))
 		} finally {
 			setIsLoading(false)
 		}
@@ -146,7 +146,7 @@ const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 					await loadWorktrees()
 				}
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "Failed to delete worktree")
+				setError(err instanceof Error ? err.message : t("worktrees.errors.failedToDelete"))
 			}
 		},
 		[loadWorktrees],
@@ -212,7 +212,7 @@ const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 				setMergeError(result.message)
 			}
 		} catch (err) {
-			setMergeError(err instanceof Error ? err.message : "Failed to merge worktree")
+			setMergeError(err instanceof Error ? err.message : t("worktrees.errors.failedToMerge"))
 		} finally {
 			setIsMerging(false)
 		}
@@ -234,7 +234,7 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 			// Close worktrees view to show the chat with the new task
 			onDone()
 		} catch (err) {
-			setMergeError(err instanceof Error ? err.message : "Failed to create task for Cline")
+			setMergeError(err instanceof Error ? err.message : t("worktrees.errors.failedToCreateTask"))
 		}
 	}, [mergeResult, mergeWorktree, closeMergeModal, onDone])
 

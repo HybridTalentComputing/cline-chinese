@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { getAsVar, VSC_TITLEBAR_INACTIVE_FOREGROUND } from "@/utils/vscStyles"
 import AutoApproveModal from "./AutoApproveModal"
-import { ACTION_METADATA } from "./constants"
+import { getActionMetadata } from "./constants"
 
 interface AutoApproveBarProps {
 	style?: React.CSSProperties
@@ -31,7 +31,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 			(key) => autoApprovalSettings.actions[key as keyof typeof autoApprovalSettings.actions],
 		)
 		const enabledActions = enabledActionsNames.map((action) => {
-			return ACTION_METADATA.flatMap((a) => [a, a.subAction]).find((a) => a?.id === action)
+			return getActionMetadata().flatMap((a) => [a, a.subAction]).find((a) => a?.id === action)
 		})
 
 		// Filter out parent actions if their subaction is also enabled (show only subaction)
@@ -167,7 +167,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 			</div>
 
 			<AutoApproveModal
-				ACTION_METADATA={ACTION_METADATA}
+				ACTION_METADATA={getActionMetadata()}
 				buttonRef={buttonRef}
 				isVisible={isModalVisible}
 				setIsVisible={setIsModalVisible}

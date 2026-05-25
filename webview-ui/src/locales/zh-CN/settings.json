@@ -68,7 +68,8 @@
 		"actMode": "执行模式",
 		"useDifferentModels": "为计划和执行模式使用不同的模型",
 		"useDifferentModelsDescription": "在计划和执行模式之间切换时，将保留之前模式使用的 API 和模型。这在使用强推理模型为更便宜的编码模型制定计划时可能会有帮助。",
-		"modeSwitchPersistDescription": "在计划和执行模式之间切换时，将保留上一模式使用的 API 和模型。例如，这在使用强推理模型为更便宜的编码模型制定计划时很有帮助。"
+		"modeSwitchPersistDescription": "在计划和执行模式之间切换时，将保留上一模式使用的 API 和模型。例如，这在使用强推理模型为更便宜的编码模型制定计划时很有帮助。",
+		"thinkingBudgetLabel": "思考预算：{{value}} 个 token"
 	},
 	"settingsSections": {
 		"allowErrorReporting": "允许错误和使用数据报告",
@@ -359,7 +360,9 @@
 			"quickstartGuide": "快速入门指南。",
 			"ollamaInstructions": "Ollama 允许您在本地计算机上运行模型。有关如何入门的说明，请参阅其",
 			"noteComplexPrompts": "注意：Cline 使用复杂的提示词，与 Claude 模型配合效果最佳。能力较弱的模型可能无法按预期工作。",
-			"seeQuickstart": "Ollama 允许您在本地计算机上运行模型。有关如何开始使用的说明，请参见他们的快速入门指南。"
+			"seeQuickstart": "Ollama 允许您在本地计算机上运行模型。有关如何开始使用的说明，请参见他们的快速入门指南。",
+			"modelExample": "例如 llama3.1",
+			"contextLengthExample": "例如 32768"
 		},
 		"lmstudio": {
 			"useCustomBaseUrl": "使用自定义基础 URL",
@@ -371,7 +374,8 @@
 		"together": {
 			"name": "Together",
 			"modelId": "模型 ID",
-			"noteComplexPrompts": "注意：Cline 使用复杂的提示词，与 Claude 模型配合效果最佳。能力较弱的模型可能无法按预期工作。"
+			"noteComplexPrompts": "注意：Cline 使用复杂的提示词，与 Claude 模型配合效果最佳。能力较弱的模型可能无法按预期工作。",
+			"modelIdPlaceholder": "输入模型 ID..."
 		},
 		"xai": {
 			"name": "X AI",
@@ -459,7 +463,8 @@
 			"name": "Dify",
 			"baseUrl": "基础 URL",
 			"noteModelSelection": "注意：模型选择在您的 Dify 应用配置中处理。",
-			"platformDescription": "Dify 是一个平台，通过统一的 API 提供对各种 AI 模型的访问。配置您的 Dify 实例 URL 和 API 密钥以开始使用。"
+			"platformDescription": "Dify 是一个平台，通过统一的 API 提供对各种 AI 模型的访问。配置您的 Dify 实例 URL 和 API 密钥以开始使用。",
+			"baseUrlPlaceholder": "输入基础 URL..."
 		},
 		"hicap": {
 			"apiKey": "Hicap API 密钥"
@@ -516,7 +521,10 @@
 			"selectModelFromDropdown": "从上面的下拉列表中选择一个模型。扩展从您的 Vercel AI Gateway 配置中获取可用模型。"
 		},
 		"vscodeLm": {
-			"languageModel": "语言模型"
+			"languageModel": "语言模型",
+			"description": "使用你的 GitHub Copilot 订阅中的模型。安装",
+			"copilotExtension": "Copilot 扩展",
+			"enableClaudeModels": "并在 Copilot 设置中启用 Claude 模型即可开始使用。"
 		},
 		"openAiCodex": {
 			"signedIn": "已登录 OpenAI Codex",
@@ -548,7 +556,11 @@
 			"entrypointDescription": "请根据您所在地区选择合适的 API 入口。如果您在中国大陆，请选择 open.bigmodel.cn。否则，请选择 api.z.ai。"
 		},
 		"lmStudio": {
-			"name": "LM Studio"
+			"name": "LM Studio",
+			"modelExample": "例如 meta-llama-3.1-8b-instruct"
+		},
+		"liteLlm": {
+			"defaultBaseUrl": "默认：http://localhost:4000"
 		}
 	},
 	"modelPicker": {
@@ -558,6 +570,12 @@
 		"searchModel": "搜索模型...",
 		"otherOptions": "其他选项",
 		"noResultFound": "未找到 \"{{term}}\" 的结果"
+	},
+	"modelAutocomplete": {
+		"modelLabel": "模型",
+		"searchPlaceholder": "搜索并选择模型...",
+		"clearSearch": "清除搜索",
+		"modelSuggestions": "模型建议"
 	},
 	"account": {
 		"title": "账户",

@@ -431,5 +431,13 @@
 	},
 	"historyPreview": {
 		"noRecentTasks": "暂无最近任务"
+	},
+	"providers": {
+		"baseten": {
+			"modelDescription": "Baseten 模型"
+		},
+		"dify": {
+			"workflowDescription": "Dify 工作流 - 模型选择已在您的 Dify 应用中配置"
+		}
 	}
 }

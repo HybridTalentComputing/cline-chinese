@@ -105,7 +105,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType, existingHoo
 					setError(null)
 					setIsExpanded(false)
 				} catch (err) {
-					setError(err instanceof Error ? err.message : "Failed to create skill")
+					setError(err instanceof Error ? err.message : t("rules.newRule.failedToCreateSkill"))
 				}
 				return
 			}
