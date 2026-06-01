@@ -138,7 +138,7 @@ const ModelSelection = ({
 							setSearchTerm(e.target.value)
 						}}
 						onClick={() => onSelectModel("")}
-						placeholder="Search model..."
+						placeholder={t("modelPicker.searchModel")}
 						type="search"
 						value={searchTerm}
 					/>

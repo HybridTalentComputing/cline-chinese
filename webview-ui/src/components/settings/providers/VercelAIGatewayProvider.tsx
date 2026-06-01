@@ -29,7 +29,7 @@ export const VercelAIGatewayProvider = ({ showModelOptions, isPopup, currentMode
 				<DebouncedTextField
 					initialValue={apiConfiguration?.vercelAiGatewayApiKey || ""}
 					onChange={(value) => handleFieldChange("vercelAiGatewayApiKey", value)}
-					placeholder="Enter API Key..."
+					placeholder={t("commonFields.enterApiKey")}
 					style={{ width: "100%" }}
 					type="password">
 					<span style={{ fontWeight: 500 }}>{t("providers.vercelAiGateway.apiKey")}</span>
@@ -40,7 +40,7 @@ export const VercelAIGatewayProvider = ({ showModelOptions, isPopup, currentMode
 						marginTop: "5px",
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					This key is stored locally and only used to make API requests from this extension.
+					{t("commonFields.apiKeyStoredLocally")}
 					{!apiConfiguration?.vercelAiGatewayApiKey && (
 						<>
 							{" "}

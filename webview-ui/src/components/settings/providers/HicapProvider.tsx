@@ -43,7 +43,7 @@ export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapP
 							refreshHicapModels()
 						}
 					}}
-					placeholder="Enter API Key..."
+					placeholder={t("commonFields.enterApiKey")}
 					style={{ width: "100%" }}
 					type="password">
 					<div

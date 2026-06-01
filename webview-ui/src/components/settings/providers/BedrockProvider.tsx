@@ -182,7 +182,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 					initialValue={apiConfiguration?.awsProfile ?? ""}
 					key="profile"
 					onChange={(value) => handleFieldChange("awsProfile", value)}
-					placeholder="Enter profile name (default if empty)">
+					placeholder={t("providers.bedrock.enterProfileName")}>
 					<span className="font-medium">{t("providers.bedrock.awsProfileName")}</span>
 				</DebouncedTextField>
 			) : apiConfiguration?.awsAuthentication === "apikey" ? (
@@ -191,7 +191,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 					initialValue={apiConfiguration?.awsBedrockApiKey ?? ""}
 					key="apikey"
 					onChange={(value) => handleFieldChange("awsBedrockApiKey", value)}
-					placeholder="Enter Bedrock Api Key"
+					placeholder={t("providers.bedrock.enterBedrockApiKey")}
 					type="password">
 					<span className="font-medium">{t("providers.bedrock.awsBedrockApiKey")}</span>
 				</DebouncedTextField>
@@ -202,7 +202,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 						initialValue={apiConfiguration?.awsAccessKey || ""}
 						key="accessKey"
 						onChange={(value) => handleFieldChange("awsAccessKey", value)}
-						placeholder="Enter Access Key..."
+						placeholder={t("providers.bedrock.enterAccessKey")}
 						type="password">
 						<span className="font-medium">{t("providers.bedrock.awsAccessKey")}</span>
 					</DebouncedTextField>
@@ -210,7 +210,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 						className="w-full"
 						initialValue={apiConfiguration?.awsSecretKey || ""}
 						onChange={(value) => handleFieldChange("awsSecretKey", value)}
-						placeholder="Enter Secret Key..."
+						placeholder={t("providers.bedrock.enterSecretKey")}
 						type="password">
 						<span className="font-medium">{t("providers.bedrock.awsSecretKey")}</span>
 					</DebouncedTextField>
@@ -218,7 +218,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 						className="w-full"
 						initialValue={apiConfiguration?.awsSessionToken || ""}
 						onChange={(value) => handleFieldChange("awsSessionToken", value)}
-						placeholder="Enter Session Token..."
+						placeholder={t("providers.bedrock.enterSessionToken")}
 						type="password">
 						<span className="font-medium">{t("providers.bedrock.awsSessionToken")}</span>
 					</DebouncedTextField>
@@ -334,7 +334,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 										handleFieldChange("awsBedrockEndpoint", "")
 									}
 								}}>
-								Use custom VPC endpoint
+								{t("providers.bedrock.useCustomVpcEndpoint")}
 							</VSCodeCheckbox>
 							{remoteConfigSettings?.awsBedrockEndpoint !== undefined && (
 								<i className="codicon codicon-lock text-description text-sm flex items-center" />
@@ -368,7 +368,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 
 									handleFieldChange("awsUseCrossRegionInference", isChecked)
 								}}>
-								Use cross-region inference
+								{t("providers.bedrock.useCrossRegionInference")}
 							</VSCodeCheckbox>
 							{remoteConfigSettings?.awsUseCrossRegionInference !== undefined && (
 								<i className="codicon codicon-lock text-description text-sm" />
@@ -391,7 +391,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 										const isChecked = e.target.checked === true
 										handleFieldChange("awsUseGlobalInference", isChecked)
 									}}>
-									Use global inference profile
+									{t("providers.bedrock.useGlobalInference")}
 								</VSCodeCheckbox>
 								{remoteConfigSettings?.awsUseGlobalInference !== undefined && (
 									<i className="codicon codicon-lock text-description text-sm" />
@@ -415,7 +415,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 										const isChecked = e.target.checked === true
 										handleFieldChange("awsBedrockUsePromptCache", isChecked)
 									}}>
-									Use prompt caching
+									{t("providers.bedrock.usePromptCaching")}
 								</VSCodeCheckbox>
 								{remoteConfigSettings?.awsBedrockUsePromptCache !== undefined && (
 									<i className="codicon codicon-lock text-description text-sm" />
@@ -435,7 +435,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 			{showModelOptions && (
 				<>
 					<label htmlFor="bedrock-model-dropdown">
-						<span className="font-medium">Model</span>
+						<span className="font-medium">{t("settings.model")}</span>
 					</label>
 					<DropdownContainer className="dropdown-container" zIndex={DROPDOWN_Z_INDEX - 2}>
 						<VSCodeDropdown
@@ -465,7 +465,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 								)
 							}}
 							value={modeFields.awsBedrockCustomSelected ? "custom" : selectedModelId}>
-							<VSCodeOption value="">Select a model...</VSCodeOption>
+							<VSCodeOption value="">{t("settings.selectModel")}</VSCodeOption>
 							{Object.keys(bedrockModels).map((modelId) => (
 								<VSCodeOption
 									className="whitespace-normal wrap-break-word max-w-full"
@@ -474,7 +474,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 									{modelId}
 								</VSCodeOption>
 							))}
-							<VSCodeOption value="custom">Custom</VSCodeOption>
+							<VSCodeOption value="custom">{t("providers.bedrock.customOption")}</VSCodeOption>
 						</VSCodeDropdown>
 					</DropdownContainer>
 
@@ -495,8 +495,8 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 										currentMode,
 									)
 								}
-								placeholder="Enter custom model ID...">
-								<span className="font-medium">Model ID</span>
+								placeholder={t("providers.bedrock.enterCustomModelId")}>
+								<span className="font-medium">{t("commonFields.modelId")}</span>
 							</DebouncedTextField>
 							<label htmlFor="bedrock-base-model-dropdown">
 								<span className="font-medium">{t("providers.bedrock.baseInferenceModel")}</span>
@@ -516,7 +516,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 										)
 									}
 									value={modeFields.awsBedrockCustomModelBaseId || bedrockDefaultModelId}>
-									<VSCodeOption value="">Select a model...</VSCodeOption>
+									<VSCodeOption value="">{t("settings.selectModel")}</VSCodeOption>
 									{Object.keys(bedrockModels).map((modelId) => (
 										<VSCodeOption
 											className="whitespace-normal wrap-break-word max-w-full"

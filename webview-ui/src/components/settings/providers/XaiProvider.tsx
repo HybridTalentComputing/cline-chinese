@@ -49,8 +49,8 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					<span style={{ color: "var(--vscode-errorForeground)" }}>
-						(<span style={{ fontWeight: 500 }}>Note:</span> Cline uses complex prompts and works best with Claude
-						models. Less capable models may not work as expected.)
+						(<span style={{ fontWeight: 500 }}>{t("commonFields.note")}:</span>{" "}
+						{t("providers.xai.noteComplexPrompts")}) models. Less capable models may not work as expected.)
 					</span>
 				</p>
 			</div>
@@ -58,7 +58,7 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.model")}
 						models={xaiModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(
@@ -86,7 +86,7 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 									}
 								}}
 								style={{ marginTop: 0 }}>
-								Modify reasoning effort
+								{t("providers.xai.modifyReasoningEffort")}
 							</VSCodeCheckbox>
 
 							{reasoningEffortSelected && (
@@ -117,7 +117,7 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 											marginBottom: 0,
 											color: "var(--vscode-descriptionForeground)",
 										}}>
-										High effort may produce more thorough analysis but takes longer and uses more tokens.
+										{t("providers.xai.reasoningEffortDescription")}
 									</p>
 								</div>
 							)}

@@ -71,7 +71,7 @@ export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: Mini
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.model")}
 						models={minimaxModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

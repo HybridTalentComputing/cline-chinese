@@ -73,7 +73,7 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 
 	useEffect(() => {
 		requestLmStudioModels()
-	}, [])
+	}, [requestLmStudioModels])
 
 	const lmStudioMaxTokens = currentLMStudioModel?.max_context_length?.toString()
 	const currentLoadedContext = currentLMStudioModel?.loaded_context_length?.toString()
@@ -100,16 +100,16 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 				initialValue={apiConfiguration?.lmStudioBaseUrl}
 				label={t("providers.lmStudio.useCustomBaseUrl")}
 				onChange={(value) => handleFieldChange("lmStudioBaseUrl", value)}
-				placeholder="Default: http://localhost:1234"
+				placeholder={t("providers.lmstudio.defaultBaseUrl")}
 			/>
 
-			<div className="font-semibold">Model</div>
+			<div className="font-semibold">{t("settings.model")}</div>
 			{lmStudioModels.length > 0 ? (
 				<DropdownContainer className="dropdown-container" zIndex={10}>
 					<VSCodeDropdown
 						className="w-full mb-3"
-						onChange={(e: any) => {
-							const value = e?.target?.value
+						onChange={(e: Event) => {
+							const value = (e.target as HTMLSelectElement)?.value
 							handleModeFieldChange(
 								{
 									plan: "planModeLmStudioModelId",
@@ -145,11 +145,11 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 				/>
 			)}
 
-			<div className="font-semibold">Context Window</div>
+			<div className="font-semibold">{t("providers.lmStudio.contextWindow")}</div>
 			<VSCodeTextField
 				className="w-full pointer-events-none"
 				disabled={true}
-				title="Not editable - the value is returned by the connected endpoint"
+				title={t("providers.lmstudio.notEditable")}
 				value={String(currentLoadedContext ?? lmStudioMaxTokens ?? "0")}
 			/>
 
@@ -158,16 +158,15 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 			<div className="text-xs text-description">
 				LM Studio allows you to run models locally on your computer. For instructions on how to get started, see their
 				<VSCodeLink href="https://lmstudio.ai/docs" style={{ display: "inline", fontSize: "inherit" }}>
-					quickstart guide.
+					{t("providers.lmStudio.quickstartGuide")}
 				</VSCodeLink>
 				You will also need to start LM Studio's{" "}
 				<VSCodeLink className="inline" href="https://lmstudio.ai/docs/basics/server">
-					local server
+					{t("providers.lmStudio.localServer")}
 				</VSCodeLink>{" "}
 				feature with <code>lms server start</code> to use it with this extension.{" "}
 				<div className="text-error">
-					<span className="font-semibold">Note:</span> Cline uses complex prompts and works best with Claude models.
-					Less capable models may not work as expected.
+					<span className="font-semibold">{t("commonFields.note")}:</span> {t("providers.lmStudio.noteComplexPrompts")}
 				</div>
 			</div>
 		</div>

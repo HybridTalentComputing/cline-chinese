@@ -48,7 +48,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 			<DebouncedTextField
 				initialValue={apiConfiguration?.claudeCodePath || ""}
 				onChange={(value) => handleFieldChange("claudeCodePath", value)}
-				placeholder="Default: claude"
+				placeholder={t("providers.claudeCode.defaultClaudePlaceholder")}
 				style={{ width: "100%", marginTop: 3 }}
 				type="text">
 				<span style={{ fontWeight: 500 }}>{t("providers.claudeCode.cliPath")}</span>
@@ -66,9 +66,9 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.model")}
 						models={claudeCodeModels}
-						onChange={(e: any) =>
+						onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
 							handleModeFieldChange(
 								{ plan: "planModeApiModelId", act: "actModeApiModelId" },
 								e.target.value,
@@ -86,7 +86,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 								marginTop: 2,
 								color: "var(--vscode-descriptionForeground)",
 							}}>
-							Use the latest version of {selectedModelId} by default.
+							{t("providers.lmStudio.useLatestVersion")} {selectedModelId} {t("providers.lmStudio.byDefault")}
 						</p>
 					)}
 

@@ -64,7 +64,7 @@ export const OpenAiCodexProvider = ({ showModelOptions, isPopup, currentMode }: 
 								color: "var(--vscode-descriptionForeground)",
 								marginBottom: "10px",
 							}}>
-							Sign in with your ChatGPT Plus or Pro subscription to use GPT-5 models without an API key.
+							{t("providers.openAiCodex.signInDescription")}
 						</p>
 						<VSCodeButton onClick={handleSignIn}>{t("providers.openAiCodex.signIn")}</VSCodeButton>
 					</div>
@@ -74,7 +74,7 @@ export const OpenAiCodexProvider = ({ showModelOptions, isPopup, currentMode }: 
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.model")}
 						models={openAiCodexModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

@@ -92,7 +92,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 								handleFieldChange("openAiBaseUrl", value)
 								debouncedRefreshOpenAiModels(value, apiConfiguration?.openAiApiKey)
 							}}
-							placeholder={"Enter base URL..."}
+							placeholder={t("commonFields.enterBaseUrl")}
 							style={{ width: "100%", marginBottom: 10 }}
 							type="text"
 						/>
@@ -117,7 +117,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 				onChange={(value) =>
 					handleModeFieldChange({ plan: "planModeOpenAiModelId", act: "actModeOpenAiModelId" }, value, currentMode)
 				}
-				placeholder={"Enter Model ID..."}
+				placeholder={t("providers.openaiCompatible.enterModelId")}
 				style={{ width: "100%", marginBottom: 10 }}>
 				<span style={{ fontWeight: 500 }}>{t("providers.openaiCompatible.modelId")}</span>
 			</DebouncedTextField>
@@ -151,7 +151,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 									currentHeaders[newKey] = ""
 									handleFieldChange("openAiHeaders", currentHeaders)
 								}}>
-								Add Header
+								{t("commonFields.addHeaderButton")}
 							</VSCodeButton>
 						</div>
 
@@ -193,7 +193,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 											const { [key]: _, ...rest } = apiConfiguration?.openAiHeaders ?? {}
 											handleFieldChange("openAiHeaders", rest)
 										}}>
-										Remove
+										{t("commonFields.removeButton")}
 									</VSCodeButton>
 								</div>
 							))}
@@ -231,7 +231,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 					const isChecked = e.target.checked === true
 					return handleFieldChange("azureIdentity", isChecked)
 				}}>
-				Use Azure Identity Authentication
+				{t("providers.openaiCompatible.useAzureIdentity")}
 			</VSCodeCheckbox>
 
 			<div
@@ -254,7 +254,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 						fontWeight: 700,
 						textTransform: "uppercase",
 					}}>
-					Model Configuration
+					{t("providers.openaiCompatible.modelConfiguration")}
 				</span>
 			</div>
 
@@ -272,7 +272,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 								currentMode,
 							)
 						}}>
-						Supports Images
+						{t("providers.openaiCompatible.supportsImages")}
 					</VSCodeCheckbox>
 
 					<VSCodeCheckbox
@@ -288,7 +288,7 @@ export const OpenAICompatibleProvider = ({ showModelOptions, isPopup, currentMod
 								currentMode,
 							)
 						}}>
-						Enable R1 messages format
+						{t("providers.openaiCompatible.enableR1Format")}
 					</VSCodeCheckbox>
 
 					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>

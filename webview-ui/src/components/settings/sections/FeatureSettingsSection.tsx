@@ -407,7 +407,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 									key={feature.id}
 									label={featureTranslations[feature.id]?.label || feature.label}
 									onChange={(checked) => handleFeatureChange(feature, checked)}
-									remoteTooltip="This setting is managed by your organization's remote configuration"
+									remoteTooltip={t("remoteConfig.settingsManagedByOrg")}
 								/>
 							))}
 						</div>

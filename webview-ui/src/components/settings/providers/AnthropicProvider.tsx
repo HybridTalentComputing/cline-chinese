@@ -80,7 +80,7 @@ export const AnthropicProvider = ({ showModelOptions, isPopup, currentMode }: An
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.model")}
 						models={anthropicModels}
 						onChange={(e) =>
 							handleModeFieldChange(

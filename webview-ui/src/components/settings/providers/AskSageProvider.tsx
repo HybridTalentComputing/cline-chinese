@@ -81,7 +81,7 @@ export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskS
 			<DebouncedTextField
 				initialValue={apiConfiguration?.asksageApiUrl || askSageDefaultURL}
 				onChange={(value) => handleFieldChange("asksageApiUrl", value)}
-				placeholder="Enter AskSage API URL..."
+				placeholder={t("providers.askSage.enterApiUrl")}
 				style={{ width: "100%" }}
 				type="text">
 				<span style={{ fontWeight: 500 }}>{t("providers.askSage.apiUrl")}</span>
@@ -90,7 +90,7 @@ export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskS
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.model")}
 						models={availableModels}
 						onChange={(e) =>
 							handleModeFieldChange(

@@ -85,7 +85,7 @@ export const MoonshotProvider = ({ showModelOptions, isPopup, currentMode }: Moo
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.model")}
 						models={moonshotModels}
 						onChange={async (e: any) => {
 							const value = e.target.value

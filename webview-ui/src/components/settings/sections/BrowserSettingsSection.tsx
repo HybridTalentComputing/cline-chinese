@@ -331,7 +331,7 @@ export const BrowserSettingsSection: React.FC<BrowserSettingsSectionProps> = ({ 
 								<label
 									htmlFor="chrome-executable-path"
 									style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>
-									Chrome Executable Path (Optional)
+									{t("settingsSections.browser.chromeExecutablePath")}
 								</label>
 								<DebouncedTextField
 									id="chrome-executable-path"
@@ -354,7 +354,7 @@ export const BrowserSettingsSection: React.FC<BrowserSettingsSectionProps> = ({ 
 								<label
 									htmlFor="custom-browser-args"
 									style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>
-									Custom Browser Arguments (Optional)
+									{t("settingsSections.browser.customBrowserArgs")}
 								</label>
 								<DebouncedTextField
 									id="custom-browser-args"

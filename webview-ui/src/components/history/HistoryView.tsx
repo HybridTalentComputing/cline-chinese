@@ -71,7 +71,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		} catch (error) {
 			console.error("Error loading task history:", error)
 		}
-	}, [showFavoritesOnly, showCurrentWorkspaceOnly, searchQuery, sortOption, taskHistory])
+	}, [showFavoritesOnly, showCurrentWorkspaceOnly, searchQuery, sortOption])
 
 	// Load when filters change
 	useEffect(() => {
@@ -119,7 +119,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 				}, 1000)
 			}
 		},
-		[showFavoritesOnly, loadTaskHistory],
+		[showFavoritesOnly, loadTaskHistory, showCurrentWorkspaceOnly],
 	)
 
 	// Use the onRelinquishControl hook instead of message event
@@ -203,7 +203,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		const results = searchQuery
 			? fuse
 					.search(searchQuery)
-					?.filter(({ matches }) => matches && matches.length)
+					?.filter(({ matches }) => matches?.length)
 					.map(({ item }) => item)
 			: tasks
 
@@ -224,7 +224,6 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 				case "mostRelevant":
 					// NOTE: you must never sort directly on object since it will cause members to be reordered
 					return searchQuery ? 0 : b.ts - a.ts // Keep fuse order if searching, otherwise sort by newest
-				case "newest":
 				default:
 					return b.ts - a.ts
 			}
@@ -259,10 +258,10 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 
 		const groups: { tasks: any[]; label: string }[] = []
 		if (todayTasks.length > 0) {
-			groups.push({ tasks: todayTasks, label: "Today" })
+			groups.push({ tasks: todayTasks, label: t("history.today") })
 		}
 		if (olderTasks.length > 0) {
-			groups.push({ tasks: olderTasks, label: "Older" })
+			groups.push({ tasks: olderTasks, label: t("history.older") })
 		}
 
 		return {
@@ -270,7 +269,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			groupCounts: groups.map((g) => g.tasks.length),
 			groupLabels: groups.map((g) => g.label),
 		}
-	}, [taskHistorySearchResults, sortOption])
+	}, [taskHistorySearchResults, sortOption, t])
 
 	// Calculate total size of selected items
 	const selectedItemsSize = useMemo(() => {
@@ -424,10 +423,10 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			<div className="p-2.5 border-t border-t-border-panel">
 				<div className="flex gap-2.5 mb-2.5">
 					<Button className="flex-1" onClick={() => handleBatchHistorySelect(true)} variant="secondary">
-						Select All
+						{t("history.selectAll")}
 					</Button>
 					<Button className="flex-1" onClick={() => handleBatchHistorySelect(false)} variant="secondary">
-						Select None
+						{t("history.selectNone")}
 					</Button>
 				</div>
 				{selectedItems.length > 0 ? (
@@ -438,7 +437,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							handleDeleteSelectedHistoryItems(selectedItems)
 						}}
 						variant="danger">
-						Delete {selectedItems.length > 1 ? selectedItems.length : ""} Selected
+						{t("history.deleteSelectedCount", { count: selectedItems.length > 1 ? selectedItems.length : "" })}
 						{selectedItemsSize > 0 ? ` (${formatSize(selectedItemsSize)})` : ""}
 					</Button>
 				) : (
@@ -454,7 +453,8 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								.finally(() => setDeleteAllDisabled(false))
 						}}
 						variant="danger">
-						Delete All History{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
+						{t("history.deleteAllHistory")}
+						{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
 					</Button>
 				)}
 			</div>
@@ -533,7 +533,7 @@ export const highlight = (fuseSearchResult: FuseResult<any>[], highlightClassNam
 	}
 
 	return fuseSearchResult
-		.filter(({ matches }) => matches && matches.length)
+		.filter(({ matches }) => matches?.length)
 		.map(({ item, matches }) => {
 			const highlightedItem = { ...item }
 
