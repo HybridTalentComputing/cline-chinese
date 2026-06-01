@@ -13,6 +13,10 @@
 			"label": "Google Gemini"
 		},
 		{
+			"value": "shengsuanyun",
+			"label": "\u80dc\u7b97\u4e91"
+		},
+		{
 			"value": "openai",
 			"label": "OpenAI Compatible"
 		},
@@ -163,10 +167,6 @@
 		{
 			"value": "nousResearch",
 			"label": "NousResearch"
-		},
-		{
-			"value": "shengsuanyun",
-			"label": "胜算云"
 		},
 		{
 			"value": "wandb",

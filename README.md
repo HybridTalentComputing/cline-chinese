@@ -28,6 +28,9 @@ https://github.com/HybridTalentComputing/Supremum
 <img width="100%" alt="胜算云" src="https://github.com/user-attachments/assets/19091f07-c171-4cf6-b7af-4e11f549364a" />
 
 
+> 胜算云是AI自动生产超级工厂，长三角国家技术创新中心重大扶持项目，打造工业级 AI 任务执行矩阵。依托完整的全球API算力供应链与弹性算力容器，实现云端快速并发执行 AI 任务，持久化工作流编排，矩阵式执行，共享知识库，高效低成本获得可靠计算结果。点击此处查看[网关实时稳定性监控](https://watch.shengsuanyun.com/status/shengsuanyun), 点击此处进入模型网关超市获取API算力：[胜算云](https://www.shengsuanyun.com/?from=cline-chinese)，注册新用户可获10元模力及首充10%赠送。
+
+
 ## 功能展示
 
 <video width="100%" controls src="https://github.com/user-attachments/assets/a6db47a9-08d7-4d20-afa0-110d23b71a81"></video>
