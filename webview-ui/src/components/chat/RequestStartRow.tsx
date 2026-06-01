@@ -3,6 +3,7 @@ import type { Mode } from "@shared/storage/types"
 import type { LucideIcon } from "lucide-react"
 import type React from "react"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { cleanPathPrefix } from "../common/CodeAccordian"
 import { getIconByToolName } from "./chat-view"
 import { isApiReqAbsorbable, isLowStakesTool } from "./chat-view/utils/messageUtils"
@@ -38,7 +39,7 @@ const formatSearchRegex = (regex: string, path: string, filePattern?: string): s
 	return filePattern && filePattern !== "*" ? `"${terms}" in ${cleanedPath}/ (${filePattern})` : `"${terms}" in ${cleanedPath}/`
 }
 // Format activity text based on tool type
-const getActivityText = (tool: ClineSayTool): string | null => {
+const getActivityText = (tool: ClineSayTool, t: any): string | null => {
 	const cleanedPath = cleanPathPrefix(tool.path || "")
 	switch (tool.tool) {
 		case "readFile":
@@ -60,6 +61,7 @@ const collectToolsInRange = (
 	messages: ClineMessage[],
 	startIdx: number,
 	endIdx: number,
+	t: any,
 	stopCondition?: (msg: ClineMessage) => boolean,
 ): { icon: LucideIcon; text: string }[] => {
 	const activities: { icon: LucideIcon; text: string }[] = []
@@ -79,7 +81,7 @@ const collectToolsInRange = (
 
 		try {
 			const tool = JSON.parse(msg.text || "{}") as ClineSayTool
-			const activityText = getActivityText(tool)
+			const activityText = getActivityText(tool, t)
 			if (activityText) {
 				const toolIcon = getIconByToolName(tool.tool)
 				activities.push({ icon: toolIcon, text: activityText })
@@ -140,6 +142,7 @@ export const RequestStartRow: React.FC<RequestStartRowProps> = ({
 	isExpanded,
 	message,
 }) => {
+	const { t } = useTranslation("common")
 	// Derive explicit state
 	const hasError = !!(apiRequestFailedMessage || apiReqStreamingFailedMessage)
 	const hasCost = cost != null
@@ -174,7 +177,7 @@ export const RequestStartRow: React.FC<RequestStartRowProps> = ({
 		if (!currentApiReq.hasCost) {
 			// CASE A: Current api_req is INCOMPLETE
 			// Look for ask === "tool" messages AFTER the current api_req_started
-			return collectToolsInRange(clineMessages, currentApiReq.index + 1, clineMessages.length)
+			return collectToolsInRange(clineMessages, currentApiReq.index + 1, clineMessages.length, t)
 		}
 		// CASE B: Current api_req is COMPLETE - no activities to show
 		return []

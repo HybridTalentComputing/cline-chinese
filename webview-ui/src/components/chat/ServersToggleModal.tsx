@@ -12,8 +12,7 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 
 const ServersToggleModal: React.FC = () => {
-	tconst
-	t = useTranslation("common")
+	const { t } = useTranslation("common")
 	const { mcpServers, navigateToMcp, setMcpServers } = useExtensionState()
 	const [isVisible, setIsVisible] = useState(false)
 	const buttonRef = useRef<HTMLDivElement>(null)

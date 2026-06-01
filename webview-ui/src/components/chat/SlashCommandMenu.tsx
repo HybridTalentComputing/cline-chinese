@@ -1,5 +1,6 @@
 import type { McpServer } from "@shared/mcp"
 import React, { useCallback, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import ScreenReaderAnnounce from "@/components/common/ScreenReaderAnnounce"
 import { useMenuAnnouncement } from "@/hooks/useMenuAnnouncement"
 import type { SlashCommand } from "@/utils/slash-commands"
@@ -30,6 +31,7 @@ const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
 	remoteWorkflows,
 	mcpServers = [],
 }) => {
+	const { t } = useTranslation("common")
 	const menuRef = useRef<HTMLDivElement>(null)
 
 	// Filter commands based on query

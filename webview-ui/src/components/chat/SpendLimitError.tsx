@@ -38,8 +38,7 @@ interface SpendLimitErrorProps {
 }
 
 const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod, limitUsd, spentUsd, resetsAt }) => {
-	tconst
-	t = useTranslation("common")
+	const { t } = useTranslation("common")
 	const displayMessage =
 		limitUsd != null && budgetPeriod ? `$${limitUsd.toFixed(2)} ${budgetPeriod} limit has been reached.` : message
 

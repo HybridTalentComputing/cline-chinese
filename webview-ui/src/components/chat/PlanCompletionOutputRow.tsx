@@ -16,8 +16,7 @@ interface PlanCompletionOutputProps {
  * Uses grayscale colors to distinguish from Act Mode's green success theme
  */
 const PlanCompletionOutputRow = memo(({ text, headClassNames }: PlanCompletionOutputProps) => {
-	tconst
-	t = useTranslation("common")
+	const { t } = useTranslation("common")
 	return (
 		<div className="rounded-sm border border-description/50 overflow-visible bg-code p-2 pt-3">
 			{/* Header */}

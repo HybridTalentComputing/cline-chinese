@@ -43,6 +43,7 @@ const ModelSelection = ({
 	setSearchTerm,
 	onboardingModels,
 }: ModelSelectionProps) => {
+	const { t } = useTranslation("common")
 	const modelGroups = onboardingModels[userType === NEW_USER_TYPE.FREE ? "free" : "power"]
 
 	const searchedModels = useMemo(() => {
@@ -195,32 +196,35 @@ type UserTypeSelectionProps = {
 	onSelectUserType: (type: NEW_USER_TYPE) => void
 }
 
-const UserTypeSelectionStep = ({ userType, onSelectUserType }: UserTypeSelectionProps) => (
-	<div className="flex flex-col w-full items-center">
-		<div className="flex w-full max-w-lg flex-col gap-3 my-2">
-			{getUserTypeSelections(t).map((option) => {
-				const isSelected = userType === option.type
+const UserTypeSelectionStep = ({ userType, onSelectUserType }: UserTypeSelectionProps) => {
+	const { t } = useTranslation("common")
+	return (
+		<div className="flex flex-col w-full items-center">
+			<div className="flex w-full max-w-lg flex-col gap-3 my-2">
+				{getUserTypeSelections(t).map((option) => {
+					const isSelected = userType === option.type
 
-				return (
-					<Item
-						className={cn("cursor-pointer hover:cursor-pointer w-full", {
-							"bg-input-background/50 border border-input-foreground/30": isSelected,
-						})}
-						key={option.type}
-						onClick={() => onSelectUserType(option.type)}>
-						<ItemMedia className="[&_svg]:stroke-button-background" variant="icon">
-							{isSelected ? <CircleCheckIcon className="stroke-1.5" /> : <CircleIcon className="stroke-1" />}
-						</ItemMedia>
-						<ItemContent className="w-full">
-							<ItemTitle>{option.title}</ItemTitle>
-							<ItemDescription>{option.description}</ItemDescription>
-						</ItemContent>
-					</Item>
-				)
-			})}
+					return (
+						<Item
+							className={cn("cursor-pointer hover:cursor-pointer w-full", {
+								"bg-input-background/50 border border-input-foreground/30": isSelected,
+							})}
+							key={option.type}
+							onClick={() => onSelectUserType(option.type)}>
+							<ItemMedia className="[&_svg]:stroke-button-background" variant="icon">
+								{isSelected ? <CircleCheckIcon className="stroke-1.5" /> : <CircleIcon className="stroke-1" />}
+							</ItemMedia>
+							<ItemContent className="w-full">
+								<ItemTitle>{option.title}</ItemTitle>
+								<ItemDescription>{option.description}</ItemDescription>
+							</ItemContent>
+						</Item>
+					)
+				})}
+			</div>
 		</div>
-	</div>
-)
+	)
+}
 
 type OnboardingStepContentProps = {
 	step: number
@@ -407,8 +411,24 @@ const OnboardingViewContent = ({ onboardingModels }: { onboardingModels: Onboard
 							className={`w-full rounded-xs ${isActionLoading ? "animate-pulse" : ""}`}
 							disabled={isActionLoading}
 							key={btn.text}
-							onClick={() => handleFooterAction(btn.action)}
-							variant={btn.variant}>
+							onClick={() => handleFooterAction(btn.action as "done" | "next" | "signin" | "signup" | "back")}
+							variant={
+								btn.variant as
+									| "link"
+									| "error"
+									| "cline"
+									| "default"
+									| "text"
+									| "success"
+									| "secondary"
+									| "outline"
+									| "outline-primary"
+									| "ghost"
+									| "icon"
+									| "danger"
+									| null
+									| undefined
+							}>
 							{btn.text}
 						</Button>
 					))}

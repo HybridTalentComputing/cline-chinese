@@ -114,6 +114,9 @@ type SettingsViewProps = {
 	targetSection?: string
 }
 
+// Helper to convert kebab-case tab id to camelCase for i18n keys
+const tabIdToCamel = (id: string) => id.replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+
 // Helper to render section header - moved outside component for better performance
 const renderSectionHeader = (tabId: string, t: (key: string) => string) => {
 	const tab = SETTINGS_TABS.find((t) => t.id === tabId)
@@ -121,7 +124,7 @@ const renderSectionHeader = (tabId: string, t: (key: string) => string) => {
 		return null
 	}
 
-	const headerKey = `settings.tabs.${tabId}Header` as string
+	const headerKey = `settings.tabs.${tabIdToCamel(tabId)}Header` as string
 	return (
 		<SectionHeader>
 			<div className="flex items-center gap-2">
@@ -228,10 +231,10 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 									},
 								)}>
 								<tab.icon className="w-4 h-4" />
-								<span className="hidden sm:block">{t(`settings.tabs.${tab.id}`)}</span>
+								<span className="hidden sm:block">{t(`settings.tabs.${tabIdToCamel(tab.id)}`)}</span>
 							</div>
 						</TooltipTrigger>
-						<TooltipContent side="right">{t(`settings.tabs.${tab.id}Tooltip`)}</TooltipContent>
+						<TooltipContent side="right">{t(`settings.tabs.${tabIdToCamel(tab.id)}Tooltip`)}</TooltipContent>
 					</Tooltip>
 				</TabTrigger>
 			)

@@ -4,6 +4,7 @@ import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse, { FuseResult } from "fuse.js"
 import { FunnelIcon } from "lucide-react"
 import { memo, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { GroupedVirtuoso } from "react-virtuoso"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
@@ -25,17 +26,20 @@ const isToday = (timestamp: number): boolean => {
 	return today.toDateString() === date.toDateString()
 }
 
-const HISTORY_FILTERS = {
-	newest: "Newest",
-	oldest: "Oldest",
-	mostExpensive: "Most Expensive",
-	mostTokens: "Most Tokens",
-	mostRelevant: "Most Relevant",
-	workspaceOnly: "Workspace Only",
-	favoritesOnly: "Favorites Only",
-}
-
 const HistoryView = ({ onDone }: HistoryViewProps) => {
+	const { t } = useTranslation("settings")
+	const HISTORY_FILTERS = useMemo(
+		() => ({
+			newest: t("history.newest"),
+			oldest: t("history.oldest"),
+			mostExpensive: t("history.mostExpensive"),
+			mostTokens: t("history.mostTokens"),
+			mostRelevant: t("history.mostRelevant"),
+			workspaceOnly: t("history.workspaceOnly"),
+			favoritesOnly: t("history.favoritesOnly"),
+		}),
+		[t],
+	)
 	const extensionStateContext = useExtensionState()
 	const { taskHistory, onRelinquishControl, environment } = extensionStateContext
 	const [searchQuery, setSearchQuery] = useState("")
@@ -308,7 +312,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								setSortOption("mostRelevant")
 							}
 						}}
-						placeholder="Fuzzy search history..."
+						placeholder={t("history.searchPlaceholder")}
 						value={searchQuery}>
 						<div className="codicon codicon-search opacity-80 mt-0.5 !text-sm" slot="start" />
 						{searchQuery && (

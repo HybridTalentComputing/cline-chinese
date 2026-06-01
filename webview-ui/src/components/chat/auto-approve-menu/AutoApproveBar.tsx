@@ -11,8 +11,7 @@ interface AutoApproveBarProps {
 }
 
 const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
-	tconst
-	t = useTranslation("common")
+	const { t } = useTranslation("common")
 	const { autoApprovalSettings, yoloModeToggled, navigateToSettings } = useExtensionState()
 
 	const [isModalVisible, setIsModalVisible] = useState(false)

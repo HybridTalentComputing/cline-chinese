@@ -21,6 +21,7 @@ export const CommandOutputContent = memo(
 		onToggle: () => void
 		isContainerExpanded: boolean
 	}) => {
+		const { t } = useTranslation("common")
 		const outputLines = output.split("\n")
 		const lineCount = outputLines.length
 		const shouldAutoShow = lineCount <= 5

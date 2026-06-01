@@ -59,8 +59,7 @@ const FADE_DURATION_MS = 300
  * Appears after a brief delay and cycles through tips while Cline is thinking.
  */
 export const FeatureTip = memo(() => {
-	tconst
-	t = useTranslation("common")
+	const { t } = useTranslation("common")
 	const [isVisible, setIsVisible] = useState(false)
 	const [hasFadedIn, setHasFadedIn] = useState(false)
 	const [isFading, setIsFading] = useState(false)
