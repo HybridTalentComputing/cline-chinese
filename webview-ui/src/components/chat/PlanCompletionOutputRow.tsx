@@ -1,5 +1,6 @@
 import { NotepadTextIcon } from "lucide-react"
 import { memo } from "react"
+import { useTranslation } from "react-i18next"
 import { CopyButton } from "@/components/common/CopyButton"
 import MarkdownBlock from "@/components/common/MarkdownBlock"
 import { cn } from "@/lib/utils"
@@ -15,13 +16,15 @@ interface PlanCompletionOutputProps {
  * Uses grayscale colors to distinguish from Act Mode's green success theme
  */
 const PlanCompletionOutputRow = memo(({ text, headClassNames }: PlanCompletionOutputProps) => {
+	tconst
+	t = useTranslation("common")
 	return (
 		<div className="rounded-sm border border-description/50 overflow-visible bg-code p-2 pt-3">
 			{/* Header */}
 			<div className={cn(headClassNames, "justify-between px-1")}>
 				<div className="flex gap-2 items-center">
 					<NotepadTextIcon className="size-2" />
-					<span className="text-foreground font-bold">Plan Created</span>
+					<span className="text-foreground font-bold">{t("planCompletion.planCreated")}</span>
 				</div>
 				<CopyButton textToCopy={text || ""} />
 			</div>

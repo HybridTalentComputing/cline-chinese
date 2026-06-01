@@ -1,8 +1,10 @@
 import { cn } from "@heroui/react"
 import { isCompletedFocusChainItem, isFocusChainItem } from "@shared/focus-chain-utils"
 import { StringRequest } from "@shared/proto/cline/common"
+import i18next from "i18next"
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import React, { memo, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import ChecklistRenderer from "@/components/common/ChecklistRenderer"
 import LightMarkdown from "@/components/common/LightMarkdown"
 import { FileServiceClient } from "@/services/grpc-client"
@@ -23,10 +25,10 @@ interface FocusChainProps {
 }
 
 // Static strings to avoid recreating them
-const COMPLETED_MESSAGE = "All tasks have been completed!"
-const TODO_LIST_LABEL = "To-Do list"
-const NEW_STEPS_MESSAGE = "New steps will be generated if you continue the task"
-const CLICK_TO_EDIT_TITLE = "Click to edit to-do list in file"
+const COMPLETED_MESSAGE = i18next.t("focusChain.allCompleted")
+const TODO_LIST_LABEL = i18next.t("focusChain.todoListLabel")
+const NEW_STEPS_MESSAGE = i18next.t("focusChain.newStepsMessage")
+const CLICK_TO_EDIT_TITLE = i18next.t("focusChain.clickToEdit")
 
 // Optimized header component with minimal re-renders
 const ToDoListHeader = memo<{
@@ -159,6 +161,7 @@ const parseCurrentTodoInfo = (text: string): TodoInfo | null => {
 // Main component with aggressive optimization
 export const FocusChain: React.FC<FocusChainProps> = memo(
 	({ currentTaskItemId, lastProgressMessageText, showPlaceholderWhenEmpty }) => {
+		const { t } = useTranslation("common")
 		const [isExpanded, setIsExpanded] = useState(false)
 
 		// Parse todo info with caching
@@ -194,7 +197,7 @@ export const FocusChain: React.FC<FocusChainProps> = memo(
 					<span className="rounded-lg px-2 py-0.25 inline-block shrink-0 bg-badge-foreground/20 text-foreground text-sm">
 						0/0
 					</span>
-					<span className="text-sm text-foreground/80 truncate">TODOs</span>
+					<span className="text-sm text-foreground/80 truncate">{t("focusChain.todos")}</span>
 				</div>
 			)
 		}
@@ -207,7 +210,7 @@ export const FocusChain: React.FC<FocusChainProps> = memo(
 
 		return (
 			<div
-				aria-label={isExpanded ? "Collapse focus chain" : "Expand focus chain"}
+				aria-label={isExpanded ? t("focusChain.collapseFocusChain") : t("focusChain.expandFocusChain")}
 				className="relative rounded-sm bg-toolbar-hover/65 flex flex-col gap-1.5 select-none hover:bg-toolbar-hover overflow-hidden opacity-80 hover:opacity-100 transition-[transform,box-shadow] duration-200 cursor-pointer"
 				onClick={handleToggle}
 				onKeyDown={(e) => {

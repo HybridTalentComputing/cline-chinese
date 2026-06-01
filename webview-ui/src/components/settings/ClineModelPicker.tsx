@@ -6,8 +6,10 @@ import type { Mode } from "@shared/storage/types"
 import { isClaudeOpusAdaptiveThinkingModel, resolveClaudeOpusAdaptiveThinking } from "@shared/utils/reasoning-support"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
+import i18next from "i18next"
 import type React from "react"
 import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -79,7 +81,9 @@ function toFeaturedModelCardEntry(
 
 	return {
 		id: model.id,
-		description: model.description || (fallbackLabel === "FREE" ? "Free model" : "Recommended model"),
+		description:
+			model.description ||
+			(fallbackLabel === "FREE" ? i18next.t("settings.freeModel") : i18next.t("settings.recommendedModel")),
 		label: normalizedLabel || fallbackLabel,
 	}
 }
@@ -93,6 +97,7 @@ const FREE_MODELS_FALLBACK: FeaturedModelCardEntry[] = CLINE_RECOMMENDED_MODELS_
 	.filter((model): model is FeaturedModelCardEntry => model !== null)
 
 const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMode, showProviderRouting, initialTab }) => {
+	const { t } = useTranslation("settings")
 	const { handleModeFieldsChange, handleFieldChange } = useApiConfigurationHandlers()
 	const { apiConfiguration, favoritedModelIds, clineModels, refreshClineModels } = useExtensionState()
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
@@ -391,7 +396,7 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 			</style>
 			<div style={{ display: "flex", flexDirection: "column" }}>
 				<label htmlFor="model-search">
-					<span style={{ fontWeight: 500 }}>Model</span>
+					<span style={{ fontWeight: 500 }}>{t("settings.model")}</span>
 				</label>
 
 				<>
@@ -452,7 +457,7 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder="Search and select a model..."
+						placeholder={t("settings.searchSelectModel")}
 						role="combobox"
 						style={{
 							width: "100%",
@@ -571,11 +576,7 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 							}
 							currentMode={currentMode}
 							defaultEffort={showAdaptiveThinkingEffort ? adaptiveThinkingDefaultEffort : "medium"}
-							description={
-								showAdaptiveThinkingEffort
-									? "Use None to disable adaptive thinking. Higher effort increases response detail and token usage."
-									: undefined
-							}
+							description={showAdaptiveThinkingEffort ? t("settings.adaptiveThinkingDescription") : undefined}
 							label={showAdaptiveThinkingEffort ? "Adaptive Thinking" : undefined}
 						/>
 					)}
@@ -596,8 +597,7 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 						marginTop: 0,
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					The extension automatically fetches the latest Cline model list. If you're unsure which model to choose, Cline
-					works best with <strong>anthropic/claude-sonnet-4.5</strong>.
+					{t("settings.autoFetchModelList")} <strong>anthropic/claude-sonnet-4.5</strong>.
 				</p>
 			)}
 		</div>

@@ -17,6 +17,7 @@ import {
 } from "@vscode/webview-ui-toolkit/react"
 import { RefreshCcwIcon, Trash2Icon } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -30,17 +31,13 @@ import McpToolRow from "./McpToolRow"
 
 // constant JSX.Elements
 const TimeoutOptions = [
-	{ value: "30", label: "30 seconds" },
-	{ value: "60", label: "1 minute" },
-	{ value: "300", label: "5 minutes" },
-	{ value: "600", label: "10 minutes" },
-	{ value: "1800", label: "30 minutes" },
-	{ value: "3600", label: "1 hour" },
-].map((option) => (
-	<VSCodeOption key={option.value} value={option.value}>
-		{option.label}
-	</VSCodeOption>
-))
+	{ value: "30", labelKey: "mcp.timeout.30seconds" },
+	{ value: "60", labelKey: "mcp.timeout.1minute" },
+	{ value: "300", labelKey: "mcp.timeout.5minutes" },
+	{ value: "600", labelKey: "mcp.timeout.10minutes" },
+	{ value: "1800", labelKey: "mcp.timeout.30minutes" },
+	{ value: "3600", labelKey: "mcp.timeout.1hour" },
+]
 
 const ServerRow = ({
 	server,
@@ -51,6 +48,7 @@ const ServerRow = ({
 	isExpandable?: boolean
 	hasTrashIcon?: boolean
 }) => {
+	const { t } = useTranslation("misc")
 	const { mcpMarketplaceCatalog, autoApprovalSettings, setMcpServers, remoteConfigSettings } = useExtensionState()
 
 	const [isExpanded, setIsExpanded] = useState(false)
@@ -93,7 +91,7 @@ const ServerRow = ({
 	const handleTimeoutChange = (e: any) => {
 		const select = e.target as HTMLSelectElement
 		const value = select.value
-		const num = parseInt(value)
+		const num = Number.parseInt(value)
 		setTimeoutValue(value)
 
 		McpServiceClient.updateMcpTimeout({
@@ -230,7 +228,7 @@ const ServerRow = ({
 							handleRestart()
 						}}
 						size="icon"
-						title="Restart Server"
+						title={t("mcp.serverRow.restartServer")}
 						variant="icon">
 						<RefreshCcwIcon />
 					</Button>
@@ -243,7 +241,7 @@ const ServerRow = ({
 							handleDelete()
 						}}
 						size="icon"
-						title="Delete Server"
+						title={t("mcp.serverRow.deleteServer")}
 						variant="icon">
 						<Trash2Icon />
 					</Button>
@@ -265,7 +263,7 @@ const ServerRow = ({
 						</div>
 					</TooltipTrigger>
 					<TooltipContent className="max-w-xs" hidden={!isAlwaysEnabled} side="top">
-						This server can't be disabled because it is enabled by your organization
+						{t("mcp.serverRow.cantDisable")}
 					</TooltipContent>
 				</Tooltip>
 				<div
@@ -288,7 +286,7 @@ const ServerRow = ({
 								McpServiceClient.authenticateMcpServer(StringRequest.create({ value: server.name }))
 							}}
 							variant="default">
-							Authenticate
+							{t("mcp.serverRow.authenticate")}
 						</Button>
 					) : (
 						<Button
@@ -296,7 +294,9 @@ const ServerRow = ({
 							disabled={server.status === "connecting"}
 							onClick={handleRestart}
 							variant="secondary">
-							{server.status === "connecting" || isRestarting ? "Retrying..." : "Retry Connection"}
+							{server.status === "connecting" || isRestarting
+								? t("mcp.serverRow.retrying")
+								: t("mcp.serverRow.retryConnection")}
 						</Button>
 					)}
 
@@ -306,7 +306,7 @@ const ServerRow = ({
 							disabled={isDeleting}
 							onClick={handleDelete}
 							variant="danger">
-							{isDeleting ? "Deleting..." : "Delete Server"}
+							{isDeleting ? t("mcp.serverRow.deleting") : t("mcp.serverRow.deleteServerBtn")}
 						</Button>
 					)}
 				</div>
@@ -314,11 +314,17 @@ const ServerRow = ({
 				isExpanded && (
 					<div className="bg-text-block-background p-2.5 pt-0 text-sm rounded-b-sm">
 						<VSCodePanels>
-							<VSCodePanelTab id="tools">Tools ({server.tools?.length || 0})</VSCodePanelTab>
-							<VSCodePanelTab id="resources">
-								Resources ({[...(server.resourceTemplates || []), ...(server.resources || [])].length || 0})
+							<VSCodePanelTab id="tools">
+								{t("mcp.serverRow.tools", { count: server.tools?.length || 0 })}
 							</VSCodePanelTab>
-							<VSCodePanelTab id="prompts">Prompts ({server.prompts?.length || 0})</VSCodePanelTab>
+							<VSCodePanelTab id="resources">
+								{t("mcp.serverRow.resources", {
+									count: [...(server.resourceTemplates || []), ...(server.resources || [])].length || 0,
+								})}
+							</VSCodePanelTab>
+							<VSCodePanelTab id="prompts">
+								{t("mcp.serverRow.prompts", { count: server.prompts?.length || 0 })}
+							</VSCodePanelTab>
 
 							<VSCodePanelView id="tools-view">
 								{server.tools && server.tools.length > 0 ? (
@@ -329,7 +335,7 @@ const ServerRow = ({
 												className="mb-1 text-xs"
 												data-tool="all-tools"
 												onChange={handleAutoApproveChange}>
-												Auto-approve all tools
+												{t("mcp.serverRow.autoApproveAll")}
 											</VSCodeCheckbox>
 										)}
 										{server.tools.map((tool) => (
@@ -337,7 +343,7 @@ const ServerRow = ({
 										))}
 									</div>
 								) : (
-									<div className="text-description py-2.5">No tools found</div>
+									<div className="text-description py-2.5">{t("mcp.serverRow.noToolsFound")}</div>
 								)}
 							</VSCodePanelView>
 
@@ -353,7 +359,7 @@ const ServerRow = ({
 										))}
 									</div>
 								) : (
-									<div className="py-2.5 text-description">No resources found</div>
+									<div className="py-2.5 text-description">{t("mcp.serverRow.noResourcesFound")}</div>
 								)}
 							</VSCodePanelView>
 
@@ -377,16 +383,20 @@ const ServerRow = ({
 											padding: "10px 0",
 											color: "var(--vscode-descriptionForeground)",
 										}}>
-										No prompts found
+										{t("mcp.serverRow.noPromptsFound")}
 									</div>
 								)}
 							</VSCodePanelView>
 						</VSCodePanels>
 
 						<div className="my-2.5 mx-1.5">
-							<label className="block mb-1 text-[13px]">Request Timeout</label>
+							<label className="block mb-1 text-[13px]">{t("mcp.serverRow.requestTimeout")}</label>
 							<VSCodeDropdown className="w-full" onChange={handleTimeoutChange} value={timeoutValue}>
-								{TimeoutOptions}
+								{TimeoutOptions.map((option) => (
+									<VSCodeOption key={option.value} value={option.value}>
+										{t(option.labelKey)}
+									</VSCodeOption>
+								))}
 							</VSCodeDropdown>
 						</div>
 						<Button
@@ -394,7 +404,11 @@ const ServerRow = ({
 							disabled={server.status === "connecting" || isRestarting || server.disabled}
 							onClick={handleRestart}
 							variant="secondary">
-							{server.status === "connecting" || isRestarting ? "Restarting..." : server.disabled ? "Server Disabled" : "Restart Server"}
+							{server.status === "connecting" || isRestarting
+								? t("mcp.serverRow.restarting")
+								: server.disabled
+									? t("mcp.serverRow.serverDisabled")
+									: t("mcp.serverRow.restartServerBtn")}
 						</Button>
 
 						{!isRemoteManagedServer && (
@@ -403,7 +417,7 @@ const ServerRow = ({
 								disabled={isDeleting}
 								onClick={handleDelete}
 								variant="danger">
-								{isDeleting ? "Deleting..." : "Delete Server"}
+								{isDeleting ? t("mcp.serverRow.deleting") : t("mcp.serverRow.deleteServerBtn")}
 							</Button>
 						)}
 					</div>

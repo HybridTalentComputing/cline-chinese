@@ -95,10 +95,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 	// Shared label definitions for simple option types
 	const SIMPLE_OPTION_LABELS: Partial<Record<ContextMenuOptionType, string>> = {
-		[ContextMenuOptionType.Problems]: "Problems",
-		[ContextMenuOptionType.Terminal]: "Terminal",
-		[ContextMenuOptionType.URL]: "Paste URL to fetch contents",
-		[ContextMenuOptionType.NoResults]: "No results found",
+		[ContextMenuOptionType.Problems]: t("contextMenu.problems"),
+		[ContextMenuOptionType.Terminal]: t("contextMenu.terminal"),
+		[ContextMenuOptionType.URL]: t("contextMenu.pasteUrl"),
+		[ContextMenuOptionType.NoResults]: t("contextMenu.noResults"),
 	}
 
 	// Get accessible label for an option (used for screen readers and aria-label)
@@ -114,13 +114,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				if (option.value) {
 					return `${option.label}${option.description ? `, ${option.description}` : ""}`
 				}
-				return "Git Commits"
+				return t("contextMenu.gitCommits")
 			case ContextMenuOptionType.File:
 			case ContextMenuOptionType.Folder:
 				if (option.value) {
 					return option.label || option.value
 				}
-				return `Add ${option.type === ContextMenuOptionType.File ? "File" : "Folder"}`
+				return option.type === ContextMenuOptionType.File ? t("contextMenu.addFile") : t("contextMenu.addFolder")
 			default:
 				return option.label || option.value || ""
 		}
@@ -156,7 +156,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						</div>
 					)
 				}
-				return <span>Git Commits</span>
+				return <span>{t("contextMenu.gitCommits")}</span>
 			case ContextMenuOptionType.File:
 			case ContextMenuOptionType.Folder:
 				if (option.value) {
@@ -182,7 +182,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						</>
 					)
 				}
-				return <span>Add {option.type === ContextMenuOptionType.File ? "File" : "Folder"}</span>
+				return (
+					<span>
+						{option.type === ContextMenuOptionType.File ? t("contextMenu.addFile") : t("contextMenu.addFolder")}
+					</span>
+				)
 			default:
 				return null
 		}
@@ -251,7 +255,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						? `context-menu-item-${selectedIndex}`
 						: undefined
 				}
-				aria-label="Context mentions"
+				aria-label={t("contextMenu.ariaLabel")}
 				ref={menuRef}
 				role="listbox"
 				style={{
@@ -276,7 +280,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							opacity: 0.7,
 						}}>
 						<i className="codicon codicon-loading codicon-modifier-spin" style={{ fontSize: "14px" }} />
-						<span>Searching...</span>
+						<span>{t("contextMenu.searching")}</span>
 					</div>
 				)}
 				{filteredOptions.map((option, index) => {

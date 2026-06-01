@@ -162,6 +162,7 @@
 			"arguments": "参数",
 			"requestTimeout": "请求超时",
 			"restarting": "正在重启...",
+			"serverDisabled": "服务器已禁用",
 			"restartServerBtn": "重启服务器",
 			"requiresApiKey": "需要 API 密钥"
 		},

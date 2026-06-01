@@ -1,6 +1,7 @@
 import { askSageDefaultURL, askSageModels, ModelInfo } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { DebouncedTextField } from "../common/DebouncedTextField"
@@ -22,6 +23,7 @@ interface AskSageProviderProps {
  * The AskSage provider configuration component
  */
 export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskSageProviderProps) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 	const [availableModels, setAvailableModels] = useState<Record<string, ModelInfo>>(askSageModels)
@@ -82,7 +84,7 @@ export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskS
 				placeholder="Enter AskSage API URL..."
 				style={{ width: "100%" }}
 				type="text">
-				<span style={{ fontWeight: 500 }}>AskSage API URL</span>
+				<span style={{ fontWeight: 500 }}>{t("providers.askSage.apiUrl")}</span>
 			</DebouncedTextField>
 
 			{showModelOptions && (

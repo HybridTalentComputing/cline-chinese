@@ -2,6 +2,7 @@ import { moonshotModels } from "@shared/api"
 import { UpdateApiConfigurationRequestNew } from "@shared/proto/index.cline"
 import { Mode } from "@shared/storage/types"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ModelsServiceClient } from "@/services/grpc-client"
 import { ApiKeyField } from "../common/ApiKeyField"
@@ -22,6 +23,7 @@ interface MoonshotProviderProps {
  * The Moonshot AI Studio provider configuration component
  */
 export const MoonshotProvider = ({ showModelOptions, isPopup, currentMode }: MoonshotProviderProps) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 
 	// Get the normalized configuration
@@ -31,7 +33,7 @@ export const MoonshotProvider = ({ showModelOptions, isPopup, currentMode }: Moo
 		<div>
 			<DropdownContainer className="dropdown-container" style={{ position: "inherit" }}>
 				<label htmlFor="moonshot-entrypoint">
-					<span style={{ fontWeight: 500, marginTop: 5 }}>Moonshot Entrypoint</span>
+					<span style={{ fontWeight: 500, marginTop: 5 }}>{t("providers.moonshot.entrypoint")}</span>
 				</label>
 				<VSCodeDropdown
 					id="moonshot-entrypoint"

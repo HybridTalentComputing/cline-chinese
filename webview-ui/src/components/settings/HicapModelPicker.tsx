@@ -3,6 +3,7 @@ import { Mode } from "@shared/storage/types"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import React, { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
@@ -29,6 +30,7 @@ export interface HicapModelPickerProps {
 }
 
 const HicapModelPicker: React.FC<HicapModelPickerProps> = ({ isPopup, currentMode }) => {
+	const { t } = useTranslation("settings")
 	const { handleModeFieldsChange } = useApiConfigurationHandlers()
 	const { apiConfiguration, favoritedModelIds, hicapModels, refreshHicapModels } = useExtensionState()
 
@@ -165,7 +167,7 @@ const HicapModelPicker: React.FC<HicapModelPickerProps> = ({ isPopup, currentMod
 		<div className="w-full">
 			<div className="flex flex-col">
 				<label htmlFor="model-search">
-					<span className="font-medium">Model ID</span>
+					<span className="font-medium">{t("providers.openaiCompatible.modelId")}</span>
 				</label>
 
 				<div className="relative w-full" ref={dropdownRef}>
@@ -179,7 +181,7 @@ const HicapModelPicker: React.FC<HicapModelPickerProps> = ({ isPopup, currentMod
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder="Search and select a model..."
+						placeholder={t("settings.searchSelectModel")}
 						role="combobox"
 						style={{ zIndex: HICAP_MODEL_PICKER_Z_INDEX }}
 						value={searchTerm}>

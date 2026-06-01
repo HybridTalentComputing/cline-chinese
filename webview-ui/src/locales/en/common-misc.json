@@ -162,6 +162,7 @@
 			"arguments": "Arguments",
 			"requestTimeout": "Request Timeout",
 			"restarting": "Restarting...",
+			"serverDisabled": "Server Disabled",
 			"restartServerBtn": "Restart Server",
 			"requiresApiKey": "Requires API key"
 		},

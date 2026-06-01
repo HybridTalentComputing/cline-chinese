@@ -70,16 +70,18 @@ interface QuotedMessagePreviewProps {
 }
 
 const QuotedMessagePreview: React.FC<QuotedMessagePreviewProps> = ({ text, onDismiss, isFocused }) => {
+	tconst
+	t = useTranslation("common")
 	const _cardClassName = `reply-card ${isFocused ? "reply-card--focused" : ""}`
 
 	return (
 		<PreviewContainer>
 			{/* Removed Label */}
 			<ContentRow>
-				<ReplyIcon className="codicon codicon-reply"></ReplyIcon>
+				<ReplyIcon className="codicon codicon-reply" />
 				<TextContainer title={text}>{text}</TextContainer>
-				<DismissButton appearance="icon" aria-label="Dismiss quote" onClick={onDismiss}>
-					<span className="codicon codicon-close"></span>
+				<DismissButton appearance="icon" aria-label={t("quotedMessage.dismissQuote")} onClick={onDismiss}>
+					<span className="codicon codicon-close" />
 				</DismissButton>
 			</ContentRow>
 		</PreviewContainer>

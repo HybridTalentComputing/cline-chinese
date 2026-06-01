@@ -1,6 +1,7 @@
 import { minimaxModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -22,6 +23,7 @@ interface MinimaxProviderProps {
  * The Minimax AI Studio provider configuration component
  */
 export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: MinimaxProviderProps) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -32,7 +34,7 @@ export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: Mini
 		<div>
 			<DropdownContainer className="dropdown-container" style={{ position: "inherit" }}>
 				<label htmlFor="minimax-entrypoint">
-					<span style={{ fontWeight: 500, marginTop: 5 }}>MiniMax Entrypoint</span>
+					<span style={{ fontWeight: 500, marginTop: 5 }}>{t("providers.minimax.entrypoint")}</span>
 				</label>
 				<VSCodeDropdown
 					id="minimax-entrypoint"

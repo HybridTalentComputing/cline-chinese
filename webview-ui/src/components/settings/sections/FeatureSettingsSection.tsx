@@ -1,5 +1,6 @@
 import { UpdateSettingsRequest } from "@shared/proto/cline/state"
 import { memo, type ReactNode, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
@@ -209,6 +210,50 @@ interface FeatureSettingsSectionProps {
 }
 
 const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionProps) => {
+	const { t } = useTranslation("settings")
+
+	const featureTranslations: Record<string, { label: string; description: ReactNode }> = {
+		subagents: { label: t("featureSettings.subagents"), description: t("featureSettings.subagentsDescription") },
+		"native-tool-call": {
+			label: t("featureSettings.nativeToolCall"),
+			description: t("featureSettings.nativeToolCallDescription"),
+		},
+		"parallel-tool-calling": {
+			label: t("featureSettings.parallelToolCalling"),
+			description: t("featureSettings.parallelToolCallingDescription"),
+		},
+		"strict-plan-mode": {
+			label: t("featureSettings.strictPlanMode"),
+			description: t("featureSettings.strictPlanModeDescription"),
+		},
+		"auto-compact": { label: t("featureSettings.autoCompact"), description: t("featureSettings.autoCompactDescription") },
+		"focus-chain": { label: t("featureSettings.focusChain"), description: t("featureSettings.focusChainDescription") },
+		"show-feature-tips": {
+			label: t("featureSettings.featureTips"),
+			description: t("featureSettings.featureTipsDescription"),
+		},
+		"background-edit": {
+			label: t("featureSettings.backgroundEdit"),
+			description: t("featureSettings.backgroundEditDescription"),
+		},
+		checkpoints: { label: t("featureSettings.checkpoints"), description: t("featureSettings.checkpointsDescription") },
+		"cline-web-tools": {
+			label: t("featureSettings.clineWebTools"),
+			description: t("featureSettings.clineWebToolsDescription"),
+		},
+		worktrees: { label: t("featureSettings.worktrees"), description: t("featureSettings.worktreesDescription") },
+		yolo: { label: t("featureSettings.yoloMode"), description: t("featureSettings.yoloModeDescription") },
+		"double-check-completion": {
+			label: t("featureSettings.doubleCheckCompletion"),
+			description: t("featureSettings.doubleCheckCompletionDescription"),
+		},
+		"lazy-teammate": {
+			label: t("featureSettings.lazyTeammateMode"),
+			description: t("featureSettings.lazyTeammateModeDescription"),
+		},
+		hooks: { label: t("featureSettings.hooks"), description: t("featureSettings.hooksDescription") },
+	}
+
 	const {
 		enableCheckpointsSetting,
 		hooksEnabled,
@@ -287,7 +332,9 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 				<div className="mb-5 flex flex-col gap-3">
 					{/* Core features */}
 					<div>
-						<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">Agent</div>
+						<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
+							{t("featureSettings.agent")}
+						</div>
 						<div
 							className="relative p-3 pt-0 my-3 rounded-md border border-editor-widget-border/50"
 							id="agent-features">
@@ -295,10 +342,10 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								<div key={feature.id}>
 									<FeatureRow
 										checked={featureState[feature.stateKey]}
-										description={feature.description}
+										description={featureTranslations[feature.id]?.description || feature.description}
 										isVisible={featureVisibility[feature.stateKey] ?? true}
 										key={feature.id}
-										label={feature.label}
+										label={featureTranslations[feature.id]?.label || feature.label}
 										onChange={(checked) =>
 											feature.nestedKey === "enabled"
 												? handleFeatureChange(feature, checked)
@@ -307,7 +354,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 									/>
 									{feature.id === "focus-chain" && featureState[feature.stateKey] && (
 										<SettingsSlider
-											label="Reminder Interval (1-10)"
+											label={t("settings.reminderInterval")}
 											max={10}
 											min={1}
 											onChange={handleFocusChainIntervalChange}
@@ -323,17 +370,19 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 
 					{/* Editor features */}
 					<div>
-						<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">Editor</div>
+						<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
+							{t("featureSettings.editor")}
+						</div>
 						<div
 							className="relative p-3 pt-0 my-3 rounded-md border border-editor-widget-border/50"
 							id="optional-features">
 							{editorFeatures.map((feature) => (
 								<FeatureRow
 									checked={featureState[feature.stateKey]}
-									description={feature.description}
+									description={featureTranslations[feature.id]?.description || feature.description}
 									isVisible={featureVisibility[feature.stateKey] ?? true}
 									key={feature.id}
-									label={feature.label}
+									label={featureTranslations[feature.id]?.label || feature.label}
 									onChange={(checked) => handleFeatureChange(feature, checked)}
 								/>
 							))}
@@ -342,19 +391,21 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 
 					{/* Experimental features */}
 					<div>
-						<div className="text-xs font-medium uppercase tracking-wider mb-3 text-warning/80">Experimental</div>
+						<div className="text-xs font-medium uppercase tracking-wider mb-3 text-warning/80">
+							{t("featureSettings.experimental")}
+						</div>
 						<div
 							className="relative p-3 pt-0 my-3 rounded-md border border-editor-widget-border/50 w-full"
 							id="experimental-features">
 							{experimentalFeatures.map((feature) => (
 								<FeatureRow
 									checked={featureState[feature.stateKey]}
-									description={feature.description}
+									description={featureTranslations[feature.id]?.description || feature.description}
 									disabled={feature.id === "yolo" && isYoloRemoteLocked}
 									isRemoteLocked={feature.id === "yolo" && isYoloRemoteLocked}
 									isVisible={featureVisibility[feature.stateKey] ?? true}
 									key={feature.id}
-									label={feature.label}
+									label={featureTranslations[feature.id]?.label || feature.label}
 									onChange={(checked) => handleFeatureChange(feature, checked)}
 									remoteTooltip="This setting is managed by your organization's remote configuration"
 								/>
@@ -365,32 +416,36 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 
 				{/* Advanced */}
 				<div>
-					<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">Advanced</div>
+					<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
+						{t("featureSettings.advanced")}
+					</div>
 					<div className="relative p-3 my-3 rounded-md border border-editor-widget-border/50" id="advanced-features">
 						<div className="space-y-3">
 							{advancedFeatures.map((feature) => (
 								<FeatureRow
 									checked={featureState[feature.stateKey]}
-									description={feature.description}
+									description={featureTranslations[feature.id]?.description || feature.description}
 									isVisible={featureVisibility[feature.stateKey] ?? true}
 									key={feature.id}
-									label={feature.label}
+									label={featureTranslations[feature.id]?.label || feature.label}
 									onChange={(checked) => handleFeatureChange(feature, checked)}
 								/>
 							))}
 
 							{/* MCP Display Mode */}
 							<div className="space-y-2">
-								<Label className="text-sm font-medium text-foreground">MCP Display Mode</Label>
-								<p className="text-xs text-muted-foreground">Controls how MCP responses are displayed</p>
+								<Label className="text-sm font-medium text-foreground">
+									{t("featureSettings.mcpDisplayMode")}
+								</Label>
+								<p className="text-xs text-muted-foreground">{t("featureSettings.mcpDisplayModeDescription")}</p>
 								<Select onValueChange={(v) => updateSetting("mcpDisplayMode", v)} value={mcpDisplayMode}>
 									<SelectTrigger className="w-full">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="plain">Plain Text</SelectItem>
-										<SelectItem value="rich">Rich Display</SelectItem>
-										<SelectItem value="markdown">Markdown</SelectItem>
+										<SelectItem value="plain">{t("featureSettings.plainText")}</SelectItem>
+										<SelectItem value="rich">{t("featureSettings.richDisplay")}</SelectItem>
+										<SelectItem value="markdown">{t("featureSettings.markdown")}</SelectItem>
 									</SelectContent>
 								</Select>
 							</div>

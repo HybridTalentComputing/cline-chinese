@@ -1,5 +1,7 @@
+import i18next from "i18next"
 import { LightbulbIcon } from "lucide-react"
 import { memo, useCallback, useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
 
 interface FeatureTipItem {
@@ -8,7 +10,7 @@ interface FeatureTipItem {
 
 const FEATURE_TIPS: FeatureTipItem[] = [
 	{
-		text: 'Enable "Double-Check Completion" in settings to have Cline verify its work before finishing a task.',
+		text: i18next.t("featureTips.doubleCheckCompletion"),
 	},
 	{
 		text: "Add a .clinerules file to your project root to give Cline project-specific instructions.",
@@ -44,7 +46,7 @@ const FEATURE_TIPS: FeatureTipItem[] = [
 		text: "Use /reportbug to quickly file a GitHub issue with diagnostic context included.",
 	},
 	{
-		text: 'You can disable these tips in Settings → Features → "Feature Tips".',
+		text: i18next.t("featureTips.disableTips"),
 	},
 ]
 
@@ -57,6 +59,8 @@ const FADE_DURATION_MS = 300
  * Appears after a brief delay and cycles through tips while Cline is thinking.
  */
 export const FeatureTip = memo(() => {
+	tconst
+	t = useTranslation("common")
 	const [isVisible, setIsVisible] = useState(false)
 	const [hasFadedIn, setHasFadedIn] = useState(false)
 	const [isFading, setIsFading] = useState(false)
@@ -108,7 +112,7 @@ export const FeatureTip = memo(() => {
 			)}>
 			<LightbulbIcon className="size-3 text-description shrink-0 mt-[1px]" />
 			<span className="text-xs text-description leading-relaxed">
-				<span className="font-medium">Tip:</span> {currentTip.text}
+				<span className="font-medium">{t("featureTips.tip")}</span> {currentTip.text}
 			</span>
 		</div>
 	)

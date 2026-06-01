@@ -1,4 +1,5 @@
 import { Mode } from "@shared/storage/types"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { DebouncedTextField } from "../common/DebouncedTextField"
 import { HuggingFaceModelPicker } from "../HuggingFaceModelPicker"
@@ -18,6 +19,7 @@ interface HuggingFaceProviderProps {
  * The Hugging Face provider configuration component
  */
 export const HuggingFaceProvider = ({ showModelOptions, isPopup, currentMode }: HuggingFaceProviderProps) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
@@ -32,7 +34,7 @@ export const HuggingFaceProvider = ({ showModelOptions, isPopup, currentMode }: 
 				placeholder="Enter API Key..."
 				style={{ width: "100%" }}
 				type="password">
-				<span style={{ fontWeight: 500 }}>Hugging Face API Key</span>
+				<span style={{ fontWeight: 500 }}>{t("providers.huggingface.apiKey")}</span>
 			</DebouncedTextField>
 			<p
 				style={{

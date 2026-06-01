@@ -5,6 +5,7 @@ import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import type React from "react"
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -21,6 +22,7 @@ export interface VercelModelPickerProps {
 }
 
 const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentMode }) => {
+	const { t } = useTranslation("settings")
 	const { handleModeFieldsChange } = useApiConfigurationHandlers()
 	const { apiConfiguration, vercelAiGatewayModels, refreshVercelAiGatewayModels } = useExtensionState()
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
@@ -220,7 +222,7 @@ const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentM
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder="Search and select a model..."
+						placeholder={t("settings.searchSelectModel")}
 						role="combobox"
 						style={{
 							width: "100%",
@@ -268,7 +270,7 @@ const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentM
 									<span style={{ color: "var(--vscode-descriptionForeground)" }}>
 										{Object.keys(vercelAiGatewayModels).length === 0
 											? "Loading models..."
-											: "No models found"}
+											: t("modelPicker.noModelsFound")}
 									</span>
 								</DropdownItem>
 							)}

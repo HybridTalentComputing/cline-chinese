@@ -1,6 +1,7 @@
 import { qwenCodeModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ModelInfoView } from "../common/ModelInfoView"
 import { ModelSelector } from "../common/ModelSelector"
@@ -20,6 +21,7 @@ interface QwenCodeProviderProps {
  * The Qwen Code provider configuration component
  */
 export const QwenCodeProvider = ({ showModelOptions, isPopup, currentMode }: QwenCodeProviderProps) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
@@ -28,7 +30,7 @@ export const QwenCodeProvider = ({ showModelOptions, isPopup, currentMode }: Qwe
 
 	return (
 		<div>
-			<h3 style={{ color: "var(--vscode-foreground)", margin: "8px 0" }}>Qwen Code API Configuration</h3>
+			<h3 style={{ color: "var(--vscode-foreground)", margin: "8px 0" }}>{t("providers.qwenCode.title")}</h3>
 			<VSCodeTextField
 				onInput={(e: any) => handleFieldChange("qwenCodeOauthPath", e.target.value)}
 				placeholder="~/.qwen/oauth_creds.json"

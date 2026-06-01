@@ -1,5 +1,6 @@
 import { wandbModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -14,6 +15,7 @@ interface WandbProviderProps {
 }
 
 export const WandbProvider = ({ showModelOptions, isPopup, currentMode }: WandbProviderProps) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -22,7 +24,7 @@ export const WandbProvider = ({ showModelOptions, isPopup, currentMode }: WandbP
 	return (
 		<div>
 			<ApiKeyField
-				helpText="This key is stored locally and only used to make API requests from this extension."
+				helpText={t("commonFields.apiKeyStoredLocally")}
 				initialValue={apiConfiguration?.wandbApiKey || ""}
 				onChange={(value) => handleFieldChange("wandbApiKey", value)}
 				providerName="W&B"
@@ -32,7 +34,7 @@ export const WandbProvider = ({ showModelOptions, isPopup, currentMode }: WandbP
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label="Model"
+						label={t("settings.model")}
 						models={wandbModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(
