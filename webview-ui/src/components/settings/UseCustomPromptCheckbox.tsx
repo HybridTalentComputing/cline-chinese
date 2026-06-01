@@ -24,7 +24,7 @@ const UseCustomPromptCheckbox: React.FC<CustomPromptCheckboxProps> = ({ provider
 	return (
 		<div id={providerId}>
 			<VSCodeCheckbox checked={isCompactPromptEnabled} onChange={() => toggleCompactPrompt(!isCompactPromptEnabled)}>
-				Use compact prompt
+				{t("settings.useCompactPrompt")}
 			</VSCodeCheckbox>
 			<div className="text-xs text-description">
 				{t("settings.compactPromptDescription")}

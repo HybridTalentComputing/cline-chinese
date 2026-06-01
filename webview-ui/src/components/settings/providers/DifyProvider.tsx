@@ -20,11 +20,11 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
 	// Use debounced input for proper state management
-	const [baseUrlValue, setBaseUrlValue] = useDebouncedInput(apiConfiguration?.difyBaseUrl || "", (value) =>
+	const [_baseUrlValue, _setBaseUrlValue] = useDebouncedInput(apiConfiguration?.difyBaseUrl || "", (value) =>
 		handleFieldChange("difyBaseUrl", value),
 	)
 
-	const [apiKeyValue, setApiKeyValue] = useDebouncedInput(apiConfiguration?.difyApiKey || "", (value) =>
+	const [_apiKeyValue, _setApiKeyValue] = useDebouncedInput(apiConfiguration?.difyApiKey || "", (value) =>
 		handleFieldChange("difyApiKey", value),
 	)
 
@@ -54,10 +54,7 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 				/>
 
 				<div style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", marginTop: "5px" }}>
-					<p>
-						Dify is a platform that provides access to various AI models through a unified API. Configure your Dify
-						instance URL and API key to get started.
-					</p>
+					<p>{t("providers.dify.platformDescription")}</p>
 					<p style={{ marginTop: "8px" }}>
 						<strong>{t("commonFields.note")}:</strong> {t("providers.dify.noteModelSelection")}
 					</p>

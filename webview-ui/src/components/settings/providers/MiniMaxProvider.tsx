@@ -54,8 +54,8 @@ export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: Mini
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				Select the API endpoint according to your region: <code>api.minimaxi.com</code> for China, or{" "}
-				<code>api.minimax.io</code> for all other locations.
+				{t("providers.minimax.selectApiEndpoint")} <code>api.minimaxi.com</code> {t("providers.minimax.forChina")}{" "}
+				<code>api.minimax.io</code> {t("providers.minimax.forOtherLocations")}
 			</p>
 			<ApiKeyField
 				initialValue={apiConfiguration?.minimaxApiKey || ""}

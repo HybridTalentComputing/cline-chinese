@@ -44,7 +44,7 @@ const LinkPreview: React.FC<LinkPreviewProps> = ({ url }) => {
 	const [error, setError] = React.useState<ErrorType>(null)
 	const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 	const [ogData, setOgData] = React.useState<OpenGraphData | null>(null)
-	const [hasCompletedFetch, setHasCompletedFetch] = React.useState(false)
+	const [_hasCompletedFetch, setHasCompletedFetch] = React.useState(false)
 	const [fetchStartTime, setFetchStartTime] = React.useState(Date.now())
 	const heartbeatRef = React.useRef<NodeJS.Timeout | null>(null)
 
@@ -105,7 +105,7 @@ const LinkPreview: React.FC<LinkPreviewProps> = ({ url }) => {
 		return () => {
 			cleanup()
 		}
-	}, [url])
+	}, [url, cleanup])
 
 	// Calculate elapsed time for loading state
 	const elapsedSeconds = loading ? Math.floor((Date.now() - fetchStartTime) / 1000) : 0

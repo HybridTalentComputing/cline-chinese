@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { getEnvironmentColor } from "@/utils/environmentColors"
+import type { Environment } from "../../../../src/shared/config-types"
 
 type ViewHeaderProps = {
 	title: string

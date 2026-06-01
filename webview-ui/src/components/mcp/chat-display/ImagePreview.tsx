@@ -20,11 +20,11 @@ const ImagePreviewInner: React.FC<ImagePreviewProps> = (props) => {
 		error: null as string | null,
 		fetchStartTime: Date.now(),
 	})
-	const [aspectRatio, setAspectRatio] = React.useState(1)
+	const [_aspectRatio, _setAspectRatio] = React.useState(1)
 	const imgRef = React.createRef<HTMLImageElement>()
 	const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 	const heartbeatRef = React.useRef<NodeJS.Timeout | null>(null)
-	const [elapsedSeconds, setElapsedSeconds] = React.useState(0)
+	const [_elapsedSeconds, setElapsedSeconds] = React.useState(0)
 
 	// Track aspect ratio for proper display
 	const aspectRatioRef = React.useRef(1)
@@ -54,23 +54,6 @@ const ImagePreviewInner: React.FC<ImagePreviewProps> = (props) => {
 		cleanup()
 	}, [props.url, cleanup])
 
-	const checkContentType = React.useCallback(
-		(url: string) => {
-			checkIfImageUrl(url)
-				.then((isImage) => {
-					if (isImage) {
-						loadImage(url)
-					} else {
-						handleImageError()
-					}
-				})
-				.catch(() => {
-					handleImageError()
-				})
-		},
-		[handleImageError],
-	)
-
 	const loadImage = React.useCallback(
 		(url: string) => {
 			const isSvg = /\.svg(\?.*)?$/i.test(url)
@@ -96,6 +79,23 @@ const ImagePreviewInner: React.FC<ImagePreviewProps> = (props) => {
 		[handleImageLoad, handleImageError],
 	)
 
+	const checkContentType = React.useCallback(
+		(url: string) => {
+			checkIfImageUrl(url)
+				.then((isImage) => {
+					if (isImage) {
+						loadImage(url)
+					} else {
+						handleImageError()
+					}
+				})
+				.catch(() => {
+					handleImageError()
+				})
+		},
+		[handleImageError, loadImage],
+	)
+
 	React.useEffect(() => {
 		timeoutRef.current = setTimeout(() => {
 			if (state.loading) {
@@ -118,7 +118,7 @@ const ImagePreviewInner: React.FC<ImagePreviewProps> = (props) => {
 		return () => {
 			cleanup()
 		}
-	}, [props.url])
+	}, [props.url, checkContentType, cleanup, state.fetchStartTime, state.loading])
 
 	if (state.loading) {
 		const currentElapsed = Math.floor((Date.now() - state.fetchStartTime) / 1000)

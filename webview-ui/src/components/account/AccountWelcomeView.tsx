@@ -19,7 +19,7 @@ export const AccountWelcomeView = () => {
 			<p>{t("account.signUpDescription")}</p>
 
 			<VSCodeButton className="w-full mb-4" disabled={isLoginLoading} onClick={handleSignIn}>
-				Sign up with Cline
+				{t("account.signUpWithCline")}
 				{isLoginLoading && (
 					<span className="ml-1 animate-spin">
 						<span className="codicon codicon-refresh" />

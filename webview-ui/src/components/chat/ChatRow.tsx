@@ -122,7 +122,7 @@ const ChatRow = memo(
 				}
 				prevHeightRef.current = height
 			}
-		}, [height, isLast, onHeightChange, message])
+		}, [height, isLast, onHeightChange])
 
 		// we cannot return null as virtuoso does not support it so we use a separate visibleMessages array to filter out messages that should not be rendered
 		return chatrow
@@ -202,7 +202,7 @@ export const ChatRowContent = memo(
 			prevIsLastRef.current = isLast
 		}, [isLast, message.ask, message.say])
 
-		const [cost, apiReqCancelReason, apiReqStreamingFailedMessage] = useMemo(() => {
+		const [cost, _apiReqCancelReason, apiReqStreamingFailedMessage] = useMemo(() => {
 			if (message.text != null && message.say === "api_req_started") {
 				const info: ClineApiReqInfo = JSON.parse(message.text)
 				return [info.cost, info.cancelReason, info.streamingFailedMessage, info.retryStatus]
@@ -365,17 +365,7 @@ export const ChatRowContent = memo(
 				default:
 					return [null, null]
 			}
-		}, [
-			type,
-			cost,
-			apiRequestFailedMessage,
-			isCommandExecuting,
-			isCommandPending,
-			apiReqCancelReason,
-			isMcpServerResponding,
-			message.text,
-			t,
-		])
+		}, [type, isMcpServerResponding, message.text, t, mcpMarketplaceCatalog])
 
 		const tool = useMemo(() => {
 			if (message.ask === "tool" || message.say === "tool") {
@@ -530,7 +520,7 @@ export const ChatRowContent = memo(
 									{tool.path?.startsWith(".") && <span>.</span>}
 									{tool.path && !tool.path.startsWith(".") && <span>/</span>}
 									<span className="ph-no-capture whitespace-nowrap overflow-hidden text-ellipsis mr-2 text-left [direction: rtl]">
-										{cleanPathPrefix(tool.path ?? "") + "\u200E"}
+										{`${cleanPathPrefix(tool.path ?? "")}\u200E`}
 										{tool.readLineStart != null && tool.readLineEnd != null ? (
 											<span className="opacity-80">
 												{" "}
@@ -643,8 +633,7 @@ export const ChatRowContent = memo(
 											e.stopPropagation()
 											handleToggle()
 										}
-									}}
-									tabIndex={0}>
+									}}>
 									{isExpanded ? (
 										<div>
 											<div className="flex items-center mb-2">
@@ -657,7 +646,7 @@ export const ChatRowContent = memo(
 									) : (
 										<div className="flex items-center">
 											<span className="ph-no-capture whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1 mr-2 [direction:rtl]">
-												{tool.content + "\u200E"}
+												{`${tool.content}\u200E`}
 											</span>
 											<ChevronRightIcon className="my-0.5 shrink-0 size-4" />
 										</div>
@@ -688,7 +677,7 @@ export const ChatRowContent = memo(
 									}
 								}}>
 								<span className="ph-no-capture whitespace-nowrap overflow-hidden text-ellipsis mr-2 [direction:rtl] text-left text-link underline">
-									{tool.path + "\u200E"}
+									{`${tool.path}\u200E`}
 								</span>
 							</div>
 						</div>
@@ -706,7 +695,7 @@ export const ChatRowContent = memo(
 							</div>
 							<div className="bg-code border border-editor-group-border overflow-hidden rounded-xs select-text py-[9px] px-2.5">
 								<span className="ph-no-capture whitespace-nowrap overflow-hidden text-ellipsis mr-2 text-left [direction:rtl]">
-									{tool.path + "\u200E"}
+									{`${tool.path}\u200E`}
 								</span>
 							</div>
 						</div>
@@ -893,7 +882,7 @@ export const ChatRowContent = memo(
 						const isReasoningStreaming = message.partial === true
 						const hasReasoningText = !!message.text?.trim()
 						// Show feature tips throughout the entire thinking/reasoning phase
-						const showFeatureTip = isReasoningStreaming
+						const _showFeatureTip = isReasoningStreaming
 						return (
 							<div>
 								<ThinkingRow

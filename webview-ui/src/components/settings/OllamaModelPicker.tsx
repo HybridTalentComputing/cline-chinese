@@ -98,7 +98,7 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({ ollamaModels, sel
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [searchTerm])
+	}, [])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
@@ -114,7 +114,7 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({ ollamaModels, sel
 		if (selectedModelId !== searchTerm) {
 			setSearchTerm(selectedModelId || "")
 		}
-	}, [selectedModelId])
+	}, [selectedModelId, searchTerm])
 
 	return (
 		<div style={{ width: "100%" }}>

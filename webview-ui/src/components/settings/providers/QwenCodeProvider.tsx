@@ -32,7 +32,7 @@ export const QwenCodeProvider = ({ showModelOptions, isPopup, currentMode }: Qwe
 		<div>
 			<h3 style={{ color: "var(--vscode-foreground)", margin: "8px 0" }}>{t("providers.qwenCode.title")}</h3>
 			<VSCodeTextField
-				onInput={(e: Event) => handleFieldChange("qwenCodeOauthPath", (e.target as HTMLInputElement).value)}
+				onInput={(e: any) => handleFieldChange("qwenCodeOauthPath", e.target.value)}
 				placeholder="~/.qwen/oauth_creds.json"
 				style={{ width: "100%" }}
 				value={apiConfiguration?.qwenCodeOauthPath || ""}>

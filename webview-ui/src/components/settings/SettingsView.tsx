@@ -239,7 +239,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 				</TabTrigger>
 			)
 		},
-		[activeTab],
+		[activeTab, t],
 	)
 
 	// Memoized active content component
@@ -260,7 +260,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 		}
 
 		return <Component {...props} />
-	}, [activeTab, handleResetState, settingsInitialModelTab, version, t])
+	}, [activeTab, handleResetState, settingsInitialModelTab, version, t, TAB_CONTENT_MAP])
 
 	return (
 		<Tab>

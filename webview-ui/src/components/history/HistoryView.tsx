@@ -437,7 +437,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							handleDeleteSelectedHistoryItems(selectedItems)
 						}}
 						variant="danger">
-						{t("history.deleteSelectedCount", { count: selectedItems.length > 1 ? selectedItems.length : "" })}
+						{t("history.deleteSelectedCount", { count: selectedItems.length })}
 						{selectedItemsSize > 0 ? ` (${formatSize(selectedItemsSize)})` : ""}
 					</Button>
 				) : (
