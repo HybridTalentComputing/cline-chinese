@@ -271,7 +271,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 								value={searchTerm}>
 								{searchTerm && searchTerm !== currentRegion && (
 									<div
-										aria-label="Clear search"
+										aria-label={t("clearSearch")}
 										className="input-icon-button codicon codicon-close"
 										onClick={() => {
 											setSearchTerm("")

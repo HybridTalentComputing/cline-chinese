@@ -85,7 +85,7 @@ export const OllamaProvider = ({ showModelOptions, currentMode }: OllamaProvider
 				onModelChange={(modelId) => {
 					handleModeFieldChange({ plan: "planModeOllamaModelId", act: "actModeOllamaModelId" }, modelId, currentMode)
 				}}
-				placeholder={ollamaModels.length > 0 ? t("settings.searchSelectModel") : "e.g. llama3.1"}
+				placeholder={ollamaModels.length > 0 ? t("settings.searchSelectModel") : t("providers.ollama.modelExample")}
 				selectedModelId={ollamaModelId || ""}
 			/>
 
@@ -97,7 +97,7 @@ export const OllamaProvider = ({ showModelOptions, currentMode }: OllamaProvider
 			<DebouncedTextField
 				initialValue={apiConfiguration?.ollamaApiOptionsCtxNum || "32768"}
 				onChange={(v) => handleFieldChange("ollamaApiOptionsCtxNum", v || undefined)}
-				placeholder={"e.g. 32768"}
+				placeholder={t("providers.ollama.contextLengthExample")}
 				style={{ width: "100%" }}>
 				<span className="font-semibold">{t("providers.ollama.modelContextWindow")}</span>
 			</DebouncedTextField>

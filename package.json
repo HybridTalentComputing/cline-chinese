@@ -115,7 +115,7 @@
 			"activitybar": [
 				{
 					"id": "cline-chinese-ActivityBar",
-					"title": "Cline",
+					"title": "Cline Chinese",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
@@ -375,7 +375,7 @@
 			]
 		},
 		"configuration": {
-			"title": "Cline",
+			"title": "Cline Chinese",
 			"properties": {}
 		}
 	},

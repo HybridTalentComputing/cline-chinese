@@ -465,7 +465,7 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 						value={searchTerm}>
 						{searchTerm && (
 							<div
-								aria-label="Clear search"
+								aria-label={t("clearSearch")}
 								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									setSearchTerm("")
@@ -575,7 +575,7 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 							currentMode={currentMode}
 							defaultEffort={showAdaptiveThinkingEffort ? adaptiveThinkingDefaultEffort : "medium"}
 							description={showAdaptiveThinkingEffort ? t("settings.adaptiveThinkingDescription") : undefined}
-							label={showAdaptiveThinkingEffort ? "Adaptive Thinking" : undefined}
+							label={showAdaptiveThinkingEffort ? t("settings.adaptiveThinking") : undefined}
 						/>
 					)}
 

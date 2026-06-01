@@ -37,7 +37,7 @@ export const TogetherProvider = ({ showModelOptions, isPopup, currentMode }: Tog
 				onChange={(value) =>
 					handleModeFieldChange({ plan: "planModeTogetherModelId", act: "actModeTogetherModelId" }, value, currentMode)
 				}
-				placeholder={"Enter Model ID..."}
+				placeholder={t("providers.together.modelIdPlaceholder")}
 				style={{ width: "100%" }}>
 				<span style={{ fontWeight: 500 }}>{t("providers.openaiCompatible.modelId")}</span>
 			</DebouncedTextField>

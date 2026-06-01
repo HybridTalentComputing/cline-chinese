@@ -85,7 +85,7 @@ export const SETTINGS_TABS: SettingsTab[] = [
 	{
 		id: "remote-config",
 		name: "Remote Config",
-		tooltipText: "Remotely configured fields",
+			tooltipText: "Remotely configured fields",
 		headerText: "Remote Config",
 		icon: HardDriveDownload,
 		hidden: ({ activeOrganization } = { activeOrganization: null }) =>

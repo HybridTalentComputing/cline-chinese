@@ -108,7 +108,7 @@ const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, is
 					href="https://github.com/cline/cline/issues/new?template=bug_report.yml"
 					appearance="icon"
 					title="Report a bug"
-					aria-label="Report a bug">
+					aria-label={t("reportBug.title")}>
 					<span className="codicon codicon-bug" />
 				</VSCodeButtonLink> */}
 			</ButtonsContainer>

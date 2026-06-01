@@ -81,7 +81,7 @@ const LinkPreview: React.FC<LinkPreviewProps> = ({ url }) => {
 					setHasCompletedFetch(true)
 				} else {
 					setError("network")
-					setErrorMessage("Failed to fetch Open Graph data")
+					setErrorMessage(t("mcp.chatDisplay.failedToFetchOpenGraph"))
 					setLoading(false)
 					setHasCompletedFetch(true)
 				}
@@ -93,7 +93,7 @@ const LinkPreview: React.FC<LinkPreviewProps> = ({ url }) => {
 				}, 1000)
 			} catch (err) {
 				setError("general")
-				setErrorMessage(err instanceof Error ? err.message : "Unknown error occurred")
+				setErrorMessage(err instanceof Error ? err.message : t("mcp.chatDisplay.unknownError"))
 				setLoading(false)
 				setHasCompletedFetch(true)
 				cleanup()

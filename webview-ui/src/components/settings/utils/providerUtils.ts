@@ -1,3 +1,4 @@
+import i18next from "i18next"
 import {
 	ApiConfiguration,
 	ApiProvider,
@@ -391,7 +392,7 @@ export function normalizeApiConfiguration(
 				selectedModelInfo: basetenModelInfo ||
 					basetenModels[finalBasetenModelId as keyof typeof basetenModels] ||
 					basetenModels[basetenDefaultModelId] || {
-						description: "Baseten model",
+						description: i18next.t("common:providers.baseten.modelDescription"),
 					},
 			}
 		}
@@ -422,7 +423,7 @@ export function normalizeApiConfiguration(
 					supportsPromptCache: false,
 					inputPrice: 0,
 					outputPrice: 0,
-					description: "Dify workflow - model selection is configured in your Dify application",
+					description: i18next.t("common:providers.dify.workflowDescription"),
 				},
 			}
 		case "vercel-ai-gateway":

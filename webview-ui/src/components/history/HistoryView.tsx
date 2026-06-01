@@ -27,7 +27,7 @@ const isToday = (timestamp: number): boolean => {
 }
 
 const HistoryView = ({ onDone }: HistoryViewProps) => {
-	const { t } = useTranslation("settings")
+	const { t } = useTranslation(["misc", "common"])
 	const HISTORY_FILTERS = useMemo(
 		() => ({
 			newest: t("history.newest"),

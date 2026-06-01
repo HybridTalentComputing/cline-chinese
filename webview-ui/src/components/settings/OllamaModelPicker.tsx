@@ -146,7 +146,7 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({ ollamaModels, sel
 					value={searchTerm}>
 					{searchTerm && (
 						<div
-							aria-label="Clear search"
+							aria-label={t("clearSearch")}
 							className="input-icon-button codicon codicon-close"
 							onClick={() => {
 								handleModelChange("")

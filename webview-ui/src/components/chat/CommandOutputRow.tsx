@@ -210,9 +210,7 @@ export const CommandOutputRow = memo(
 												onCancelCommand?.()
 											} else {
 												// For regular terminal mode, show a message
-												alert(
-													"This command is running in the VSCode terminal. You can manually stop it using Ctrl+C in the terminal, or switch to Background Execution mode in settings for cancellable commands.",
-												)
+												alert(t("commandOutput.terminalWarning"))
 											}
 										}}
 										size="sm"

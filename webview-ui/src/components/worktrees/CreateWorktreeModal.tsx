@@ -90,7 +90,7 @@ const CreateWorktreeModal = ({ open, onClose, openAfterCreate = false, onSuccess
 				onClose()
 			}
 		} catch (err) {
-			setCreateError(err instanceof Error ? err.message : "Failed to create worktree")
+			setCreateError(err instanceof Error ? err.message : t("worktrees.errors.failedToCreate"))
 		} finally {
 			setIsCreating(false)
 		}

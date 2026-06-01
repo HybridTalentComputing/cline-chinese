@@ -265,7 +265,7 @@ export default function SubagentStatusRow({ message, isLast, lastModifiedMessage
 									) : (
 										<ChevronRightIcon className="size-2 shrink-0" />
 									)}
-									<span className="shrink-0">{isExpanded ? "Hide output" : "Show output"}</span>
+									<span className="shrink-0">{isExpanded ? t("subagent.hideSubagentOutput") : t("subagent.showSubagentOutput")}</span>
 								</button>
 							)}
 							{shouldShowStats && !hasDetails && latestToolCallText && (
