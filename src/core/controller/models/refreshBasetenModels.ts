@@ -84,7 +84,9 @@ async function fetchAndCacheModels(controller: Controller): Promise<Record<strin
 						(p: string) => p === "reasoning_effort" || p === "reasoning",
 					)
 
-					const modelInfo: Partial<ModelInfo> & { supportedFeatures?: string[] } = {
+					const modelInfo: Partial<ModelInfo> & {
+						supportedFeatures?: string[]
+					} = {
 						maxTokens: rawModel.max_completion_tokens || staticModelInfo?.maxTokens,
 						contextWindow: rawModel.context_length || staticModelInfo?.contextWindow,
 						supportsImages: false, // Baseten model APIs does not support image input

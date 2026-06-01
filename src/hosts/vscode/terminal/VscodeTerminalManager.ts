@@ -374,7 +374,10 @@ export class VscodeTerminalManager implements ITerminalManager {
 		return outputLines.join("\n").trim()
 	}
 
-	setDefaultTerminalProfile(profileId: string): { closedCount: number; busyTerminals: TerminalInfo[] } {
+	setDefaultTerminalProfile(profileId: string): {
+		closedCount: number
+		busyTerminals: TerminalInfo[]
+	} {
 		// Only handle terminal change if profile actually changed
 		if (this.defaultTerminalProfile === profileId) {
 			return { closedCount: 0, busyTerminals: [] }
@@ -393,7 +396,9 @@ export class VscodeTerminalManager implements ITerminalManager {
 		const allTerminals = TerminalRegistry.getAllTerminals()
 		allTerminals.forEach((terminal) => {
 			if (terminal.shellPath !== newShellPath) {
-				TerminalRegistry.updateTerminal(terminal.id, { lastActive: Date.now() })
+				TerminalRegistry.updateTerminal(terminal.id, {
+					lastActive: Date.now(),
+				})
 			}
 		})
 

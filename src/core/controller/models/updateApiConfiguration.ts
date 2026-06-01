@@ -89,7 +89,10 @@ export async function updateApiConfiguration(controller: Controller, request: Up
 		}
 
 		// Process options based on field mask
-		const options: Partial<ApiHandlerOptions> & { planModeApiProvider?: ApiProvider; actModeApiProvider?: ApiProvider } = {}
+		const options: Partial<ApiHandlerOptions> & {
+			planModeApiProvider?: ApiProvider
+			actModeApiProvider?: ApiProvider
+		} = {}
 		if (protoOptions && maskOptionsFields.size > 0) {
 			// Validate all masked fields exist
 			for (const fieldName of maskOptionsFields) {

@@ -19,7 +19,10 @@ const ERROR_REASON_WORKSPACE_UNAVAILABLE = "workspace_unavailable"
 const ERROR_REASON_RIPGREP_SPAWN_FAILED = "ripgrep_spawn_failed"
 const ERROR_REASON_UNKNOWN = "unknown"
 
-function classifyError(error: unknown): { errorReason: string; errorMessage: string } {
+function classifyError(error: unknown): {
+	errorReason: string
+	errorMessage: string
+} {
 	const errorMessage = error instanceof Error ? error.message : String(error)
 	if (error instanceof RipgrepError) {
 		const firstStderrLine = error.stderr ? error.stderr.trim().split("\n", 1)[0] : ""
@@ -139,7 +142,10 @@ export async function searchFiles(controller: Controller, request: FileSearchReq
 		)
 
 		// Return successful results
-		return { results: protoResults, mentionsRequestId: request.mentionsRequestId }
+		return {
+			results: protoResults,
+			mentionsRequestId: request.mentionsRequestId,
+		}
 	} catch (error) {
 		const { errorReason, errorMessage } = classifyError(error)
 		Logger.error(`Error in searchFiles (errorReason=${errorReason}):`, error)

@@ -50,7 +50,13 @@ describe("refreshClineRecommendedModels", () => {
 		sandbox.stub(fs, "writeFile").resolves()
 		const axiosGetStub = sandbox.stub(axios, "get").resolves({
 			data: {
-				recommended: [{ id: "anthropic/claude-sonnet-4.6", description: "Remote recommended", tags: ["NEW"] }],
+				recommended: [
+					{
+						id: "anthropic/claude-sonnet-4.6",
+						description: "Remote recommended",
+						tags: ["NEW"],
+					},
+				],
 				free: [{ id: "z-ai/glm-5", description: "Remote free" }],
 			},
 		})
@@ -92,8 +98,20 @@ describe("refreshClineRecommendedModels", () => {
 		sandbox.stub(fs, "writeFile").resolves()
 		const axiosGetStub = sandbox.stub(axios, "get").resolves({
 			data: {
-				recommended: [{ id: "google/gemini-3.1-pro-preview", description: "Remote recommended", tags: ["NEW"] }],
-				free: [{ id: "minimax/minimax-m2.5", description: "Remote free", tags: ["FREE"] }],
+				recommended: [
+					{
+						id: "google/gemini-3.1-pro-preview",
+						description: "Remote recommended",
+						tags: ["NEW"],
+					},
+				],
+				free: [
+					{
+						id: "minimax/minimax-m2.5",
+						description: "Remote free",
+						tags: ["FREE"],
+					},
+				],
 			},
 		})
 

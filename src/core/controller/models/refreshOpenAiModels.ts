@@ -27,7 +27,10 @@ export async function refreshOpenAiModels(_controller: Controller, request: Open
 			config["headers"] = { Authorization: `Bearer ${request.apiKey}` }
 		}
 
-		const response = await axios.get(`${request.baseUrl}/models`, { ...config, ...getAxiosSettings() })
+		const response = await axios.get(`${request.baseUrl}/models`, {
+			...config,
+			...getAxiosSettings(),
+		})
 		const modelsArray = response.data?.data?.map((model: any) => model.id) || []
 		const models = [...new Set<string>(modelsArray)]
 

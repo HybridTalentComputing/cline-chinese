@@ -80,7 +80,10 @@ export async function getContextForCommand(
 		}
 		const filePath = activeNotebook.notebook.uri.fsPath
 		const diagnostics = convertVscodeDiagnostics(vscodeDiagnostics || [])
-		return { controller, commandContext: { selectedText: "", filePath, diagnostics, language: "" } }
+		return {
+			controller,
+			commandContext: { selectedText: "", filePath, diagnostics, language: "" },
+		}
 	}
 	// Use provided range if available, otherwise use current selection
 	// (vscode command passes an argument in the first param by default, so we need to ensure it's a Range object)

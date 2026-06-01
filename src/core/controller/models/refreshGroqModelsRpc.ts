@@ -15,5 +15,7 @@ export async function refreshGroqModelsRpc(
 	_request: EmptyRequest,
 ): Promise<OpenRouterCompatibleModelInfo> {
 	const models = await refreshGroqModels(controller)
-	return OpenRouterCompatibleModelInfo.create({ models: toProtobufModels(models) })
+	return OpenRouterCompatibleModelInfo.create({
+		models: toProtobufModels(models),
+	})
 }

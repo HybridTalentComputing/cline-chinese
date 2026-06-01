@@ -72,7 +72,9 @@ export async function updateSettingsCli(controller: Controller, request: UpdateS
 				const currentAutoApprovalSettings = controller.stateManager.getGlobalSettingsKey("autoApprovalSettings")
 				const mergedSettings = {
 					...currentAutoApprovalSettings,
-					...(autoApprovalSettings.version !== undefined && { version: autoApprovalSettings.version }),
+					...(autoApprovalSettings.version !== undefined && {
+						version: autoApprovalSettings.version,
+					}),
 					...(autoApprovalSettings.enableNotifications !== undefined && {
 						enableNotifications: autoApprovalSettings.enableNotifications,
 					}),

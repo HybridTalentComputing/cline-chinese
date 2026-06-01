@@ -295,6 +295,9 @@ export function getVisibleButtons(config: ButtonConfig) {
  * Does not show cancel-only buttons (ThinkingIndicator handles that with esc)
  */
 export const ActionButtons: React.FC<ActionButtonsProps> = ({ config, mode = "act" }) => {
+	// Hooks must run before any early return paths.
+	const { columns: terminalWidth } = useTerminalSize()
+
 	if (!config.enableButtons) {
 		return null
 	}
@@ -306,7 +309,6 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ config, mode = "ac
 	}
 
 	// Calculate button widths based on terminal width
-	const { columns: terminalWidth } = useTerminalSize()
 	const buttonCount = (hasPrimary ? 1 : 0) + (hasSecondary ? 1 : 0)
 	const gapWidth = buttonCount > 1 ? 1 : 0 // 1 char gap between buttons
 	const availableWidth = terminalWidth - 2 - gapWidth // 1 space padding on each side

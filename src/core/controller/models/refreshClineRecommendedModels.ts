@@ -24,7 +24,10 @@ export interface ClineRecommendedModelsData {
 const RECOMMENDED_MODELS_CACHE_TTL_MS = 60 * 60 * 1000
 
 let pendingRefresh: Promise<ClineRecommendedModelsData> | null = null
-let inMemoryCache: { data: ClineRecommendedModelsData; timestamp: number } | null = null
+let inMemoryCache: {
+	data: ClineRecommendedModelsData
+	timestamp: number
+} | null = null
 
 function getHardcodedRecommendedModels(): ClineRecommendedModelsData {
 	return CLINE_RECOMMENDED_MODELS_FALLBACK

@@ -30,7 +30,7 @@ vi.mock("./ChatView", () => ({
 			if (initialPrompt || (initialImages && initialImages.length > 0)) {
 				controller?.initTask(initialPrompt || "", initialImages)
 			}
-		}, [])
+		}, [controller, initialImages, initialPrompt])
 
 		return React.createElement(Text, null, "ChatView")
 	},

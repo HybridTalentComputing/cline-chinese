@@ -156,7 +156,10 @@ describe("Hostbridge - Window - getVisibleTabs", () => {
 		// Open the real file
 		const fileUri = vscode.Uri.file(testFilePath)
 		const fileDoc = await vscode.workspace.openTextDocument(fileUri)
-		await vscode.window.showTextDocument(fileDoc, { viewColumn: vscode.ViewColumn.One, preview: false })
+		await vscode.window.showTextDocument(fileDoc, {
+			viewColumn: vscode.ViewColumn.One,
+			preview: false,
+		})
 
 		// Also open an untitled document
 		const untitledUri = vscode.Uri.parse("untitled:preserved-file.js")
@@ -164,7 +167,10 @@ describe("Hostbridge - Window - getVisibleTabs", () => {
 		const edit = new vscode.WorkspaceEdit()
 		edit.insert(untitledUri, new vscode.Position(0, 0), "// This untitled file should be preserved")
 		await vscode.workspace.applyEdit(edit)
-		await vscode.window.showTextDocument(untitledDoc, { viewColumn: vscode.ViewColumn.Two, preview: false })
+		await vscode.window.showTextDocument(untitledDoc, {
+			viewColumn: vscode.ViewColumn.Two,
+			preview: false,
+		})
 
 		// Wait for editors to be fully created
 		await new Promise((resolve) => setTimeout(resolve, 100))

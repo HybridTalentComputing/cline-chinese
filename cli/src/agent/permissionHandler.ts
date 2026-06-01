@@ -202,11 +202,12 @@ export class AutoApprovalTracker {
 	 */
 	recordAlwaysAllow(askType: ClineAsk, identifier: string): void {
 		switch (askType) {
-			case "command":
+			case "command": {
 				// Store the first word of the command as the key
 				const commandPrefix = identifier.split(" ")[0]
 				this.autoApprovedCommands.add(commandPrefix)
 				break
+			}
 
 			case "tool":
 				this.autoApprovedTools.add(identifier)
@@ -227,9 +228,10 @@ export class AutoApprovalTracker {
 	 */
 	isAutoApproved(askType: ClineAsk, identifier: string): boolean {
 		switch (askType) {
-			case "command":
+			case "command": {
 				const commandPrefix = identifier.split(" ")[0]
 				return this.autoApprovedCommands.has(commandPrefix)
+			}
 
 			case "tool":
 				return this.autoApprovedTools.has(identifier)

@@ -38,7 +38,9 @@ export async function refreshOcaModels(controller: Controller, request: StringRe
 			type: ShowMessageType.ERROR,
 			message: "Not authenticated with OCA. Please sign in first.",
 		})
-		return OcaCompatibleModelInfo.create({ error: "Not authenticated with OCA" })
+		return OcaCompatibleModelInfo.create({
+			error: "Not authenticated with OCA",
+		})
 	}
 	const ocaMode = controller.stateManager.getGlobalSettingsKey("ocaMode") || "internal"
 	const baseUrl = request.value || (ocaMode === "internal" ? DEFAULT_INTERNAL_OCA_BASE_URL : DEFAULT_EXTERNAL_OCA_BASE_URL)
@@ -46,7 +48,10 @@ export async function refreshOcaModels(controller: Controller, request: StringRe
 	const headers = await createOcaHeaders(ocaAccessToken!, "models-refresh")
 	try {
 		Logger.log(`Making refresh oca model request with customer opc-request-id: ${headers["opc-request-id"]}`)
-		const response = await axios.get(modelsUrl, { headers, ...getAxiosSettings() })
+		const response = await axios.get(modelsUrl, {
+			headers,
+			...getAxiosSettings(),
+		})
 		if (response.data?.data) {
 			if (response.data.data.length === 0) {
 				HostProvider.window.showMessage({

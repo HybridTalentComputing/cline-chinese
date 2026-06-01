@@ -59,7 +59,9 @@ describe("grpc-handler", () => {
 				// Verify the handler was called
 				expect(mockUnaryHandler.calledOnce).to.be.true
 				expect(mockUnaryHandler.firstCall.args[0]).to.equal(mockController)
-				expect(mockUnaryHandler.firstCall.args[1]).to.deep.equal({ input: "test" })
+				expect(mockUnaryHandler.firstCall.args[1]).to.deep.equal({
+					input: "test",
+				})
 
 				// Verify the response was sent
 				expect(mockPostMessageToWebview.calledOnce).to.be.true
@@ -162,7 +164,9 @@ describe("grpc-handler", () => {
 				// Verify the handler was called
 				expect(mockStreamingHandler.calledOnce).to.be.true
 				expect(mockStreamingHandler.firstCall.args[0]).to.equal(mockController)
-				expect(mockStreamingHandler.firstCall.args[1]).to.deep.equal({ input: "stream" })
+				expect(mockStreamingHandler.firstCall.args[1]).to.deep.equal({
+					input: "stream",
+				})
 				expect(mockStreamingHandler.firstCall.args[3]).to.equal("stream-123")
 
 				// Verify all streaming responses were sent

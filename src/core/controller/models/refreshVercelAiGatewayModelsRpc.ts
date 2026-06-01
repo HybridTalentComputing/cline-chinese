@@ -15,5 +15,7 @@ export async function refreshVercelAiGatewayModelsRpc(
 	_request: EmptyRequest,
 ): Promise<OpenRouterCompatibleModelInfo> {
 	const models = await refreshVercelAiGatewayModels(controller)
-	return OpenRouterCompatibleModelInfo.create({ models: toProtobufModels(models) })
+	return OpenRouterCompatibleModelInfo.create({
+		models: toProtobufModels(models),
+	})
 }

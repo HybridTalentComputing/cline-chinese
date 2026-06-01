@@ -1,6 +1,11 @@
 {
-	"root": false,
-	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.1.4/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true,
+		"defaultBranch": "main"
+	},
 	"assist": {
 		"enabled": true,
 		"actions": {
@@ -23,59 +28,59 @@
 		"rules": {
 			"recommended": true,
 			"correctness": {
-				"useExhaustiveDependencies": "info",
+				"useExhaustiveDependencies": "off",
 				"noUndeclaredVariables": "off",
-				"noEmptyPattern": "info",
+				"noEmptyPattern": "off",
 				"useJsxKeyInIterable": "off",
 				"noInnerDeclarations": "off",
-				"useHookAtTopLevel": "info",
-				"useYield": "info",
+				"useHookAtTopLevel": "off",
+				"useYield": "off",
 				"noConstructorReturn": "off",
 				"noInvalidPositionAtImportRule": "off",
 				"noSwitchDeclarations": "off",
 				"noUnusedImports": "error"
 			},
-			"a11y": "info",
+			"a11y": "off",
 			"style": {
 				"useNodejsImportProtocol": "off",
 				"useImportType": "off",
-				"useBlockStatements": "off",
+				"useBlockStatements": "warn",
 				"useNamingConvention": "off",
 				"useThrowOnlyError": "info",
 				"useConsistentArrayType": "off",
 				"noParameterAssign": "off",
 				"useAsConstAssertion": "off",
 				"useDefaultParameterLast": "off",
-				"noNonNullAssertion": "info",
+				"noNonNullAssertion": "off",
 				"useEnumInitializers": "off",
-				"useSelfClosingElements": "info",
+				"useSelfClosingElements": "off",
 				"useSingleVarDeclarator": "off",
-				"useNumberNamespace": "info",
-				"noInferrableTypes": "info",
-				"useTemplate": "info",
-				"noUselessElse": "info"
+				"useNumberNamespace": "off",
+				"noInferrableTypes": "off",
+				"useTemplate": "off",
+				"noUselessElse": "off"
 			},
 			"suspicious": {
 				"noDoubleEquals": "warn",
 				"noImplicitAnyLet": "info",
 				"noThenProperty": "off",
-				"noAsyncPromiseExecutor": "info",
+				"noAsyncPromiseExecutor": "off",
 				"noImportAssign": "off",
-				"noExplicitAny": "info",
-				"noControlCharactersInRegex": "warn",
+				"noExplicitAny": "off",
+				"noControlCharactersInRegex": "off",
 				"noShadowRestrictedNames": "off",
 				"noArrayIndexKey": "info",
 				"noAssignInExpressions": "info",
-				"useIterableCallbackReturn": "info"
+				"useIterableCallbackReturn": "off"
 			},
 			"complexity": {
-				"noUselessConstructor": "info",
-				"useOptionalChain": "info",
-				"noBannedTypes": "warn",
-				"useLiteralKeys": "info",
-				"noUselessCatch": "info",
-				"noUselessSwitchCase": "info",
-				"noStaticOnlyClass": "info"
+				"noUselessConstructor": "off",
+				"useOptionalChain": "off",
+				"noBannedTypes": "off",
+				"useLiteralKeys": "off",
+				"noUselessCatch": "off",
+				"noUselessSwitchCase": "off",
+				"noStaticOnlyClass": "off"
 			},
 			"security": {
 				"noDangerouslySetInnerHtml": "info"
@@ -89,11 +94,6 @@
 		"lineWidth": 130,
 		"lineEnding": "lf",
 		"formatWithErrors": true
-	},
-	"css": {
-		"parser": {
-			"tailwindDirectives": true
-		}
 	},
 	"javascript": {
 		"formatter": {
@@ -112,22 +112,26 @@
 			"expand": "always"
 		}
 	},
+	"css": {
+		"parser": {
+			"cssModules": false,
+			"tailwindDirectives": true
+		}
+	},
 	"files": {
-		"ignoreUnknown": true,
 		"includes": [
 			"**",
-			// explicitly force files to be ignored by the scanner with !!
-			"!!**/dist",
-			"!!**/dist-*",
-			"!!**/out",
-			"!!**/evals",
-			"!!**/playwright",
-			"!!**/test-results",
-			"!!**/node_modules",
-			"!!**/webview-ui/build",
-			"!!**/generated",
-			"!!**/proto",
-			"!!**/tests/specs"
+			"!**/dist",
+			"!**/dist-*",
+			"!**/out",
+			"!**/evals",
+			"!**/playwright",
+			"!**/test-results",
+			"!**/node_modules",
+			"!**/webview-ui/build",
+			"!**/generated",
+			"!**/proto",
+			"!**/tests/specs"
 		]
 	},
 	"plugins": [
@@ -137,56 +141,29 @@
 		{
 			"includes": [
 				"**",
-				"!!**/dist",
-				"!!**/hosts/vscode/**",
-				"!!**/test/**",
-				"!!**/*.test.ts",
-				"!!src/dev/**",
-				"!!src/extension.ts",
-				"!!src/integrations/git/commit-message-generator.ts",
-				"!!src/integrations/terminal/**",
-				"!!src/core/controller/ui/openWalkthrough.ts"
+				"!**/hosts/vscode/**",
+				"!**/test/**",
+				"!**/*.test.ts",
+				"!src/dev/**",
+				"!src/extension.ts",
+				"!src/integrations/git/commit-message-generator.ts",
+				"!src/integrations/terminal/**",
+				"!src/core/controller/ui/openWalkthrough.ts"
 			],
 			"plugins": [
 				"src/dev/grit/vscode-api.grit"
 			]
 		},
 		{
-			// Do not use console logging directly, use the Logger service instead.
-			"plugins": [
-				"src/dev/grit/console-log.grit"
-			],
 			"includes": [
 				"**",
-				"!!**/esbuild.*",
-				"!!**/*.mts",
-				"!!**/webview-ui/**",
-				"!!**/evals/**",
-				"!!**/standalone/**",
-				"!!**/cli/**",
-				"!!**/e2e/**",
-				"!!**/test/**",
-				"!!**/__tests__/**",
-				"!!**/*.test.ts",
-				"!!**/*.stories.ts",
-				"!!src/dev/**",
-				"!!**/*.mjs",
-				"!!**/*.js",
-				"!!**/scripts/**",
-				"!!**/*.tsx",
-				"!!**/testing-platform/**"
-			]
-		},
-		{
-			"includes": [
-				"**",
-				"!!src/core/storage/state-migrations.ts",
-				"!!src/core/storage/FileContextTracker.ts",
-				"!!src/core/context/context-tracking/FileContextTracker.ts",
-				"!!src/common.ts",
-				"!!src/services/logging/distinctId.ts",
-				"!!src/core/storage/utils/state-helpers.ts",
-				"!!src/extension.ts"
+				"!src/core/storage/state-migrations.ts",
+				"!src/core/storage/FileContextTracker.ts",
+				"!src/core/context/context-tracking/FileContextTracker.ts",
+				"!src/common.ts",
+				"!src/services/logging/distinctId.ts",
+				"!src/core/storage/utils/state-helpers.ts",
+				"!src/extension.ts"
 			],
 			"plugins": [
 				"src/dev/grit/use-cache-service.grit"

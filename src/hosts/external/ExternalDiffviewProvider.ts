@@ -78,7 +78,10 @@ export class ExternalDiffViewProvider extends DiffViewProvider {
 		if (!this.activeDiffEditorId) {
 			return
 		}
-		await HostProvider.diff.scrollDiff({ diffId: this.activeDiffEditorId, line: line })
+		await HostProvider.diff.scrollDiff({
+			diffId: this.activeDiffEditorId,
+			line: line,
+		})
 	}
 
 	override async scrollAnimation(_startLine: number, _endLine: number): Promise<void> {}
@@ -88,7 +91,11 @@ export class ExternalDiffViewProvider extends DiffViewProvider {
 			return undefined
 		}
 		try {
-			return (await HostProvider.diff.getDocumentText({ diffId: this.activeDiffEditorId })).content
+			return (
+				await HostProvider.diff.getDocumentText({
+					diffId: this.activeDiffEditorId,
+				})
+			).content
 		} catch (err) {
 			Logger.log("Error getting contents of diff editor", err)
 			return undefined

@@ -56,7 +56,9 @@ export async function createSkillFile(controller: Controller, request: CreateSki
 
 	if (isGlobal) {
 		// Create in ~/.agents/skills using the unified helper
-		const globalSkillsDir = await ensureAgentSkillsDirectoryExists({ isGlobal: true })
+		const globalSkillsDir = await ensureAgentSkillsDirectoryExists({
+			isGlobal: true,
+		})
 		skillDir = path.join(globalSkillsDir, sanitizedName)
 	} else {
 		const workspacePaths = await HostProvider.workspace.getWorkspacePaths({})

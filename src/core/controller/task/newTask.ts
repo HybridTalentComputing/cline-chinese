@@ -28,7 +28,9 @@ export async function newTask(controller: Controller, request: NewTaskRequest): 
 					const incomingSettings = request.taskSettings.autoApprovalSettings
 					return {
 						...globalSettings,
-						...(incomingSettings.version !== undefined && { version: incomingSettings.version }),
+						...(incomingSettings.version !== undefined && {
+							version: incomingSettings.version,
+						}),
 						...(incomingSettings.enableNotifications !== undefined && {
 							enableNotifications: incomingSettings.enableNotifications,
 						}),
