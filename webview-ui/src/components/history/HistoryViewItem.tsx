@@ -102,7 +102,7 @@ const HistoryViewItem = ({
 					</div>
 					<div className="flex gap-2 flex-shrink-0">
 						<Button
-							aria-label="Delete"
+							aria-label={t("historyView.delete")}
 							className="p-0 opacity-0 group-hover:opacity-100 transition-opacity"
 							disabled={isFavoritedItem}
 							onClick={(e) => {
@@ -115,7 +115,7 @@ const HistoryViewItem = ({
 							</span>
 						</Button>
 						<Button
-							aria-label={isFavoritedItem ? "Remove from favorites" : "Add to favorites"}
+							aria-label={isFavoritedItem ? t("historyView.removeFromFavorites") : t("historyView.addToFavorites")}
 							className="p-0"
 							disabled={pendingFavoriteToggles[item.id] !== undefined}
 							onClick={(e) => {

@@ -341,7 +341,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 										</VSCodeDropdown>
 									</TooltipTrigger>
 									<TooltipContent hidden={!isLockedByRemoteConfig}>
-										t("account.cannotChangeWithRemoteConfig")
+										{t("account.cannotChangeWithRemoteConfig")}
 									</TooltipContent>
 								</Tooltip>
 								{activeOrganization && (

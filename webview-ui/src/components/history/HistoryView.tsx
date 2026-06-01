@@ -295,7 +295,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	return (
 		<div className="fixed overflow-hidden inset-0 flex flex-col w-full">
 			{/* HEADER */}
-			<ViewHeader environment={environment} onDone={onDone} title="History" />
+			<ViewHeader environment={environment} onDone={onDone} title={t("navbar.history")} />
 
 			{/* FILTERS */}
 			<div className="flex flex-col gap-3 px-3">
@@ -317,7 +317,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						<div className="codicon codicon-search opacity-80 mt-0.5 !text-sm" slot="start" />
 						{searchQuery && (
 							<div
-								aria-label="Clear search"
+								aria-label={t("common.clearSearch")}
 								className="input-icon-button codicon codicon-close flex justify-center items-center h-full"
 								onClick={() => setSearchQuery("")}
 								slot="end"
@@ -432,7 +432,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 				</div>
 				{selectedItems.length > 0 ? (
 					<Button
-						aria-label="Delete selected items"
+						aria-label={t("history.deleteSelected")}
 						className="w-full"
 						onClick={() => {
 							handleDeleteSelectedHistoryItems(selectedItems)
@@ -443,7 +443,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 					</Button>
 				) : (
 					<Button
-						aria-label="Delete all history"
+						aria-label={t("history.deleteAll")}
 						className="w-full"
 						disabled={deleteAllDisabled || taskHistory.length === 0}
 						onClick={() => {

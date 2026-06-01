@@ -154,7 +154,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 									<div className="history-task-content">
 										{item.isFavorited && (
 											<span
-												aria-label="Favorited"
+												aria-label={t("historyPreview.favorited")}
 												className="codicon codicon-star-full"
 												style={{
 													color: "var(--vscode-button-background)",

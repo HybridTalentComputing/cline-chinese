@@ -167,13 +167,13 @@ export const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = (
 					<TerminalOutputLineLimitSlider />
 					<div className="mt-5 p-3 bg-(--vscode-textBlockQuote-background) rounded border border-(--vscode-textBlockQuote-border)">
 						<p className="text-[13px] m-0">
-							<strong>Having terminal issues?</strong> Check our{" "}
+							<strong>{t("settingsSections.havingTerminalIssues")}</strong> Check our{" "}
 							<a
 								className="text-(--vscode-textLink-foreground) underline hover:no-underline"
 								href="https://docs.cline.bot/troubleshooting/terminal-quick-fixes"
 								rel="noopener noreferrer"
 								target="_blank">
-								Terminal Quick Fixes
+								{t("settingsSections.terminalQuickFixes")}
 							</a>{" "}
 							or the{" "}
 							<a
