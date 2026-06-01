@@ -25,7 +25,7 @@ export class VscodeCommentReviewController extends CommentReviewController imple
 
 	/** The currently streaming comment thread */
 	private streamingThread: vscode.CommentThread | null = null
-	private streamingContent = ""
+	private streamingContent: string = ""
 
 	constructor() {
 		super()
@@ -49,14 +49,14 @@ export class VscodeCommentReviewController extends CommentReviewController imple
 
 		// Register reply command - this is called when user clicks the Reply button
 		this.disposables.push(
-			vscode.commands.registerCommand("cline-chinese.reviewComment.reply", async (reply: vscode.CommentReply) => {
+			vscode.commands.registerCommand("cline.reviewComment.reply", async (reply: vscode.CommentReply) => {
 				await this.handleReply(reply)
 			}),
 		)
 
 		// Register add to chat command - sends the conversation to Cline's main chat
 		this.disposables.push(
-			vscode.commands.registerCommand("cline-chinese.reviewComment.addToChat", async (thread: vscode.CommentThread) => {
+			vscode.commands.registerCommand("cline.reviewComment.addToChat", async (thread: vscode.CommentThread) => {
 				await this.handleAddToChat(thread)
 			}),
 		)
@@ -134,7 +134,7 @@ export class VscodeCommentReviewController extends CommentReviewController imple
 		endLine: number,
 		relativePath?: string,
 		fileContent?: string,
-		revealComment = false,
+		revealComment: boolean = false,
 	): void {
 		// Use virtual diff URI if relativePath and fileContent are provided
 		let uri: vscode.Uri

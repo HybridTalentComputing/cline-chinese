@@ -2,7 +2,6 @@ import { ModelInfo } from "@shared/api"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import { KeyboardEvent, useEffect, useId, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { highlight } from "../../history/HistoryView"
 
@@ -22,12 +21,9 @@ export const ModelAutocomplete = ({
 	selectedModelId,
 	onChange,
 	zIndex = AUTOCOMPLETE_Z_INDEX,
-	label,
-	placeholder,
+	label = "Model",
+	placeholder = "Search and select a model...",
 }: ModelAutocompleteProps) => {
-	const { t } = useTranslation("settings")
-	const effectiveLabel = label ?? t("settings.modelAutocomplete.modelLabel")
-	const effectivePlaceholder = placeholder ?? t("settings.modelAutocomplete.searchPlaceholder")
 	const [searchTerm, setSearchTerm] = useState(selectedModelId || "")
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -132,7 +128,7 @@ export const ModelAutocomplete = ({
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [])
+	}, [searchTerm])
 
 	// Scroll selected item into view
 	useEffect(() => {
@@ -158,7 +154,7 @@ export const ModelAutocomplete = ({
 			</style>
 			<div style={{ display: "flex", flexDirection: "column" }}>
 				<label htmlFor={inputId}>
-					<span style={{ fontWeight: 500 }}>{effectiveLabel}</span>
+					<span style={{ fontWeight: 500 }}>{label}</span>
 				</label>
 
 				<DropdownWrapper ref={dropdownRef}>
@@ -183,7 +179,7 @@ export const ModelAutocomplete = ({
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder={effectivePlaceholder}
+						placeholder={placeholder}
 						role="combobox"
 						style={{
 							width: "100%",
@@ -193,7 +189,7 @@ export const ModelAutocomplete = ({
 						value={searchTerm}>
 						{searchTerm && (
 							<div
-								aria-label={t("settings.modelAutocomplete.clearSearch")}
+								aria-label="Clear search"
 								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									setSearchTerm("")
@@ -211,7 +207,7 @@ export const ModelAutocomplete = ({
 					</VSCodeTextField>
 					{isDropdownVisible && (
 						<DropdownList
-							aria-label={t("settings.modelAutocomplete.modelSuggestions")}
+							aria-label="Model suggestions"
 							id={listboxId}
 							ref={dropdownListRef}
 							role="listbox"

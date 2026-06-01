@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { cleanPathPrefix } from "@/components/common/CodeAccordian"
 import ScreenReaderAnnounce from "@/components/common/ScreenReaderAnnounce"
 import { useMenuAnnouncement } from "@/hooks/useMenuAnnouncement"
@@ -29,7 +28,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	isLoading = false,
 }) => {
 	const menuRef = useRef<HTMLDivElement>(null)
-	const { t } = useTranslation("common")
 
 	// State to show delayed loading indicator
 	const [showDelayedLoading, setShowDelayedLoading] = useState(false)
@@ -77,7 +75,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				loadingTimeoutRef.current = null
 			}
 		}
-	}, [isLoading])
+	}, [isLoading, searchQuery])
 
 	useEffect(() => {
 		if (menuRef.current) {
@@ -97,39 +95,36 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 	// Shared label definitions for simple option types
 	const SIMPLE_OPTION_LABELS: Partial<Record<ContextMenuOptionType, string>> = {
-		[ContextMenuOptionType.Problems]: t("contextMenu.problems"),
-		[ContextMenuOptionType.Terminal]: t("contextMenu.terminal"),
-		[ContextMenuOptionType.URL]: t("contextMenu.pasteUrl"),
-		[ContextMenuOptionType.NoResults]: t("contextMenu.noResults"),
+		[ContextMenuOptionType.Problems]: "Problems",
+		[ContextMenuOptionType.Terminal]: "Terminal",
+		[ContextMenuOptionType.URL]: "Paste URL to fetch contents",
+		[ContextMenuOptionType.NoResults]: "No results found",
 	}
 
 	// Get accessible label for an option (used for screen readers and aria-label)
-	const getOptionLabel = useCallback(
-		(option: ContextMenuQueryItem): string => {
-			// Check simple labels first
-			const simpleLabel = SIMPLE_OPTION_LABELS[option.type]
-			if (simpleLabel) {
-				return simpleLabel
-			}
+	const getOptionLabel = useCallback((option: ContextMenuQueryItem): string => {
+		// Check simple labels first
+		const simpleLabel = SIMPLE_OPTION_LABELS[option.type]
+		if (simpleLabel) {
+			return simpleLabel
+		}
 
-			switch (option.type) {
-				case ContextMenuOptionType.Git:
-					if (option.value) {
-						return `${option.label}${option.description ? `, ${option.description}` : ""}`
-					}
-					return t("contextMenu.gitCommits")
-				case ContextMenuOptionType.File:
-				case ContextMenuOptionType.Folder:
-					if (option.value) {
-						return option.label || option.value
-					}
-					return option.type === ContextMenuOptionType.File ? t("contextMenu.addFile") : t("contextMenu.addFolder")
-				default:
-					return option.label || option.value || ""
-			}
-		},
-		[SIMPLE_OPTION_LABELS, t],
-	)
+		switch (option.type) {
+			case ContextMenuOptionType.Git:
+				if (option.value) {
+					return `${option.label}${option.description ? `, ${option.description}` : ""}`
+				}
+				return "Git Commits"
+			case ContextMenuOptionType.File:
+			case ContextMenuOptionType.Folder:
+				if (option.value) {
+					return option.label || option.value
+				}
+				return `Add ${option.type === ContextMenuOptionType.File ? "File" : "Folder"}`
+			default:
+				return option.label || option.value || ""
+		}
+	}, [])
 
 	const renderOptionContent = (option: ContextMenuQueryItem) => {
 		// Handle simple label types
@@ -161,7 +156,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						</div>
 					)
 				}
-				return <span>{t("contextMenu.gitCommits")}</span>
+				return <span>Git Commits</span>
 			case ContextMenuOptionType.File:
 			case ContextMenuOptionType.Folder:
 				if (option.value) {
@@ -182,16 +177,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 									direction: displayText.includes(":") ? "ltr" : "rtl",
 									textAlign: "left",
 								}}>
-								{displayText.includes(":") ? displayText : `${cleanPathPrefix(displayText)}\u200E`}
+								{displayText.includes(":") ? displayText : cleanPathPrefix(displayText) + "\u200E"}
 							</span>
 						</>
 					)
 				}
-				return (
-					<span>
-						{option.type === ContextMenuOptionType.File ? t("contextMenu.addFile") : t("contextMenu.addFolder")}
-					</span>
-				)
+				return <span>Add {option.type === ContextMenuOptionType.File ? "File" : "Folder"}</span>
 			default:
 				return null
 		}
@@ -238,7 +229,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				onSelect(option.type, mentionValue)
 			}
 		},
-		[onSelect, isOptionSelectable],
+		[onSelect],
 	)
 
 	return (
@@ -260,7 +251,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						? `context-menu-item-${selectedIndex}`
 						: undefined
 				}
-				aria-label={t("contextMenu.ariaLabel")}
+				aria-label="Context mentions"
 				ref={menuRef}
 				role="listbox"
 				style={{
@@ -273,8 +264,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 					flexDirection: "column",
 					maxHeight: "200px",
 					overflowY: "auto",
-				}}
-				tabIndex={0}>
+				}}>
 				{/* Can't use virtuoso since it requires fixed height and menu height is dynamic based on # of items */}
 				{showDelayedLoading && filteredOptions.length === 0 && (
 					<div
@@ -286,7 +276,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							opacity: 0.7,
 						}}>
 						<i className="codicon codicon-loading codicon-modifier-spin" style={{ fontSize: "14px" }} />
-						<span>{t("contextMenu.searching")}</span>
+						<span>Searching...</span>
 					</div>
 				)}
 				{filteredOptions.map((option, index) => {

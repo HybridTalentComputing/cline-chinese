@@ -6,7 +6,6 @@ import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import type React from "react"
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -26,7 +25,6 @@ import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers
 
 // Star icon for favorites
 const StarIcon = ({ isFavorite, onClick }: { isFavorite: boolean; onClick: (e: React.MouseEvent) => void }) => {
-	const { t } = useTranslation("settings")
 	return (
 		<div
 			onClick={onClick}
@@ -53,7 +51,6 @@ export interface OpenRouterModelPickerProps {
 }
 
 const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, currentMode, showProviderRouting }) => {
-	const { t } = useTranslation("settings")
 	const { handleModeFieldsChange, handleFieldChange } = useApiConfigurationHandlers()
 	const { apiConfiguration, favoritedModelIds, openRouterModels, refreshOpenRouterModels } = useExtensionState()
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
@@ -194,7 +191,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [])
+	}, [searchTerm])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
@@ -266,7 +263,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder={t("settings.searchSelectModel")}
+						placeholder="Search and select a model..."
 						role="combobox"
 						style={{
 							width: "100%",
@@ -276,7 +273,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 						value={searchTerm}>
 						{searchTerm && (
 							<div
-								aria-label={t("clearSearch")}
+								aria-label="Clear search"
 								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									setSearchTerm("")
@@ -325,6 +322,14 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 						</DropdownList>
 					)}
 				</DropdownWrapper>
+
+				{/* Context window switcher for Claude Opus 4.8 */}
+				<ContextWindowSwitcher
+					base1mModelId={`anthropic/claude-opus-4.8${CLAUDE_SONNET_1M_SUFFIX}`}
+					base200kModelId="anthropic/claude-opus-4.8"
+					onModelChange={handleModelChange}
+					selectedModelId={selectedModelId}
+				/>
 
 				{/* Context window switcher for Claude Opus 4.7 */}
 				<ContextWindowSwitcher
@@ -382,7 +387,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 									? "Use None to disable adaptive thinking. Higher effort increases response detail and token usage."
 									: undefined
 							}
-							label={showAdaptiveThinkingEffort ? t("settings.adaptiveThinking") : undefined}
+							label={showAdaptiveThinkingEffort ? "Adaptive Thinking" : undefined}
 						/>
 					)}
 
@@ -402,17 +407,17 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 						marginTop: 0,
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					{t("providers.openRouter.autoFetchModels")}{" "}
+					The extension automatically fetches the latest list of models available on{" "}
 					<VSCodeLink href="https://openrouter.ai/models" style={{ display: "inline", fontSize: "inherit" }}>
-						{t("providers.openRouter.openRouter")}
+						OpenRouter.
 					</VSCodeLink>
-					{t("providers.openRouter.unsureModelChoice")}{" "}
+					If you're unsure which model to choose, Cline works best with{" "}
 					<VSCodeLink
 						onClick={() => handleModelChange("anthropic/claude-sonnet-4.6")}
 						style={{ display: "inline", fontSize: "inherit" }}>
-						{t("providers.openRouter.recommendedModel")}
+						anthropic/claude-sonnet-4.6.
 					</VSCodeLink>
-					{t("providers.openRouter.trySearchingFree")}
+					You can also try searching "free" for no-cost options currently available.
 				</p>
 			)}
 		</div>

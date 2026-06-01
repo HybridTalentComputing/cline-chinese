@@ -1,6 +1,5 @@
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useClickAway } from "react-use"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useAutoApproveActions } from "@/hooks/useAutoApproveActions"
@@ -19,7 +18,6 @@ interface AutoApproveModalProps {
 }
 
 const AutoApproveModal: React.FC<AutoApproveModalProps> = ({ isVisible, setIsVisible, buttonRef, ACTION_METADATA }) => {
-	const { t } = useTranslation("common")
 	const { autoApprovalSettings } = useExtensionState()
 	const { isChecked, updateAction } = useAutoApproveActions()
 	const modalRef = useRef<HTMLDivElement>(null)
@@ -28,7 +26,7 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({ isVisible, setIsVis
 
 	useClickAway(modalRef, (e) => {
 		// Skip if click was on the button that toggles the modal
-		if (buttonRef.current?.contains(e.target as Node)) {
+		if (buttonRef.current && buttonRef.current.contains(e.target as Node)) {
 			return
 		}
 		setIsVisible(false)
@@ -131,10 +129,12 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({ isVisible, setIsVis
 								enableNotifications: checked,
 							})
 						}}>
-						<span className="text-sm">{t("autoApprove.enableNotifications")}</span>
+						<span className="text-sm">Enable notifications</span>
 					</VSCodeCheckbox>
 				</div>
-				<div className="mt-1 text-xs text-muted-foreground">{t("autoApprove.notificationsDescription")}</div>
+				<div className="mt-1 text-xs text-muted-foreground">
+					Notifications may show abbreviated tool details for safety and privacy.
+				</div>
 			</div>
 		</div>
 	)

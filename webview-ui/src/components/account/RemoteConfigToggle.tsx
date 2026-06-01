@@ -1,13 +1,11 @@
 import { UpdateSettingsRequest, UserOrganization } from "@shared/proto/index.cline"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { useRef } from "react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import { isAdminOrOwner } from "./helpers"
 
 export function RemoteConfigToggle({ activeOrganization }: { activeOrganization: UserOrganization | null }) {
-	const { t } = useTranslation("settings")
 	const { optOutOfRemoteConfig } = useExtensionState()
 	const hadOptedOutOfRemoteConfig = useRef(optOutOfRemoteConfig)
 
@@ -32,7 +30,7 @@ export function RemoteConfigToggle({ activeOrganization }: { activeOrganization:
 
 				onUpdateToggle(isChecked)
 			}}>
-			{t("account.optOutOfRemoteConfig")}
+			Opt out of remote config
 		</VSCodeCheckbox>
 	)
 }

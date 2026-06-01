@@ -3,7 +3,6 @@ import type { Mode } from "@shared/storage/types"
 import type { LucideIcon } from "lucide-react"
 import type React from "react"
 import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
 import { cleanPathPrefix } from "../common/CodeAccordian"
 import { getIconByToolName } from "./chat-view"
 import { isApiReqAbsorbable, isLowStakesTool } from "./chat-view/utils/messageUtils"
@@ -39,14 +38,14 @@ const formatSearchRegex = (regex: string, path: string, filePattern?: string): s
 	return filePattern && filePattern !== "*" ? `"${terms}" in ${cleanedPath}/ (${filePattern})` : `"${terms}" in ${cleanedPath}/`
 }
 // Format activity text based on tool type
-const getActivityText = (tool: ClineSayTool, t: any): string | null => {
+const getActivityText = (tool: ClineSayTool): string | null => {
 	const cleanedPath = cleanPathPrefix(tool.path || "")
 	switch (tool.tool) {
 		case "readFile":
-			return tool.path ? t("requestStart.reading", { path: cleanPathPrefix(tool.path || "") }) : null
+			return tool.path ? `Reading ${cleanedPath}...` : null
 		case "listFilesTopLevel":
 		case "listFilesRecursive":
-			return tool.path ? t("requestStart.exploring", { path: cleanedPath }) : null
+			return tool.path ? `Exploring ${cleanedPath}/...` : null
 		case "searchFiles":
 			return tool.regex && tool.path ? `Searching ${formatSearchRegex(tool.regex, tool.path, tool.filePattern)}...` : null
 		case "listCodeDefinitionNames":
@@ -61,7 +60,6 @@ const collectToolsInRange = (
 	messages: ClineMessage[],
 	startIdx: number,
 	endIdx: number,
-	t: any,
 	stopCondition?: (msg: ClineMessage) => boolean,
 ): { icon: LucideIcon; text: string }[] => {
 	const activities: { icon: LucideIcon; text: string }[] = []
@@ -81,7 +79,7 @@ const collectToolsInRange = (
 
 		try {
 			const tool = JSON.parse(msg.text || "{}") as ClineSayTool
-			const activityText = getActivityText(tool, t)
+			const activityText = getActivityText(tool)
 			if (activityText) {
 				const toolIcon = getIconByToolName(tool.tool)
 				activities.push({ icon: toolIcon, text: activityText })
@@ -110,7 +108,7 @@ const findCurrentApiReq = (messages: ClineMessage[]): { index: number; hasCost: 
 }
 
 // Find the most recent completed api_req before the given index
-const _findPrevCompletedApiReq = (messages: ClineMessage[], beforeIdx: number): number => {
+const findPrevCompletedApiReq = (messages: ClineMessage[], beforeIdx: number): number => {
 	for (let i = beforeIdx - 1; i >= 0; i--) {
 		const msg = messages[i]
 		if (msg.say === "api_req_started" && msg.text) {
@@ -142,12 +140,11 @@ export const RequestStartRow: React.FC<RequestStartRowProps> = ({
 	isExpanded,
 	message,
 }) => {
-	const { t } = useTranslation("common")
 	// Derive explicit state
 	const hasError = !!(apiRequestFailedMessage || apiReqStreamingFailedMessage)
 	const hasCost = cost != null
 	const hasReasoning = !!reasoningContent
-	const _hasCompletionResult = clineMessages.some(
+	const hasCompletionResult = clineMessages.some(
 		(msg) => msg.ask === "completion_result" || msg.say === "completion_result" || msg.ask === "plan_mode_respond",
 	)
 
@@ -156,13 +153,13 @@ export const RequestStartRow: React.FC<RequestStartRowProps> = ({
 	// While reasoning is streaming, keep the Brain ThinkingBlock exactly as-is.
 	// Once response content starts (any text/tool/command), collapse into a compact
 	// "🧠 Thinking" row that can be expanded to show the reasoning only.
-	const _showStreamingThinking = useMemo(
+	const showStreamingThinking = useMemo(
 		() => hasReasoning && !hasError && !cost && !responseStarted,
 		[hasReasoning, hasError, cost, responseStarted],
 	)
 
 	// Check if this api_req will be absorbed into a tool group (reasoning will disappear)
-	const _willBeAbsorbed = useMemo(() => {
+	const willBeAbsorbed = useMemo(() => {
 		return isApiReqAbsorbable(message.ts, clineMessages)
 	}, [message.ts, clineMessages])
 
@@ -177,11 +174,11 @@ export const RequestStartRow: React.FC<RequestStartRowProps> = ({
 		if (!currentApiReq.hasCost) {
 			// CASE A: Current api_req is INCOMPLETE
 			// Look for ask === "tool" messages AFTER the current api_req_started
-			return collectToolsInRange(clineMessages, currentApiReq.index + 1, clineMessages.length, t)
+			return collectToolsInRange(clineMessages, currentApiReq.index + 1, clineMessages.length)
 		}
 		// CASE B: Current api_req is COMPLETE - no activities to show
 		return []
-	}, [clineMessages, t])
+	}, [clineMessages])
 
 	// Check if there are any completed tools in the tool group
 	const hasCompletedTools = useMemo(() => {
@@ -235,7 +232,7 @@ export const RequestStartRow: React.FC<RequestStartRowProps> = ({
 					<div className="ml-1 pl-0 mb-1 -mt-1.25 pt-1">
 						<div className="inline-flex justify-baseline gap-0.5 text-left select-none px-0 w-full">
 							<span className="animate-shimmer bg-linear-90 from-foreground to-description bg-[length:200%_100%] bg-clip-text text-transparent text-[13px] leading-none">
-								{t("requestStart.thinking")}
+								Thinking...
 							</span>
 						</div>
 					</div>

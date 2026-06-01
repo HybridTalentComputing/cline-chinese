@@ -1,6 +1,5 @@
 import { ChevronLeft, ChevronRight, XIcon } from "lucide-react"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useRemark } from "react-remark"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -77,7 +76,6 @@ const BannerCardContent: React.FC<BannerCardContentProps> = ({ banner, isActive,
 }
 
 export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
-	const { t } = useTranslation("misc")
 	const [currentIndex, setCurrentIndex] = useState(0)
 	const [isPaused, setIsPaused] = useState(false)
 	const [isTransitioning, setIsTransitioning] = useState(false)
@@ -151,7 +149,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
 
 	return (
 		<div
-			aria-label={t("common.banner.announcements")}
+			aria-label="Announcements"
 			aria-live="polite"
 			aria-roledescription="carousel"
 			className="mx-3 mb-3"
@@ -163,7 +161,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
 				{/* Dismiss button - shows on each card that has onDismiss defined */}
 				{showDismissButton && (
 					<Button
-						aria-label={t("common.banner.dismissBanner")}
+						aria-label="Dismiss banner"
 						className="absolute top-2.5 right-2 z-10"
 						data-testid="banner-dismiss-button"
 						onClick={(e) => {
@@ -205,14 +203,10 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
 
 						{/* Navigation arrows */}
 						<div className="flex gap-0.5">
-							<Button
-								aria-label={t("common.banner.previousBanner")}
-								onClick={handlePrevious}
-								size="icon"
-								variant="icon">
+							<Button aria-label="Previous banner" onClick={handlePrevious} size="icon" variant="icon">
 								<ChevronLeft className="size-4" />
 							</Button>
-							<Button aria-label={t("common.banner.nextBanner")} onClick={handleNext} size="icon" variant="icon">
+							<Button aria-label="Next banner" onClick={handleNext} size="icon" variant="icon">
 								<ChevronRight className="size-4" />
 							</Button>
 						</div>

@@ -3,7 +3,6 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import { McpServers } from "@shared/proto/cline/mcp"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
 import { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
@@ -18,7 +17,6 @@ type McpViewProps = {
 }
 
 const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
-	const { t } = useTranslation("misc")
 	const { remoteConfigSettings, setMcpServers, environment } = useExtensionState()
 	// Show marketplace by default unless remote config explicitly disables it
 	const showMarketplace = remoteConfigSettings?.mcpMarketplaceEnabled !== false
@@ -63,7 +61,7 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 					console.error("Failed to fetch MCP servers:", error)
 				})
 		}
-	}, [showMarketplace, setMcpMarketplaceCatalog, setMcpServers])
+	}, [showMarketplace])
 
 	return (
 		<div
@@ -76,7 +74,7 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 				display: "flex",
 				flexDirection: "column",
 			}}>
-			<ViewHeader environment={environment} onDone={onDone} title={t("mcp.configuration.title")} />
+			<ViewHeader environment={environment} onDone={onDone} title="MCP Servers" />
 
 			<div style={{ flex: 1, overflow: "auto" }}>
 				{/* Tabs container */}
@@ -89,16 +87,16 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 					}}>
 					{showMarketplace && (
 						<TabButton isActive={activeTab === "marketplace"} onClick={() => handleTabChange("marketplace")}>
-							{t("mcp.configuration.marketplace")}
+							Marketplace
 						</TabButton>
 					)}
 					{showRemoteServers && (
 						<TabButton isActive={activeTab === "addRemote"} onClick={() => handleTabChange("addRemote")}>
-							{t("mcp.configuration.remoteServers")}
+							Remote Servers
 						</TabButton>
 					)}
 					<TabButton isActive={activeTab === "configure"} onClick={() => handleTabChange("configure")}>
-						{t("mcp.configuration.configure")}
+						Configure
 					</TabButton>
 				</div>
 

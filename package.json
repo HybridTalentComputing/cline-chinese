@@ -1,26 +1,25 @@
 {
-	"name": "cline-chinese",
-	"displayName": "Cline Chinese",
-	"description": "%cline.description%",
-	"version": "3.83.0",
+	"name": "claude-dev",
+	"displayName": "Cline",
+	"description": "Autonomous coding agent right in your IDE, capable of creating/editing files, running commands, using the browser, and more with your permission every step of the way.",
+	"version": "3.86.1",
 	"icon": "assets/icons/icon.png",
 	"workspaces": [
-		".",
-		"cli"
+		"."
 	],
 	"engines": {
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "HybridTalentComputing"
+		"name": "Cline Bot Inc."
 	},
 	"license": "Apache-2.0",
-	"publisher": "HybridTalentComputing",
+	"publisher": "saoudrizwan",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/HybridTalentComputing/cline-chinese"
+		"url": "https://github.com/cline/cline"
 	},
-	"homepage": "https://github.com/HybridTalentComputing/cline-chinese",
+	"homepage": "https://cline.bot",
 	"categories": [
 		"AI",
 		"Chat",
@@ -63,45 +62,45 @@
 		"walkthroughs": [
 			{
 				"id": "ClineWalkthrough",
-				"title": "%cline.walkthrough.title%",
-				"description": "%cline.walkthrough.description%",
+				"title": "Meet Cline, your new coding partner",
+				"description": "Cline codes like a developer because it thinks like one. Here are 5 ways to put it to work:",
 				"steps": [
 					{
 						"id": "welcome",
-						"title": "%cline.walkthrough.step1.title%",
-						"description": "%cline.walkthrough.step1.description%",
+						"title": "Start with a Goal, Not Just a Prompt",
+						"description": "Tell Cline what you want to achieve. It plans, asks, and then codes, like a true partner.",
 						"media": {
 							"markdown": "walkthrough/step1.md"
 						}
 					},
 					{
 						"id": "learn",
-						"title": "%cline.walkthrough.step2.title%",
-						"description": "%cline.walkthrough.step2.description%",
+						"title": "Let Cline Learn Your Codebase",
+						"description": "Point Cline to your project. It builds understanding to make smart, context-aware changes.",
 						"media": {
 							"markdown": "walkthrough/step2.md"
 						}
 					},
 					{
 						"id": "advanced-features",
-						"title": "%cline.walkthrough.step3.title%",
-						"description": "%cline.walkthrough.step3.description%",
+						"title": "Always Use the Best AI Models",
+						"description": "Cline empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
 						"media": {
 							"markdown": "walkthrough/step3.md"
 						}
 					},
 					{
 						"id": "mcp",
-						"title": "%cline.walkthrough.step4.title%",
-						"description": "%cline.walkthrough.step4.description%",
+						"title": "Extend with Powerful Tools (MCP)",
+						"description": "Connect to databases, APIs, or discover new capabilities in the MCP Marketplace.",
 						"media": {
 							"markdown": "walkthrough/step4.md"
 						}
 					},
 					{
 						"id": "getting-started",
-						"title": "%cline.walkthrough.step5.title%",
-						"description": "%cline.walkthrough.step5.description%",
+						"title": "You're Always in Control",
+						"description": "Review Cline's plans and diffs. Approve changes before they happen. No surprises.",
 						"media": {
 							"markdown": "walkthrough/step5.md"
 						},
@@ -115,17 +114,17 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "cline-chinese-ActivityBar",
-					"title": "Cline Chinese",
+					"id": "claude-dev-ActivityBar",
+					"title": "Cline",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
 		},
 		"views": {
-			"cline-chinese-ActivityBar": [
+			"claude-dev-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "cline-chinese.SidebarProvider",
+					"id": "claude-dev.SidebarProvider",
 					"name": "",
 					"icon": "assets/icons/icon.svg"
 				}
@@ -133,116 +132,116 @@
 		},
 		"commands": [
 			{
-				"command": "cline-chinese.plusButtonClicked",
-				"title": "%cline.command.newTask%",
+				"command": "cline.plusButtonClicked",
+				"title": "New Task",
 				"icon": "$(add)"
 			},
 			{
-				"command": "cline-chinese.mcpButtonClicked",
-				"title": "%cline.command.mcpServers%",
+				"command": "cline.mcpButtonClicked",
+				"title": "MCP Servers",
 				"icon": "$(server)"
 			},
 			{
-				"command": "cline-chinese.historyButtonClicked",
-				"title": "%cline.command.history%",
+				"command": "cline.historyButtonClicked",
+				"title": "History",
 				"icon": "$(history)"
 			},
 			{
-				"command": "cline-chinese.accountButtonClicked",
-				"title": "%cline.command.account%",
+				"command": "cline.accountButtonClicked",
+				"title": "Account",
 				"icon": "$(account)"
 			},
 			{
-				"command": "cline-chinese.settingsButtonClicked",
-				"title": "%cline.command.settings%",
+				"command": "cline.settingsButtonClicked",
+				"title": "Settings",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "cline-chinese.dev.createTestTasks",
-				"title": "%cline.command.createTestTasks%",
+				"command": "cline.dev.createTestTasks",
+				"title": "Create Test Tasks",
 				"category": "Cline",
-				"when": "cline-chinese.isDevMode"
+				"when": "cline.isDevMode"
 			},
 			{
-				"command": "cline-chinese.dev.expireMcpOAuthTokens",
-				"title": "%cline.command.expireMcpOAuthTokens%",
+				"command": "cline.dev.expireMcpOAuthTokens",
+				"title": "Expire MCP OAuth Tokens (for testing)",
 				"category": "Cline",
-				"when": "cline-chinese.isDevMode"
+				"when": "cline.isDevMode"
 			},
 			{
-				"command": "cline-chinese.addToChat",
-				"title": "%cline.command.addToChat%",
+				"command": "cline.addToChat",
+				"title": "Add to Cline",
 				"category": "Cline"
 			},
 			{
-				"command": "cline-chinese.addTerminalOutputToChat",
-				"title": "%cline.command.addTerminalToChat%",
+				"command": "cline.addTerminalOutputToChat",
+				"title": "Add to Cline",
 				"category": "Cline"
 			},
 			{
-				"command": "cline-chinese.focusChatInput",
-				"title": "%cline.command.focusChatInput%",
+				"command": "cline.focusChatInput",
+				"title": "Jump to Chat Input",
 				"category": "Cline"
 			},
 			{
-				"command": "cline-chinese.generateGitCommitMessage",
-				"title": "%cline.command.generateCommitMessage%",
+				"command": "cline.generateGitCommitMessage",
+				"title": "Generate Commit Message with Cline",
 				"category": "Cline",
 				"icon": "$(cline-icon)"
 			},
 			{
-				"command": "cline-chinese.abortGitCommitMessage",
-				"title": "%cline.command.abortCommitMessage%",
+				"command": "cline.abortGitCommitMessage",
+				"title": "Generate Commit Message with Cline - Stop",
 				"category": "Cline",
 				"icon": "$(debug-stop)"
 			},
 			{
-				"command": "cline-chinese.explainCode",
-				"title": "%cline.command.explainCode%",
+				"command": "cline.explainCode",
+				"title": "Explain with Cline",
 				"category": "Cline"
 			},
 			{
-				"command": "cline-chinese.improveCode",
-				"title": "%cline.command.improveCode%",
+				"command": "cline.improveCode",
+				"title": "Improve with Cline",
 				"category": "Cline"
 			},
 			{
-				"command": "cline-chinese.jupyterGenerateCell",
-				"title": "%cline.command.jupyterGenerate%",
+				"command": "cline.jupyterGenerateCell",
+				"title": "Generate Jupyter Cell with Cline",
 				"category": "Cline",
 				"icon": "$(sparkle)"
 			},
 			{
-				"command": "cline-chinese.jupyterExplainCell",
-				"title": "%cline.command.jupyterExplain%",
+				"command": "cline.jupyterExplainCell",
+				"title": "Explain Jupyter Cell with Cline",
 				"category": "Cline",
 				"icon": "$(question)"
 			},
 			{
-				"command": "cline-chinese.jupyterImproveCell",
-				"title": "%cline.command.jupyterImprove%",
+				"command": "cline.jupyterImproveCell",
+				"title": "Improve Jupyter Cell with Cline",
 				"category": "Cline",
 				"icon": "$(lightbulb)"
 			},
 			{
-				"command": "cline-chinese.openWalkthrough",
-				"title": "%cline.command.openWalkthrough%",
+				"command": "cline.openWalkthrough",
+				"title": "Open Walkthrough",
 				"category": "Cline"
 			},
 			{
-				"command": "cline-chinese.reconstructTaskHistory",
-				"title": "%cline.command.reconstructHistory%",
+				"command": "cline.reconstructTaskHistory",
+				"title": "Reconstruct Task History",
 				"category": "Cline"
 			},
 			{
-				"command": "cline-chinese.reviewComment.reply",
-				"title": "%cline.command.reply%",
+				"command": "cline.reviewComment.reply",
+				"title": "Reply",
 				"category": "Cline",
 				"enablement": "!commentIsEmpty"
 			},
 			{
-				"command": "cline-chinese.reviewComment.addToChat",
-				"title": "%cline.command.addToChat%",
+				"command": "cline.reviewComment.addToChat",
+				"title": "Add to Cline Chat",
 				"category": "Cline",
 				"icon": "$(link-external)"
 			}
@@ -254,7 +253,7 @@
 				"when": "commentEditorFocused && commentController == cline-ai-review && !commentIsEmpty"
 			},
 			{
-				"command": "cline-chinese.addToChat",
+				"command": "cline.addToChat",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -262,11 +261,11 @@
 				"when": "editorHasSelection"
 			},
 			{
-				"command": "cline-chinese.generateGitCommitMessage",
+				"command": "cline.generateGitCommitMessage",
 				"when": "config.git.enabled && scmProvider == git"
 			},
 			{
-				"command": "cline-chinese.focusChatInput",
+				"command": "cline.focusChatInput",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -277,106 +276,106 @@
 		"menus": {
 			"view/title": [
 				{
-					"command": "cline-chinese.plusButtonClicked",
+					"command": "cline.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == cline-chinese.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider"
 				},
 				{
-					"command": "cline-chinese.mcpButtonClicked",
+					"command": "cline.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "view == cline-chinese.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider"
 				},
 				{
-					"command": "cline-chinese.historyButtonClicked",
+					"command": "cline.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "view == cline-chinese.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider"
 				},
 				{
-					"command": "cline-chinese.accountButtonClicked",
+					"command": "cline.accountButtonClicked",
 					"group": "navigation@5",
-					"when": "view == cline-chinese.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider"
 				},
 				{
-					"command": "cline-chinese.settingsButtonClicked",
+					"command": "cline.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "view == cline-chinese.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider"
 				}
 			],
 			"editor/context": [
 				{
-					"command": "cline-chinese.addToChat",
+					"command": "cline.addToChat",
 					"group": "navigation",
 					"when": "editorHasSelection"
 				}
 			],
 			"terminal/context": [
 				{
-					"command": "cline-chinese.addTerminalOutputToChat",
+					"command": "cline.addTerminalOutputToChat",
 					"group": "navigation"
 				}
 			],
 			"scm/title": [
 				{
-					"command": "cline-chinese.generateGitCommitMessage",
+					"command": "cline.generateGitCommitMessage",
 					"group": "navigation",
 					"when": "config.git.enabled && scmProvider == git && !cline.isGeneratingCommit"
 				},
 				{
-					"command": "cline-chinese.abortGitCommitMessage",
+					"command": "cline.abortGitCommitMessage",
 					"group": "navigation",
 					"when": "config.git.enabled && scmProvider == git && cline.isGeneratingCommit"
 				}
 			],
 			"notebook/toolbar": [
 				{
-					"command": "cline-chinese.jupyterGenerateCell",
+					"command": "cline.jupyterGenerateCell",
 					"group": "navigation/add@1",
 					"when": "notebookType == 'jupyter-notebook'"
 				}
 			],
 			"notebook/cell/title": [
 				{
-					"command": "cline-chinese.jupyterExplainCell",
+					"command": "cline.jupyterExplainCell",
 					"group": "inline@1",
 					"when": "notebookType == 'jupyter-notebook'"
 				},
 				{
-					"command": "cline-chinese.jupyterImproveCell",
+					"command": "cline.jupyterImproveCell",
 					"group": "inline@2",
 					"when": "notebookType == 'jupyter-notebook'"
 				}
 			],
 			"commandPalette": [
 				{
-					"command": "cline-chinese.generateGitCommitMessage",
+					"command": "cline.generateGitCommitMessage",
 					"when": "config.git.enabled && !cline.isGeneratingCommit"
 				},
 				{
-					"command": "cline-chinese.abortGitCommitMessage",
+					"command": "cline.abortGitCommitMessage",
 					"when": "config.git.enabled && cline.isGeneratingCommit"
 				},
 				{
-					"command": "cline-chinese.reviewComment.reply",
+					"command": "cline.reviewComment.reply",
 					"when": "false"
 				}
 			],
 			"comments/commentThread/context": [
 				{
-					"command": "cline-chinese.reviewComment.reply",
+					"command": "cline.reviewComment.reply",
 					"group": "inline",
 					"when": "commentController == cline-ai-review"
 				}
 			],
 			"comments/commentThread/title": [
 				{
-					"command": "cline-chinese.reviewComment.addToChat",
+					"command": "cline.reviewComment.addToChat",
 					"group": "inline",
 					"when": "commentController == cline-ai-review"
 				}
 			]
 		},
 		"configuration": {
-			"title": "Cline Chinese",
+			"title": "Cline",
 			"properties": {}
 		}
 	},
@@ -384,7 +383,6 @@
 		"vscode:prepublish": "npm run package",
 		"compile": "npm run check-types && npm run lint && node esbuild.mjs",
 		"compile-standalone": "npm run check-types && npm run lint && node esbuild.mjs --standalone",
-		"test:install": "bash scripts/test-install.sh",
 		"postcompile-standalone": "node scripts/package-standalone.mjs",
 		"dev": "npm run protos && npm run watch",
 		"watch": "npx npm-run-all -p watch:*",
@@ -451,7 +449,6 @@
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/chai": "^5.0.1",
 		"@types/clone-deep": "^4.0.4",
-		"@types/diff": "^5.2.1",
 		"@types/get-folder-size": "^3.0.4",
 		"@types/js-yaml": "^4.0.9",
 		"@types/mocha": "^10.0.7",
@@ -541,7 +538,7 @@
 		"chrome-launcher": "^1.1.2",
 		"clone-deep": "^4.0.1",
 		"default-shell": "^2.2.0",
-		"diff": "^5.2.0",
+		"diff": "8.0.4",
 		"exceljs": "^4.4.0",
 		"execa": "^9.5.2",
 		"fast-deep-equal": "^3.1.3",
@@ -575,7 +572,7 @@
 		"reconnecting-eventsource": "^1.6.4",
 		"serialize-error": "^11.0.3",
 		"shell-quote": "^1.8.3",
-		"simple-git": "^3.27.0",
+		"simple-git": "3.36.0",
 		"strip-ansi": "^7.1.2",
 		"tailwindcss": "^4.1.14",
 		"tree-sitter-wasms": "^0.1.11",
@@ -594,10 +591,8 @@
 		"vite": "^7.1.11",
 		"js-yaml": "^4.1.1",
 		"serialize-javascript": ">=7.0.3",
-		"protobufjs": "7.5.5",
-		"mocha": {
-			"diff": ">=8.0.3"
-		}
+		"protobufjs": "7.5.8",
+		"diff": "8.0.4"
 	},
 	"c8": {
 		"reporter": [
@@ -627,8 +622,6 @@
 			"**/src/xml/**",
 			"**/standalone/**",
 			"**/src/generated/**",
-			"**/evals/cli/dist/**",
-			"**/evals/cli/src/**",
 			"dist"
 		],
 		"all": true,

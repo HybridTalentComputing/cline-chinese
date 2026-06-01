@@ -1,6 +1,5 @@
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import React, { useMemo } from "react"
-import { useTranslation } from "react-i18next"
 import CodeAccordian from "../common/CodeAccordian"
 
 interface SearchResultsDisplayProps {
@@ -18,7 +17,6 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
 	path,
 	filePattern,
 }) => {
-	const { t } = useTranslation("common")
 	const parsedData = useMemo(() => {
 		// Check if this is a multi-workspace result
 		const multiWorkspaceMatch = content.match(/^Found \d+ results? across \d+ workspaces?\./m)
@@ -92,7 +90,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
 				border: "1px solid var(--vscode-editorGroup-border)",
 			}}>
 			<div
-				aria-label={isExpanded ? t("searchResults.collapseResults") : t("searchResults.expandResults")}
+				aria-label={isExpanded ? "Collapse search results" : "Expand search results"}
 				onClick={onToggleExpand}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" || e.key === " ") {
@@ -111,7 +109,8 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
 					WebkitUserSelect: "none",
 					MozUserSelect: "none",
 					msUserSelect: "none",
-				}}>
+				}}
+				tabIndex={0}>
 				<span>/</span>
 				<span
 					style={{
@@ -122,7 +121,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
 					}}>
 					{path + (filePattern ? `/(${filePattern})` : "")}
 				</span>
-				<div style={{ flexGrow: 1 }} />
+				<div style={{ flexGrow: 1 }}></div>
 				{isExpanded ? (
 					<ChevronDownIcon size={16} style={{ margin: "1px 0" }} />
 				) : (
@@ -163,8 +162,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
 									style={{
 										fontSize: "14px",
 										color: "var(--vscode-symbolIcon-folderForeground)",
-									}}
-								/>
+									}}></span>
 								<span
 									style={{
 										fontWeight: "500",

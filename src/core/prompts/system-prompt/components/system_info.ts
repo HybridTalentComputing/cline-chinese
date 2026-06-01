@@ -2,7 +2,6 @@ import osModule from "node:os"
 import { getShell } from "@utils/shell"
 import osName from "os-name"
 import { getWorkspacePaths } from "@/hosts/vscode/hostbridge/workspace/getWorkspacePaths"
-import { isZhCN } from "../i18n/getLocaleText"
 import { SystemPromptSection } from "../templates/placeholders"
 import { TemplateEngine } from "../templates/TemplateEngine"
 import type { PromptVariant, SystemPromptContext } from "../types"
@@ -25,8 +24,9 @@ function getEffectiveShell(context: SystemPromptContext): string {
 		// Background exec uses the system default shell, not VS Code config
 		if (process.platform === "win32") {
 			return process.env.COMSPEC || "cmd.exe"
+		} else {
+			return process.env.SHELL || "/bin/bash"
 		}
-		return process.env.SHELL || "/bin/bash"
 	}
 	// VS Code terminal mode (or undefined) uses the VS Code configured shell
 	return getShell()
@@ -64,21 +64,20 @@ export async function getSystemInfo(variant: PromptVariant, context: SystemPromp
 
 	let WORKSPACE_TITLE: string
 	let workingDirInfo: string
-	const isZh = isZhCN(context.locale)
 
 	if (isMultiRoot && context.workspaceRoots) {
 		// Multi-root workspace with feature flag enabled
-		WORKSPACE_TITLE = isZh ? "工作区根目录" : "Workspace Roots"
+		WORKSPACE_TITLE = "Workspace Roots"
 		const rootsInfo = context.workspaceRoots
 			.map((root) => {
 				const vcsInfo = root.vcs ? ` (${root.vcs})` : ""
 				return `\n  - ${root.name}: ${root.path}${vcsInfo}`
 			})
 			.join("")
-		workingDirInfo = rootsInfo + (isZh ? `\n\n主工作目录: ${context.cwd}` : `\n\nPrimary Working Directory: ${context.cwd}`)
+		workingDirInfo = rootsInfo + `\n\nPrimary Working Directory: ${context.cwd}`
 	} else {
 		// Single workspace
-		WORKSPACE_TITLE = isZh ? "当前工作目录" : "Current Working Directory"
+		WORKSPACE_TITLE = "Current Working Directory"
 		workingDirInfo = info.workingDir
 	}
 

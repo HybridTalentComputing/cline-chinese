@@ -1,6 +1,5 @@
 import { BannerAction, BannerCardData } from "@shared/cline/banner"
 import React from "react"
-import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
 import DiscordIcon from "@/assets/DiscordIcon"
 import GitHubIcon from "@/assets/GitHubIcon"
@@ -20,7 +19,6 @@ interface WhatsNewModalProps {
 }
 
 export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, version, welcomeBanners, onBannerAction }) => {
-	const { t } = useTranslation("misc")
 	const { refreshOpenRouterModels } = useExtensionState()
 
 	// Get latest model list in case user hits shortcut button to set model
@@ -45,7 +43,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 						className="text-lg font-semibold mb-3 pr-6"
 						id="whats-new-title"
 						style={{ color: "var(--vscode-editor-foreground)" }}>
-						🎉 {t("common.whatsNew.title", { version })}
+						🎉 New in v{version}
 					</h2>
 
 					<WhatsNewItems
@@ -61,7 +59,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 						<div className="flex items-center gap-4">
 							{/* X/Twitter */}
 							<a
-								aria-label={t("common.whatsNew.followOnX")}
+								aria-label="Follow us on X"
 								className="text-[var(--vscode-foreground)] hover:text-[var(--vscode-textLink-activeForeground)] transition-colors"
 								href="https://x.com/cline"
 								rel="noopener noreferrer"
@@ -71,7 +69,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 
 							{/* Discord */}
 							<a
-								aria-label={t("common.whatsNew.joinDiscord")}
+								aria-label="Join our Discord"
 								className="text-[var(--vscode-foreground)] hover:text-[var(--vscode-textLink-activeForeground)] transition-colors"
 								href="https://discord.gg/cline"
 								rel="noopener noreferrer"
@@ -81,7 +79,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 
 							{/* GitHub */}
 							<a
-								aria-label={t("common.whatsNew.starOnGitHub")}
+								aria-label="Star us on GitHub"
 								className="text-[var(--vscode-foreground)] hover:text-[var(--vscode-textLink-activeForeground)] transition-colors"
 								href="https://github.com/cline/cline"
 								rel="noopener noreferrer"
@@ -91,7 +89,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 
 							{/* Reddit */}
 							<a
-								aria-label={t("common.whatsNew.joinSubreddit")}
+								aria-label="Join our subreddit"
 								className="text-[var(--vscode-foreground)] hover:text-[var(--vscode-textLink-activeForeground)] transition-colors"
 								href="https://www.reddit.com/r/cline/"
 								rel="noopener noreferrer"
@@ -101,7 +99,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 
 							{/* LinkedIn */}
 							<a
-								aria-label={t("common.whatsNew.followOnLinkedIn")}
+								aria-label="Follow us on LinkedIn"
 								className="text-[var(--vscode-foreground)] hover:text-[var(--vscode-textLink-activeForeground)] transition-colors"
 								href="https://www.linkedin.com/company/clinebot/"
 								rel="noopener noreferrer"
@@ -112,13 +110,13 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 
 						{/* GitHub Star CTA */}
 						<p className="text-sm text-center" style={{ color: "var(--vscode-descriptionForeground)" }}>
-							{t("common.whatsNew.supportByStarring")}
+							Please support Cline by{" "}
 							<a
 								href="https://github.com/cline/cline"
 								rel="noopener noreferrer"
 								style={{ color: "var(--vscode-textLink-foreground)" }}
 								target="_blank">
-								{t("common.whatsNew.starringOnGitHub")}
+								starring us on GitHub
 							</a>
 							.
 						</p>

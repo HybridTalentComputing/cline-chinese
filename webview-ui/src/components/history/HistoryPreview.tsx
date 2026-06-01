@@ -1,6 +1,5 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { memo } from "react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { TaskServiceClient } from "@/services/grpc-client"
 
@@ -9,7 +8,6 @@ type HistoryPreviewProps = {
 }
 
 const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
-	const { t } = useTranslation("misc")
 	const { taskHistory } = useExtensionState()
 	const handleHistorySelect = (id: string) => {
 		TaskServiceClient.showTaskWithId(StringRequest.create({ value: id })).catch((error) =>
@@ -120,8 +118,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 						style={{
 							marginRight: "4px",
 							transform: "scale(0.9)",
-						}}
-					/>
+						}}></span>
 					<span
 						style={{
 							fontWeight: 500,
@@ -133,11 +130,11 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 				</div>
 				{taskHistory.filter((item) => item.ts && item.task).length > 0 && (
 					<button
-						aria-label={t("historyPreview.viewAll")}
+						aria-label="View all history"
 						className="history-view-all-btn"
 						onClick={() => showHistoryView()}
 						type="button">
-						{t("historyPreview.viewAll")}
+						View All
 						<span className="codicon codicon-chevron-right" />
 					</button>
 				)}
@@ -154,7 +151,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 									<div className="history-task-content">
 										{item.isFavorited && (
 											<span
-												aria-label={t("historyPreview.favorited")}
+												aria-label="Favorited"
 												className="codicon codicon-star-full"
 												style={{
 													color: "var(--vscode-button-background)",
@@ -180,7 +177,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 								fontSize: "var(--vscode-font-size)",
 								padding: "10px 0",
 							}}>
-							{t("historyPreview.noRecentTasks")}
+							No recent tasks
 						</div>
 					)}
 				</div>

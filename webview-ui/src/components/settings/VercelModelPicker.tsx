@@ -5,7 +5,6 @@ import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import type React from "react"
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -22,7 +21,6 @@ export interface VercelModelPickerProps {
 }
 
 const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentMode }) => {
-	const { t } = useTranslation("settings")
 	const { handleModeFieldsChange } = useApiConfigurationHandlers()
 	const { apiConfiguration, vercelAiGatewayModels, refreshVercelAiGatewayModels } = useExtensionState()
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
@@ -152,7 +150,7 @@ const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentM
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [])
+	}, [searchTerm])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
@@ -222,7 +220,7 @@ const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentM
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder={t("settings.searchSelectModel")}
+						placeholder="Search and select a model..."
 						role="combobox"
 						style={{
 							width: "100%",
@@ -232,7 +230,7 @@ const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentM
 						value={searchTerm}>
 						{searchTerm && (
 							<div
-								aria-label={t("clearSearch")}
+								aria-label="Clear search"
 								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									setSearchTerm("")
@@ -269,8 +267,8 @@ const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentM
 								<DropdownItem isSelected={false}>
 									<span style={{ color: "var(--vscode-descriptionForeground)" }}>
 										{Object.keys(vercelAiGatewayModels).length === 0
-											? t("modelPicker.refreshing")
-											: t("modelPicker.noModelsFound")}
+											? "Loading models..."
+											: "No models found"}
 									</span>
 								</DropdownItem>
 							)}
@@ -294,7 +292,7 @@ const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentM
 									? "Use None to disable adaptive thinking. Higher effort increases response detail and token usage."
 									: undefined
 							}
-							label={showAdaptiveThinkingEffort ? t("settings.adaptiveThinking") : undefined}
+							label={showAdaptiveThinkingEffort ? "Adaptive Thinking" : undefined}
 						/>
 					)}
 
@@ -314,15 +312,18 @@ const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentM
 					}}>
 					{Object.keys(vercelAiGatewayModels).length === 0 ? (
 						<>
-							{t("providers.vercelAiGateway.enterApiKeyToLoadModels")}{" "}
+							Enter your Vercel AI Gateway API key above to load available models. You can get an API key from{" "}
 							<VSCodeLink
 								href="https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai"
 								style={{ display: "inline", fontSize: "inherit" }}>
-								{t("providers.vercelAiGateway.vercelAiGateway")}
+								Vercel AI Gateway.
 							</VSCodeLink>
 						</>
 					) : (
-						t("providers.vercelAiGateway.selectModelFromDropdown")
+						<>
+							Select a model from the dropdown above. The extension fetches available models from your Vercel AI
+							Gateway configuration.
+						</>
 					)}
 				</p>
 			)}

@@ -1,7 +1,6 @@
 import { minimaxModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -23,7 +22,6 @@ interface MinimaxProviderProps {
  * The Minimax AI Studio provider configuration component
  */
 export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: MinimaxProviderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -34,7 +32,7 @@ export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: Mini
 		<div>
 			<DropdownContainer className="dropdown-container" style={{ position: "inherit" }}>
 				<label htmlFor="minimax-entrypoint">
-					<span style={{ fontWeight: 500, marginTop: 5 }}>{t("providers.minimax.entrypoint")}</span>
+					<span style={{ fontWeight: 500, marginTop: 5 }}>MiniMax Entrypoint</span>
 				</label>
 				<VSCodeDropdown
 					id="minimax-entrypoint"
@@ -54,8 +52,8 @@ export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: Mini
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				{t("providers.minimax.selectApiEndpoint")} <code>api.minimaxi.com</code> {t("providers.minimax.forChina")}{" "}
-				<code>api.minimax.io</code> {t("providers.minimax.forOtherLocations")}
+				Select the API endpoint according to your region: <code>api.minimaxi.com</code> for China, or{" "}
+				<code>api.minimax.io</code> for all other locations.
 			</p>
 			<ApiKeyField
 				initialValue={apiConfiguration?.minimaxApiKey || ""}
@@ -71,7 +69,7 @@ export const MinimaxProvider = ({ showModelOptions, isPopup, currentMode }: Mini
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.model")}
+						label="Model"
 						models={minimaxModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

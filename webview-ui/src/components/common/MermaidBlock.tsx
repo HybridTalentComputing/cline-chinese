@@ -2,7 +2,6 @@ import { StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import mermaid from "mermaid"
 import { useEffect, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { FileServiceClient } from "@/services/grpc-client"
 import { useDebounceEffect } from "@/utils/useDebounceEffect"
@@ -82,14 +81,13 @@ interface MermaidBlockProps {
 }
 
 export default function MermaidBlock({ code }: MermaidBlockProps) {
-	const { t } = useTranslation("misc")
 	const containerRef = useRef<HTMLDivElement>(null)
 	const [isLoading, setIsLoading] = useState(false)
 
 	// 1) Whenever `code` changes, mark that we need to re-render a new chart
 	useEffect(() => {
 		setIsLoading(true)
-	}, [])
+	}, [code])
 
 	// 2) Debounce the actual parse/render
 	useDebounceEffect(
@@ -156,13 +154,10 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 
 	return (
 		<MermaidBlockContainer>
-			{isLoading && <LoadingMessage>{t("common.mermaid.generating")}</LoadingMessage>}
+			{isLoading && <LoadingMessage>Generating mermaid diagram...</LoadingMessage>}
 			<ButtonContainer>
-				<StyledVSCodeButton
-					aria-label={t("common.mermaid.copyCode")}
-					onClick={handleCopyCode}
-					title={t("common.mermaid.copyCode")}>
-					<span className="codicon codicon-copy" />
+				<StyledVSCodeButton aria-label="Copy Code" onClick={handleCopyCode} title="Copy Code">
+					<span className="codicon codicon-copy"></span>
 				</StyledVSCodeButton>
 			</ButtonContainer>
 			<SvgContainer $isLoading={isLoading} onClick={handleClick} ref={containerRef} />

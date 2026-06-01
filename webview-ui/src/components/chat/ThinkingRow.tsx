@@ -1,6 +1,5 @@
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import { memo, useCallback, useEffect, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -22,12 +21,10 @@ export const ThinkingRow = memo(
 		isVisible,
 		isExpanded,
 		onToggle,
-		title,
+		title = "Thinking",
 		isStreaming = false,
 		showChevron = true,
 	}: ThinkingRowProps) => {
-		const { t } = useTranslation("common")
-		const displayTitle = title ?? t("chatRow.thinking")
 		const scrollRef = useRef<HTMLDivElement>(null)
 		const [canScrollUp, setCanScrollUp] = useState(false)
 		const [canScrollDown, setCanScrollDown] = useState(false)
@@ -47,7 +44,7 @@ export const ThinkingRow = memo(
 				scrollRef.current.scrollTop = scrollRef.current.scrollHeight
 			}
 			checkScrollable()
-		}, [isVisible, checkScrollable])
+		}, [reasoningContent, isVisible, checkScrollable])
 
 		if (!isVisible) {
 			return null
@@ -78,7 +75,7 @@ export const ThinkingRow = memo(
 									isStreaming,
 								"select-none": isStreaming,
 							})}>
-							{displayTitle}
+							{title}
 						</span>
 						{showChevron &&
 							(isExpanded ? (

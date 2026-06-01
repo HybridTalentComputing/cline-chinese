@@ -1,6 +1,5 @@
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
 
 interface ContextWindowSwitcherProps {
 	selectedModelId: string
@@ -18,24 +17,23 @@ export const ContextWindowSwitcher = ({
 	base1mModelId,
 	onModelChange,
 }: ContextWindowSwitcherProps) => {
-	const { t } = useTranslation("settings")
 	const switcherInfo = useMemo(() => {
 		if (selectedModelId === base200kModelId) {
 			return {
 				current: base200kModelId,
 				alternate: base1mModelId,
-				linkText: t("settings.switchTo1mContext"),
+				linkText: "Switch to 1M context window model",
 			}
 		}
 		if (selectedModelId === base1mModelId) {
 			return {
 				current: base1mModelId,
 				alternate: base200kModelId,
-				linkText: t("settings.switchTo200kContext"),
+				linkText: "Switch to 200K context window model",
 			}
 		}
 		return null
-	}, [selectedModelId, base200kModelId, base1mModelId, t])
+	}, [selectedModelId, base200kModelId, base1mModelId])
 
 	if (!switcherInfo) {
 		return null

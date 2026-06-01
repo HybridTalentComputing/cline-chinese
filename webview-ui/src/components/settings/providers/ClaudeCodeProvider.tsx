@@ -1,6 +1,5 @@
 import { claudeCodeModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { DebouncedTextField } from "../common/DebouncedTextField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -14,6 +13,7 @@ const SUPPORTED_CLAUDE_CODE_THINKING_MODELS = [
 	...SUPPORTED_ANTHROPIC_THINKING_MODELS,
 	"sonnet",
 	"sonnet[1m]",
+	"claude-opus-4-8[1m]",
 	"claude-opus-4-7[1m]",
 	"claude-sonnet-4-6[1m]",
 	"claude-sonnet-4-5-20250929[1m]",
@@ -35,7 +35,6 @@ interface ClaudeCodeProviderProps {
  * The Claude Code provider configuration component
  */
 export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: ClaudeCodeProviderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -47,10 +46,10 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 			<DebouncedTextField
 				initialValue={apiConfiguration?.claudeCodePath || ""}
 				onChange={(value) => handleFieldChange("claudeCodePath", value)}
-				placeholder={t("providers.claudeCode.defaultClaudePlaceholder")}
+				placeholder="Default: claude"
 				style={{ width: "100%", marginTop: 3 }}
 				type="text">
-				<span style={{ fontWeight: 500 }}>{t("providers.claudeCode.cliPath")}</span>
+				<span style={{ fontWeight: 500 }}>Claude Code CLI Path</span>
 			</DebouncedTextField>
 
 			<p
@@ -59,15 +58,15 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				{t("providers.claudeCode.cliPathDescription")}
+				Path to the Claude Code CLI.
 			</p>
 
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.model")}
+						label="Model"
 						models={claudeCodeModels}
-						onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+						onChange={(e: any) =>
 							handleModeFieldChange(
 								{ plan: "planModeApiModelId", act: "actModeApiModelId" },
 								e.target.value,
@@ -85,7 +84,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 								marginTop: 2,
 								color: "var(--vscode-descriptionForeground)",
 							}}>
-							{t("providers.lmStudio.useLatestVersion")} {selectedModelId} {t("providers.lmStudio.byDefault")}
+							Use the latest version of {selectedModelId} by default.
 						</p>
 					)}
 

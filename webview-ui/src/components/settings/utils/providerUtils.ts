@@ -1,4 +1,3 @@
-import i18next from "i18next"
 import {
 	ApiConfiguration,
 	ApiProvider,
@@ -147,6 +146,20 @@ export function getModelsForProvider(
 			return nousResearchModels
 		case "litellm":
 			return dynamicModels?.liteLlmModels
+		// Providers with dynamic models - return undefined
+		case "openrouter":
+		case "cline":
+		case "openai":
+		case "ollama":
+		case "lmstudio":
+		case "vscode-lm":
+		case "requesty":
+		case "hicap":
+		case "dify":
+		case "vercel-ai-gateway":
+		case "oca":
+		case "aihubmix":
+		case "together":
 		default:
 			return undefined
 	}
@@ -392,7 +405,7 @@ export function normalizeApiConfiguration(
 				selectedModelInfo: basetenModelInfo ||
 					basetenModels[finalBasetenModelId as keyof typeof basetenModels] ||
 					basetenModels[basetenDefaultModelId] || {
-						description: i18next.t("common:providers.baseten.modelDescription"),
+						description: "Baseten model",
 					},
 			}
 		}
@@ -423,7 +436,7 @@ export function normalizeApiConfiguration(
 					supportsPromptCache: false,
 					inputPrice: 0,
 					outputPrice: 0,
-					description: i18next.t("common:providers.dify.workflowDescription"),
+					description: "Dify workflow - model selection is configured in your Dify application",
 				},
 			}
 		case "vercel-ai-gateway":
@@ -805,6 +818,27 @@ export async function syncModeConfigurations(
 			updates.actModeAihubmixModelId = sourceFields.aihubmixModelId
 			updates.actModeAihubmixModelInfo = sourceFields.aihubmixModelInfo
 			break
+
+		// Providers that use apiProvider + apiModelId fields
+		case "anthropic":
+		case "claude-code":
+		case "vertex":
+		case "gemini":
+		case "openai-native":
+		case "openai-codex":
+		case "deepseek":
+		case "qwen":
+		case "doubao":
+		case "mistral":
+		case "asksage":
+		case "xai":
+		case "nebius":
+		case "wandb":
+		case "sambanova":
+		case "cerebras":
+		case "sapaicore":
+		case "zai":
+		case "minimax":
 		default:
 			updates.planModeApiModelId = sourceFields.apiModelId
 			updates.actModeApiModelId = sourceFields.apiModelId

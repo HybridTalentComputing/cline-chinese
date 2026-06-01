@@ -1,7 +1,6 @@
 import { VSCodeButton, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { AlertTriangle, Loader2, X } from "lucide-react"
 import { memo, useCallback, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 
 interface DeleteWorktreeModalProps {
@@ -13,7 +12,6 @@ interface DeleteWorktreeModalProps {
 }
 
 const DeleteWorktreeModal = ({ open, onClose, onConfirm, worktreePath, branchName }: DeleteWorktreeModalProps) => {
-	const { t } = useTranslation("misc")
 	const [isDeleting, setIsDeleting] = useState(false)
 	const [deleteBranch, setDeleteBranch] = useState(false)
 
@@ -53,12 +51,12 @@ const DeleteWorktreeModal = ({ open, onClose, onConfirm, worktreePath, branchNam
 				{/* Title row with icon */}
 				<div className="flex items-center gap-2 mb-3 pr-6">
 					<AlertTriangle className="w-5 h-5 text-[var(--vscode-errorForeground)]" />
-					<h4 className="m-0">{t("worktrees.delete.title")}</h4>
+					<h4 className="m-0">Delete Worktree</h4>
 				</div>
 
 				{/* Content */}
 				<p className="text-sm text-[var(--vscode-descriptionForeground)] mt-0 mb-3">
-					{t("worktrees.delete.description")}
+					This will delete the worktree directory at{" "}
 					<span className="font-semibold text-[var(--vscode-foreground)] break-all">{worktreePath}</span>
 				</p>
 
@@ -68,30 +66,29 @@ const DeleteWorktreeModal = ({ open, onClose, onConfirm, worktreePath, branchNam
 						onChange={(e) => setDeleteBranch((e.target as HTMLInputElement).checked)}
 					/>
 					<span className="text-sm">
-						{t("worktrees.delete.alsoDeleteBranch")}
-						<span className="font-semibold">{branchName}</span>
+						Also delete branch <span className="font-semibold">{branchName}</span>
 					</span>
 				</label>
 
 				{deleteBranch && (
 					<p className="text-sm text-[var(--vscode-inputValidation-warningForeground)] mt-0 mb-3">
-						{t("worktrees.delete.warningUnpushed")}
+						Warning: Unpushed commits on this branch will be lost.
 					</p>
 				)}
 
 				{/* Buttons */}
 				<div className="flex justify-end gap-2">
 					<VSCodeButton appearance="secondary" disabled={isDeleting} onClick={onClose}>
-						{t("worktrees.delete.cancel")}
+						Cancel
 					</VSCodeButton>
 					<Button disabled={isDeleting} onClick={handleDelete} variant="danger">
 						{isDeleting ? (
 							<>
 								<Loader2 className="w-4 h-4 mr-1 animate-spin" />
-								{t("worktrees.delete.deleting")}
+								Deleting...
 							</>
 						) : (
-							t("worktrees.delete.delete")
+							"Delete"
 						)}
 					</Button>
 				</div>

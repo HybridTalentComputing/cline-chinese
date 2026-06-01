@@ -1,6 +1,5 @@
 import { ClineMessage, ClineSayTool } from "@shared/ExtensionMessage"
 import { StringRequest } from "@shared/proto/cline/common"
-import i18next from "i18next"
 import { memo, useCallback, useMemo, useState } from "react"
 import { TypewriterText } from "@/components/chat/TypewriterText"
 import { cleanPathPrefix } from "@/components/common/CodeAccordian"
@@ -36,8 +35,8 @@ const getActivityText = (tool: ClineSayTool): string | null => {
 			.filter(Boolean)
 			.join(" | ")
 		return filePattern && filePattern !== "*"
-			? i18next.t("toolGroup.searchInPathWithPattern", { terms, path: cleanedPath, pattern: filePattern })
-			: i18next.t("toolGroup.searchInPath", { terms, path: cleanedPath })
+			? `"${terms}" in ${cleanedPath}/ (${filePattern})`
+			: `"${terms}" in ${cleanedPath}/`
 	}
 
 	switch (tool.tool) {
@@ -46,20 +45,16 @@ const getActivityText = (tool: ClineSayTool): string | null => {
 				return null
 			}
 			const lineHint =
-				tool.readLineStart != null && tool.readLineEnd != null
-					? i18next.t("toolGroup.lines", { start: tool.readLineStart, end: tool.readLineEnd })
-					: ""
-			return i18next.t("toolGroup.reading", { path: cleanedPath, lineHint })
+				tool.readLineStart != null && tool.readLineEnd != null ? ` (lines ${tool.readLineStart}-${tool.readLineEnd})` : ""
+			return `Reading ${cleanedPath}${lineHint}...`
 		}
 		case "listFilesTopLevel":
 		case "listFilesRecursive":
-			return tool.path ? i18next.t("toolGroup.exploring", { path: cleanedPath }) : null
+			return tool.path ? `Exploring ${cleanedPath}/...` : null
 		case "searchFiles":
-			return tool.regex && tool.path
-				? i18next.t("toolGroup.searching", { query: formatSearchRegex(tool.regex, tool.path, tool.filePattern) })
-				: null
+			return tool.regex && tool.path ? `Searching ${formatSearchRegex(tool.regex, tool.path, tool.filePattern)}...` : null
 		case "listCodeDefinitionNames":
-			return tool.path ? i18next.t("toolGroup.analyzing", { path: cleanedPath }) : null
+			return tool.path ? `Analyzing ${cleanedPath}/...` : null
 		default:
 			return null
 	}
@@ -224,7 +219,7 @@ export const ToolGroupRenderer = memo(({ messages, allMessages, isLastGroup }: T
 											"[direction:ltr]": !!info.displayText,
 										},
 									)}>
-									{`${info.displayText || cleanPathPrefix(info.path)}\u200E`}
+									{(info.displayText || cleanPathPrefix(info.path)) + "\u200E"}
 								</span>
 							</Button>
 							{/* Expanded content for folders/search/definitions - file lists only */}
@@ -301,12 +296,12 @@ function parseToolSafe(text: string | undefined): ClineSayTool {
 function getToolDisplayInfo(tool: ClineSayTool) {
 	const icon = getIconByToolName(tool.tool)
 	const filePath = tool.path || ""
-	const folderPath = `${filePath}/`
+	const folderPath = filePath + "/"
 
 	switch (tool.tool) {
 		case "readFile": {
 			const lineNote =
-				tool.readLineStart != null && tool.readLineEnd != null ? `${tool.readLineStart}-${tool.readLineEnd}` : null
+				tool.readLineStart != null && tool.readLineEnd != null ? `lines ${tool.readLineStart}-${tool.readLineEnd}` : null
 			return {
 				icon,
 				path: filePath,
@@ -342,16 +337,14 @@ function formatSearchDisplay(regex: string, path: string, filePattern?: string):
 		.map((t) => t.trim().replace(/\\b/g, "").replace(/\\s\?/g, " "))
 		.filter(Boolean)
 
-	const termDisplay =
-		terms.length > 3 ? i18next.t("toolGroup.patternsCount", { count: terms.length }) : `"${terms.join(" | ")}"`
+	const termDisplay = terms.length > 3 ? `${terms.length} patterns` : `"${terms.join(" | ")}"`
+	let result = `${termDisplay} in ${cleanPathPrefix(path)}/`
 
-	return filePattern && filePattern !== "*"
-		? i18next.t("toolGroup.searchInPathWithPattern", {
-				terms: termDisplay,
-				path: cleanPathPrefix(path),
-				pattern: filePattern,
-			})
-		: i18next.t("toolGroup.searchInPath", { terms: termDisplay, path: cleanPathPrefix(path) })
+	if (filePattern && filePattern !== "*") {
+		result += ` (${filePattern})`
+	}
+
+	return result
 }
 
 /**
@@ -379,24 +372,20 @@ export function getToolGroupSummaryFromParsedTools(tools: ClineSayTool[]): strin
 	}
 
 	const parts: string[] = []
-	const action = counts.read > 0 || counts.list > 0 ? i18next.t("toolGroup.read") : " "
+	const action = counts.read > 0 || counts.list > 0 ? " read " : " "
 
 	if (counts.read > 0) {
-		parts.push(`${counts.read} ${i18next.t(counts.read > 1 ? "toolGroup.files" : "toolGroup.file")}`)
+		parts.push(`${counts.read} file${counts.read > 1 ? "s" : ""}`)
 	}
 	if (counts.list > 0) {
-		parts.push(`${counts.list} ${i18next.t(counts.list > 1 ? "toolGroup.folders" : "toolGroup.folder")}`)
+		parts.push(`${counts.list} folder${counts.list > 1 ? "s" : ""}`)
 	}
 	if (counts.def > 0) {
-		parts.push(`${counts.def} ${i18next.t(counts.def > 1 ? "toolGroup.definitions" : "toolGroup.definition")}`)
+		parts.push(`${counts.def} definition${counts.def > 1 ? "s" : ""}`)
 	}
 	if (counts.search > 0) {
-		parts.push(
-			`${i18next.t("toolGroup.performed")} ${counts.search} ${i18next.t(counts.search > 1 ? "toolGroup.searches" : "toolGroup.search")}`,
-		)
+		parts.push(`performed ${counts.search} search${counts.search > 1 ? "es" : ""}`)
 	}
 
-	return parts.length === 0
-		? i18next.t("toolGroup.context")
-		: i18next.t("toolGroup.summaryClineAction", { action, parts: parts.join(i18next.t("toolGroup.summaryPartsSeparator")) })
+	return parts.length === 0 ? "Context" : "Cline" + action + parts.join(", ")
 }

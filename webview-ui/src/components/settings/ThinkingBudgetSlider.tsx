@@ -2,7 +2,6 @@ import { ANTHROPIC_MAX_THINKING_BUDGET, ANTHROPIC_MIN_THINKING_BUDGET } from "@s
 import { Mode } from "@shared/storage/types"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { memo, useCallback, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { getModeSpecificFields } from "./utils/providerUtils"
@@ -69,7 +68,6 @@ interface ThinkingBudgetSliderProps {
 }
 
 const ThinkingBudgetSlider = ({ currentMode, maxBudget, showEnableToggle = true }: ThinkingBudgetSliderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -80,20 +78,17 @@ const ThinkingBudgetSlider = ({ currentMode, maxBudget, showEnableToggle = true 
 
 	const [isEnabled, setIsEnabled] = useState<boolean>((modeFields.thinkingBudgetTokens || 0) > 0)
 
-	const onToggle = useCallback(
-		(isChecked: boolean) => {
-			const newThinkingBudgetValue = isChecked ? ANTHROPIC_MIN_THINKING_BUDGET : 0
-			setIsEnabled(isChecked)
-			setLocalValue(newThinkingBudgetValue)
+	const onToggle = useCallback((isChecked: boolean) => {
+		const newThinkingBudgetValue = isChecked ? ANTHROPIC_MIN_THINKING_BUDGET : 0
+		setIsEnabled(isChecked)
+		setLocalValue(newThinkingBudgetValue)
 
-			handleModeFieldChange(
-				{ plan: "planModeThinkingBudgetTokens", act: "actModeThinkingBudgetTokens" },
-				newThinkingBudgetValue,
-				currentMode,
-			)
-		},
-		[currentMode, handleModeFieldChange],
-	)
+		handleModeFieldChange(
+			{ plan: "planModeThinkingBudgetTokens", act: "actModeThinkingBudgetTokens" },
+			newThinkingBudgetValue,
+			currentMode,
+		)
+	}, [])
 
 	useEffect(() => {
 		// Extremely hacky solution to handle the case where
@@ -103,7 +98,7 @@ const ThinkingBudgetSlider = ({ currentMode, maxBudget, showEnableToggle = true 
 		if (isToggleAlwaysOn && !hasThinkingConfig) {
 			onToggle(true)
 		}
-	}, [showEnableToggle, modeFields.thinkingBudgetTokens, onToggle])
+	}, [showEnableToggle, modeFields.thinkingBudgetTokens])
 
 	useEffect(() => {
 		const newThinkingBudgetValue = modeFields.thinkingBudgetTokens || 0
@@ -116,7 +111,7 @@ const ThinkingBudgetSlider = ({ currentMode, maxBudget, showEnableToggle = true 
 		if (newIsEnabled !== isEnabled) {
 			setIsEnabled(newIsEnabled)
 		}
-	}, [modeFields.thinkingBudgetTokens, isEnabled, localValue])
+	}, [modeFields.thinkingBudgetTokens])
 
 	const handleSliderChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = Number.parseInt(event.target.value, 10)
@@ -142,12 +137,11 @@ const ThinkingBudgetSlider = ({ currentMode, maxBudget, showEnableToggle = true 
 		<div className="w-full">
 			{showEnableToggle ? (
 				<VSCodeCheckbox checked={isEnabled} onClick={handleToggleChange}>
-					{t("settings.enableThinking")}
-					{localValue && localValue > 0 ? ` (${localValue.toLocaleString()} ${t("settings.tokens")})` : ""}
+					Enable thinking{localValue && localValue > 0 ? ` (${localValue.toLocaleString()} tokens)` : ""}
 				</VSCodeCheckbox>
 			) : (
 				<p className="text-[var(--vscode-descriptionForeground)] text-sm">
-					{t("settings.thinkingEnabledByDefault")} ({localValue.toLocaleString()} {t("settings.tokens")})
+					Thinking is enabled by default for this model. ({localValue.toLocaleString()} tokens)
 				</p>
 			)}
 
@@ -158,7 +152,7 @@ const ThinkingBudgetSlider = ({ currentMode, maxBudget, showEnableToggle = true 
 						$min={0}
 						$value={localValue}
 						aria-describedby="thinking-budget-description"
-						aria-label={t("settings.thinkingBudgetLabel", { value: localValue.toLocaleString() })}
+						aria-label={`Thinking budget: ${localValue.toLocaleString()} tokens`}
 						aria-valuemax={maxBudget || ANTHROPIC_MAX_THINKING_BUDGET}
 						aria-valuemin={ANTHROPIC_MIN_THINKING_BUDGET}
 						aria-valuenow={localValue}

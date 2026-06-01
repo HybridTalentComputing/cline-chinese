@@ -45,10 +45,8 @@
 		"mermaid": "11.12.3",
 		"posthog-js": "^1.224.0",
 		"pretty-bytes": "^6.1.1",
-		"i18next": "^24.2.2",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"react-i18next": "^15.4.1",
 		"react-markdown": "^10.1.0",
 		"react-remark": "^2.1.0",
 		"react-textarea-autosize": "^8.5.7",
@@ -89,7 +87,7 @@
 		"vitest": "^3.0.5"
 	},
 	"overrides": {
-		"protobufjs": "7.5.5"
+		"protobufjs": "7.5.8"
 	},
 	"optionalDependencies": {
 		"@rollup/rollup-linux-arm64-gnu": "^4.40.0",

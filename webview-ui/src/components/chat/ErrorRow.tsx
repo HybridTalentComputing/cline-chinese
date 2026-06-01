@@ -1,6 +1,5 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
 import { memo } from "react"
-import { useTranslation } from "react-i18next"
 import CreditLimitError from "@/components/chat/CreditLimitError"
 import SpendLimitError from "@/components/chat/SpendLimitError"
 import { Button } from "@/components/ui/button"
@@ -17,7 +16,6 @@ interface ErrorRowProps {
 }
 
 const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStreamingFailedMessage }: ErrorRowProps) => {
-	const { t } = useTranslation("common")
 	const { clineUser } = useClineAuth()
 	const rawApiError = apiRequestFailedMessage || apiReqStreamingFailedMessage
 
@@ -82,10 +80,10 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 							// User is using Cline provider and is not logged in
 							<div className="flex flex-col gap-3">
 								<div className="flex items-center justify-center rounded border border-neutral-500/30 bg-vscode-editor-background p-6 text-center text-vscode-foreground">
-									{t("error.loggedOut")}
+									Whoops looks like you're logged out – click below to sign in
 								</div>
 								<Button className="w-full" disabled={isLoginLoading} onClick={handleSignIn}>
-									{t("error.signInToCline")}
+									Sign in to Cline
 									{isLoginLoading && (
 										<span className="ml-1 animate-spin">
 											<span className="codicon codicon-refresh" />
@@ -96,7 +94,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 						) : (
 							// Don't show sign in button after the user has logged in, just ask them to retry
 							<div className="mt-4">
-								<span className="text-description">{t("error.clickRetry")}</span>
+								<span className="text-description">(Click "Retry" below)</span>
 							</div>
 						)
 					}
@@ -115,11 +113,11 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 							{/* Windows Powershell Issue */}
 							{errorMessage?.toLowerCase()?.includes("powershell") && (
 								<div>
-									{t("error.powershellIssue")}{" "}
+									It seems like you're having Windows PowerShell issues, please see this{" "}
 									<a
 										className="underline text-inherit"
 										href="https://github.com/cline/cline/wiki/TroubleShooting-%E2%80%90-%22PowerShell-is-not-recognized-as-an-internal-or-external-command%22">
-										{t("error.troubleshootingGuide")}
+										troubleshooting guide
 									</a>
 									.
 								</div>
@@ -129,7 +127,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 							{errorMessage !== rawApiError && <div>{rawApiError}</div>}
 
 							<div className="mt-4">
-								<span className="text-description">{t("error.clickRetry")}</span>
+								<span className="text-description">(Click "Retry" below)</span>
 							</div>
 						</p>
 					)
@@ -141,7 +139,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 			case "diff_error":
 				return (
 					<div className="flex flex-col p-2 rounded text-xs opacity-80 bg-quote text-foreground">
-						<div>{t("error.diffError")}</div>
+						<div>The model used search patterns that don't match anything in the file. Retrying...</div>
 					</div>
 				)
 
@@ -149,8 +147,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 				return (
 					<div className="flex flex-col p-2 rounded text-xs opacity-80 bg-quote text-foreground">
 						<div>
-							{t("error.clineignoreError")} <code>{message.text}</code> {t("error.clineignoreBlocked")}{" "}
-							<code>.clineignore</code> {t("error.clineignoreFile")}
+							Cline tried to access <code>{message.text}</code> which is blocked by the <code>.clineignore</code>
 							file.
 						</div>
 					</div>

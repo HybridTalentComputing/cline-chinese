@@ -1,7 +1,6 @@
 import { EmptyRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { useOpenRouterKeyInfo } from "../../ui/hooks/useOpenRouterKeyInfo"
@@ -14,15 +13,10 @@ import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandler
  * Component to display OpenRouter balance information
  */
 const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
-	const { t } = useTranslation("settings")
 	const { data: keyInfo, isLoading, error } = useOpenRouterKeyInfo(apiKey)
 
 	if (isLoading) {
-		return (
-			<span style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)" }}>
-				{t("providers.openRouter.loading")}
-			</span>
-		)
+		return <span style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)" }}>Loading...</span>
 	}
 
 	if (error || !keyInfo || keyInfo.limit === null) {
@@ -46,7 +40,7 @@ const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
 				cursor: "pointer",
 			}}
 			title={`Remaining balance: ${formattedBalance}\nLimit: ${formatPrice(keyInfo.limit)}\nUsage: ${formatPrice(keyInfo.usage)}`}>
-			{t("providers.openRouter.balance")} {formattedBalance}
+			Balance: {formattedBalance}
 		</VSCodeLink>
 	)
 }
@@ -64,7 +58,6 @@ interface OpenRouterProviderProps {
  * The OpenRouter provider configuration component
  */
 export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: OpenRouterProviderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
@@ -74,11 +67,11 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: O
 				<DebouncedTextField
 					initialValue={apiConfiguration?.openRouterApiKey || ""}
 					onChange={(value) => handleFieldChange("openRouterApiKey", value)}
-					placeholder={t("commonFields.enterApiKey")}
+					placeholder="Enter API Key..."
 					style={{ width: "100%" }}
 					type="password">
 					<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-						<span style={{ fontWeight: 500 }}>{t("providers.openRouter.apiKey")}</span>
+						<span style={{ fontWeight: 500 }}>OpenRouter API Key</span>
 						{apiConfiguration?.openRouterApiKey && (
 							<OpenRouterBalanceDisplay apiKey={apiConfiguration.openRouterApiKey} />
 						)}
@@ -95,7 +88,7 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: O
 							}
 						}}
 						style={{ margin: "5px 0 0 0" }}>
-						{t("providers.openRouter.getApiKey")}
+						Get OpenRouter API Key
 					</VSCodeButton>
 				)}
 				<p
@@ -104,11 +97,15 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: O
 						marginTop: "5px",
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					{t("providers.openRouter.keyStoredLocally")}
+					This key is stored locally and only used to make API requests from this extension.
 				</p>
 			</div>
 
-			{showModelOptions && <OpenRouterModelPicker currentMode={currentMode} isPopup={isPopup} showProviderRouting={true} />}
+			{showModelOptions && (
+				<>
+					<OpenRouterModelPicker currentMode={currentMode} isPopup={isPopup} showProviderRouting={true} />
+				</>
+			)}
 		</div>
 	)
 }

@@ -5,7 +5,6 @@ import { Mode } from "@shared/storage/types"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import React, { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
 import styled from "styled-components"
 import { useExtensionState } from "../../context/ExtensionStateContext"
@@ -23,7 +22,6 @@ export interface RequestyModelPickerProps {
 }
 
 const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, baseUrl, currentMode }) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration, requestyModels, setRequestyModels } = useExtensionState()
 	const { handleModeFieldsChange } = useApiConfigurationHandlers()
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
@@ -162,7 +160,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [])
+	}, [searchTerm])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
@@ -189,7 +187,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 			</style>
 			<div style={{ display: "flex", flexDirection: "column" }}>
 				<label htmlFor="model-search">
-					<span style={{ fontWeight: 500 }}>{t("settings.model")}</span>
+					<span style={{ fontWeight: 500 }}>Model</span>
 				</label>
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField
@@ -200,7 +198,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder={t("settings.searchSelectModel")}
+						placeholder="Search and select a model..."
 						role="combobox"
 						style={{
 							width: "100%",
@@ -210,7 +208,7 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 						value={searchTerm}>
 						{searchTerm && (
 							<div
-								aria-label={t("clearSearch")}
+								aria-label="Clear search"
 								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									handleModelChange("")
@@ -261,16 +259,18 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 						marginTop: 0,
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					{t("providers.requesty.autoFetchModels")}{" "}
-					<VSCodeLink href={requestyModelListUrl?.toString()} style={{ display: "inline", fontSize: "inherit" }}>
-						{t("providers.requesty.requesty")}
-					</VSCodeLink>
-					{t("providers.requesty.unsureModelChoice")}{" "}
-					<VSCodeLink
-						onClick={() => handleModelChange("anthropic/claude-3-7-sonnet-latest")}
-						style={{ display: "inline", fontSize: "inherit" }}>
-						{t("providers.requesty.recommendedModel")}
-					</VSCodeLink>
+					<>
+						The extension automatically fetches the latest list of models available on{" "}
+						<VSCodeLink href={requestyModelListUrl?.toString()} style={{ display: "inline", fontSize: "inherit" }}>
+							Requesty.
+						</VSCodeLink>
+						If you're unsure which model to choose, Cline works best with{" "}
+						<VSCodeLink
+							onClick={() => handleModelChange("anthropic/claude-3-7-sonnet-latest")}
+							style={{ display: "inline", fontSize: "inherit" }}>
+							anthropic/claude-3-7-sonnet-latest.
+						</VSCodeLink>
+					</>
 				</p>
 			)}
 		</div>

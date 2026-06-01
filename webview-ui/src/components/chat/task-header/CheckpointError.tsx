@@ -1,5 +1,4 @@
 import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 
@@ -11,7 +10,6 @@ export const CheckpointError: React.FC<CheckpointErrorProps> = ({
 	checkpointManagerErrorMessage,
 	handleCheckpointSettingsClick,
 }) => {
-	const { t } = useTranslation("common")
 	const messages = useMemo(() => {
 		const message = checkpointManagerErrorMessage?.replace(/disabling checkpoints\.$/, "")
 		const showDisableButton =
@@ -30,18 +28,15 @@ export const CheckpointError: React.FC<CheckpointErrorProps> = ({
 			<Alert title={messages.message} variant="danger">
 				<AlertDescription className="flex gap-2 justify-end">
 					{messages.showDisableButton && (
-						<Button
-							aria-label={t("taskHeader.disableCheckpoints")}
-							onClick={handleCheckpointSettingsClick}
-							variant="ghost">
-							{t("taskHeader.disableCheckpoints")}
+						<Button aria-label="Disable Checkpoints" onClick={handleCheckpointSettingsClick} variant="ghost">
+							Disable Checkpoints
 						</Button>
 					)}
 					{messages.showGitInstructions && (
 						<a
 							className="text-link underline"
 							href="https://github.com/cline/cline/wiki/Installing-Git-for-Checkpoints">
-							{t("taskHeader.seeInstructions")}
+							See instructions
 						</a>
 					)}
 				</AlertDescription>

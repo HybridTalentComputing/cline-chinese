@@ -1,5 +1,4 @@
 import { Mode } from "@shared/storage/types"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { DebouncedTextField } from "../common/DebouncedTextField"
@@ -19,7 +18,6 @@ interface TogetherProviderProps {
  * The Together provider configuration component
  */
 export const TogetherProvider = ({ showModelOptions, isPopup, currentMode }: TogetherProviderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -37,9 +35,9 @@ export const TogetherProvider = ({ showModelOptions, isPopup, currentMode }: Tog
 				onChange={(value) =>
 					handleModeFieldChange({ plan: "planModeTogetherModelId", act: "actModeTogetherModelId" }, value, currentMode)
 				}
-				placeholder={t("providers.together.modelIdPlaceholder")}
+				placeholder={"Enter Model ID..."}
 				style={{ width: "100%" }}>
-				<span style={{ fontWeight: 500 }}>{t("providers.openaiCompatible.modelId")}</span>
+				<span style={{ fontWeight: 500 }}>Model ID</span>
 			</DebouncedTextField>
 			<p
 				style={{
@@ -48,7 +46,8 @@ export const TogetherProvider = ({ showModelOptions, isPopup, currentMode }: Tog
 					color: "var(--vscode-descriptionForeground)",
 				}}>
 				<span style={{ color: "var(--vscode-errorForeground)" }}>
-					{t("providers.openaiCompatible.noteComplexPrompts")}
+					(<span style={{ fontWeight: 500 }}>Note:</span> Cline uses complex prompts and works best with Claude models.
+					Less capable models may not work as expected.)
 				</span>
 			</p>
 		</div>

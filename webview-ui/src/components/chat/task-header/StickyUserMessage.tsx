@@ -1,6 +1,5 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
 import React, { memo, useCallback } from "react"
-import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
 import { highlightText } from "./Highlights"
 
@@ -16,8 +15,6 @@ interface StickyUserMessageProps {
  */
 export const StickyUserMessage: React.FC<StickyUserMessageProps> = memo(
 	({ lastUserMessage, onScrollToMessage, isVisible }) => {
-		const { t } = useTranslation("common")
-
 		const handleClick = useCallback(() => {
 			if (onScrollToMessage) {
 				onScrollToMessage()
@@ -45,7 +42,7 @@ export const StickyUserMessage: React.FC<StickyUserMessageProps> = memo(
 
 		return (
 			<div
-				aria-label={t("stickyUserMessage.scrollToMessage", { text: messageText })}
+				aria-label={`Scroll to your message: ${messageText}`}
 				className={cn(
 					"relative flex items-center px-2.5 pt-2 pb-2 cursor-pointer select-none",
 					"backdrop-blur-sm",
@@ -59,7 +56,7 @@ export const StickyUserMessage: React.FC<StickyUserMessageProps> = memo(
 					borderRadius: "3px",
 				}}
 				tabIndex={0}
-				title={t("stickyUserMessage.clickToScroll")}>
+				title="Click to scroll to your message">
 				{/* Message text (truncated via CSS text-ellipsis) */}
 				<div
 					className={cn(

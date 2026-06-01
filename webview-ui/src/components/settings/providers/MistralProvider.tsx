@@ -1,6 +1,5 @@
 import { mistralModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -21,7 +20,6 @@ interface MistralProviderProps {
  * The Mistral provider configuration component
  */
 export const MistralProvider = ({ showModelOptions, isPopup, currentMode }: MistralProviderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -40,7 +38,7 @@ export const MistralProvider = ({ showModelOptions, isPopup, currentMode }: Mist
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.model")}
+						label="Model"
 						models={mistralModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

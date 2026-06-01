@@ -1,6 +1,5 @@
 import { doubaoModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -21,7 +20,6 @@ interface DoubaoProviderProps {
  * The ByteDance Doubao provider configuration component
  */
 export const DoubaoProvider = ({ showModelOptions, isPopup, currentMode }: DoubaoProviderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -40,7 +38,7 @@ export const DoubaoProvider = ({ showModelOptions, isPopup, currentMode }: Douba
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.model")}
+						label="Model"
 						models={doubaoModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

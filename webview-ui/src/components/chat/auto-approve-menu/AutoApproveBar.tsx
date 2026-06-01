@@ -1,17 +1,15 @@
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import { useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { getAsVar, VSC_TITLEBAR_INACTIVE_FOREGROUND } from "@/utils/vscStyles"
 import AutoApproveModal from "./AutoApproveModal"
-import { getActionMetadata } from "./constants"
+import { ACTION_METADATA } from "./constants"
 
 interface AutoApproveBarProps {
 	style?: React.CSSProperties
 }
 
 const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
-	const { t } = useTranslation("common")
 	const { autoApprovalSettings, yoloModeToggled, navigateToSettings } = useExtensionState()
 
 	const [isModalVisible, setIsModalVisible] = useState(false)
@@ -31,7 +29,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 			(key) => autoApprovalSettings.actions[key as keyof typeof autoApprovalSettings.actions],
 		)
 		const enabledActions = enabledActionsNames.map((action) => {
-			return getActionMetadata().flatMap((a) => [a, a.subAction]).find((a) => a?.id === action)
+			return ACTION_METADATA.flatMap((a) => [a, a.subAction]).find((a) => a?.id === action)
 		})
 
 		// Filter out parent actions if their subaction is also enabled (show only subaction)
@@ -49,7 +47,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 		})
 
 		if (actionsToShow.length === 0) {
-			return <span className={baseClasses}>{t("autoApprove.none")}</span>
+			return <span className={baseClasses}>None</span>
 		}
 
 		return (
@@ -102,7 +100,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 				/>
 
 				<div className="pt-4 pb-3.5 px-3.5">
-					<div className="text-sm mb-1">{t("autoApprove.yolo")}</div>
+					<div className="text-sm mb-1">Auto-approve: YOLO</div>
 					<div className="text-muted-foreground text-xs">
 						YOLO mode is enabled.{" "}
 						<span className="underline cursor-pointer hover:text-foreground" onClick={handleNavigateToFeatures}>
@@ -146,7 +144,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 			/>
 
 			<div
-				aria-label={isModalVisible ? t("autoApprove.closeSettings") : t("autoApprove.openSettings")}
+				aria-label={isModalVisible ? "Close auto-approve settings" : "Open auto-approve settings"}
 				className="group cursor-pointer pt-3 pb-3.5 pr-2 px-3.5 flex items-center justify-between gap-0"
 				onClick={() => {
 					setIsModalVisible((prev) => !prev)
@@ -158,16 +156,17 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 						setIsModalVisible((prev) => !prev)
 					}
 				}}
-				ref={buttonRef}>
+				ref={buttonRef}
+				tabIndex={0}>
 				<div className="flex flex-nowrap items-center gap-1 min-w-0 flex-1">
-					<span className="whitespace-nowrap">{t("autoApprove.label")}</span>
+					<span className="whitespace-nowrap">Auto-approve:</span>
 					{getEnabledActionsText()}
 				</div>
 				{isModalVisible ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
 			</div>
 
 			<AutoApproveModal
-				ACTION_METADATA={getActionMetadata()}
+				ACTION_METADATA={ACTION_METADATA}
 				buttonRef={buttonRef}
 				isVisible={isModalVisible}
 				setIsVisible={setIsModalVisible}

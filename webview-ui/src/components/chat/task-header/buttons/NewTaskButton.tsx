@@ -1,5 +1,4 @@
 import { XIcon } from "lucide-react"
-import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
@@ -8,13 +7,12 @@ const NewTaskButton: React.FC<{
 	onClick: () => void
 	className?: string
 }> = ({ className, onClick }) => {
-	const { t } = useTranslation("common")
 	return (
 		<Tooltip>
-			<TooltipContent side="left">{t("taskHeader.startNewTask")}</TooltipContent>
+			<TooltipContent side="left">Start a New Task</TooltipContent>
 			<TooltipTrigger className={cn("flex items-center", className)}>
 				<Button
-					aria-label={t("taskHeader.newTask")}
+					aria-label="New Task"
 					onClick={(e) => {
 						e.preventDefault()
 						e.stopPropagation()

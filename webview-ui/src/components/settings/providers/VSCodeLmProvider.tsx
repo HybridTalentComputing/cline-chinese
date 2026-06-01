@@ -2,7 +2,6 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import { useCallback, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useInterval } from "react-use"
 import * as vscodemodels from "vscode"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -16,7 +15,6 @@ interface VSCodeLmProviderProps {
 }
 
 export const VSCodeLmProvider = ({ currentMode }: VSCodeLmProviderProps) => {
-	const { t } = useTranslation("settings")
 	const [vsCodeLmModels, setVsCodeLmModels] = useState<vscodemodels.LanguageModelChatSelector[]>([])
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
@@ -27,7 +25,7 @@ export const VSCodeLmProvider = ({ currentMode }: VSCodeLmProviderProps) => {
 	const requestVsCodeLmModels = useCallback(async () => {
 		try {
 			const response = await ModelsServiceClient.getVsCodeLmModels(EmptyRequest.create({}))
-			if (response?.models) {
+			if (response && response.models) {
 				setVsCodeLmModels(response.models)
 			}
 		} catch (error) {
@@ -46,7 +44,7 @@ export const VSCodeLmProvider = ({ currentMode }: VSCodeLmProviderProps) => {
 		<div>
 			<DropdownContainer className="dropdown-container" zIndex={DROPDOWN_Z_INDEX - 2}>
 				<label htmlFor="vscode-lm-model">
-					<span style={{ fontWeight: 500 }}>{t("providers.vscodeLm.languageModel")}</span>
+					<span style={{ fontWeight: 500 }}>Language Model</span>
 				</label>
 				{vsCodeLmModels.length > 0 ? (
 					<VSCodeDropdown
@@ -70,7 +68,7 @@ export const VSCodeLmProvider = ({ currentMode }: VSCodeLmProviderProps) => {
 								? `${vsCodeLmModelSelector.vendor ?? ""}/${vsCodeLmModelSelector.family ?? ""}`
 								: ""
 						}>
-						<VSCodeOption value="">{t("settings.selectModel")}</VSCodeOption>
+						<VSCodeOption value="">Select a model...</VSCodeOption>
 						{vsCodeLmModels.map((model) => (
 							<VSCodeOption key={`${model.vendor}/${model.family}`} value={`${model.vendor}/${model.family}`}>
 								{model.vendor} - {model.family}
@@ -84,9 +82,9 @@ export const VSCodeLmProvider = ({ currentMode }: VSCodeLmProviderProps) => {
 							marginTop: "5px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-							{t("providers.vscodeLm.description")}{" "}
-							<a href="https://marketplace.visualstudio.com/items?itemName=GitHub.copilot">{t("providers.vscodeLm.copilotExtension")}</a>{" "}
-						{t("providers.vscodeLm.enableClaudeModels")}
+						Use models from your GitHub Copilot subscription. Install the{" "}
+						<a href="https://marketplace.visualstudio.com/items?itemName=GitHub.copilot">Copilot extension</a> and
+						enable Claude models in Copilot settings to get started.
 					</p>
 				)}
 			</DropdownContainer>

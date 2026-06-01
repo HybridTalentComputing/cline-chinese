@@ -2,7 +2,6 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect } from "react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { DebouncedTextField } from "../common/DebouncedTextField"
@@ -22,7 +21,6 @@ interface HicapProviderProps {
  * The Hicap provider configuration component
  */
 export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapProviderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration, refreshHicapModels } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
@@ -30,7 +28,7 @@ export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapP
 		if (apiConfiguration?.hicapApiKey && apiConfiguration?.hicapApiKey.length === 32) {
 			refreshHicapModels()
 		}
-	}, [apiConfiguration?.hicapApiKey, refreshHicapModels])
+	}, [apiConfiguration?.hicapApiKey])
 
 	return (
 		<div>
@@ -43,7 +41,7 @@ export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapP
 							refreshHicapModels()
 						}
 					}}
-					placeholder={t("commonFields.enterApiKey")}
+					placeholder="Enter API Key..."
 					style={{ width: "100%" }}
 					type="password">
 					<div
@@ -54,7 +52,7 @@ export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapP
 							width: "100%",
 							margin: "10px 0 0 0",
 						}}>
-						<span style={{ fontWeight: 500 }}>{t("providers.hicap.apiKey")}</span>
+						<span style={{ fontWeight: 500 }}>Hicap API Key</span>
 					</div>
 				</DebouncedTextField>
 

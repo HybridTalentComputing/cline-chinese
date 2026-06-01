@@ -19,50 +19,48 @@ import {
 	VSCodeTextArea,
 	VSCodeTextField,
 } from "@vscode/webview-ui-toolkit/react"
-import { useTranslation } from "react-i18next"
 
 function Demo() {
-	const { t } = useTranslation("misc")
 	const rowData = [
 		{
-			cell1: t("demo.cellData"),
-			cell2: t("demo.cellData"),
-			cell3: t("demo.cellData"),
-			cell4: t("demo.cellData"),
+			cell1: "Cell Data",
+			cell2: "Cell Data",
+			cell3: "Cell Data",
+			cell4: "Cell Data",
 		},
 		{
-			cell1: t("demo.cellData"),
-			cell2: t("demo.cellData"),
-			cell3: t("demo.cellData"),
-			cell4: t("demo.cellData"),
+			cell1: "Cell Data",
+			cell2: "Cell Data",
+			cell3: "Cell Data",
+			cell4: "Cell Data",
 		},
 		{
-			cell1: t("demo.cellData"),
-			cell2: t("demo.cellData"),
-			cell3: t("demo.cellData"),
-			cell4: t("demo.cellData"),
+			cell1: "Cell Data",
+			cell2: "Cell Data",
+			cell3: "Cell Data",
+			cell4: "Cell Data",
 		},
 	]
 
 	return (
 		<main>
-			<h1>{t("demo.helloWorld")}</h1>
-			<VSCodeButton>{t("demo.howdy")}</VSCodeButton>
+			<h1>Hello World!</h1>
+			<VSCodeButton>Howdy!</VSCodeButton>
 
 			<div className="grid gap-3 p-2 place-items-start">
 				<VSCodeDataGrid>
 					<VSCodeDataGridRow row-type="header">
 						<VSCodeDataGridCell cell-type="columnheader" grid-column="1">
-							{t("demo.customHeaderTitle")}
+							A Custom Header Title
 						</VSCodeDataGridCell>
 						<VSCodeDataGridCell cell-type="columnheader" grid-column="2">
-							{t("demo.anotherCustomTitle")}
+							Another Custom Title
 						</VSCodeDataGridCell>
 						<VSCodeDataGridCell cell-type="columnheader" grid-column="3">
-							{t("demo.titleIsCustom")}
+							Title Is Custom
 						</VSCodeDataGridCell>
 						<VSCodeDataGridCell cell-type="columnheader" grid-column="4">
-							{t("demo.customTitle")}
+							Custom Title
 						</VSCodeDataGridCell>
 					</VSCodeDataGridRow>
 					{rowData.map((row, index) => (
@@ -77,46 +75,46 @@ function Demo() {
 
 				<VSCodeTextField>
 					<section slot="end" style={{ display: "flex", alignItems: "center" }}>
-						<VSCodeButton appearance="icon" aria-label={t("demo.matchCase")}>
-							<span className="codicon codicon-case-sensitive" />
+						<VSCodeButton appearance="icon" aria-label="Match Case">
+							<span className="codicon codicon-case-sensitive"></span>
 						</VSCodeButton>
-						<VSCodeButton appearance="icon" aria-label={t("demo.matchWholeWord")}>
-							<span className="codicon codicon-whole-word" />
+						<VSCodeButton appearance="icon" aria-label="Match Whole Word">
+							<span className="codicon codicon-whole-word"></span>
 						</VSCodeButton>
-						<VSCodeButton appearance="icon" aria-label={t("demo.useRegularExpression")}>
-							<span className="codicon codicon-regex" />
+						<VSCodeButton appearance="icon" aria-label="Use Regular Expression">
+							<span className="codicon codicon-regex"></span>
 						</VSCodeButton>
 					</section>
 				</VSCodeTextField>
-				<span className="codicon codicon-chevron-right" slot="end" />
+				<span className="codicon codicon-chevron-right" slot="end"></span>
 
 				<span className="flex gap-3">
 					<VSCodeProgressRing />
 					<VSCodeTextField />
-					<VSCodeButton>{t("demo.add")}</VSCodeButton>
-					<VSCodeButton appearance="secondary">{t("demo.remove")}</VSCodeButton>
+					<VSCodeButton>Add</VSCodeButton>
+					<VSCodeButton appearance="secondary">Remove</VSCodeButton>
 				</span>
 
-				<VSCodeBadge>{t("demo.badge")}</VSCodeBadge>
-				<VSCodeCheckbox>{t("demo.checkbox")}</VSCodeCheckbox>
+				<VSCodeBadge>Badge</VSCodeBadge>
+				<VSCodeCheckbox>Checkbox</VSCodeCheckbox>
 				<VSCodeDivider />
 				<VSCodeDropdown>
-					<VSCodeOption>{t("demo.option1")}</VSCodeOption>
-					<VSCodeOption>{t("demo.option2")}</VSCodeOption>
+					<VSCodeOption>Option 1</VSCodeOption>
+					<VSCodeOption>Option 2</VSCodeOption>
 				</VSCodeDropdown>
-				<VSCodeLink href="#">{t("demo.link")}</VSCodeLink>
+				<VSCodeLink href="#">Link</VSCodeLink>
 				<VSCodePanels>
-					<VSCodePanelTab id="tab-1">{t("demo.tab1")}</VSCodePanelTab>
-					<VSCodePanelTab id="tab-2">{t("demo.tab2")}</VSCodePanelTab>
-					<VSCodePanelView id="view-1">{t("demo.panelView1")}</VSCodePanelView>
-					<VSCodePanelView id="view-2">{t("demo.panelView2")}</VSCodePanelView>
+					<VSCodePanelTab id="tab-1">Tab 1</VSCodePanelTab>
+					<VSCodePanelTab id="tab-2">Tab 2</VSCodePanelTab>
+					<VSCodePanelView id="view-1">Panel View 1</VSCodePanelView>
+					<VSCodePanelView id="view-2">Panel View 2</VSCodePanelView>
 				</VSCodePanels>
 				<VSCodeRadioGroup>
-					<VSCodeRadio>{t("demo.radio1")}</VSCodeRadio>
-					<VSCodeRadio>{t("demo.radio2")}</VSCodeRadio>
+					<VSCodeRadio>Radio 1</VSCodeRadio>
+					<VSCodeRadio>Radio 2</VSCodeRadio>
 				</VSCodeRadioGroup>
-				<VSCodeTag>{t("demo.tag")}</VSCodeTag>
-				<VSCodeTextArea placeholder={t("demo.textAreaPlaceholder")} />
+				<VSCodeTag>Tag</VSCodeTag>
+				<VSCodeTextArea placeholder="Text Area" />
 			</div>
 		</main>
 	)

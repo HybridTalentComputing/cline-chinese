@@ -1,6 +1,5 @@
 import { geminiModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { BaseUrlField } from "../common/BaseUrlField"
@@ -23,7 +22,6 @@ interface GeminiProviderProps {
  * The Gemini provider configuration component
  */
 export const GeminiProvider = ({ showModelOptions, isPopup, currentMode }: GeminiProviderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -42,15 +40,15 @@ export const GeminiProvider = ({ showModelOptions, isPopup, currentMode }: Gemin
 
 			<BaseUrlField
 				initialValue={apiConfiguration?.geminiBaseUrl}
-				label={t("providers.gemini.useCustomBaseUrl")}
+				label="Use custom base URL"
 				onChange={(value) => handleFieldChange("geminiBaseUrl", value)}
-				placeholder={t("providers.gemini.defaultBaseUrl")}
+				placeholder="Default: https://generativelanguage.googleapis.com"
 			/>
 
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.model")}
+						label="Model"
 						models={geminiModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

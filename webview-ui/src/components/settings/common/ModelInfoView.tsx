@@ -1,7 +1,6 @@
 import { geminiModels, ModelInfo } from "@shared/api"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { ModelDescriptionMarkdown } from "../ModelDescriptionMarkdown"
 import { formatPrice, hasThinkingBudget, supportsBrowserUse, supportsImages, supportsPromptCache } from "../utils/pricingUtils"
@@ -187,7 +186,6 @@ export const ModelInfoView = ({
 	onProviderSortingChange,
 	showProviderRouting,
 }: ModelInfoViewProps) => {
-	const { t } = useTranslation("settings")
 	const [advancedExpanded, setAdvancedExpanded] = useState(false)
 
 	const isGemini = Object.keys(geminiModels).includes(selectedModelId)
@@ -213,19 +211,19 @@ export const ModelInfoView = ({
 			<InfoRow>
 				{modelInfo.contextWindow !== undefined && modelInfo.contextWindow > 0 && (
 					<InfoItem>
-						<InfoLabel>{t("commonFields.context")} </InfoLabel>
+						<InfoLabel>Context: </InfoLabel>
 						<InfoValue>{formatCompactContext(modelInfo.contextWindow)}</InfoValue>
 					</InfoItem>
 				)}
 				{modelInfo.inputPrice !== undefined && (
 					<InfoItem>
-						<InfoLabel>{t("commonFields.inputLabel")} </InfoLabel>
+						<InfoLabel>Input: </InfoLabel>
 						<InfoValue>{formatCompactPrice(modelInfo.inputPrice)}</InfoValue>
 					</InfoItem>
 				)}
 				{modelInfo.outputPrice !== undefined && (
 					<InfoItem>
-						<InfoLabel>{t("commonFields.outputLabel")} </InfoLabel>
+						<InfoLabel>Output: </InfoLabel>
 						<InfoValue>
 							{hasThinkingConfig && modelInfo.thinkingConfig?.outputPrice !== undefined
 								? formatCompactPrice(modelInfo.thinkingConfig.outputPrice)
@@ -238,23 +236,23 @@ export const ModelInfoView = ({
 			{/* Collapsible Advanced Section */}
 			<CollapsibleHeader onClick={() => setAdvancedExpanded(!advancedExpanded)}>
 				<CollapsibleArrow $isExpanded={advancedExpanded}>▶</CollapsibleArrow>
-				{t("commonFields.advanced")}
+				Advanced
 			</CollapsibleHeader>
 			<CollapsibleContent $isExpanded={advancedExpanded}>
 				<AdvancedSection>
 					{/* Capabilities */}
 					<AdvancedRow>
-						<AdvancedLabel>{t("commonFields.images")}</AdvancedLabel>
-						<AdvancedValue>{hasImages ? t("commonFields.yes") : t("commonFields.no")}</AdvancedValue>
+						<AdvancedLabel>Images</AdvancedLabel>
+						<AdvancedValue>{hasImages ? "Yes" : "No"}</AdvancedValue>
 					</AdvancedRow>
 					<AdvancedRow>
-						<AdvancedLabel>{t("commonFields.browser")}</AdvancedLabel>
-						<AdvancedValue>{hasBrowser ? t("commonFields.yes") : t("commonFields.no")}</AdvancedValue>
+						<AdvancedLabel>Browser</AdvancedLabel>
+						<AdvancedValue>{hasBrowser ? "Yes" : "No"}</AdvancedValue>
 					</AdvancedRow>
 					{!isGemini && (
 						<AdvancedRow>
-							<AdvancedLabel>{t("commonFields.promptCaching")}</AdvancedLabel>
-							<AdvancedValue>{hasCaching ? t("commonFields.yes") : t("commonFields.no")}</AdvancedValue>
+							<AdvancedLabel>Prompt Caching</AdvancedLabel>
+							<AdvancedValue>{hasCaching ? "Yes" : "No"}</AdvancedValue>
 						</AdvancedRow>
 					)}
 
@@ -263,13 +261,13 @@ export const ModelInfoView = ({
 						<>
 							{modelInfo.cacheReadsPrice !== undefined && (
 								<AdvancedRow>
-									<AdvancedLabel>{t("commonFields.cacheReads")}</AdvancedLabel>
+									<AdvancedLabel>Cache Reads</AdvancedLabel>
 									<AdvancedValue>{formatCompactPrice(modelInfo.cacheReadsPrice)}</AdvancedValue>
 								</AdvancedRow>
 							)}
 							{modelInfo.cacheWritesPrice !== undefined && (
 								<AdvancedRow>
-									<AdvancedLabel>{t("commonFields.cacheWrites")}</AdvancedLabel>
+									<AdvancedLabel>Cache Writes</AdvancedLabel>
 									<AdvancedValue>{formatCompactPrice(modelInfo.cacheWritesPrice)}</AdvancedValue>
 								</AdvancedRow>
 							)}
@@ -279,16 +277,16 @@ export const ModelInfoView = ({
 					{/* Tiered Pricing */}
 					{hasTiers && (
 						<div style={{ marginTop: 8 }}>
-							<div style={{ fontWeight: 500, marginBottom: 4 }}>{t("commonFields.tieredPricing")}</div>
+							<div style={{ fontWeight: 500, marginBottom: 4 }}>Tiered Pricing:</div>
 							{modelInfo.tiers && (
 								<>
 									<div>
-										<span style={{ fontWeight: 500 }}>{t("commonFields.inputLabel")}</span>
+										<span style={{ fontWeight: 500 }}>Input:</span>
 										<br />
 										{formatTiers(modelInfo.tiers, "inputPrice")}
 									</div>
 									<div style={{ marginTop: 4 }}>
-										<span style={{ fontWeight: 500 }}>{t("commonFields.outputLabel")}</span>
+										<span style={{ fontWeight: 500 }}>Output:</span>
 										<br />
 										{formatTiers(modelInfo.tiers, "outputPrice")}
 									</div>
@@ -300,15 +298,15 @@ export const ModelInfoView = ({
 					{/* Provider Routing */}
 					{showProviderRouting && onProviderSortingChange && (
 						<ProviderRoutingContainer>
-							<ProviderRoutingLabel>{t("commonFields.providerRouting")}</ProviderRoutingLabel>
+							<ProviderRoutingLabel>Provider Routing</ProviderRoutingLabel>
 							<VSCodeDropdown
 								onChange={(e: any) => onProviderSortingChange(e.target.value)}
 								style={{ width: "100%" }}
 								value={providerSorting || ""}>
-								<VSCodeOption value="">{t("commonFields.default")}</VSCodeOption>
-								<VSCodeOption value="price">{t("commonFields.price")}</VSCodeOption>
-								<VSCodeOption value="throughput">{t("commonFields.throughput")}</VSCodeOption>
-								<VSCodeOption value="latency">{t("commonFields.latency")}</VSCodeOption>
+								<VSCodeOption value="">Default</VSCodeOption>
+								<VSCodeOption value="price">Price</VSCodeOption>
+								<VSCodeOption value="throughput">Throughput</VSCodeOption>
+								<VSCodeOption value="latency">Latency</VSCodeOption>
 							</VSCodeDropdown>
 							<p
 								style={{
@@ -317,10 +315,12 @@ export const ModelInfoView = ({
 									marginBottom: 0,
 									color: "var(--vscode-descriptionForeground)",
 								}}>
-								{!providerSorting && t("commonFields.providerRoutingDefault")}
-								{providerSorting === "price" && t("commonFields.providerRoutingPrice")}
-								{providerSorting === "throughput" && t("commonFields.providerRoutingThroughput")}
-								{providerSorting === "latency" && t("commonFields.providerRoutingLatency")}
+								{!providerSorting &&
+									"Load balance across providers (AWS, Google Vertex, etc.), prioritizing price while considering uptime"}
+								{providerSorting === "price" && "Sort by price, prioritizing the lowest cost provider"}
+								{providerSorting === "throughput" &&
+									"Sort by throughput, prioritizing highest throughput (may increase cost)"}
+								{providerSorting === "latency" && "Sort by response time, prioritizing lowest latency"}
 							</p>
 						</ProviderRoutingContainer>
 					)}

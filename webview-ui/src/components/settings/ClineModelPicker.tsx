@@ -6,10 +6,8 @@ import type { Mode } from "@shared/storage/types"
 import { isClaudeOpusAdaptiveThinkingModel, resolveClaudeOpusAdaptiveThinking } from "@shared/utils/reasoning-support"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
-import i18next from "i18next"
 import type React from "react"
 import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -81,9 +79,7 @@ function toFeaturedModelCardEntry(
 
 	return {
 		id: model.id,
-		description:
-			model.description ||
-			(fallbackLabel === "FREE" ? i18next.t("settings.freeModel") : i18next.t("settings.recommendedModel")),
+		description: model.description || (fallbackLabel === "FREE" ? "Free model" : "Recommended model"),
 		label: normalizedLabel || fallbackLabel,
 	}
 }
@@ -97,7 +93,6 @@ const FREE_MODELS_FALLBACK: FeaturedModelCardEntry[] = CLINE_RECOMMENDED_MODELS_
 	.filter((model): model is FeaturedModelCardEntry => model !== null)
 
 const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMode, showProviderRouting, initialTab }) => {
-	const { t } = useTranslation("settings")
 	const { handleModeFieldsChange, handleFieldChange } = useApiConfigurationHandlers()
 	const { apiConfiguration, favoritedModelIds, clineModels, refreshClineModels } = useExtensionState()
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
@@ -341,7 +336,7 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [])
+	}, [searchTerm])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
@@ -396,50 +391,52 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 			</style>
 			<div style={{ display: "flex", flexDirection: "column" }}>
 				<label htmlFor="model-search">
-					<span style={{ fontWeight: 500 }}>{t("settings.model")}</span>
+					<span style={{ fontWeight: 500 }}>Model</span>
 				</label>
 
-				{/* Tabs */}
-				<TabsContainer style={{ marginTop: 4 }}>
-					<Tab active={activeTab === "recommended"} onClick={() => setActiveTab("recommended")}>
-						Recommended
-					</Tab>
-					<Tab active={activeTab === "free"} onClick={() => setActiveTab("free")}>
-						Free
-					</Tab>
-				</TabsContainer>
+				<>
+					{/* Tabs */}
+					<TabsContainer style={{ marginTop: 4 }}>
+						<Tab active={activeTab === "recommended"} onClick={() => setActiveTab("recommended")}>
+							Recommended
+						</Tab>
+						<Tab active={activeTab === "free"} onClick={() => setActiveTab("free")}>
+							Free
+						</Tab>
+					</TabsContainer>
 
-				{/* Model Cards */}
-				<div style={{ marginBottom: "6px" }}>
-					{activeTab === "recommended" &&
-						recommendedModels.map((model) => (
-							<FeaturedModelCard
-								description={model.description}
-								isSelected={selectedModelId === model.id}
-								key={model.id}
-								label={model.label}
-								modelId={model.id}
-								onClick={() => {
-									handleModelChange(model.id)
-									setIsDropdownVisible(false)
-								}}
-							/>
-						))}
-					{activeTab === "free" &&
-						freeModels.map((model) => (
-							<FeaturedModelCard
-								description={model.description}
-								isSelected={selectedModelId === model.id}
-								key={model.id}
-								label={model.label}
-								modelId={model.id}
-								onClick={() => {
-									handleModelChange(model.id)
-									setIsDropdownVisible(false)
-								}}
-							/>
-						))}
-				</div>
+					{/* Model Cards */}
+					<div style={{ marginBottom: "6px" }}>
+						{activeTab === "recommended" &&
+							recommendedModels.map((model) => (
+								<FeaturedModelCard
+									description={model.description}
+									isSelected={selectedModelId === model.id}
+									key={model.id}
+									label={model.label}
+									modelId={model.id}
+									onClick={() => {
+										handleModelChange(model.id)
+										setIsDropdownVisible(false)
+									}}
+								/>
+							))}
+						{activeTab === "free" &&
+							freeModels.map((model) => (
+								<FeaturedModelCard
+									description={model.description}
+									isSelected={selectedModelId === model.id}
+									key={model.id}
+									label={model.label}
+									modelId={model.id}
+									onClick={() => {
+										handleModelChange(model.id)
+										setIsDropdownVisible(false)
+									}}
+								/>
+							))}
+					</div>
+				</>
 
 				<DropdownWrapper ref={dropdownRef}>
 					<VSCodeTextField
@@ -455,7 +452,7 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder={t("settings.searchSelectModel")}
+						placeholder="Search and select a model..."
 						role="combobox"
 						style={{
 							width: "100%",
@@ -465,7 +462,7 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 						value={searchTerm}>
 						{searchTerm && (
 							<div
-								aria-label={t("clearSearch")}
+								aria-label="Clear search"
 								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									setSearchTerm("")
@@ -514,6 +511,14 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 						</DropdownList>
 					)}
 				</DropdownWrapper>
+
+				{/* Context window switcher for Claude Opus 4.8 */}
+				<ContextWindowSwitcher
+					base1mModelId={`anthropic/claude-opus-4.8${CLAUDE_SONNET_1M_SUFFIX}`}
+					base200kModelId="anthropic/claude-opus-4.8"
+					onModelChange={handleModelChange}
+					selectedModelId={selectedModelId}
+				/>
 
 				{/* Context window switcher for Claude Opus 4.7 */}
 				<ContextWindowSwitcher
@@ -566,8 +571,12 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 							}
 							currentMode={currentMode}
 							defaultEffort={showAdaptiveThinkingEffort ? adaptiveThinkingDefaultEffort : "medium"}
-							description={showAdaptiveThinkingEffort ? t("settings.adaptiveThinkingDescription") : undefined}
-							label={showAdaptiveThinkingEffort ? t("settings.adaptiveThinking") : undefined}
+							description={
+								showAdaptiveThinkingEffort
+									? "Use None to disable adaptive thinking. Higher effort increases response detail and token usage."
+									: undefined
+							}
+							label={showAdaptiveThinkingEffort ? "Adaptive Thinking" : undefined}
 						/>
 					)}
 
@@ -587,7 +596,8 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 						marginTop: 0,
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					{t("settings.autoFetchModelList")} <strong>anthropic/claude-sonnet-4.5</strong>.
+					The extension automatically fetches the latest Cline model list. If you're unsure which model to choose, Cline
+					works best with <strong>anthropic/claude-sonnet-4.5</strong>.
 				</p>
 			)}
 		</div>

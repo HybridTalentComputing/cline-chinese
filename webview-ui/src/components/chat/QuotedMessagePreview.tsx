@@ -1,6 +1,5 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React from "react"
-import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const PreviewContainer = styled.div`
@@ -71,17 +70,16 @@ interface QuotedMessagePreviewProps {
 }
 
 const QuotedMessagePreview: React.FC<QuotedMessagePreviewProps> = ({ text, onDismiss, isFocused }) => {
-	const { t } = useTranslation("common")
 	const _cardClassName = `reply-card ${isFocused ? "reply-card--focused" : ""}`
 
 	return (
 		<PreviewContainer>
 			{/* Removed Label */}
 			<ContentRow>
-				<ReplyIcon className="codicon codicon-reply" />
+				<ReplyIcon className="codicon codicon-reply"></ReplyIcon>
 				<TextContainer title={text}>{text}</TextContainer>
-				<DismissButton appearance="icon" aria-label={t("quotedMessage.dismissQuote")} onClick={onDismiss}>
-					<span className="codicon codicon-close" />
+				<DismissButton appearance="icon" aria-label="Dismiss quote" onClick={onDismiss}>
+					<span className="codicon codicon-close"></span>
 				</DismissButton>
 			</ContentRow>
 		</PreviewContainer>

@@ -1,7 +1,7 @@
 import { Logger } from "@/shared/services/Logger"
 import type { ClineDefaultTool } from "@/shared/tools"
 import { ClineToolSet } from "../registry/ClineToolSet"
-import { type ClineToolSpec, resolveDescription, resolveInstruction } from "../spec"
+import { type ClineToolSpec, resolveInstruction } from "../spec"
 import { STANDARD_PLACEHOLDERS } from "../templates/placeholders"
 import { TemplateEngine } from "../templates/TemplateEngine"
 import type { ComponentRegistry, PromptVariant, SystemPromptContext } from "../types"
@@ -145,12 +145,12 @@ export class PromptBuilder {
 
 	public static tool(config: ClineToolSpec, registry: ClineDefaultTool[], context: SystemPromptContext): string {
 		// Skip tools without parameters or description - those are placeholder tools
-		if (!config.parameters?.length && !config.description) {
+		if (!config.parameters?.length && !config.description?.length) {
 			return ""
 		}
 		const displayName = config.name || config.id
 		const title = `## ${displayName}`
-		const description = [`Description: ${resolveDescription(config.description, context)}`]
+		const description = [`Description: ${config.description}`]
 
 		if (!config.parameters?.length) {
 			config.parameters = []

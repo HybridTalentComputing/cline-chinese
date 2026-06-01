@@ -1,6 +1,5 @@
 import { CheckCheckIcon, CopyIcon } from "lucide-react"
 import { forwardRef, useCallback, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -34,7 +33,6 @@ const POSITION_CLASSES = {
  * Base copy button component with clipboard functionality
  */
 export const CopyButton: React.FC<CopyButtonProps> = ({ textToCopy, onCopy, className, ariaLabel }) => {
-	const { t } = useTranslation("misc")
 	const [copied, setCopied] = useState(false)
 
 	const handleCopy = useCallback(() => {
@@ -54,7 +52,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ textToCopy, onCopy, clas
 
 	return (
 		<Button
-			aria-label={copied ? t("common.copyButton.copied") : ariaLabel || t("common.copyButton.copy")}
+			aria-label={copied ? "Copied" : ariaLabel || "Copy"}
 			className={cn("scale-90", className)}
 			onClick={handleCopy}
 			size="icon"

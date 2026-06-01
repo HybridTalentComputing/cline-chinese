@@ -1,7 +1,6 @@
 import { EmptyRequest } from "@shared/proto/index.cline"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { RemoteConfigToggle } from "@/components/account/RemoteConfigToggle"
 import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -24,7 +23,6 @@ function BaseRemoteConfigSection({ renderSectionHeader, children }: React.PropsW
 const AUTOMATIC_DELAY_MS = 30000
 
 function RefreshButton() {
-	const { t } = useTranslation("settings")
 	const [isLoading, setIsLoading] = useState(false)
 	const [retryIn, setRetryIn] = useState<number | null>(null)
 	const intervalRef = useRef<NodeJS.Timeout>()
@@ -71,17 +69,12 @@ interface SettingRowProps {
 }
 
 function SettingRow({ label, value, isSecret }: SettingRowProps) {
-	const { t } = useTranslation("settings")
 	const displayValue = (() => {
 		if (value === undefined || value === null) {
-			return <span className="text-description italic">{t("remoteConfig.notConfigured")}</span>
+			return <span className="text-description italic">Not configured</span>
 		}
 		if (typeof value === "boolean") {
-			return value ? (
-				<span className="text-green-500">{t("remoteConfig.enabled")}</span>
-			) : (
-				<span className="text-description">{t("remoteConfig.disabled")}</span>
-			)
+			return value ? <span className="text-green-500">Enabled</span> : <span className="text-description">Disabled</span>
 		}
 		if (isSecret && typeof value === "string" && value.length > 0) {
 			return <span className="font-mono text-xs">{"•".repeat(Math.min(value.length, 20))}</span>
@@ -115,7 +108,6 @@ interface TestButtonProps {
 }
 
 function TestButton({ label, onClick, disabled, successMessage }: TestButtonProps) {
-	const { t } = useTranslation("settings")
 	const [isLoading, setIsLoading] = useState(false)
 	const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
 	const timeoutRef = useRef<NodeJS.Timeout>()
@@ -133,9 +125,9 @@ function TestButton({ label, onClick, disabled, successMessage }: TestButtonProp
 		setResult(null)
 		try {
 			await onClick()
-			setResult({ success: true, message: successMessage || t("remoteConfig.success") })
+			setResult({ success: true, message: successMessage || "Success!" })
 		} catch (error) {
-			setResult({ success: false, message: error instanceof Error ? error.message : t("remoteConfig.failed") })
+			setResult({ success: false, message: error instanceof Error ? error.message : "Failed" })
 		} finally {
 			setIsLoading(false)
 			timeoutRef.current = setTimeout(() => setResult(null), 5000)
@@ -149,7 +141,7 @@ function TestButton({ label, onClick, disabled, successMessage }: TestButtonProp
 				className={isLoading ? "animate-pulse" : ""}
 				disabled={disabled || isLoading}
 				onClick={handleClick}>
-				{isLoading ? t("remoteConfig.testing") : label}
+				{isLoading ? "Testing..." : label}
 			</VSCodeButton>
 			{result && <span className={`text-xs ${result.success ? "text-green-500" : "text-red-500"}`}>{result.message}</span>}
 		</div>
@@ -157,7 +149,6 @@ function TestButton({ label, onClick, disabled, successMessage }: TestButtonProp
 }
 
 function OtelSettingsSection() {
-	const { t } = useTranslation("settings")
 	const { remoteConfigSettings } = useExtensionState()
 
 	const otelEnabled = remoteConfigSettings?.openTelemetryEnabled
@@ -185,55 +176,40 @@ function OtelSettingsSection() {
 				OpenTelemetry Configuration
 			</h4>
 			<div className="bg-vscode-textBlockQuote-background rounded p-3 mb-2">
-				<SettingRow label={t("remoteConfig.otelEnabled")} value={otelEnabled} />
-				<SettingRow
-					label={t("remoteConfig.metricsExporter")}
-					value={remoteConfigSettings?.openTelemetryMetricsExporter}
-				/>
-				<SettingRow label={t("remoteConfig.logsExporter")} value={remoteConfigSettings?.openTelemetryLogsExporter} />
-				<SettingRow label={t("remoteConfig.otlpProtocol")} value={remoteConfigSettings?.openTelemetryOtlpProtocol} />
-				<SettingRow label={t("remoteConfig.otlpEndpoint")} value={remoteConfigSettings?.openTelemetryOtlpEndpoint} />
+				<SettingRow label="Enabled" value={otelEnabled} />
+				<SettingRow label="Metrics Exporter" value={remoteConfigSettings?.openTelemetryMetricsExporter} />
+				<SettingRow label="Logs Exporter" value={remoteConfigSettings?.openTelemetryLogsExporter} />
+				<SettingRow label="OTLP Protocol" value={remoteConfigSettings?.openTelemetryOtlpProtocol} />
+				<SettingRow label="OTLP Endpoint" value={remoteConfigSettings?.openTelemetryOtlpEndpoint} />
 				{remoteConfigSettings?.openTelemetryOtlpMetricsEndpoint && (
-					<SettingRow
-						label={t("remoteConfig.metricsEndpoint")}
-						value={remoteConfigSettings?.openTelemetryOtlpMetricsEndpoint}
-					/>
+					<SettingRow label="Metrics Endpoint" value={remoteConfigSettings?.openTelemetryOtlpMetricsEndpoint} />
 				)}
 				{remoteConfigSettings?.openTelemetryOtlpLogsEndpoint && (
-					<SettingRow
-						label={t("remoteConfig.logsEndpoint")}
-						value={remoteConfigSettings?.openTelemetryOtlpLogsEndpoint}
-					/>
+					<SettingRow label="Logs Endpoint" value={remoteConfigSettings?.openTelemetryOtlpLogsEndpoint} />
 				)}
 				{remoteConfigSettings?.openTelemetryOtlpHeaders && (
 					<SettingRow
-						label={t("remoteConfig.otlpHeaders")}
-						value={`${Object.keys(remoteConfigSettings.openTelemetryOtlpHeaders).length} ${t("remoteConfig.headerCount", { count: Object.keys(remoteConfigSettings.openTelemetryOtlpHeaders).length })}`}
+						label="OTLP Headers"
+						value={`${Object.keys(remoteConfigSettings.openTelemetryOtlpHeaders).length} header(s)`}
 					/>
 				)}
 				{remoteConfigSettings?.openTelemetryMetricExportInterval && (
 					<SettingRow
-						label={t("remoteConfig.metricExportInterval")}
+						label="Metric Export Interval"
 						value={`${remoteConfigSettings.openTelemetryMetricExportInterval}ms`}
 					/>
 				)}
 				{remoteConfigSettings?.openTelemetryOtlpInsecure !== undefined && (
-					<SettingRow label={t("remoteConfig.otlpInsecure")} value={remoteConfigSettings?.openTelemetryOtlpInsecure} />
+					<SettingRow label="OTLP Insecure" value={remoteConfigSettings?.openTelemetryOtlpInsecure} />
 				)}
 				{remoteConfigSettings?.openTelemetryLogBatchSize && (
-					<SettingRow label={t("remoteConfig.logBatchSize")} value={remoteConfigSettings?.openTelemetryLogBatchSize} />
+					<SettingRow label="Log Batch Size" value={remoteConfigSettings?.openTelemetryLogBatchSize} />
 				)}
 				{remoteConfigSettings?.openTelemetryLogBatchTimeout && (
-					<SettingRow
-						label={t("remoteConfig.logBatchTimeout")}
-						value={`${remoteConfigSettings.openTelemetryLogBatchTimeout}ms`}
-					/>
+					<SettingRow label="Log Batch Timeout" value={`${remoteConfigSettings.openTelemetryLogBatchTimeout}ms`} />
 				)}
 				{remoteConfigSettings?.openTelemetryLogMaxQueueSize && (
-					<SettingRow
-						label={t("remoteConfig.logMaxQueueSize")}
-						value={remoteConfigSettings?.openTelemetryLogMaxQueueSize}
-					/>
+					<SettingRow label="Log Max Queue Size" value={remoteConfigSettings?.openTelemetryLogMaxQueueSize} />
 				)}
 			</div>
 
@@ -241,9 +217,9 @@ function OtelSettingsSection() {
 				<div className="flex gap-2 flex-wrap">
 					<TestButton
 						disabled={!remoteConfigSettings?.openTelemetryMetricsExporter}
-						label={t("remoteConfig.test")}
+						label="Test"
 						onClick={handleTestOtel}
-						successMessage={t("remoteConfig.flushedBuffers")}
+						successMessage="Flushed buffers! Please check the output channel for more detailed information"
 					/>
 				</div>
 			)}
@@ -252,7 +228,6 @@ function OtelSettingsSection() {
 }
 
 function PromptUploadingSection() {
-	const { t } = useTranslation("settings")
 	const { remoteConfigSettings } = useExtensionState()
 
 	const blobStoreConfig = remoteConfigSettings?.blobStoreConfig
@@ -274,37 +249,26 @@ function PromptUploadingSection() {
 				Prompt Uploading Configuration
 			</h4>
 			<div className="bg-vscode-textBlockQuote-background rounded p-3 mb-2">
-				<SettingRow label={t("remoteConfig.storageType")} value={blobStoreConfig.adapterType?.toUpperCase()} />
-				<SettingRow label={t("remoteConfig.bucket")} value={blobStoreConfig.bucket} />
-				<SettingRow label={t("remoteConfig.region")} value={blobStoreConfig.region} />
-				{blobStoreConfig.endpoint && <SettingRow label={t("remoteConfig.endpoint")} value={blobStoreConfig.endpoint} />}
-				{blobStoreConfig.accountId && (
-					<SettingRow label={t("remoteConfig.accountId")} value={blobStoreConfig.accountId} />
-				)}
-				<SettingRow isSecret label={t("remoteConfig.accessKeyId")} value={blobStoreConfig.accessKeyId} />
-				<SettingRow isSecret label={t("remoteConfig.secretAccessKey")} value={blobStoreConfig.secretAccessKey} />
-				{blobStoreConfig.intervalMs && (
-					<SettingRow label={t("remoteConfig.syncInterval")} value={`${blobStoreConfig.intervalMs}ms`} />
-				)}
-				{blobStoreConfig.batchSize && (
-					<SettingRow label={t("remoteConfig.batchSize")} value={blobStoreConfig.batchSize} />
-				)}
-				{blobStoreConfig.maxRetries && (
-					<SettingRow label={t("remoteConfig.maxRetries")} value={blobStoreConfig.maxRetries} />
-				)}
-				{blobStoreConfig.maxQueueSize && (
-					<SettingRow label={t("remoteConfig.maxQueueSize")} value={blobStoreConfig.maxQueueSize} />
-				)}
-				<SettingRow label={t("remoteConfig.backfillEnabled")} value={blobStoreConfig.backfillEnabled} />
+				<SettingRow label="Storage Type" value={blobStoreConfig.adapterType?.toUpperCase()} />
+				<SettingRow label="Bucket" value={blobStoreConfig.bucket} />
+				<SettingRow label="Region" value={blobStoreConfig.region} />
+				{blobStoreConfig.endpoint && <SettingRow label="Endpoint" value={blobStoreConfig.endpoint} />}
+				{blobStoreConfig.accountId && <SettingRow label="Account ID" value={blobStoreConfig.accountId} />}
+				<SettingRow isSecret label="Access Key ID" value={blobStoreConfig.accessKeyId} />
+				<SettingRow isSecret label="Secret Access Key" value={blobStoreConfig.secretAccessKey} />
+				{blobStoreConfig.intervalMs && <SettingRow label="Sync Interval" value={`${blobStoreConfig.intervalMs}ms`} />}
+				{blobStoreConfig.batchSize && <SettingRow label="Batch Size" value={blobStoreConfig.batchSize} />}
+				{blobStoreConfig.maxRetries && <SettingRow label="Max Retries" value={blobStoreConfig.maxRetries} />}
+				{blobStoreConfig.maxQueueSize && <SettingRow label="Max Queue Size" value={blobStoreConfig.maxQueueSize} />}
+				<SettingRow label="Backfill Enabled" value={blobStoreConfig.backfillEnabled} />
 			</div>
 
-			<TestButton label={t("remoteConfig.testUpload")} onClick={handleTestPromptUploading} />
+			<TestButton label="Test Upload" onClick={handleTestPromptUploading} />
 		</div>
 	)
 }
 
 export function RemoteConfigSection({ renderSectionHeader }: RemoteConfigSectionProps) {
-	const { t } = useTranslation("settings")
 	const { remoteConfigSettings, optOutOfRemoteConfig } = useExtensionState()
 	const { activeOrganization } = useClineAuth()
 
@@ -312,7 +276,7 @@ export function RemoteConfigSection({ renderSectionHeader }: RemoteConfigSection
 		return (
 			<BaseRemoteConfigSection renderSectionHeader={renderSectionHeader}>
 				<div className="flex flex-col justify-center gap-4">
-					<h3>{t("remoteConfig.optedOut")}</h3>
+					<h3>You have opted out of remote config. Opt back in to apply it and see it here.</h3>
 
 					<RemoteConfigToggle activeOrganization={activeOrganization} />
 				</div>
@@ -326,10 +290,7 @@ export function RemoteConfigSection({ renderSectionHeader }: RemoteConfigSection
 				<div className="flex flex-col justify-center gap-4">
 					<h3>
 						You haven't configured remote config yet. Do so through our{" "}
-						<VSCodeLink href="https://app.cline.bot/dashboard/organization?tab=settings">
-							{t("remoteConfig.dashboard")}
-						</VSCodeLink>
-						.
+						<VSCodeLink href="https://app.cline.bot/dashboard/organization?tab=settings">dashboard</VSCodeLink>.
 					</h3>
 
 					<RefreshButton />
@@ -341,7 +302,9 @@ export function RemoteConfigSection({ renderSectionHeader }: RemoteConfigSection
 	return (
 		<BaseRemoteConfigSection renderSectionHeader={renderSectionHeader}>
 			<div className="flex flex-col gap-2">
-				<p className="text-description text-xs mb-2">{t("remoteConfig.settingsManagedByOrg")}</p>
+				<p className="text-description text-xs mb-2">
+					These settings are managed by your organization's remote configuration.
+				</p>
 
 				<OtelSettingsSection />
 				<PromptUploadingSection />

@@ -1,6 +1,5 @@
 import { ModelInfo } from "@shared/api"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
-import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 /**
@@ -48,14 +47,13 @@ OG Saoud Note:
  * A reusable component for selecting models from a dropdown
  */
 export const ModelSelector = ({ models, selectedModelId, onChange, zIndex, label = "Model" }: ModelSelectorProps) => {
-	const { t } = useTranslation("settings")
 	return (
 		<DropdownContainer className="dropdown-container" zIndex={zIndex}>
 			<label htmlFor="model-id">
 				<span className="font-medium">{label}</span>
 			</label>
 			<VSCodeDropdown className="w-full" id="model-id" onChange={onChange} value={selectedModelId}>
-				<VSCodeOption value="">{t("settings.selectModel")}</VSCodeOption>
+				<VSCodeOption value="">Select a model...</VSCodeOption>
 				{Object.keys(models).map((modelId) => (
 					<VSCodeOption className="break-words whitespace-normal max-w-full" key={modelId} value={modelId}>
 						{modelId}

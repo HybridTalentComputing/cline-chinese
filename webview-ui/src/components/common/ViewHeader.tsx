@@ -1,7 +1,13 @@
-import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { getEnvironmentColor } from "@/utils/environmentColors"
 import type { Environment } from "../../../../src/shared/config-types"
+
+const ENV_DISPLAY_NAMES: Record<Environment, string> = {
+	production: "Production",
+	staging: "Staging",
+	local: "Local",
+	selfHosted: "Self-hosted",
+}
 
 type ViewHeaderProps = {
 	title: string
@@ -11,10 +17,8 @@ type ViewHeaderProps = {
 }
 
 const ViewHeader = ({ title, onDone, showEnvironmentSuffix, environment }: ViewHeaderProps) => {
-	const { t } = useTranslation("misc")
 	const showSubtext = showEnvironmentSuffix && environment && environment !== "production"
-	const envKey = environment ? `common.environment.${environment}` : ""
-	const envDisplayName = environment ? t(envKey) : ""
+	const capitalizedEnv = environment ? ENV_DISPLAY_NAMES[environment] : ""
 	const titleColor = getEnvironmentColor(environment)
 
 	return (
@@ -25,12 +29,12 @@ const ViewHeader = ({ title, onDone, showEnvironmentSuffix, environment }: ViewH
 				</h3>
 				{showSubtext && (
 					<span className="absolute left-0 top-8 -translate-y-1 text-xs text-description whitespace-nowrap">
-						{t("common.viewHeader.environment", { env: envDisplayName })}
+						{capitalizedEnv} environment
 					</span>
 				)}
 			</div>
-			<Button onClick={onDone} size="header">
-				{t("common.viewHeader.done")}
+			<Button size="header" onClick={onDone}>
+				Done
 			</Button>
 		</div>
 	)

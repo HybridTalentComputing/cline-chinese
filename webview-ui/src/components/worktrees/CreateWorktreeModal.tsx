@@ -3,7 +3,6 @@ import { CreateWorktreeRequest, SwitchWorktreeRequest } from "@shared/proto/clin
 import { VSCodeButton, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { AlertCircle, AlertTriangle, Loader2, X } from "lucide-react"
 import { memo, useCallback, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { WorktreeServiceClient } from "@/services/grpc-client"
 
 interface CreateWorktreeModalProps {
@@ -16,7 +15,6 @@ interface CreateWorktreeModalProps {
 }
 
 const CreateWorktreeModal = ({ open, onClose, openAfterCreate = false, onSuccess }: CreateWorktreeModalProps) => {
-	const { t } = useTranslation("misc")
 	const [newWorktreePath, setNewWorktreePath] = useState("")
 	const [newBranchName, setNewBranchName] = useState("")
 	const [isCreating, setIsCreating] = useState(false)
@@ -90,7 +88,7 @@ const CreateWorktreeModal = ({ open, onClose, openAfterCreate = false, onSuccess
 				onClose()
 			}
 		} catch (err) {
-			setCreateError(err instanceof Error ? err.message : t("worktrees.errors.failedToCreate"))
+			setCreateError(err instanceof Error ? err.message : "Failed to create worktree")
 		} finally {
 			setIsCreating(false)
 		}
@@ -100,10 +98,12 @@ const CreateWorktreeModal = ({ open, onClose, openAfterCreate = false, onSuccess
 		return null
 	}
 
-	const title = openAfterCreate ? t("worktrees.create.titleOpen") : t("worktrees.create.title")
-	const buttonText = openAfterCreate ? t("worktrees.create.createOpen") : t("worktrees.create.createWorktree")
-	const creatingText = openAfterCreate ? t("worktrees.create.creatingOpening") : t("worktrees.create.creating")
-	const description = openAfterCreate ? t("worktrees.create.descriptionOpen") : t("worktrees.create.description")
+	const title = openAfterCreate ? "New Worktree" : "Create New Worktree"
+	const buttonText = openAfterCreate ? "Create & Open" : "Create Worktree"
+	const creatingText = openAfterCreate ? "Creating & Opening..." : "Creating..."
+	const description = openAfterCreate
+		? "This will create a copy of your project on a new branch and open in a separate window."
+		: "This will create a copy of your project on a new branch."
 
 	return (
 		<div
@@ -129,29 +129,29 @@ const CreateWorktreeModal = ({ open, onClose, openAfterCreate = false, onSuccess
 						style={{ backgroundColor: "var(--vscode-inputValidation-warningBackground)" }}>
 						<AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-[var(--vscode-editorWarning-foreground)]" />
 						<p className="text-xs text-[var(--vscode-foreground)] m-0">
-							{t("worktrees.create.noWorktreeInclude")}{" "}
+							No .worktreeinclude detected.{" "}
 							<a
 								className="text-[var(--vscode-textLink-foreground)] hover:text-[var(--vscode-textLink-activeForeground)]"
 								href="https://docs.cline.bot/features/worktrees#worktreeinclude"
 								rel="noopener noreferrer"
 								style={{ fontSize: "inherit" }}
 								target="_blank">
-								{t("worktrees.learnMore")}
+								Learn more
 							</a>
 						</p>
 					</div>
 				)}
 				<div className="flex flex-col">
 					<div>
-						<label className="block text-sm font-medium mb-1">{t("worktrees.create.branchName")}</label>
+						<label className="block text-sm font-medium mb-1">Branch Name *</label>
 						<VSCodeTextField
 							className="w-full"
 							onInput={(e) => setNewBranchName((e.target as HTMLInputElement).value)}
-							placeholder={t("worktrees.create.branchNamePlaceholder")}
+							placeholder="feature/my-feature"
 							value={newBranchName}>
 							{newBranchName && (
 								<div
-									aria-label={t("worktrees.clear")}
+									aria-label="Clear"
 									className="input-icon-button codicon codicon-close"
 									onClick={() => setNewBranchName("")}
 									slot="end"
@@ -165,19 +165,19 @@ const CreateWorktreeModal = ({ open, onClose, openAfterCreate = false, onSuccess
 							)}
 						</VSCodeTextField>
 						<p className="text-xs text-[var(--vscode-descriptionForeground)] mt-1">
-							{t("worktrees.create.branchNameHint")}
+							Your new copy will be checked out to this branch.
 						</p>
 					</div>
 					<div>
-						<label className="block text-sm font-medium mb-1">{t("worktrees.create.folderPath")}</label>
+						<label className="block text-sm font-medium mb-1">Folder Path *</label>
 						<VSCodeTextField
 							className="w-full"
 							onInput={(e) => setNewWorktreePath((e.target as HTMLInputElement).value)}
-							placeholder={t("worktrees.create.folderPathPlaceholder")}
+							placeholder="../my-feature-worktree"
 							value={newWorktreePath}>
 							{newWorktreePath && (
 								<div
-									aria-label={t("worktrees.clear")}
+									aria-label="Clear"
 									className="input-icon-button codicon codicon-close"
 									onClick={() => setNewWorktreePath("")}
 									slot="end"
@@ -191,7 +191,7 @@ const CreateWorktreeModal = ({ open, onClose, openAfterCreate = false, onSuccess
 							)}
 						</VSCodeTextField>
 						<p className="text-xs text-[var(--vscode-descriptionForeground)] mt-1">
-							{t("worktrees.create.folderPathHint")}
+							Where the project will be copied for the worktree.
 						</p>
 					</div>
 					{createError && (
@@ -207,7 +207,7 @@ const CreateWorktreeModal = ({ open, onClose, openAfterCreate = false, onSuccess
 							{isLoadingDefaults ? (
 								<>
 									<Loader2 className="w-4 h-4 mr-1 animate-spin" />
-									{t("worktrees.create.loading")}
+									Loading...
 								</>
 							) : isCreating ? (
 								<>

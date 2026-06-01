@@ -1,6 +1,5 @@
 import { openAiNativeModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -22,7 +21,6 @@ interface OpenAINativeProviderProps {
  * The OpenAI (native) provider configuration component
  */
 export const OpenAINativeProvider = ({ showModelOptions, isPopup, currentMode }: OpenAINativeProviderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -42,7 +40,7 @@ export const OpenAINativeProvider = ({ showModelOptions, isPopup, currentMode }:
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.model")}
+						label="Model"
 						models={openAiNativeModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

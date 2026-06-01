@@ -1,9 +1,8 @@
 import type { McpServer } from "@shared/mcp"
+import type { SlashCommand } from "@/utils/slash-commands"
 import React, { useCallback, useEffect, useRef } from "react"
-import { useTranslation } from "react-i18next"
 import ScreenReaderAnnounce from "@/components/common/ScreenReaderAnnounce"
 import { useMenuAnnouncement } from "@/hooks/useMenuAnnouncement"
-import type { SlashCommand } from "@/utils/slash-commands"
 import { getMatchingSlashCommands } from "@/utils/slash-commands"
 
 interface SlashCommandMenuProps {
@@ -31,7 +30,6 @@ const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
 	remoteWorkflows,
 	mcpServers = [],
 }) => {
-	const { t } = useTranslation("common")
 	const menuRef = useRef<HTMLDivElement>(null)
 
 	// Filter commands based on query
@@ -133,33 +131,25 @@ const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
 			<ScreenReaderAnnounce message={announcement} />
 			<div
 				aria-activedescendant={filteredCommands.length > 0 ? `slash-command-menu-item-${selectedIndex}` : undefined}
-				aria-label={t("slashCommandMenu.ariaLabel")}
+				aria-label="Slash commands"
 				className="bg-(--vscode-dropdown-background) border border-(--vscode-editorGroup-border) rounded-[3px] shadow-[0_4px_10px_rgba(0,0,0,0.25)] flex flex-col overflow-y-auto"
 				ref={menuRef}
 				role="listbox"
-				style={{ maxHeight: "min(200px, calc(50vh))", overscrollBehavior: "contain" }}
-				tabIndex={0}>
+				style={{ maxHeight: "min(200px, calc(50vh))", overscrollBehavior: "contain" }}>
 				{filteredCommands.length > 0 ? (
 					<>
-						{renderCommandSection(defaultCommands, t("slashCommandMenu.defaultCommands"), 0, true)}
-						{renderCommandSection(
-							workflowCommands,
-							t("slashCommandMenu.workflowCommands"),
-							defaultCommands.length,
-							false,
-						)}
+						{renderCommandSection(defaultCommands, "Default Commands", 0, true)}
+						{renderCommandSection(workflowCommands, "Workflow Commands", defaultCommands.length, false)}
 						{renderCommandSection(
 							mcpCommands,
-							t("slashCommandMenu.mcpPrompts"),
+							"MCP Prompts",
 							defaultCommands.length + workflowCommands.length,
 							true,
 						)}
 					</>
 				) : (
 					<div aria-selected="false" className="py-2 px-3 cursor-default flex flex-col" role="option">
-						<div className="text-[0.85em] text-(--vscode-descriptionForeground)">
-							{t("slashCommandMenu.noMatching")}
-						</div>
+						<div className="text-[0.85em] text-(--vscode-descriptionForeground)">No matching commands found</div>
 					</div>
 				)}
 			</div>

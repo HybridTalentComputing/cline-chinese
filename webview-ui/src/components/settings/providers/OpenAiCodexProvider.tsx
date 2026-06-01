@@ -1,7 +1,6 @@
 import { openAiCodexModels } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { ModelInfoView } from "../common/ModelInfoView"
@@ -21,7 +20,6 @@ interface OpenAiCodexProviderProps {
  * Uses OAuth authentication instead of API keys.
  */
 export const OpenAiCodexProvider = ({ showModelOptions, isPopup, currentMode }: OpenAiCodexProviderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration, openAiCodexIsAuthenticated } = useExtensionState()
 	const { handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -49,9 +47,7 @@ export const OpenAiCodexProvider = ({ showModelOptions, isPopup, currentMode }: 
 			<div style={{ marginBottom: "15px" }}>
 				{openAiCodexIsAuthenticated ? (
 					<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-						<span style={{ color: "var(--vscode-descriptionForeground)" }}>
-							{t("providers.openAiCodex.signedIn")}
-						</span>
+						<span style={{ color: "var(--vscode-descriptionForeground)" }}>Signed in to OpenAI Codex</span>
 						<VSCodeButton appearance="secondary" onClick={handleSignOut}>
 							Sign Out
 						</VSCodeButton>
@@ -64,9 +60,9 @@ export const OpenAiCodexProvider = ({ showModelOptions, isPopup, currentMode }: 
 								color: "var(--vscode-descriptionForeground)",
 								marginBottom: "10px",
 							}}>
-							{t("providers.openAiCodex.signInDescription")}
+							Sign in with your ChatGPT Plus or Pro subscription to use GPT-5 models without an API key.
 						</p>
-						<VSCodeButton onClick={handleSignIn}>{t("providers.openAiCodex.signIn")}</VSCodeButton>
+						<VSCodeButton onClick={handleSignIn}>Sign in to OpenAI Codex</VSCodeButton>
 					</div>
 				)}
 			</div>
@@ -74,7 +70,7 @@ export const OpenAiCodexProvider = ({ showModelOptions, isPopup, currentMode }: 
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.model")}
+						label="Model"
 						models={openAiCodexModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

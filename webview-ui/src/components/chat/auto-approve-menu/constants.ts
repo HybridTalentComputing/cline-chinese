@@ -1,67 +1,62 @@
-import i18next from "i18next"
 import { ActionMetadata } from "./types"
 
-export function getActionMetadata(): ActionMetadata[] {
-	return [
-		{
-			id: "readFiles",
-			label: i18next.t("autoApprove.readProjectFiles"),
-			shortName: i18next.t("autoApprove.read"),
-			icon: "codicon-search",
-			subAction: {
-				id: "readFilesExternally",
-				label: i18next.t("autoApprove.readAllFiles"),
-				shortName: i18next.t("autoApprove.readAll"),
-				icon: "codicon-folder-opened",
-				parentActionId: "readFiles",
-			},
+export const ACTION_METADATA: ActionMetadata[] = [
+	{
+		id: "readFiles",
+		label: "Read project files",
+		shortName: "Read",
+		icon: "codicon-search",
+		subAction: {
+			id: "readFilesExternally",
+			label: "Read all files",
+			shortName: "Read (all)",
+			icon: "codicon-folder-opened",
+			parentActionId: "readFiles",
 		},
-		{
-			id: "editFiles",
-			label: i18next.t("autoApprove.editProjectFiles"),
-			shortName: i18next.t("autoApprove.edit"),
-			icon: "codicon-edit",
-			subAction: {
-				id: "editFilesExternally",
-				label: i18next.t("autoApprove.editAllFiles"),
-				shortName: i18next.t("autoApprove.editAll"),
-				icon: "codicon-files",
-				parentActionId: "editFiles",
-			},
+	},
+	{
+		id: "editFiles",
+		label: "Edit project files",
+		shortName: "Edit",
+		icon: "codicon-edit",
+		subAction: {
+			id: "editFilesExternally",
+			label: "Edit all files",
+			shortName: "Edit (all)",
+			icon: "codicon-files",
+			parentActionId: "editFiles",
 		},
-		{
-			id: "executeSafeCommands",
-			label: i18next.t("autoApprove.executeSafeCommands"),
-			shortName: i18next.t("autoApprove.safeCommands"),
-			icon: "codicon-terminal",
-			subAction: {
-				id: "executeAllCommands",
-				label: i18next.t("autoApprove.executeAllCommands"),
-				shortName: i18next.t("autoApprove.allCommands"),
-				icon: "codicon-terminal-bash",
-				parentActionId: "executeSafeCommands",
-			},
+	},
+	{
+		id: "executeSafeCommands",
+		label: "Execute safe commands",
+		shortName: "Safe Commands",
+		icon: "codicon-terminal",
+		subAction: {
+			id: "executeAllCommands",
+			label: "Execute all commands",
+			shortName: "All Commands",
+			icon: "codicon-terminal-bash",
+			parentActionId: "executeSafeCommands",
 		},
-		{
-			id: "useBrowser",
-			label: i18next.t("autoApprove.useBrowser"),
-			shortName: i18next.t("autoApprove.browser"),
-			icon: "codicon-globe",
-		},
-		{
-			id: "useMcp",
-			label: i18next.t("autoApprove.useMcpServers"),
-			shortName: i18next.t("autoApprove.mcp"),
-			icon: "codicon-server",
-		},
-	]
-}
+	},
+	{
+		id: "useBrowser",
+		label: "Use the browser",
+		shortName: "Browser",
+		icon: "codicon-globe",
+	},
+	{
+		id: "useMcp",
+		label: "Use MCP servers",
+		shortName: "MCP",
+		icon: "codicon-server",
+	},
+]
 
-export function getNotificationsSetting(): ActionMetadata {
-	return {
-		id: "enableNotifications",
-		label: i18next.t("autoApprove.enableNotifications"),
-		shortName: i18next.t("autoApprove.notifications"),
-		icon: "codicon-bell",
-	}
+export const NOTIFICATIONS_SETTING: ActionMetadata = {
+	id: "enableNotifications",
+	label: "Enable notifications",
+	shortName: "Notifications",
+	icon: "codicon-bell",
 }

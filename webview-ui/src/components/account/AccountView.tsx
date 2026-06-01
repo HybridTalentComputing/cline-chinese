@@ -5,7 +5,6 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeDivider, VSCodeDropdown, VSCodeOption, VSCodeTag } from "@vscode/webview-ui-toolkit/react"
 import deepEqual from "fast-deep-equal"
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useInterval } from "react-use"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { type ClineUser, handleSignOut } from "@/context/ClineAuthContext"
@@ -44,12 +43,11 @@ type CachedData = {
 const ClineEnvOptions = ["Production", "Staging", "Local"] as const
 
 const AccountView = ({ onDone, clineUser, organizations, activeOrganization }: AccountViewProps) => {
-	const { t } = useTranslation("settings")
 	const { environment } = useExtensionState()
 
 	return (
 		<div className="fixed inset-0 flex flex-col overflow-hidden">
-			<ViewHeader environment={environment} onDone={onDone} showEnvironmentSuffix title={t("account.title")} />
+			<ViewHeader environment={environment} onDone={onDone} showEnvironmentSuffix title="Account" />
 			<div className="grow flex flex-col px-5 overflow-y-auto">
 				{clineUser?.uid ? (
 					<ClineAccountView
@@ -68,7 +66,6 @@ const AccountView = ({ onDone, clineUser, organizations, activeOrganization }: A
 }
 
 export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganization, clineEnv }: ClineAccountViewProps) => {
-	const { t } = useTranslation("settings")
 	const { email, displayName, appBaseUrl, uid } = clineUser
 	const { remoteConfigSettings, environment } = useExtensionState()
 
@@ -176,13 +173,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				setIsLoading(false)
 			}
 		},
-		[
-			isLoading,
-			uid,
-			fetchUserCredit,
-			loadCachedData, // Cache the updated data
-			cacheCurrentData,
-		],
+		[isLoading, uid, fetchUserCredit, loadCachedData],
 	)
 
 	const handleOrganizationChange = useCallback(
@@ -247,7 +238,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 			initialFetchCompleteRef.current = true
 		}
 		initialFetch()
-	}, [dropdownValue, fetchCreditBalance])
+	}, [])
 
 	useEffect(() => {
 		// Handle organization changes with 500ms debounce
@@ -316,7 +307,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				<div className="flex flex-col w-full gap-1 mb-6">
 					<div className="flex items-center flex-wrap gap-y-4">
 						{/* {user.photoUrl ? (
-								<img src={user.photoUrl} alt={t("account.profile")} className="size-16 rounded-full mr-4" />
+								<img src={user.photoUrl} alt="Profile" className="size-16 rounded-full mr-4" />
 							) : ( */}
 						<div className="size-16 rounded-full bg-button-background flex items-center justify-center text-2xl text-button-foreground mr-4">
 							{displayName?.[0] || email?.[0] || "?"}
@@ -347,11 +338,11 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 										</VSCodeDropdown>
 									</TooltipTrigger>
 									<TooltipContent hidden={!isLockedByRemoteConfig}>
-										{t("account.cannotChangeWithRemoteConfig")}
+										This cannot be changed while your organization has remote configuration enabled.
 									</TooltipContent>
 								</Tooltip>
 								{activeOrganization && (
-									<VSCodeTag className="text-xs p-2" title={t("account.role")}>
+									<VSCodeTag className="text-xs p-2" title="Role">
 										{getMainRole(activeOrganization.roles)}
 									</VSCodeTag>
 								)}
@@ -366,11 +357,11 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				<div className="w-full flex gap-2 flex-col min-[225px]:flex-row">
 					<div className="w-full min-[225px]:w-1/2">
 						<VSCodeButtonLink appearance="primary" className="w-full" href={getClineUris(clineUrl, "dashboard").href}>
-							{t("account.dashboard")}
+							Dashboard
 						</VSCodeButtonLink>
 					</div>
 					<VSCodeButton appearance="secondary" className="w-full min-[225px]:w-1/2" onClick={() => handleSignOut()}>
-						{t("account.logOut")}
+						Log out
 					</VSCodeButton>
 				</div>
 
@@ -399,7 +390,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 				{isClineTester && environment !== "selfHosted" && (
 					<div className="w-full gap-1 items-end">
 						<VSCodeDivider className="w-full my-3" />
-						<div className="text-sm font-semibold">{t("account.clineEnvironment")}</div>
+						<div className="text-sm font-semibold">Cline Environment</div>
 						<VSCodeDropdown
 							className="w-full mt-1"
 							currentValue={clineEnv}

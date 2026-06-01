@@ -2,7 +2,6 @@ import { sapAiCoreModels } from "@shared/api"
 import { SapAiCoreModelDeployment } from "@shared/proto/index.cline"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import React, { memo, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
 import { DropdownContainer } from "./common/ModelSelector"
 
 export const SAP_AI_CORE_MODEL_PICKER_Z_INDEX = 1_000
@@ -27,11 +26,9 @@ const SapAiCoreModelPicker: React.FC<SapAiCoreModelPickerProps> = ({
 	selectedModelId,
 	selectedDeploymentId,
 	onModelChange,
-	placeholder,
+	placeholder = "Select a model...",
 	useOrchestrationMode = false,
 }) => {
-	const { t } = useTranslation("settings")
-	const resolvedPlaceholder = placeholder ?? t("settings.selectModel")
 	// Auto-fix deployment ID mismatch or missing deployment ID when deployments change (when ai core creds changes)
 	useEffect(() => {
 		if (!selectedModelId) {
@@ -105,7 +102,7 @@ const SapAiCoreModelPicker: React.FC<SapAiCoreModelPickerProps> = ({
 		// Add placeholder option
 		options.push(
 			<VSCodeOption key="placeholder" value="">
-				{resolvedPlaceholder}
+				{placeholder}
 			</VSCodeOption>,
 		)
 
@@ -164,7 +161,7 @@ const SapAiCoreModelPicker: React.FC<SapAiCoreModelPickerProps> = ({
 	return (
 		<DropdownContainer className="dropdown-container" zIndex={SAP_AI_CORE_MODEL_PICKER_Z_INDEX}>
 			<label htmlFor="sap-ai-core-model-dropdown">
-				<span className="font-medium">{t("settings.model")}</span>
+				<span className="font-medium">Model</span>
 			</label>
 			<VSCodeDropdown
 				id="sap-ai-core-model-dropdown"

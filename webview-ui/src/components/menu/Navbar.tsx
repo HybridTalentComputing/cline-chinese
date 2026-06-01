@@ -1,6 +1,5 @@
 import { HistoryIcon, PlusIcon, SettingsIcon, UserCircleIcon } from "lucide-react"
 import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { TaskServiceClient } from "@/services/grpc-client"
@@ -15,7 +14,6 @@ const McpServerIcon = ({ className, size }: { className?: string; size?: number 
 )
 
 export const Navbar = () => {
-	const { t } = useTranslation("misc")
 	const { navigateToHistory, navigateToSettings, navigateToAccount, navigateToMcp, navigateToChat } = useExtensionState()
 
 	const SETTINGS_TABS = useMemo(
@@ -23,7 +21,7 @@ export const Navbar = () => {
 			{
 				id: "chat",
 				name: "Chat",
-				tooltip: t("navbar.newTask"),
+				tooltip: "New Task",
 				icon: PlusIcon,
 				navigate: () => {
 					// Close the current task, then navigate to the chat view
@@ -37,33 +35,33 @@ export const Navbar = () => {
 			{
 				id: "mcp",
 				name: "MCP",
-				tooltip: t("navbar.mcpServers"),
+				tooltip: "MCP Servers",
 				icon: McpServerIcon,
 				navigate: navigateToMcp,
 			},
 			{
 				id: "history",
 				name: "History",
-				tooltip: t("navbar.history"),
+				tooltip: "History",
 				icon: HistoryIcon,
 				navigate: navigateToHistory,
 			},
 			{
 				id: "account",
 				name: "Account",
-				tooltip: t("navbar.account"),
+				tooltip: "Account",
 				icon: UserCircleIcon,
 				navigate: navigateToAccount,
 			},
 			{
 				id: "settings",
 				name: "Settings",
-				tooltip: t("navbar.settings"),
+				tooltip: "Settings",
 				icon: SettingsIcon,
 				navigate: navigateToSettings,
 			},
 		],
-		[navigateToAccount, navigateToChat, navigateToHistory, navigateToMcp, navigateToSettings, t],
+		[navigateToAccount, navigateToChat, navigateToHistory, navigateToMcp, navigateToSettings],
 	)
 
 	return (

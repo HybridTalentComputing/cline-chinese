@@ -1,6 +1,5 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { AccountServiceClient } from "@/services/grpc-client"
 
 const COOLDOWN_MS = 5 * 60 * 1000 // 5 minutes
@@ -12,7 +11,7 @@ function formatResetsAt(resetsAt?: string): string | null {
 	if (!resetsAt) return null
 	try {
 		const date = new Date(resetsAt)
-		if (Number.isNaN(date.getTime())) return null
+		if (isNaN(date.getTime())) return null
 		return date.toLocaleDateString(undefined, {
 			month: "short",
 			day: "numeric",
@@ -38,7 +37,6 @@ interface SpendLimitErrorProps {
 }
 
 const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod, limitUsd, spentUsd, resetsAt }) => {
-	const { t } = useTranslation("common")
 	const displayMessage =
 		limitUsd != null && budgetPeriod ? `$${limitUsd.toFixed(2)} ${budgetPeriod} limit has been reached.` : message
 
@@ -98,7 +96,7 @@ const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod
 				<div className="mb-3">
 					{spentUsd != null && limitUsd != null && (
 						<div className="text-foreground" style={{ fontSize: "var(--vscode-font-size)", lineHeight: 1.3 }}>
-							{periodLabel ? `${periodLabel} ${t("spendLimit.usage")}` : t("spendLimit.usage")}:{" "}
+							{periodLabel ? `${periodLabel} usage` : "Usage"}:{" "}
 							<span className="font-bold">
 								${spentUsd.toFixed(2)} / ${limitUsd.toFixed(2)}
 							</span>
@@ -107,14 +105,13 @@ const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod
 
 					{resetsAtFormatted && (
 						<div className="text-foreground" style={{ fontSize: "var(--vscode-font-size)", lineHeight: 1.3 }}>
-							{t("spendLimit.resets")}
-							<span className="font-bold">{resetsAtFormatted}</span>
+							Resets: <span className="font-bold">{resetsAtFormatted}</span>
 						</div>
 					)}
 
 					<div className="text-(--vscode-descriptionForeground) mt-2 text-xs inline-flex items-center">
 						<span className="codicon codicon-organization mr-1" />
-						{t("spendLimit.limitsByOrg")}
+						Limits set by your organization.
 					</div>
 				</div>
 			</div>
@@ -127,17 +124,17 @@ const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod
 				{buttonState === "sending" ? (
 					<>
 						<span className="codicon codicon-loading codicon-modifier-spin mr-1.5" />
-						{t("spendLimit.sending")}
+						Sending…
 					</>
 				) : buttonState === "sent" ? (
 					<>
 						<span className="codicon codicon-check mr-1.5" />
-						{t("spendLimit.requestSent")}
+						Request Sent
 					</>
 				) : (
 					<>
 						<span className="codicon codicon-arrow-up mr-1.5" />
-						{t("spendLimit.requestIncrease")}
+						Request Increase
 					</>
 				)}
 			</VSCodeButton>

@@ -9,14 +9,12 @@ import {
 	VSCodeTextField,
 } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import McpMarketplaceCard from "./McpMarketplaceCard"
 import McpSubmitCard from "./McpSubmitCard"
 
 const McpMarketplaceView = () => {
-	const { t } = useTranslation("misc")
 	const { mcpServers, mcpMarketplaceCatalog, setMcpMarketplaceCatalog, remoteConfigSettings } = useExtensionState()
 
 	const showMarketplace = remoteConfigSettings?.mcpMarketplaceEnabled !== false
@@ -61,7 +59,21 @@ const McpMarketplaceView = () => {
 			})
 	}, [items, searchQuery, selectedCategory, sortBy])
 
-	const fetchMarketplace = (forceRefresh = false) => {
+	useEffect(() => {
+		// Fetch marketplace catalog on initial load
+		fetchMarketplace()
+	}, [])
+
+	useEffect(() => {
+		// Update loading state when catalog arrives
+		if (mcpMarketplaceCatalog?.items) {
+			setIsLoading(false)
+			setIsRefreshing(false)
+			setError(null)
+		}
+	}, [mcpMarketplaceCatalog])
+
+	const fetchMarketplace = (forceRefresh: boolean = false) => {
 		if (forceRefresh) {
 			setIsRefreshing(true)
 		} else {
@@ -76,29 +88,12 @@ const McpMarketplaceView = () => {
 				})
 				.catch((error) => {
 					console.error("Error refreshing MCP marketplace:", error)
-					setError(t("mcp.marketplace.failedToLoad"))
+					setError("Failed to load marketplace data")
 					setIsLoading(false)
 					setIsRefreshing(false)
 				})
 		}
 	}
-
-	useEffect(() => {
-		// Fetch marketplace catalog on initial load
-		fetchMarketplace()
-	}, [
-		// Fetch marketplace catalog on initial load
-		fetchMarketplace,
-	])
-
-	useEffect(() => {
-		// Update loading state when catalog arrives
-		if (mcpMarketplaceCatalog?.items) {
-			setIsLoading(false)
-			setIsRefreshing(false)
-			setError(null)
-		}
-	}, [mcpMarketplaceCatalog])
 
 	if (isLoading || isRefreshing) {
 		return (
@@ -130,7 +125,7 @@ const McpMarketplaceView = () => {
 				<div style={{ color: "var(--vscode-errorForeground)" }}>{error}</div>
 				<VSCodeButton appearance="secondary" onClick={() => fetchMarketplace(true)}>
 					<span className="codicon codicon-refresh" style={{ marginRight: "6px" }} />
-					{t("mcp.marketplace.retry")}
+					Retry
 				</VSCodeButton>
 			</div>
 		)
@@ -147,7 +142,7 @@ const McpMarketplaceView = () => {
 				{/* Search row */}
 				<VSCodeTextField
 					onInput={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
-					placeholder={t("mcp.marketplace.searchMcp")}
+					placeholder="Search MCPs..."
 					style={{ width: "100%" }}
 					value={searchQuery}>
 					<div
@@ -160,7 +155,7 @@ const McpMarketplaceView = () => {
 					/>
 					{searchQuery && (
 						<div
-							aria-label={t("mcp.marketplace.clearSearch")}
+							aria-label="Clear search"
 							className="codicon codicon-close"
 							onClick={() => setSearchQuery("")}
 							slot="end"
@@ -190,7 +185,7 @@ const McpMarketplaceView = () => {
 							fontWeight: 500,
 							flexShrink: 0,
 						}}>
-						{t("mcp.marketplace.filter")}
+						Filter:
 					</span>
 					<div
 						style={{
@@ -204,7 +199,7 @@ const McpMarketplaceView = () => {
 								width: "100%",
 							}}
 							value={selectedCategory || ""}>
-							<VSCodeOption value="">{t("mcp.marketplace.allCategories")}</VSCodeOption>
+							<VSCodeOption value="">All Categories</VSCodeOption>
 							{categories.map((category) => (
 								<VSCodeOption key={category} value={category}>
 									{category}
@@ -228,7 +223,7 @@ const McpMarketplaceView = () => {
 							fontWeight: 500,
 							marginTop: "3px",
 						}}>
-						{t("mcp.marketplace.sort")}
+						Sort:
 					</span>
 					<VSCodeRadioGroup
 						onChange={(e) => setSortBy((e.target as HTMLInputElement).value as typeof sortBy)}
@@ -238,10 +233,10 @@ const McpMarketplaceView = () => {
 							marginTop: "-2.5px",
 						}}
 						value={sortBy}>
-						<VSCodeRadio value="downloadCount">{t("mcp.marketplace.mostInstalls")}</VSCodeRadio>
-						<VSCodeRadio value="newest">{t("mcp.marketplace.newest")}</VSCodeRadio>
-						<VSCodeRadio value="stars">{t("mcp.marketplace.githubStars")}</VSCodeRadio>
-						<VSCodeRadio value="name">{t("mcp.marketplace.name")}</VSCodeRadio>
+						<VSCodeRadio value="downloadCount">Most Installs</VSCodeRadio>
+						<VSCodeRadio value="newest">Newest</VSCodeRadio>
+						<VSCodeRadio value="stars">GitHub Stars</VSCodeRadio>
+						<VSCodeRadio value="name">Name</VSCodeRadio>
 					</VSCodeRadioGroup>
 				</div>
 			</div>
@@ -270,7 +265,7 @@ const McpMarketplaceView = () => {
 			{remoteConfigSettings?.allowedMCPServers && (
 				<div className="flex items-center gap-2 px-5 py-3 mx-5 mb-4 bg-vscode-textBlockQuote-background border-l-[3px] border-vscode-textLink-foreground">
 					<i className="codicon codicon-lock text-sm" />
-					<span className="text-[13px]">{t("mcp.marketplace.orgPreconfigured")}</span>
+					<span className="text-[13px]">Your organization has pre-configured the available MCP servers</span>
 				</div>
 			)}
 
@@ -285,7 +280,9 @@ const McpMarketplaceView = () => {
 							padding: "20px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						{searchQuery || selectedCategory ? t("mcp.marketplace.noMatching") : t("mcp.marketplace.noMarketplace")}
+						{searchQuery || selectedCategory
+							? "No matching MCP servers found"
+							: "No MCP servers found in the marketplace"}
 					</div>
 				) : (
 					filteredItems.map((item) => (

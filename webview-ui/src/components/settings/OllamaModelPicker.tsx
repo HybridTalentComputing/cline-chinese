@@ -1,7 +1,6 @@
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { highlight } from "../history/HistoryView"
 
@@ -14,9 +13,12 @@ export interface OllamaModelPickerProps {
 	placeholder?: string
 }
 
-const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({ ollamaModels, selectedModelId, onModelChange, placeholder }) => {
-	const { t } = useTranslation("settings")
-	const resolvedPlaceholder = placeholder ?? t("settings.searchSelectModel")
+const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({
+	ollamaModels,
+	selectedModelId,
+	onModelChange,
+	placeholder = "Search and select a model...",
+}) => {
 	const [searchTerm, setSearchTerm] = useState(selectedModelId || "")
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -98,7 +100,7 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({ ollamaModels, sel
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [])
+	}, [searchTerm])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
@@ -114,7 +116,7 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({ ollamaModels, sel
 		if (selectedModelId !== searchTerm) {
 			setSearchTerm(selectedModelId || "")
 		}
-	}, [selectedModelId, searchTerm])
+	}, [selectedModelId])
 
 	return (
 		<div style={{ width: "100%" }}>
@@ -136,7 +138,7 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({ ollamaModels, sel
 						setIsDropdownVisible(true)
 					}}
 					onKeyDown={handleKeyDown}
-					placeholder={resolvedPlaceholder}
+					placeholder={placeholder}
 					role="combobox"
 					style={{
 						width: "100%",
@@ -146,7 +148,7 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({ ollamaModels, sel
 					value={searchTerm}>
 					{searchTerm && (
 						<div
-							aria-label={t("clearSearch")}
+							aria-label="Clear search"
 							className="input-icon-button codicon codicon-close"
 							onClick={() => {
 								handleModelChange("")

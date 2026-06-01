@@ -1,7 +1,6 @@
 import { AskResponseRequest } from "@shared/proto/cline/task"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
 import VSCodeButtonLink from "@/components/common/VSCodeButtonLink"
 import { useClineAuth } from "@/context/ClineAuthContext"
 import { AccountServiceClient, TaskServiceClient } from "@/services/grpc-client"
@@ -20,13 +19,12 @@ const DEFAULT_BUY_CREDITS_URL = {
 }
 
 const CreditLimitError: React.FC<CreditLimitErrorProps> = ({
-	message,
+	message = "You have run out of credits.",
 	buyCreditsUrl,
 	currentBalance,
 	totalPromotions,
 	totalSpent,
 }) => {
-	const { t } = useTranslation("common")
 	const { activeOrganization } = useClineAuth()
 	const [fullBuyCreditsUrl, setFullBuyCreditsUrl] = useState<string>("")
 
@@ -54,32 +52,23 @@ const CreditLimitError: React.FC<CreditLimitErrorProps> = ({
 	return (
 		<div className="p-2 border-none rounded-md mb-2 bg-(--vscode-textBlockQuote-background)">
 			<div className="mb-3 font-azeret-mono">
-				<div className="text-error mb-2">{message || t("creditLimit.defaultMessage")}</div>
+				<div className="text-error mb-2">{message}</div>
 				<div className="mb-3">
 					{currentBalance ? (
 						<div className="text-foreground">
-							{t("creditLimit.currentBalance")}
-							<span className="font-bold">{currentBalance.toFixed(2)}</span>
+							Current Balance: <span className="font-bold">{currentBalance.toFixed(2)}</span>
 						</div>
 					) : null}
-					{totalSpent ? (
-						<div className="text-foreground">
-							{t("creditLimit.totalSpent")}
-							{totalSpent.toFixed(2)}
-						</div>
-					) : null}
+					{totalSpent ? <div className="text-foreground">Total Spent: {totalSpent.toFixed(2)}</div> : null}
 					{totalPromotions ? (
-						<div className="text-foreground">
-							{t("creditLimit.totalPromotions")}
-							{totalPromotions.toFixed(2)}
-						</div>
+						<div className="text-foreground">Total Promotions: {totalPromotions.toFixed(2)}</div>
 					) : null}
 				</div>
 			</div>
 
 			<VSCodeButtonLink className="w-full mb-2" href={fullBuyCreditsUrl}>
 				<span className="codicon codicon-credit-card mr-[6px] text-[14px]" />
-				{t("creditLimit.buyCredits")}
+				Buy Credits
 			</VSCodeButtonLink>
 
 			<VSCodeButton
@@ -97,7 +86,7 @@ const CreditLimitError: React.FC<CreditLimitErrorProps> = ({
 					}
 				}}>
 				<span className="codicon codicon-refresh mr-1.5" />
-				{t("creditLimit.retryRequest")}
+				Retry Request
 			</VSCodeButton>
 		</div>
 	)

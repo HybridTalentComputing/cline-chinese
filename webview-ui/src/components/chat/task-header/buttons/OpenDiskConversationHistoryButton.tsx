@@ -1,6 +1,5 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { ArrowDownToLineIcon } from "lucide-react"
-import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
@@ -10,7 +9,6 @@ const OpenDiskConversationHistoryButton: React.FC<{
 	taskId?: string
 	className?: string
 }> = ({ taskId, className }) => {
-	const { t } = useTranslation("common")
 	const handleOpenDiskConversationHistory = () => {
 		if (!taskId) {
 			return
@@ -23,10 +21,10 @@ const OpenDiskConversationHistoryButton: React.FC<{
 
 	return (
 		<Tooltip>
-			<TooltipContent>{t("taskHeader.openConversationHistory")}</TooltipContent>
+			<TooltipContent>Open Conversation History File</TooltipContent>
 			<TooltipTrigger className={cn("flex items-center", className)}>
 				<Button
-					aria-label={t("taskHeader.openDiskHistory")}
+					aria-label="Open Disk Conversation History"
 					onClick={(e) => {
 						e.preventDefault()
 						e.stopPropagation()

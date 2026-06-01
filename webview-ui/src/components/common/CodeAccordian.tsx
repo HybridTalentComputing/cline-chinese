@@ -1,6 +1,5 @@
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import { memo, useMemo } from "react"
-import { useTranslation } from "react-i18next"
 import CodeBlock from "@/components/common/CodeBlock"
 import { cn } from "@/lib/utils"
 import { getLanguageFromPath } from "@/utils/getLanguageFromPath"
@@ -24,7 +23,7 @@ We need to remove leading non-alphanumeric characters from the path in order for
 [^a-zA-Z0-9]+: Matches one or more characters that are not alphanumeric.
 The replace method removes these matched characters, effectively trimming the string up to the first alphanumeric character.
 */
-export const cleanPathPrefix = (path: string): string => path.replace(/^[^一-龥a-zA-Z0-9]+/, "")
+export const cleanPathPrefix = (path: string): string => path.replace(/^[^\u4e00-\u9fa5a-zA-Z0-9]+/, "")
 
 const CodeAccordian = ({
 	code,
@@ -37,7 +36,6 @@ const CodeAccordian = ({
 	onToggleExpand,
 	isLoading,
 }: CodeAccordianProps) => {
-	const { t } = useTranslation("misc")
 	const inferredLanguage = useMemo(
 		() => code && (language ?? (path ? getLanguageFromPath(path) : undefined)),
 		[path, language, code],
@@ -54,9 +52,7 @@ const CodeAccordian = ({
 		<div className="bg-code overflow-hidden rounded-xs border border-editor-group-border">
 			{(path || isFeedback || isConsoleLogs) && (
 				<Button
-					aria-label={
-						isExpanded ? t("common.codeAccordian.collapseCodeBlock") : t("common.codeAccordian.expandCodeBlock")
-					}
+					aria-label={isExpanded ? "Collapse code block" : "Expand code block"}
 					className={cn("text-description flex items-center cursor-pointer select-none w-full py-[9px] px-2.5", {
 						"cursor-wait opacity-70": isLoading,
 					})}
@@ -76,14 +72,14 @@ const CodeAccordian = ({
 						<div className="flex items-center">
 							<span className={`mr-1.5 codicon codicon-${isFeedback ? "feedback" : "output"}`} />
 							<span className="whitespace-nowrap overflow-hidden text-ellipsis mr-2">
-								{isFeedback ? t("common.codeAccordian.userEdits") : t("common.codeAccordian.consoleLogs")}
+								{isFeedback ? "User Edits" : "Console Logs"}
 							</span>
 						</div>
 					) : (
 						<span className="whitespace-nowrap overflow-hidden text-ellipsis mr-2 [direction: rtl] text-left">
 							{path?.startsWith(".") && <span>.</span>}
 							{path && !path.startsWith(".") && <span>/</span>}
-							{`${cleanPathPrefix(path ?? "")}‎`}
+							{cleanPathPrefix(path ?? "") + "\u200E"}
 						</span>
 					)}
 					<div className="grow" />

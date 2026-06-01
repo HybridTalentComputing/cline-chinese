@@ -1,7 +1,6 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { FilePlus, FileText, FileX, SquareArrowOutUpRightIcon } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
 import { FileServiceClient } from "@/services/grpc-client"
 
@@ -38,7 +37,6 @@ interface DiffEditRowProps {
 }
 
 export const DiffEditRow = memo<DiffEditRowProps>(({ patch, path, isLoading, startLineNumbers }) => {
-	const { t } = useTranslation("common")
 	const { parsedFiles, isStreaming } = useMemo(() => {
 		const parsed = parsePatch(patch, path)
 		return {
@@ -67,7 +65,6 @@ export const DiffEditRow = memo<DiffEditRowProps>(({ patch, path, isLoading, sta
 
 const FileBlock = memo<{ file: Patch; isStreaming: boolean; startLineNumber?: number }>(
 	({ file, isStreaming, startLineNumber }) => {
-		const { t } = useTranslation("common")
 		const [isExpanded, setIsExpanded] = useState(true)
 		const scrollContainerRef = useRef<HTMLDivElement>(null)
 		const shouldFollowRef = useRef(true)
@@ -86,7 +83,7 @@ const FileBlock = memo<{ file: Patch; isStreaming: boolean; startLineNumber?: nu
 			requestAnimationFrame(() => {
 				isProgrammaticScrollRef.current = false
 			})
-		}, [isExpanded, isStreaming])
+		}, [file.lines.length, isExpanded, isStreaming])
 
 		const handleScroll = () => {
 			const container = scrollContainerRef.current
@@ -151,7 +148,7 @@ const FileBlock = memo<{ file: Patch; isStreaming: boolean; startLineNumber?: nu
 							<span
 								className="font-medium truncate hover:underline hover:text-link"
 								onClick={handleOpenFile}
-								title={t("diffEdit.openFileInEditor")}>
+								title="Open file in editor">
 								{file.path}
 							</span>
 						</div>
@@ -161,7 +158,7 @@ const FileBlock = memo<{ file: Patch; isStreaming: boolean; startLineNumber?: nu
 						<span
 							className="p-1 hover:bg-description/20 rounded-xs transition-colors"
 							onClick={handleOpenFile}
-							title={t("diffEdit.openFileInEditor")}>
+							title="Open file in editor">
 							<SquareArrowOutUpRightIcon className="size-2 text-description hover:text-foreground" />
 						</span>
 					</div>

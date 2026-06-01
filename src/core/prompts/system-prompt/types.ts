@@ -126,7 +126,6 @@ export interface SystemPromptContext {
 	readonly enableNativeToolCalls?: boolean
 	readonly enableParallelToolCalling?: boolean
 	readonly terminalExecutionMode?: "vscodeTerminal" | "backgroundExec"
-	readonly locale?: string
 }
 
 /**

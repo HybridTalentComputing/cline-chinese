@@ -1,14 +1,13 @@
+import { memo } from "react"
+import { cn } from "@/lib/utils"
+import { MarkdownRow } from "./MarkdownRow"
 import { Int64Request } from "@shared/proto/cline/common"
 import { CheckIcon } from "lucide-react"
-import { memo } from "react"
-import { useTranslation } from "react-i18next"
 import { PLATFORM_CONFIG, PlatformType } from "@/config/platform.config"
-import { cn } from "@/lib/utils"
 import { TaskServiceClient } from "@/services/grpc-client"
 import { CopyButton } from "../common/CopyButton"
 import SuccessButton from "../common/SuccessButton"
 import { QuoteButtonState } from "./ChatRow"
-import { MarkdownRow } from "./MarkdownRow"
 import QuoteButton from "./QuoteButton"
 
 interface CompletionOutputRowProps {
@@ -37,7 +36,6 @@ export const CompletionOutputRow = memo(
 		messageTs,
 		handleQuoteClick,
 	}: CompletionOutputRowProps) => {
-		const { t } = useTranslation("common")
 		return (
 			<div>
 				<div className="rounded-sm border border-success/20 overflow-visible bg-success/10 p-2 pt-3">
@@ -45,7 +43,7 @@ export const CompletionOutputRow = memo(
 					<div className={cn(headClassNames, "justify-between px-1")}>
 						<div className="flex gap-2 items-center">
 							<CheckIcon className="size-3 text-success" />
-							<span className="text-success font-bold">{t("completionOutput.taskCompleted")}</span>
+							<span className="text-success font-bold">Task Completed</span>
 						</div>
 						<CopyButton className="text-success" textToCopy={text} />
 					</div>
@@ -90,7 +88,6 @@ const CompletionOutputActionRow = memo(
 		setExplainChangesDisabled: (value: boolean) => void
 		messageTs: number
 	}) => {
-		const { t } = useTranslation("common")
 		return (
 			<div style={{ paddingTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
 				<SuccessButton
@@ -108,7 +105,7 @@ const CompletionOutputActionRow = memo(
 						width: "100%",
 					}}>
 					<i className="codicon codicon-new-file" style={{ marginRight: 6 }} />
-					{t("completionOutput.viewChanges")}
+					View Changes
 				</SuccessButton>
 
 				{PLATFORM_CONFIG.type === PlatformType.VSCODE && (
@@ -129,7 +126,7 @@ const CompletionOutputActionRow = memo(
 							width: "100%",
 						}}>
 						<i className="codicon codicon-comment-discussion" style={{ marginRight: 6 }} />
-						{explainChangesDisabled ? t("completionOutput.explainingChanges") : t("completionOutput.explainChanges")}
+						{explainChangesDisabled ? "Explaining..." : "Explain Changes"}
 					</SuccessButton>
 				)}
 			</div>

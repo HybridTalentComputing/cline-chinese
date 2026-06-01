@@ -1,7 +1,6 @@
 import { ANTHROPIC_FAST_MODE_SUFFIX, anthropicModels, CLAUDE_SONNET_1M_SUFFIX } from "@shared/api"
 import type { Mode } from "@shared/storage/types"
 import { isClaudeOpusAdaptiveThinkingModel, resolveClaudeOpusAdaptiveThinking } from "@shared/utils/reasoning-support"
-import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { BaseUrlField } from "../common/BaseUrlField"
@@ -41,7 +40,6 @@ interface AnthropicProviderProps {
  * The Anthropic provider configuration component
  */
 export const AnthropicProvider = ({ showModelOptions, isPopup, currentMode }: AnthropicProviderProps) => {
-	const { t } = useTranslation("settings")
 	const { apiConfiguration, remoteConfigSettings } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
@@ -70,9 +68,9 @@ export const AnthropicProvider = ({ showModelOptions, isPopup, currentMode }: An
 				<BaseUrlField
 					disabled={!!remoteConfigSettings?.anthropicBaseUrl}
 					initialValue={apiConfiguration?.anthropicBaseUrl}
-					label={t("providers.anthropic.useCustomBaseUrl")}
+					label="Use custom base URL"
 					onChange={(value) => handleFieldChange("anthropicBaseUrl", value)}
-					placeholder={t("providers.anthropic.defaultBaseUrl")}
+					placeholder="Default: https://api.anthropic.com"
 					showLockIcon={!!remoteConfigSettings?.anthropicBaseUrl}
 				/>
 			</RemotelyConfiguredInputWrapper>
@@ -80,7 +78,7 @@ export const AnthropicProvider = ({ showModelOptions, isPopup, currentMode }: An
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.model")}
+						label="Model"
 						models={anthropicModels}
 						onChange={(e) =>
 							handleModeFieldChange(
@@ -136,8 +134,8 @@ export const AnthropicProvider = ({ showModelOptions, isPopup, currentMode }: An
 							allowedEfforts={["none", "low", "medium", "high", "xhigh"] as const}
 							currentMode={currentMode}
 							defaultEffort={adaptiveThinkingDefaultEffort}
-							description={t("settings.adaptiveThinkingDescription")}
-							label={t("settings.adaptiveThinking")}
+							description="Use None to disable adaptive thinking. Higher effort increases response detail and token usage."
+							label="Adaptive Thinking"
 						/>
 					) : SUPPORTED_ANTHROPIC_THINKING_MODELS.includes(selectedModelId) ? (
 						<ThinkingBudgetSlider currentMode={currentMode} maxBudget={selectedModelInfo.thinkingConfig?.maxBudget} />

@@ -2,7 +2,6 @@ import { COMMAND_OUTPUT_STRING, COMMAND_REQ_APP_STRING } from "@shared/combineCo
 import { ClineMessage } from "@shared/ExtensionMessage"
 import { StringRequest } from "@shared/proto/cline/common"
 import { memo, useEffect, useRef } from "react"
-import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { FileServiceClient } from "@/services/grpc-client"
@@ -21,7 +20,6 @@ export const CommandOutputContent = memo(
 		onToggle: () => void
 		isContainerExpanded: boolean
 	}) => {
-		const { t } = useTranslation("common")
 		const outputLines = output.split("\n")
 		const lineCount = outputLines.length
 		const shouldAutoShow = lineCount <= 5
@@ -40,7 +38,7 @@ export const CommandOutputContent = memo(
 					}
 				}, 50)
 			}
-		}, [isOutputFullyExpanded])
+		}, [output, isOutputFullyExpanded])
 
 		// Don't render anything if container is collapsed
 		if (!isContainerExpanded) {
@@ -48,7 +46,7 @@ export const CommandOutputContent = memo(
 		}
 
 		// Check if output contains a log file path indicator
-		const logFilePathMatch = output.match(/📋 Output logged to ([^\n]+)/)
+		const logFilePathMatch = output.match(/📋 Output is being logged to: ([^\n]+)/)
 		const logFilePath = logFilePathMatch ? logFilePathMatch[1].trim() : null
 
 		// Render output with clickable log file path
@@ -58,7 +56,7 @@ export const CommandOutputContent = memo(
 			}
 
 			// Split output into parts: before log path, log path line, after log path
-			const logPathLineStart = output.indexOf("📋 Output logged to")
+			const logPathLineStart = output.indexOf("📋 Output is being logged to:")
 			const logPathLineEnd = output.indexOf("\n", logPathLineStart)
 			const beforeLogPath = output.substring(0, logPathLineStart)
 			const afterLogPath = logPathLineEnd !== -1 ? output.substring(logPathLineEnd) : ""
@@ -77,7 +75,7 @@ export const CommandOutputContent = memo(
 							)
 						}}
 						title={`Click to open: ${logFilePath}`}>
-						<span className="shrink-0">📋 {t("commandOutput.outputLoggedTo")}</span>
+						<span className="shrink-0">📋 Output is being logged to:</span>
 						<span className="text-vscode-textLink-foreground underline break-all">{fileName}</span>
 					</div>
 					{afterLogPath && <CodeBlock forceWrap={true} source={`${"```"}shell\n${afterLogPath}\n${"```"}`} />}
@@ -132,7 +130,6 @@ export const CommandOutputRow = memo(
 		isOutputFullyExpanded: boolean
 		setIsOutputFullyExpanded: (expanded: boolean) => void
 	}) => {
-		const { t } = useTranslation("common")
 		const splitMessage = (text: string) => {
 			const outputIndex = text.indexOf(COMMAND_OUTPUT_STRING)
 			if (outputIndex === -1) {
@@ -210,12 +207,14 @@ export const CommandOutputRow = memo(
 												onCancelCommand?.()
 											} else {
 												// For regular terminal mode, show a message
-												alert(t("commandOutput.terminalWarning"))
+												alert(
+													"This command is running in the VSCode terminal. You can manually stop it using Ctrl+C in the terminal, or switch to Background Execution mode in settings for cancellable commands.",
+												)
 											}
 										}}
 										size="sm"
 										variant="secondary">
-										{isBackgroundExec ? t("commandOutput.cancel") : t("commandOutput.stop")}
+										{isBackgroundExec ? "cancel" : "stop"}
 									</Button>
 								)}
 							</div>
@@ -238,7 +237,7 @@ export const CommandOutputRow = memo(
 				{requestsApproval && (
 					<div className="flex items-center gap-2.5 p-2 text-[12px] text-editor-warning-foreground">
 						<i className="codicon codicon-warning" />
-						<span>{t("commandOutput.requiresApproval")}</span>
+						<span>The model has determined this command requires explicit approval.</span>
 					</div>
 				)}
 			</>
@@ -248,14 +247,14 @@ export const CommandOutputRow = memo(
 
 CommandOutputRow.displayName = "CommandOutputRow"
 
+const CommandStatusMap = {
+	executing: "Running",
+	pending: "Pending",
+	completed: "Completed",
+	skipped: "Skipped",
+}
+
 function getCommandStatusText(isExecuting: boolean, isPending: boolean, isCompleted: boolean): string {
-	const { t } = useTranslation("common")
-	const CommandStatusMap = {
-		executing: t("commandOutput.running"),
-		pending: t("commandOutput.pending"),
-		completed: t("commandOutput.completed"),
-		skipped: t("commandOutput.skipped"),
-	}
 	if (isExecuting) {
 		return CommandStatusMap.executing
 	}

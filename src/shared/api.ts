@@ -295,6 +295,29 @@ export const anthropicModels = {
 		description:
 			"Anthropic fast mode preview for Claude Opus 4.6 with the 1M context beta enabled. Same model and capabilities with higher output token speed at premium pricing across the full 1M context window. Requires both fast mode and 1M context access on your Anthropic account.",
 	},
+	"claude-opus-4-8": {
+		maxTokens: 128_000,
+		contextWindow: 200_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsReasoning: true,
+		inputPrice: 5.0,
+		outputPrice: 25.0,
+		cacheWritesPrice: 6.25,
+		cacheReadsPrice: 0.5,
+	},
+	"claude-opus-4-8:1m": {
+		maxTokens: 128_000,
+		contextWindow: 1_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsReasoning: true,
+		inputPrice: 5.0,
+		outputPrice: 25.0,
+		cacheWritesPrice: 6.25,
+		cacheReadsPrice: 0.5,
+		tiers: CLAUDE_OPUS_1M_TIERS,
+	},
 	"claude-opus-4-7": {
 		maxTokens: 128_000,
 		contextWindow: 200_000,
@@ -421,13 +444,13 @@ export const claudeCodeModels = {
 		supportsPromptCache: false,
 	},
 	opus: {
-		...anthropicModels["claude-opus-4-7"],
+		...anthropicModels["claude-opus-4-8"],
 		contextWindow: 200_000,
 		supportsImages: false,
 		supportsPromptCache: false,
 	},
 	"opus[1m]": {
-		...anthropicModels["claude-opus-4-7:1m"],
+		...anthropicModels["claude-opus-4-8:1m"],
 		supportsImages: false,
 		supportsPromptCache: false,
 	},
@@ -468,6 +491,17 @@ export const claudeCodeModels = {
 	},
 	"claude-opus-4-6[1m]": {
 		...anthropicModels["claude-opus-4-6:1m"],
+		supportsImages: false,
+		supportsPromptCache: false,
+	},
+	"claude-opus-4-8": {
+		...anthropicModels["claude-opus-4-8"],
+		contextWindow: 200_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+	},
+	"claude-opus-4-8[1m]": {
+		...anthropicModels["claude-opus-4-8:1m"],
 		supportsImages: false,
 		supportsPromptCache: false,
 	},
@@ -614,6 +648,31 @@ export const bedrockModels = {
 		cacheReadsPrice: 0.5,
 	},
 	"anthropic.claude-opus-4-6-v1:1m": {
+		maxTokens: 128_000,
+		contextWindow: 1_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsReasoning: true,
+		supportsGlobalEndpoint: true,
+		inputPrice: 5.0,
+		outputPrice: 25.0,
+		cacheWritesPrice: 6.25,
+		cacheReadsPrice: 0.5,
+		tiers: CLAUDE_OPUS_1M_TIERS,
+	},
+	"anthropic.claude-opus-4-8": {
+		maxTokens: 128_000,
+		contextWindow: 200_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsReasoning: true,
+		supportsGlobalEndpoint: true,
+		inputPrice: 5.0,
+		outputPrice: 25.0,
+		cacheWritesPrice: 6.25,
+		cacheReadsPrice: 0.5,
+	},
+	"anthropic.claude-opus-4-8:1m": {
 		maxTokens: 128_000,
 		contextWindow: 1_000_000,
 		supportsImages: true,
@@ -862,6 +921,7 @@ export const openRouterClaudeSonnet451mModelId = `anthropic/claude-sonnet-4.5${C
 export const openRouterClaudeSonnet461mModelId = `anthropic/claude-sonnet-4.6${CLAUDE_SONNET_1M_SUFFIX}`
 export const openRouterClaudeOpus461mModelId = `anthropic/claude-opus-4.6${CLAUDE_SONNET_1M_SUFFIX}`
 export const openRouterClaudeOpus471mModelId = `anthropic/claude-opus-4.7${CLAUDE_SONNET_1M_SUFFIX}`
+export const openRouterClaudeOpus481mModelId = `anthropic/claude-opus-4.8${CLAUDE_SONNET_1M_SUFFIX}`
 export const openRouterDefaultModelInfo: ModelInfo = {
 	maxTokens: 64_000,
 	contextWindow: 200_000,
@@ -979,6 +1039,22 @@ export const OPENROUTER_PROVIDER_PREFERENCES: Record<string, { order: string[]; 
 export type VertexModelId = keyof typeof vertexModels
 export const vertexDefaultModelId: VertexModelId = "gemini-3-pro-preview"
 export const vertexModels = {
+	"gemini-3.5-flash": {
+		maxTokens: 65536,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsGlobalEndpoint: true,
+		inputPrice: 1.5,
+		outputPrice: 9.0,
+		cacheReadsPrice: 0.15,
+		temperature: 1.0,
+		supportsReasoning: true,
+		thinkingConfig: {
+			geminiThinkingLevel: "low",
+			supportsThinkingLevel: true,
+		},
+	},
 	"gemini-3.1-pro-preview": {
 		maxTokens: 8192,
 		contextWindow: 1_048_576,
@@ -1094,6 +1170,31 @@ export const vertexModels = {
 		supportsReasoning: true,
 	},
 	"claude-opus-4-6:1m": {
+		maxTokens: 128_000,
+		contextWindow: 1_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsGlobalEndpoint: true,
+		inputPrice: 5.0,
+		outputPrice: 25.0,
+		cacheWritesPrice: 6.25,
+		cacheReadsPrice: 0.5,
+		supportsReasoning: true,
+		tiers: CLAUDE_OPUS_1M_TIERS,
+	},
+	"claude-opus-4-8": {
+		maxTokens: 128_000,
+		contextWindow: 200_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsGlobalEndpoint: true,
+		inputPrice: 5.0,
+		outputPrice: 25.0,
+		cacheWritesPrice: 6.25,
+		cacheReadsPrice: 0.5,
+		supportsReasoning: true,
+	},
+	"claude-opus-4-8:1m": {
 		maxTokens: 128_000,
 		contextWindow: 1_000_000,
 		supportsImages: true,
@@ -1466,6 +1567,20 @@ export const openAiModelInfoSaneDefaults: OpenAiCompatibleModelInfo = {
 export type GeminiModelId = keyof typeof geminiModels
 export const geminiDefaultModelId: GeminiModelId = "gemini-3.1-pro-preview"
 export const geminiModels = {
+	"gemini-3.5-flash": {
+		maxTokens: 65536,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 1.5,
+		outputPrice: 9.0,
+		cacheReadsPrice: 0.15,
+		supportsReasoning: true,
+		thinkingConfig: {
+			geminiThinkingLevel: "low",
+			supportsThinkingLevel: true,
+		},
+	},
 	"gemini-3.1-pro-preview": {
 		maxTokens: 65536,
 		contextWindow: 1_048_576,
@@ -2193,6 +2308,28 @@ export const azureOpenAiDefaultApiVersion = "2024-08-01-preview"
 export type DeepSeekModelId = keyof typeof deepSeekModels
 export const deepSeekDefaultModelId: DeepSeekModelId = "deepseek-chat"
 export const deepSeekModels = {
+	"deepseek-v4-flash": {
+		maxTokens: 384_000,
+		contextWindow: 1_000_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoning: true,
+		inputPrice: 0, // all input is either a cache hit or miss
+		outputPrice: 0.28,
+		cacheWritesPrice: 0.14,
+		cacheReadsPrice: 0.0028,
+	},
+	"deepseek-v4-pro": {
+		maxTokens: 384_000,
+		contextWindow: 1_000_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoning: true,
+		inputPrice: 0, // all input is either a cache hit or miss
+		outputPrice: 0.87,
+		cacheWritesPrice: 0.435,
+		cacheReadsPrice: 0.003625,
+	},
 	"deepseek-chat": {
 		maxTokens: 8_000,
 		contextWindow: 128_000,
@@ -4171,6 +4308,20 @@ export const sapAiCoreModels = {
 		supportsPromptCache: true,
 		description: sapAiCoreModelDescription,
 	},
+	"anthropic--claude-4.7-opus": {
+		maxTokens: 128_000,
+		contextWindow: 1_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		description: sapAiCoreModelDescription,
+	},
+	"anthropic--claude-4.6-opus": {
+		maxTokens: 128_000,
+		contextWindow: 1_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		description: sapAiCoreModelDescription,
+	},
 	"anthropic--claude-4.5-opus": {
 		maxTokens: 64_000,
 		contextWindow: 200_000,
@@ -4220,6 +4371,27 @@ export const sapAiCoreModels = {
 		supportsPromptCache: false,
 		description: sapAiCoreModelDescription,
 	},
+	"amazon--nova-pro": {
+		maxTokens: 10_000,
+		contextWindow: 300_000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		description: sapAiCoreModelDescription,
+	},
+	"amazon--nova-lite": {
+		maxTokens: 10_000,
+		contextWindow: 300_000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		description: sapAiCoreModelDescription,
+	},
+	"amazon--nova-micro": {
+		maxTokens: 10_000,
+		contextWindow: 128_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		description: sapAiCoreModelDescription,
+	},
 	"gemini-2.5-pro": {
 		maxTokens: 65536,
 		contextWindow: 1_048_576,
@@ -4238,6 +4410,23 @@ export const sapAiCoreModels = {
 		thinkingConfig: {
 			maxBudget: 24576,
 		},
+		description: sapAiCoreModelDescription,
+	},
+	"gemini-2.5-flash-lite": {
+		maxTokens: 65535,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: true,
+		thinkingConfig: {
+			maxBudget: 24576,
+		},
+		description: sapAiCoreModelDescription,
+	},
+	"gemini-2.5-flash-image": {
+		maxTokens: 32_768,
+		contextWindow: 32_768,
+		supportsImages: true,
+		supportsPromptCache: false,
 		description: sapAiCoreModelDescription,
 	},
 	"gpt-4": {
@@ -4303,6 +4492,13 @@ export const sapAiCoreModels = {
 		supportsPromptCache: true,
 		description: sapAiCoreModelDescription,
 	},
+	"gpt-5.5": {
+		maxTokens: 128_000,
+		contextWindow: 1_050_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		description: sapAiCoreModelDescription,
+	},
 	"gpt-5.4": {
 		maxTokens: 128_000,
 		contextWindow: 1_050_000,
@@ -4359,11 +4555,56 @@ export const sapAiCoreModels = {
 		supportsPromptCache: false,
 		description: sapAiCoreModelDescription,
 	},
+	"mistralai--mistral-medium-instruct": {
+		maxTokens: 8192,
+		contextWindow: 128_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		description: sapAiCoreModelDescription,
+	},
+	"mistralai--mistral-large-instruct": {
+		maxTokens: 8192,
+		contextWindow: 64_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		description: sapAiCoreModelDescription,
+	},
+	"mistralai--mistral-small-instruct": {
+		maxTokens: 8192,
+		contextWindow: 128_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		description: sapAiCoreModelDescription,
+	},
+	"mistralai--mistral-small": {
+		maxTokens: 8192,
+		contextWindow: 128_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		description: sapAiCoreModelDescription,
+	},
+	"cohere--command-a-reasoning": {
+		maxTokens: 8192,
+		contextWindow: 256_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		description: sapAiCoreModelDescription,
+	},
 } as const satisfies Record<string, ModelInfo>
 
 // Moonshot AI Studio
 // https://platform.moonshot.ai/docs/pricing/chat
 export const moonshotModels = {
+	"kimi-k2.6": {
+		maxTokens: 32_000,
+		contextWindow: 262_144,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.95,
+		outputPrice: 4.0,
+		cacheReadsPrice: 0.16,
+		temperature: 1.0,
+	},
 	"kimi-k2.5": {
 		maxTokens: 32_000,
 		contextWindow: 262_144,
