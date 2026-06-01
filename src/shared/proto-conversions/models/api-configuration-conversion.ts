@@ -5,6 +5,7 @@ import {
 	ModelsApiConfiguration as ProtoApiConfiguration,
 	ApiProvider as ProtoApiProvider,
 	OcaModelInfo as ProtoOcaModelInfo,
+	ShengSuanYunModelInfo as ProtoShengSuanYunModelInfo,
 	ThinkingConfig,
 } from "@shared/proto/cline/models"
 import {
@@ -16,6 +17,7 @@ import {
 	ModelInfo,
 	OcaModelInfo,
 } from "../../api"
+import { ShengSuanYunModelInfo } from "../../proto/cline/models"
 import { OpenaiReasoningEffort } from "../../storage/types"
 
 // Convert application ThinkingConfig to proto ThinkingConfig
@@ -328,6 +330,8 @@ function convertApiProviderToProto(provider: string | undefined): ProtoApiProvid
 			return ProtoApiProvider.NOUSRESEARCH
 		case "openai-codex":
 			return ProtoApiProvider.OPENAI_CODEX
+		case "shengsuanyun":
+			return ProtoApiProvider.SHENG_SUAN_YUN
 		default:
 			return ProtoApiProvider.ANTHROPIC
 	}
@@ -420,6 +424,8 @@ export function convertProtoToApiProvider(provider: ProtoApiProvider): ApiProvid
 			return "nousResearch"
 		case ProtoApiProvider.OPENAI_CODEX:
 			return "openai-codex"
+		case ProtoApiProvider.SHENG_SUAN_YUN:
+			return "shengsuanyun"
 		default:
 			return "anthropic"
 	}
@@ -507,6 +513,7 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		minimaxApiKey: config.minimaxApiKey,
 		minimaxApiLine: config.minimaxApiLine,
 		nousResearchApiKey: config.nousResearchApiKey,
+		shengSuanYunApiKey: config.shengSuanYunApiKey,
 		clineApiKey: config.clineApiKey,
 		ocaMode: config.ocaMode,
 		aihubmixApiKey: config.aihubmixApiKey,
@@ -558,6 +565,8 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		planModeNousResearchModelId: config.planModeNousResearchModelId,
 		planModeVercelAiGatewayModelId: config.planModeVercelAiGatewayModelId,
 		planModeVercelAiGatewayModelInfo: convertModelInfoToProtoOpenRouter(config.planModeVercelAiGatewayModelInfo),
+		planModeShengSuanYunModelId: config.planModeShengSuanYunModelId,
+		planModeShengSuanYunModelInfo: config.planModeShengSuanYunModelInfo as ProtoShengSuanYunModelInfo | undefined,
 
 		// Act mode configurations
 		actModeApiProvider: config.actModeApiProvider ? convertApiProviderToProto(config.actModeApiProvider) : undefined,
@@ -602,6 +611,8 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		actModeNousResearchModelId: config.actModeNousResearchModelId,
 		actModeVercelAiGatewayModelId: config.actModeVercelAiGatewayModelId,
 		actModeVercelAiGatewayModelInfo: convertModelInfoToProtoOpenRouter(config.actModeVercelAiGatewayModelInfo),
+		actModeShengSuanYunModelId: config.actModeShengSuanYunModelId,
+		actModeShengSuanYunModelInfo: config.actModeShengSuanYunModelInfo as ProtoShengSuanYunModelInfo | undefined,
 	}
 }
 
@@ -693,6 +704,7 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		hicapApiKey: protoConfig.hicapApiKey,
 		hicapModelId: protoConfig.hicapModelId,
 		nousResearchApiKey: protoConfig.nousResearchApiKey,
+		shengSuanYunApiKey: protoConfig.shengSuanYunApiKey,
 		clineApiKey: protoConfig.clineApiKey,
 
 		// Plan mode configurations
@@ -741,6 +753,8 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		planModeNousResearchModelId: protoConfig.planModeNousResearchModelId,
 		planModeVercelAiGatewayModelId: protoConfig.planModeVercelAiGatewayModelId,
 		planModeVercelAiGatewayModelInfo: convertProtoToModelInfo(protoConfig.planModeVercelAiGatewayModelInfo),
+		planModeShengSuanYunModelId: protoConfig.planModeShengSuanYunModelId,
+		planModeShengSuanYunModelInfo: protoConfig.planModeShengSuanYunModelInfo as ShengSuanYunModelInfo | undefined,
 
 		// Act mode configurations
 		actModeApiProvider:
@@ -786,5 +800,7 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		actModeNousResearchModelId: protoConfig.actModeNousResearchModelId,
 		actModeVercelAiGatewayModelId: protoConfig.actModeVercelAiGatewayModelId,
 		actModeVercelAiGatewayModelInfo: convertProtoToModelInfo(protoConfig.actModeVercelAiGatewayModelInfo),
+		actModeShengSuanYunModelId: protoConfig.actModeShengSuanYunModelId,
+		actModeShengSuanYunModelInfo: protoConfig.actModeShengSuanYunModelInfo as ShengSuanYunModelInfo | undefined,
 	}
 }

@@ -38,6 +38,7 @@ import { QwenCodeHandler } from "./providers/qwen-code"
 import { RequestyHandler } from "./providers/requesty"
 import { SambanovaHandler } from "./providers/sambanova"
 import { SapAiCoreHandler } from "./providers/sapaicore"
+import { ShengSuanYunHandler } from "./providers/shengsuanyun"
 import { TogetherHandler } from "./providers/together"
 import { VercelAIGatewayHandler } from "./providers/vercel-ai-gateway"
 import { VertexHandler } from "./providers/vertex"
@@ -461,6 +462,17 @@ function createHandlerForProvider(
 				onRetryAttempt: options.onRetryAttempt,
 				wandbApiKey: options.wandbApiKey,
 				apiModelId: mode === "plan" ? options.planModeApiModelId : options.actModeApiModelId,
+			})
+		case "shengsuanyun":
+			return new ShengSuanYunHandler({
+				onRetryAttempt: options.onRetryAttempt,
+				shengSuanYunApiKey: options.shengSuanYunApiKey,
+				reasoningEffort: mode === "plan" ? options.planModeReasoningEffort : options.actModeReasoningEffort,
+				thinkingBudgetTokens:
+					mode === "plan" ? options.planModeThinkingBudgetTokens : options.actModeThinkingBudgetTokens,
+				shengSuanYunModelId: mode === "plan" ? options.planModeShengSuanYunModelId : options.actModeShengSuanYunModelId,
+				shengSuanYunModelInfo:
+					mode === "plan" ? options.planModeShengSuanYunModelInfo : options.actModeShengSuanYunModelInfo,
 			})
 		default:
 			return new AnthropicHandler({

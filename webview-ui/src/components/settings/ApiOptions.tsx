@@ -48,6 +48,7 @@ import { QwenProvider } from "./providers/QwenProvider"
 import { RequestyProvider } from "./providers/RequestyProvider"
 import { SambanovaProvider } from "./providers/SambanovaProvider"
 import { SapAiCoreProvider } from "./providers/SapAiCoreProvider"
+import { ShengSuanYunProvider } from "./providers/ShengSuanYunProvider"
 import { TogetherProvider } from "./providers/TogetherProvider"
 import { VercelAIGatewayProvider } from "./providers/VercelAIGatewayProvider"
 import { VertexProvider } from "./providers/VertexProvider"
@@ -508,6 +509,10 @@ const ApiOptions = ({
 
 			{apiConfiguration && selectedProvider === "zai" && (
 				<ZAiProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
+			)}
+
+			{apiConfiguration && selectedProvider === "shengsuanyun" && (
+				<ShengSuanYunProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
 			)}
 
 			{apiConfiguration && selectedProvider === "minimax" && (

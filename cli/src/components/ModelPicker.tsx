@@ -104,6 +104,7 @@ export const providerModels: Record<string, { models: Record<string, unknown>; d
 	sapaicore: { models: sapAiCoreModels, defaultId: sapAiCoreDefaultModelId },
 	vertex: { models: vertexModels, defaultId: vertexDefaultModelId },
 	wandb: { models: wandbModels, defaultId: wandbDefaultModelId },
+	shengsuanyun: { models: {}, defaultId: shengSuanYunDefaultModelId },
 	xai: { models: xaiModels, defaultId: xaiDefaultModelId },
 	zai: { models: internationalZAiModels, defaultId: internationalZAiDefaultModelId },
 }

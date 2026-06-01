@@ -1,4 +1,3 @@
-import i18next from "i18next"
 import {
 	ApiConfiguration,
 	ApiProvider,
@@ -64,6 +63,7 @@ import {
 	sambanovaModels,
 	sapAiCoreDefaultModelId,
 	sapAiCoreModels,
+	shengSuanYunDefaultModelId,
 	vertexDefaultModelId,
 	vertexModels,
 	wandbDefaultModelId,
@@ -71,8 +71,10 @@ import {
 	xaiDefaultModelId,
 	xaiModels,
 } from "@shared/api"
+import { ShengSuanYunModelInfo } from "@shared/proto/cline/models"
 import { Mode } from "@shared/storage/types"
 import * as reasoningSupport from "@shared/utils/reasoning-support"
+import i18next from "i18next"
 
 export function supportsReasoningEffortForModelId(modelId?: string, _allowShortOpenAiIds = false): boolean {
 	return reasoningSupport.supportsReasoningEffortForModel(modelId)
@@ -86,7 +88,11 @@ export function supportsReasoningEffortForModelId(modelId?: string, _allowShortO
 export function getModelsForProvider(
 	provider: ApiProvider,
 	apiConfiguration?: ApiConfiguration,
-	dynamicModels: { liteLlmModels?: Record<string, ModelInfo>; basetenModels?: Record<string, ModelInfo> } = {},
+	dynamicModels: {
+		liteLlmModels?: Record<string, ModelInfo>
+		basetenModels?: Record<string, ModelInfo>
+		shengSuanYunModels?: Record<string, ShengSuanYunModelInfo>
+	} = {},
 ): Record<string, ModelInfo> | undefined {
 	switch (provider) {
 		case "anthropic":
@@ -145,6 +151,8 @@ export function getModelsForProvider(
 			return huggingFaceModels
 		case "nousResearch":
 			return nousResearchModels
+		case "shengsuanyun":
+			return dynamicModels?.shengSuanYunModels
 		case "litellm":
 			return dynamicModels?.liteLlmModels
 		default:
@@ -491,6 +499,20 @@ export function normalizeApiConfiguration(
 						? nousResearchModels[nousResearchModelId as keyof typeof nousResearchModels]
 						: nousResearchModels[nousResearchDefaultModelId],
 			}
+		case "shengsuanyun":
+			const shengSuanYunModelId =
+				currentMode === "plan"
+					? apiConfiguration?.planModeShengSuanYunModelId
+					: apiConfiguration?.actModeShengSuanYunModelId
+			const shengSuanYunModelInfo =
+				currentMode === "plan"
+					? apiConfiguration?.planModeShengSuanYunModelInfo
+					: apiConfiguration?.actModeShengSuanYunModelInfo
+			return {
+				selectedProvider: provider,
+				selectedModelId: shengSuanYunModelId || shengSuanYunDefaultModelId,
+				selectedModelInfo: (shengSuanYunModelInfo || {}) as ModelInfo,
+			}
 		default:
 			return getProviderData(anthropicModels, anthropicDefaultModelId)
 	}
@@ -526,6 +548,7 @@ export function getModeSpecificFields(apiConfiguration: ApiConfiguration | undef
 			hicapModelId: undefined,
 			aihubmixModelId: undefined,
 			nousResearchModelId: undefined,
+			shengSuanYunModelId: undefined,
 			vercelAiGatewayModelId: undefined,
 
 			// Model info objects
@@ -539,6 +562,7 @@ export function getModeSpecificFields(apiConfiguration: ApiConfiguration | undef
 			huggingFaceModelInfo: undefined,
 			vsCodeLmModelSelector: undefined,
 			aihubmixModelInfo: undefined,
+			shengSuanYunModelInfo: undefined,
 
 			// AWS Bedrock fields
 			awsBedrockCustomSelected: undefined,
@@ -593,6 +617,8 @@ export function getModeSpecificFields(apiConfiguration: ApiConfiguration | undef
 			mode === "plan" ? apiConfiguration.planModeNousResearchModelId : apiConfiguration.actModeNousResearchModelId,
 		vercelAiGatewayModelId:
 			mode === "plan" ? apiConfiguration.planModeVercelAiGatewayModelId : apiConfiguration.actModeVercelAiGatewayModelId,
+		shengSuanYunModelId:
+			mode === "plan" ? apiConfiguration.planModeShengSuanYunModelId : apiConfiguration.actModeShengSuanYunModelId,
 
 		// Model info objects
 		openAiModelInfo: mode === "plan" ? apiConfiguration.planModeOpenAiModelInfo : apiConfiguration.actModeOpenAiModelInfo,
@@ -614,6 +640,8 @@ export function getModeSpecificFields(apiConfiguration: ApiConfiguration | undef
 			mode === "plan"
 				? apiConfiguration.planModeVercelAiGatewayModelInfo
 				: apiConfiguration.actModeVercelAiGatewayModelInfo,
+		shengSuanYunModelInfo:
+			mode === "plan" ? apiConfiguration.planModeShengSuanYunModelInfo : apiConfiguration.actModeShengSuanYunModelInfo,
 
 		// AWS Bedrock fields
 		awsBedrockCustomSelected:
@@ -797,6 +825,13 @@ export async function syncModeConfigurations(
 		case "nousResearch":
 			updates.planModeNousResearchModelId = sourceFields.nousResearchModelId
 			updates.actModeNousResearchModelId = sourceFields.nousResearchModelId
+			break
+
+		case "shengsuanyun":
+			updates.planModeShengSuanYunModelId = sourceFields.shengSuanYunModelId
+			updates.planModeShengSuanYunModelInfo = sourceFields.shengSuanYunModelInfo
+			updates.actModeShengSuanYunModelId = sourceFields.shengSuanYunModelId
+			updates.actModeShengSuanYunModelInfo = sourceFields.shengSuanYunModelInfo
 			break
 
 		case "aihubmix":

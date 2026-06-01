@@ -1,4 +1,4 @@
-import { ApiFormat } from "./proto/cline/models"
+import { ApiFormat, ShengSuanYunModelInfo as ProtoShengSuanYunModelInfo } from "./proto/cline/models"
 import type { ApiHandlerSettings } from "./storage/state-keys"
 
 export type ApiProvider =
@@ -43,6 +43,7 @@ export type ApiProvider =
 	| "minimax"
 	| "hicap"
 	| "nousResearch"
+	| "shengsuanyun"
 	| "wandb"
 
 export const DEFAULT_API_PROVIDER = "openrouter" as ApiProvider
@@ -5301,3 +5302,17 @@ export const nousResearchModels = {
 			"This incarnation of Hermes 4 balances scale and size. It handles complex reasoning tasks, while staying fast and cost effective. A versatile choice for many use cases.",
 	},
 } as const satisfies Record<string, ModelInfo>
+
+// ShengSuanYun (胜算云) - uses proto ShengSuanYunModelInfo
+// https://router.shengsuanyun.com/model
+export const shengSuanYunDefaultModelId: string = "anthropic/claude-sonnet-4.5"
+export const shengSuanYunDefaultModelInfo: ProtoShengSuanYunModelInfo = {
+	maxTokens: 64_000,
+	contextWindow: 20_000,
+	inputPrice: 3.0,
+	outputPrice: 15.0,
+	supportsImages: true,
+	supportsPromptCache: false,
+	endPoints: ["/v1/chat/completions"],
+	description: "Claude Sonnet 4.5 是 Anthropic 迄今为止最先进的 Sonnet 模型，针对真实代理和编码工作流程进行了优化。",
+}

@@ -6,7 +6,7 @@ import { DEFAULT_FOCUS_CHAIN_SETTINGS } from "@shared/FocusChainSettings"
 import { DEFAULT_MCP_DISPLAY_MODE } from "@shared/McpDisplayMode"
 import type { UserInfo } from "@shared/proto/cline/account"
 import { EmptyRequest } from "@shared/proto/cline/common"
-import type { OpenRouterCompatibleModelInfo } from "@shared/proto/cline/models"
+import type { OpenRouterCompatibleModelInfo, ShengSuanYunModelInfo } from "@shared/proto/cline/models"
 import { OnboardingModelGroup, type TerminalProfile } from "@shared/proto/cline/state"
 import { convertProtoToClineMessage } from "@shared/proto-conversions/cline-message"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
@@ -36,6 +36,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	openRouterModels: Record<string, ModelInfo>
 	vercelAiGatewayModels: Record<string, ModelInfo>
 	hicapModels: Record<string, ModelInfo>
+	shengSuanYunModels: Record<string, ShengSuanYunModelInfo>
 	liteLlmModels: Record<string, ModelInfo>
 	openAiModels: string[]
 	requestyModels: Record<string, ModelInfo>
@@ -70,6 +71,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setGroqModels: (value: Record<string, ModelInfo>) => void
 	setBasetenModels: (value: Record<string, ModelInfo>) => void
 	setHuggingFaceModels: (value: Record<string, ModelInfo>) => void
+	setShengSuanYunModels: (value: Record<string, ShengSuanYunModelInfo>) => void
 	setGlobalClineRulesToggles: (toggles: Record<string, boolean>) => void
 	setLocalClineRulesToggles: (toggles: Record<string, boolean>) => void
 	setLocalCursorRulesToggles: (toggles: Record<string, boolean>) => void
@@ -92,6 +94,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	refreshOpenRouterModels: () => void
 	refreshVercelAiGatewayModels: () => void
 	refreshHicapModels: () => void
+	refreshShengSuanYunModels: () => void
 	refreshLiteLlmModels: () => Promise<void>
 	setUserInfo: (userInfo?: UserInfo) => void
 
@@ -303,6 +306,7 @@ export const ExtensionStateContextProvider: React.FC<{
 	})
 	const [vercelAiGatewayModels, setVercelAiGatewayModels] = useState<Record<string, ModelInfo>>({})
 	const [hicapModels, setHicapModels] = useState<Record<string, ModelInfo>>({})
+	const [shengSuanYunModels, setShengSuanYunModels] = useState<Record<string, ShengSuanYunModelInfo>>({})
 	const [liteLlmModels, setLiteLlmModels] = useState<Record<string, ModelInfo>>({})
 	const [totalTasksSize, setTotalTasksSize] = useState<number | null>(null)
 	const [availableTerminalProfiles, setAvailableTerminalProfiles] = useState<TerminalProfile[]>([])
@@ -701,6 +705,17 @@ export const ExtensionStateContextProvider: React.FC<{
 			.catch((error: Error) => console.error("Failed to refresh OpenRouter models:", error))
 	}, [])
 
+	const refreshShengSuanYunModels = useCallback(() => {
+		ModelsServiceClient.refreshShengSuanYunModels(EmptyRequest.create({}))
+			.then((response) => {
+				const models = response.models
+				setShengSuanYunModels({
+					...models,
+				})
+			})
+			.catch((error: Error) => console.error("Failed to refresh ShengSuanYun models:", error))
+	}, [])
+
 	const refreshHicapModels = useCallback(() => {
 		ModelsServiceClient.refreshHicapModels(EmptyRequest.create({}))
 			.then((response: OpenRouterCompatibleModelInfo) => {
@@ -751,6 +766,9 @@ export const ExtensionStateContextProvider: React.FC<{
 		}
 		if (state.apiConfiguration?.basetenApiKey) {
 			refreshBasetenModels()
+			if (state.apiConfiguration?.shengSuanYunApiKey) {
+				refreshShengSuanYunModels()
+			}
 		}
 		if (state.apiConfiguration?.liteLlmApiKey) {
 			refreshLiteLlmModels()
@@ -792,6 +810,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		openRouterModels,
 		vercelAiGatewayModels,
 		hicapModels,
+		shengSuanYunModels,
 		liteLlmModels,
 		openAiModels,
 		requestyModels,
@@ -851,6 +870,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		setGroqModels,
 		setBasetenModels,
 		setHuggingFaceModels,
+		setShengSuanYunModels,
 		setMcpMarketplaceCatalog,
 		setShowMcp,
 		closeMcpView,
@@ -915,6 +935,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		refreshOpenRouterModels,
 		refreshVercelAiGatewayModels,
 		refreshHicapModels,
+		refreshShengSuanYunModels,
 		refreshLiteLlmModels,
 		onRelinquishControl,
 		setUserInfo: (userInfo?: UserInfo) => setState((prevState) => ({ ...prevState, userInfo })),

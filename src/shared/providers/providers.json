@@ -165,6 +165,10 @@
 			"label": "NousResearch"
 		},
 		{
+			"value": "shengsuanyun",
+			"label": "胜算云"
+		},
+		{
 			"value": "wandb",
 			"label": "W&B Inference by CoreWeave"
 		}

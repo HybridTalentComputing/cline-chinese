@@ -55,6 +55,8 @@ service ModelsService {
   rpc getAihubmixModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
   // Refreshes and returns Vercel AI Gateway models
   rpc refreshVercelAiGatewayModelsRpc(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
+  // Refreshes and returns ShengSuanYun models
+  rpc refreshShengSuanYunModels(EmptyRequest) returns (ShengSuanYunCompatibleModelInfo);
 }
 
 // List of VS Code LM models
@@ -199,6 +201,7 @@ message ModelsApiSecrets {
   optional string oca_refresh_token = 37;
   optional string minimax_api_key = 38;
   optional string aihubmix_api_key = 39;
+  optional string sheng_suan_yun_api_key = 40;
 }
 
 // API configuration options (non-secret settings)
@@ -287,6 +290,8 @@ message ModelsApiOptions {
   optional OpenAiCompatibleModelInfo plan_mode_aihubmix_model_info = 134;
   optional string plan_mode_cline_model_id = 135;
   optional OpenRouterModelInfo plan_mode_cline_model_info = 136;
+  optional string plan_mode_sheng_suan_yun_model_id = 137;
+  optional ShengSuanYunModelInfo plan_mode_sheng_suan_yun_model_info = 138;
 
   // Act mode configurations
   optional ApiProvider act_mode_api_provider = 200;
@@ -326,6 +331,8 @@ message ModelsApiOptions {
   optional OpenAiCompatibleModelInfo act_mode_aihubmix_model_info = 234;
   optional string act_mode_cline_model_id = 235;
   optional OpenRouterModelInfo act_mode_cline_model_info = 236;
+  optional string act_mode_sheng_suan_yun_model_id = 237;
+  optional ShengSuanYunModelInfo act_mode_sheng_suan_yun_model_info = 238;
 }
 
 // Request for updating API configuration (legacy - uses combined configuration)
@@ -461,6 +468,7 @@ enum ApiProvider {
   NOUSRESEARCH = 39;
   OPENAI_CODEX = 40;
   WANDB = 41;
+  SHENG_SUAN_YUN = 42;
 }
 
 enum ApiFormat {
@@ -489,6 +497,27 @@ message OpenAiCompatibleModelInfo {
   optional double temperature = 13;
   optional bool is_r1_format_required = 14;
   optional ApiFormat api_format = 15;
+}
+
+// Model info for ShengSuanYun models
+message ShengSuanYunModelInfo {
+  optional int64 max_tokens = 1;
+  optional int64 context_window = 2;
+  optional bool supports_images = 3;
+  bool supports_prompt_cache = 4;
+  optional double input_price = 5;
+  optional double output_price = 6;
+  optional double cache_writes_price = 7;
+  optional double cache_reads_price = 8;
+  optional string description = 9;
+  optional ThinkingConfig thinking_config = 10;
+  optional bool supports_global_endpoint = 11;
+  repeated string end_points = 12;
+}
+
+// Wrapper for multiple ShengSuanYun models
+message ShengSuanYunCompatibleModelInfo {
+  map<string, ShengSuanYunModelInfo> models = 1;
 }
 
 // Model info for LiteLLM models
@@ -600,6 +629,7 @@ message ModelsApiConfiguration {
   optional string nous_research_api_key = 85;
   optional bool azure_identity = 86;
   optional string wandb_api_key = 87;
+  optional string sheng_suan_yun_api_key = 88;
 
   // Plan mode configurations
   optional ApiProvider plan_mode_api_provider = 100;
@@ -644,6 +674,8 @@ message ModelsApiConfiguration {
   optional string gemini_plan_mode_thinking_level = 139;
   optional string plan_mode_cline_model_id = 140;
   optional OpenRouterModelInfo plan_mode_cline_model_info = 141;
+  optional string plan_mode_sheng_suan_yun_model_id = 142;
+  optional ShengSuanYunModelInfo plan_mode_sheng_suan_yun_model_info = 143;
 
   // Act mode configurations
   optional ApiProvider act_mode_api_provider = 200;
@@ -688,4 +720,6 @@ message ModelsApiConfiguration {
   optional string gemini_act_mode_thinking_level = 239;
   optional string act_mode_cline_model_id = 240;
   optional OpenRouterModelInfo act_mode_cline_model_info = 241;
+  optional string act_mode_sheng_suan_yun_model_id = 242;
+  optional ShengSuanYunModelInfo act_mode_sheng_suan_yun_model_info = 243;
 }
