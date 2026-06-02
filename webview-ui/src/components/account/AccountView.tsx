@@ -41,6 +41,8 @@ type CachedData = {
 	lastFetchTime: number
 }
 
+type DisplayedCreditData = Omit<CachedData, "lastFetchTime">
+
 const ClineEnvOptions = ["Production", "Staging", "Local"] as const
 
 const AccountView = ({ onDone, clineUser, organizations, activeOrganization }: AccountViewProps) => {
@@ -88,6 +90,13 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 	const [usageData, setUsageData] = useState<ClineAccountUsageTransaction[]>([])
 	const [paymentsData, setPaymentsData] = useState<PaymentTransaction[]>([])
 	const [lastFetchTime, setLastFetchTime] = useState<number>(Date.now())
+	const displayedDataRef = useRef<CachedData>({
+		balance: null,
+		usageData: [],
+		paymentsData: [],
+		lastFetchTime: Date.now(),
+	})
+	const isLoadingRef = useRef(false)
 
 	// Load cached data for current dropdown value
 	const loadCachedData = useCallback((id: string) => {
@@ -97,23 +106,16 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 			setUsageData(cached.usageData)
 			setPaymentsData(cached.paymentsData)
 			setLastFetchTime(cached.lastFetchTime)
+			displayedDataRef.current = cached
 			return true
 		}
 		return false
 	}, [])
 
 	// Simple cache function without dependencies
-	const cacheCurrentData = useCallback(
-		(id: string) => {
-			dataCache.current.set(id, {
-				balance,
-				usageData,
-				paymentsData,
-				lastFetchTime,
-			})
-		},
-		[balance, usageData, paymentsData, lastFetchTime],
-	)
+	const cacheCurrentData = useCallback((id: string) => {
+		dataCache.current.set(id, displayedDataRef.current)
+	}, [])
 	// Track the active organization ID to detect changes
 	const [lastActiveOrgId, setLastActiveOrgId] = useState<string | undefined>(activeOrganization?.organizationId)
 	// Use ref for debounce timeout to avoid re-renders
@@ -125,25 +127,30 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 
 	const isClineTester = useMemo(() => (email ? isClineInternalTester(email) : false), [email])
 
-	const fetchUserCredit = useCallback(async () => {
-		try {
-			const response = await AccountServiceClient.getUserCredits(EmptyRequest.create())
-			const newBalance = response?.balance?.currentBalance
-			// Always update balance, even if it's 0 or null - don't skip undefined
-			setBalance(newBalance ?? null)
-			const newUsage = convertProtoUsageTransactions(response.usageTransactions)
-			setUsageData((prev) => (deepEqual(newUsage, prev) ? prev : newUsage))
-			const newPaymentsData = response.paymentTransactions
-			setPaymentsData((prev) => (deepEqual(newPaymentsData, prev) ? prev : newPaymentsData))
-		} catch (error) {
-			console.error("Failed to fetch user credit:", error)
+	const applyDisplayedData = useCallback((nextData: DisplayedCreditData, fetchedAt = Date.now()) => {
+		setBalance(nextData.balance)
+		setUsageData((prev) => (deepEqual(nextData.usageData, prev) ? prev : nextData.usageData))
+		setPaymentsData((prev) => (deepEqual(nextData.paymentsData, prev) ? prev : nextData.paymentsData))
+		setLastFetchTime(fetchedAt)
+		displayedDataRef.current = {
+			...nextData,
+			lastFetchTime: fetchedAt,
+		}
+	}, [])
+
+	const fetchUserCredit = useCallback(async (): Promise<DisplayedCreditData> => {
+		const response = await AccountServiceClient.getUserCredits(EmptyRequest.create())
+		return {
+			balance: response?.balance?.currentBalance ?? null,
+			usageData: convertProtoUsageTransactions(response.usageTransactions),
+			paymentsData: response.paymentTransactions,
 		}
 	}, [])
 
 	const fetchCreditBalance = useCallback(
 		async (id: string, skipCache = false) => {
 			try {
-				if (isLoading) {
+				if (isLoadingRef.current) {
 					return // Prevent multiple concurrent fetches
 				}
 
@@ -152,36 +159,40 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 					// If we have cached data, show it first, then fetch in background
 				}
 
+				isLoadingRef.current = true
 				setIsLoading(true)
+				let nextData: DisplayedCreditData
 				if (id === uid) {
-					await fetchUserCredit()
+					nextData = await fetchUserCredit()
 				} else {
 					const response = await AccountServiceClient.getOrganizationCredits({
 						organizationId: id,
 					})
-					// Update balance - handle all values including 0 and null
-					const newBalance = response.balance?.currentBalance
-					setBalance(newBalance ?? null)
-
-					const newUsage = convertProtoUsageTransactions(response.usageTransactions)
-					setUsageData((prev) => (deepEqual(newUsage, prev) ? prev : newUsage))
+					nextData = {
+						balance: response.balance?.currentBalance ?? null,
+						usageData: convertProtoUsageTransactions(response.usageTransactions),
+						paymentsData: [],
+					}
 				}
 
-				// Cache the updated data
-				cacheCurrentData(id)
+				const fetchedAt = Date.now()
+				applyDisplayedData(nextData, fetchedAt)
+				dataCache.current.set(id, {
+					...nextData,
+					lastFetchTime: fetchedAt,
+				})
 			} catch (error) {
 				console.error("Failed to fetch credit balance:", error)
 			} finally {
-				setLastFetchTime(Date.now())
+				isLoadingRef.current = false
 				setIsLoading(false)
 			}
 		},
 		[
-			isLoading,
 			uid,
 			fetchUserCredit,
 			loadCachedData, // Cache the updated data
-			cacheCurrentData,
+			applyDisplayedData,
 		],
 	)
 
@@ -211,6 +222,12 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 					setBalance(null)
 					setUsageData([])
 					setPaymentsData([])
+					displayedDataRef.current = {
+						balance: null,
+						usageData: [],
+						paymentsData: [],
+						lastFetchTime: displayedDataRef.current.lastFetchTime,
+					}
 				}
 
 				// Set flag to indicate manual fetch in progress
@@ -278,6 +295,12 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 					setBalance(null)
 					setUsageData([])
 					setPaymentsData([])
+					displayedDataRef.current = {
+						balance: null,
+						usageData: [],
+						paymentsData: [],
+						lastFetchTime: displayedDataRef.current.lastFetchTime,
+					}
 				}
 			}
 
