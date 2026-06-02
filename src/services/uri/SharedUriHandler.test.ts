@@ -13,6 +13,7 @@ import { SharedUriHandler } from "./SharedUriHandler"
 describe("SharedUriHandler", () => {
 	let sandbox: sinon.SinonSandbox
 	let handleOpenRouterCallbackStub: sinon.SinonStub
+	let handleShengSuanYunCallbackStub: sinon.SinonStub
 	let handleAuthCallbackStub: sinon.SinonStub
 	let handleTaskCreationStub: sinon.SinonStub
 
@@ -38,11 +39,13 @@ describe("SharedUriHandler", () => {
 		await ErrorService.initialize()
 
 		handleOpenRouterCallbackStub = sandbox.stub().resolves()
+		handleShengSuanYunCallbackStub = sandbox.stub().resolves()
 		handleAuthCallbackStub = sandbox.stub().resolves()
 		handleTaskCreationStub = sandbox.stub().resolves()
 		const mockWebviewProvider = {
 			controller: {
 				handleOpenRouterCallback: handleOpenRouterCallbackStub,
+				handleShengSuanYunCallback: handleShengSuanYunCallbackStub,
 				handleAuthCallback: handleAuthCallbackStub,
 				handleTaskCreation: handleTaskCreationStub,
 			},
@@ -85,6 +88,22 @@ describe("SharedUriHandler", () => {
 
 				expect(result).to.be.true
 				sinon.assert.calledOnceWithExactly(handleAuthCallbackStub, "jwt123", "google")
+			})
+
+			describe("ShengSuanYun callback handling", () => {
+				it("should successfully handle ShengSuanYun callback with code", async () => {
+					const result = await SharedUriHandler.handleUri("vscode://cline.cline/ssy?code=test123")
+
+					expect(result).to.be.true
+					sinon.assert.calledOnceWithExactly(handleShengSuanYunCallbackStub, "test123")
+				})
+
+				it("should return false when ShengSuanYun code is missing", async () => {
+					const result = await SharedUriHandler.handleUri("vscode://cline.cline/ssy")
+
+					expect(result).to.be.false
+					expect(handleShengSuanYunCallbackStub.called).to.be.false
+				})
 			})
 
 			it("should successfully handle auth callback without provider", async () => {

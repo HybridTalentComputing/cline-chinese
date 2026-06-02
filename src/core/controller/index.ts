@@ -699,6 +699,43 @@ export class Controller {
 		}
 	}
 
+	async handleShengSuanYunCallback(code: string) {
+		try {
+			const callbackUrl = await HostProvider.get().getCallbackUrl("/ssy")
+			const response = await axios.post("https://api.shengsuanyun.com/auth/keys", {
+				code,
+				callback_url: callbackUrl,
+			})
+
+			const shengSuanYunApiKey = response.data?.data?.api_key
+
+			if (!shengSuanYunApiKey) {
+				HostProvider.window.showMessage({
+					type: ShowMessageType.ERROR,
+					message: "登录胜算云成功，但未获取到 API Key，请前往控制台创建。",
+				})
+				return
+			}
+
+			const currentMode = this.stateManager.getGlobalSettingsKey("mode")
+			const currentApiConfiguration = this.stateManager.getApiConfiguration()
+			const updatedConfig = {
+				...currentApiConfiguration,
+				shengSuanYunApiKey,
+			}
+
+			this.stateManager.setApiConfiguration(updatedConfig)
+
+			await this.postStateToWebview()
+			if (this.task) {
+				this.task.api = buildApiHandler({ ...updatedConfig, ulid: this.task.ulid }, currentMode)
+			}
+		} catch (error) {
+			Logger.error("Error exchanging code for ShengSuanYun API key:", error)
+			throw error
+		}
+	}
+
 	// Read OpenRouter models from disk cache
 	async readOpenRouterModels(): Promise<Record<string, ModelInfo> | undefined> {
 		const openRouterModelsFilePath = path.join(await ensureCacheDirectoryExists(), GlobalFileNames.openRouterModels)

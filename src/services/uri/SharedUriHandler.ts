@@ -60,6 +60,16 @@ export class SharedUriHandler {
 					Logger.warn("SharedUriHandler: Missing code parameter for Requesty callback")
 					return false
 				}
+				case "/ssy":
+				case "/shengsuanyun": {
+					const code = query.get("code")
+					if (code) {
+						await visibleWebview.controller.handleShengSuanYunCallback(code)
+						return true
+					}
+					Logger.warn("SharedUriHandler: Missing code parameter for ShengSuanYun callback")
+					return false
+				}
 				case "/auth": {
 					const provider = query.get("provider")
 
