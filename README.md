@@ -1,6 +1,6 @@
 # Cline-Chinese (Cline中文汉化版) 🌏
 
-> 🎉 截止到2026.5.1，Cline Chinese在VS Code插件市场的下载量突破224k啦！感谢大家的支持！
+> 🎉 截止到2026.6.2，Cline Chinese在VS Code插件市场的下载量突破245k啦！感谢大家的支持！
 
 
 

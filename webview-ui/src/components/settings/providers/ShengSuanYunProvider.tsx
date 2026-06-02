@@ -26,7 +26,7 @@ export const ShengSuanYunProvider = ({ showModelOptions, isPopup, currentMode }:
 			/>
 			{!apiConfiguration?.shengSuanYunApiKey && (
 				<VSCodeButton
-					appearance="secondary"
+					appearance="primary"
 					onClick={async () => {
 						try {
 							await AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create())
