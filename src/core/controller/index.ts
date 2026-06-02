@@ -184,15 +184,6 @@ export class Controller {
 			this.stateManager.setGlobalState("userInfo", undefined)
 			clearRemoteConfig()
 
-			// Update API providers through cache service
-			const apiConfiguration = this.stateManager.getApiConfiguration()
-			const updatedConfig = {
-				...apiConfiguration,
-				planModeApiProvider: "openrouter" as ApiProvider,
-				actModeApiProvider: "openrouter" as ApiProvider,
-			}
-			this.stateManager.setApiConfiguration(updatedConfig)
-
 			await this.postStateToWebview()
 			HostProvider.window.showMessage({
 				type: ShowMessageType.INFORMATION,
@@ -513,42 +504,10 @@ export class Controller {
 		try {
 			await this.authService.handleAuthCallback(customToken, provider ? provider : "google")
 
-			const clineProvider: ApiProvider = "cline"
-
-			// Get current settings to determine how to update providers
-			const planActSeparateModelsSetting = this.stateManager.getGlobalSettingsKey("planActSeparateModelsSetting")
-
-			const currentMode = this.stateManager.getGlobalSettingsKey("mode")
-
-			// Get current API configuration from cache
-			const currentApiConfiguration = this.stateManager.getApiConfiguration()
-
-			const updatedConfig = { ...currentApiConfiguration }
-
-			if (planActSeparateModelsSetting) {
-				// Only update the current mode's provider
-				if (currentMode === "plan") {
-					updatedConfig.planModeApiProvider = clineProvider
-				} else {
-					updatedConfig.actModeApiProvider = clineProvider
-				}
-			} else {
-				// Update both modes to keep them in sync
-				updatedConfig.planModeApiProvider = clineProvider
-				updatedConfig.actModeApiProvider = clineProvider
-			}
-
-			// Update the API configuration through cache service
-			this.stateManager.setApiConfiguration(updatedConfig)
-
 			// Mark welcome view as completed since user has successfully logged in
 			this.stateManager.setGlobalState("welcomeViewCompleted", true)
 
 			await fetchRemoteConfig(this)
-
-			if (this.task) {
-				this.task.api = buildApiHandler({ ...updatedConfig, ulid: this.task.ulid }, currentMode)
-			}
 
 			await this.postStateToWebview()
 		} catch (error) {
