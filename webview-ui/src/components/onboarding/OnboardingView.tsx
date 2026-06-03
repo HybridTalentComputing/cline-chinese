@@ -43,7 +43,7 @@ const ModelSelection = ({
 	setSearchTerm,
 	onboardingModels,
 }: ModelSelectionProps) => {
-	const { t } = useTranslation("common")
+	const { t } = useTranslation("settings")
 	const modelGroups = onboardingModels[userType === NEW_USER_TYPE.FREE ? "free" : "power"]
 
 	const searchedModels = useMemo(() => {
@@ -197,7 +197,7 @@ type UserTypeSelectionProps = {
 }
 
 const UserTypeSelectionStep = ({ userType, onSelectUserType }: UserTypeSelectionProps) => {
-	const { t } = useTranslation("common")
+	const { t } = useTranslation("settings")
 	return (
 		<div className="flex flex-col w-full items-center">
 			<div className="flex w-full max-w-lg flex-col gap-3 my-2">
