@@ -11,7 +11,7 @@ import { McpServiceClient } from "@/services/grpc-client"
 type TransportType = "streamableHttp" | "sse"
 
 const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
 	const [serverName, setServerName] = useState("")
 	const [serverUrl, setServerUrl] = useState("")
 	const [transportType, setTransportType] = useState<TransportType>("streamableHttp")
@@ -23,19 +23,19 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 		e.preventDefault()
 
 		if (!serverName.trim()) {
-			setError(t("mcp.addRemoteServer.error.nameRequired"))
+			setError(t("mcp.addRemoteServer.serverNameRequired"))
 			return
 		}
 
 		if (!serverUrl.trim()) {
-			setError(t("mcp.addRemoteServer.error.urlRequired"))
+			setError(t("mcp.addRemoteServer.serverUrlRequired"))
 			return
 		}
 
 		try {
 			new URL(serverUrl)
 		} catch (_err) {
-			setError(t("mcp.addRemoteServer.error.invalidUrl"))
+			setError(t("mcp.addRemoteServer.invalidUrl"))
 			return
 		}
 
@@ -61,7 +61,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 			onServerAdded()
 		} catch (error) {
 			setIsSubmitting(false)
-			setError(error instanceof Error ? error.message : t("mcp.addRemoteServer.error.failed"))
+			setError(error instanceof Error ? error.message : t("mcp.addRemoteServer.failedToAdd"))
 		}
 	}
 
@@ -70,7 +70,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 			<div className="text-(--vscode-foreground) mb-2">
 				{t("mcp.addRemoteServer.description")}
 				<VSCodeLink href={LINKS.DOCUMENTATION.REMOTE_MCP_SERVER_DOCS} style={{ display: "inline" }}>
-					{t("mcp.addRemoteServer.learnMore")}
+					{t("mcp.addRemoteServer.here")}
 				</VSCodeLink>
 			</div>
 
@@ -118,7 +118,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 							{t("mcp.addRemoteServer.streamableHttp")}
 						</VSCodeRadio>
 						<VSCodeRadio checked={transportType === "sse"} value="sse">
-							{t("mcp.addRemoteServer.sse")}
+							{t("mcp.addRemoteServer.sseLegacy")}
 						</VSCodeRadio>
 					</VSCodeRadioGroup>
 				</div>
@@ -137,7 +137,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 						})
 					}}
 					style={{ width: "100%", marginBottom: "5px", marginTop: 15 }}>
-					{t("mcp.addRemoteServer.editConfig")}
+					{t("mcp.addRemoteServer.editConfiguration")}
 				</VSCodeButton>
 			</form>
 		</div>

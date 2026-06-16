@@ -1,10 +1,7 @@
-import { PulsingBorder } from "@paper-design/shaders-react"
 import { mentionRegex, mentionRegexGlobal } from "@shared/context-mentions"
-import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
+import { StringRequest } from "@shared/proto/cline/common"
 import { FileSearchRequest, FileSearchType, RelativePathsRequest } from "@shared/proto/cline/file"
-import { UpdateApiConfigurationRequest } from "@shared/proto/cline/models"
 import { PlanActMode, TogglePlanActModeRequest } from "@shared/proto/cline/state"
-import { convertApiConfigurationToProto } from "@shared/proto-conversions/models/api-configuration-conversion"
 import { type SlashCommand } from "@shared/slashCommands"
 import { Mode } from "@shared/storage/types"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
@@ -13,21 +10,17 @@ import type React from "react"
 import { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import DynamicTextArea from "react-textarea-autosize"
-import { useWindowSize } from "react-use"
 import styled from "styled-components"
 import ContextMenu from "@/components/chat/ContextMenu"
 import { CHAT_CONSTANTS } from "@/components/chat/chat-view/constants"
-import ModelPickerModal from "@/components/chat/ModelPickerModal"
 import SlashCommandMenu from "@/components/chat/SlashCommandMenu"
-import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import Thumbnails from "@/components/common/Thumbnails"
 import { getModeSpecificFields, normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-// import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { usePlatform } from "@/context/PlatformContext"
 import { cn } from "@/lib/utils"
-import { FileServiceClient, ModelsServiceClient, StateServiceClient } from "@/services/grpc-client"
+import { FileServiceClient, StateServiceClient } from "@/services/grpc-client"
 import {
 	ContextMenuOptionType,
 	getContextMenuOptionIndex,
@@ -49,10 +42,8 @@ import {
 	slashCommandRegexGlobal,
 	validateSlashCommand,
 } from "@/utils/slash-commands"
-import { validateApiConfiguration, validateModelId } from "@/utils/validate"
 import ClineRulesToggleModal from "../cline-rules/ClineRulesToggleModal"
 import ServersToggleModal from "./ServersToggleModal"
-import VoiceRecorder from "./VoiceRecorder"
 
 const { MAX_IMAGES_AND_FILES_PER_MESSAGE } = CHAT_CONSTANTS
 
@@ -148,46 +139,6 @@ const ButtonContainer = styled.div`
 	width: 100%;
 `
 
-const ModelSelectorTooltip = styled.div<ModelSelectorTooltipProps>`
-	position: fixed;
-	bottom: calc(100% + 9px);
-	left: 15px;
-	right: 15px;
-	background: ${CODE_BLOCK_BG_COLOR};
-	border: 1px solid var(--vscode-editorGroup-border);
-	padding: 12px 12px 18px 12px;
-	border-radius: 3px;
-	z-index: 1000;
-	max-height: calc(100vh - 100px);
-	overflow-y: auto;
-	overscroll-behavior: contain;
-
-	// Add invisible padding for hover zone
-	&::before {
-		content: "";
-		position: fixed;
-		bottom: ${(props) => `calc(100vh - ${props.menuPosition}px - 2px)`};
-		left: 0;
-		right: 0;
-		height: 8px;
-	}
-
-	// Arrow pointing down
-	&::after {
-		content: "";
-		position: fixed;
-		bottom: ${(props) => `calc(100vh - ${props.menuPosition}px)`};
-		right: ${(props) => props.arrowPosition}px;
-		width: 10px;
-		height: 10px;
-		background: ${CODE_BLOCK_BG_COLOR};
-		border-right: 1px solid var(--vscode-editorGroup-border);
-		border-bottom: 1px solid var(--vscode-editorGroup-border);
-		transform: rotate(45deg);
-		z-index: -1;
-	}
-`
-
 const ModelContainer = styled.div`
 	position: relative;
 	display: flex;
@@ -262,7 +213,6 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		},
 		ref,
 	) => {
-		const { t } = useTranslation()
 		const {
 			mode,
 			apiConfiguration,
@@ -272,15 +222,13 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			globalWorkflowToggles,
 			remoteWorkflowToggles,
 			remoteConfigSettings,
-			showChatModelSelector: showModelSelector,
-			setShowChatModelSelector: setShowModelSelector,
-			dictationSettings,
+			navigateToSettingsModelPicker,
+			mcpServers,
 		} = useExtensionState()
-		// const { clineUser } = useClineAuth()
+		const { t } = useTranslation("common")
 		const [isTextAreaFocused, setIsTextAreaFocused] = useState(false)
 		const [isDraggingOver, setIsDraggingOver] = useState(false)
 		const [gitCommits, setGitCommits] = useState<GitCommit[]>([])
-		const [isVoiceRecording, setIsVoiceRecording] = useState(false)
 		const [showSlashCommandsMenu, setShowSlashCommandsMenu] = useState(false)
 		const [selectedSlashCommandsIndex, setSelectedSlashCommandsIndex] = useState(0)
 		const [slashCommandsQuery, setSlashCommandsQuery] = useState("")
@@ -301,11 +249,6 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const [intendedCursorPosition, setIntendedCursorPosition] = useState<number | null>(null)
 		const contextMenuContainerRef = useRef<HTMLDivElement>(null)
 
-		const modelSelectorRef = useRef<HTMLDivElement>(null)
-		const { width: viewportWidth, height: viewportHeight } = useWindowSize()
-		const buttonRef = useRef<HTMLDivElement>(null)
-		const [arrowPosition, setArrowPosition] = useState(0)
-		const [menuPosition, setMenuPosition] = useState(0)
 		const [shownTooltipMode, setShownTooltipMode] = useState<Mode | null>(null)
 		const [pendingInsertions, setPendingInsertions] = useState<string[]>([])
 		const _shiftHoldTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -317,9 +260,6 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const [fileSearchResults, setFileSearchResults] = useState<SearchResult[]>([])
 		const [searchLoading, setSearchLoading] = useState(false)
 		const [, metaKeyChar] = useMetaKeyDetection(platform)
-
-		// Add a ref to track previous menu state
-		const prevShowModelSelector = useRef(showModelSelector)
 
 		// Fetch git commits when Git is selected or when typing a hash
 		useEffect(() => {
@@ -366,7 +306,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			return () => {
 				document.removeEventListener("mousedown", handleClickOutside)
 			}
-		}, [showContextMenu, setShowContextMenu])
+		}, [showContextMenu])
 
 		useEffect(() => {
 			const handleClickOutsideSlashMenu = (event: MouseEvent) => {
@@ -415,18 +355,26 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								searchType = FileSearchType.FOLDER
 							}
 
+							const myToken = ++latestSearchTokenRef.current
 							FileServiceClient.searchFiles(
 								FileSearchRequest.create({
 									query: "",
-									mentionsRequestId: "",
+									mentionsRequestId: String(myToken),
 									selectedType: searchType,
 								}),
 							)
 								.then((results) => {
+									if (myToken !== latestSearchTokenRef.current) {
+										// Stale response — a newer search has been issued.
+										return
+									}
 									setFileSearchResults((results.results || []) as SearchResult[])
 									setSearchLoading(false)
 								})
 								.catch((error) => {
+									if (myToken !== latestSearchTokenRef.current) {
+										return
+									}
 									console.error("Error searching files:", error)
 									setFileSearchResults([])
 									setSearchLoading(false)
@@ -511,6 +459,17 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		)
 		const handleKeyDown = useCallback(
 			(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+				const isSelectAllShortcut =
+					(event.metaKey || event.ctrlKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === "a"
+				if (isSelectAllShortcut) {
+					event.preventDefault()
+					event.stopPropagation()
+					const textArea = event.currentTarget
+					textArea.setSelectionRange(0, textArea.value.length)
+					setCursorPosition(0)
+					return
+				}
+
 				if (showSlashCommandsMenu) {
 					if (event.key === "Escape") {
 						setShowSlashCommandsMenu(false)
@@ -529,6 +488,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								globalWorkflowToggles,
 								remoteWorkflowToggles,
 								remoteConfigSettings?.remoteGlobalWorkflows,
+								mcpServers,
 							)
 
 							if (allCommands.length === 0) {
@@ -553,6 +513,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							globalWorkflowToggles,
 							remoteWorkflowToggles,
 							remoteConfigSettings?.remoteGlobalWorkflows,
+							mcpServers,
 						)
 						if (commands.length > 0) {
 							handleSlashCommandsSelect(commands[selectedSlashCommandsIndex])
@@ -562,7 +523,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				}
 				if (showContextMenu) {
 					if (event.key === "Escape") {
-						// event.preventDefault()
+						setShowContextMenu(false)
 						setSelectedType(null)
 						setSelectedMenuIndex(DEFAULT_CONTEXT_MENU_OPTION)
 						setSearchQuery("")
@@ -642,7 +603,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					// Check if we're right after a space that follows a mention or slash command
 					if (
 						charBeforeIsWhitespace &&
-						inputValue.slice(0, cursorPosition - 1).match(new RegExp(mentionRegex.source + "$"))
+						inputValue.slice(0, cursorPosition - 1).match(new RegExp(`${mentionRegex.source}$`))
 					) {
 						// File mention handling
 						const newCursorPosition = cursorPosition - 1
@@ -712,6 +673,12 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				slashCommandsQuery,
 				handleSlashCommandsSelect,
 				sendingDisabled,
+				globalWorkflowToggles,
+				justDeletedSpaceAfterSlashCommand,
+				localWorkflowToggles,
+				mcpServers,
+				remoteConfigSettings?.remoteGlobalWorkflows,
+				remoteWorkflowToggles,
 			],
 		)
 
@@ -721,7 +688,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				textAreaRef.current.setSelectionRange(intendedCursorPosition, intendedCursorPosition)
 				setIntendedCursorPosition(null) // Reset the state after applying
 			}
-		}, [inputValue, intendedCursorPosition])
+		}, [intendedCursorPosition])
 
 		useEffect(() => {
 			if (pendingInsertions.length === 0 || !textAreaRef.current) {
@@ -743,11 +710,16 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			setIntendedCursorPosition(newCursorPosition)
 
 			setPendingInsertions((prev) => prev.slice(1))
-		}, [pendingInsertions, setInputValue])
+		}, [pendingInsertions, setInputValue, intendedCursorPosition])
 
 		const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-		const currentSearchQueryRef = useRef<string>("")
+		// Monotonic token; every searchFiles dispatch bumps it, and resolve
+		// handlers drop their result when the token they captured at fire time
+		// is no longer the latest. Prevents stale results from a cancelled or
+		// superseded picker (e.g. "Add File" still in flight when user picks
+		// "Add Folder") from clobbering fresh state.
+		const latestSearchTokenRef = useRef(0)
 
 		const handleInputChange = useCallback(
 			(e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -783,7 +755,6 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					const lastAtIndex = newValue.lastIndexOf("@", newCursorPosition - 1)
 					const query = newValue.slice(lastAtIndex + 1, newCursorPosition)
 					setSearchQuery(query)
-					currentSearchQueryRef.current = query
 
 					if (query.length > 0) {
 						setSelectedMenuIndex(0)
@@ -813,19 +784,27 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 						// Set a timeout to debounce the search requests
 						searchTimeoutRef.current = setTimeout(() => {
+							const myToken = ++latestSearchTokenRef.current
 							FileServiceClient.searchFiles(
 								FileSearchRequest.create({
 									query: searchQuery,
-									mentionsRequestId: query,
+									mentionsRequestId: String(myToken),
 									selectedType: searchType,
 									workspaceHint: workspaceHint,
 								}),
 							)
 								.then((results) => {
+									if (myToken !== latestSearchTokenRef.current) {
+										// Stale response — a newer search has been issued.
+										return
+									}
 									setFileSearchResults((results.results || []) as SearchResult[])
 									setSearchLoading(false)
 								})
 								.catch((error) => {
+									if (myToken !== latestSearchTokenRef.current) {
+										return
+									}
 									console.error("Error searching files:", error)
 									setFileSearchResults([])
 									setSearchLoading(false)
@@ -840,7 +819,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					setFileSearchResults([])
 				}
 			},
-			[setInputValue, setFileSearchResults, selectedType],
+			[setInputValue, selectedType],
 		)
 
 		useEffect(() => {
@@ -880,7 +859,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				if (urlRegex.test(pastedText.trim())) {
 					e.preventDefault()
 					const trimmedUrl = pastedText.trim()
-					const newValue = inputValue.slice(0, cursorPosition) + trimmedUrl + " " + inputValue.slice(cursorPosition)
+					const newValue = `${inputValue.slice(0, cursorPosition) + trimmedUrl} ${inputValue.slice(cursorPosition)}`
 					setInputValue(newValue)
 					const newCursorPosition = cursorPosition + trimmedUrl.length + 1
 					setCursorPosition(newCursorPosition)
@@ -1028,7 +1007,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 		useLayoutEffect(() => {
 			updateHighlights()
-		}, [inputValue, updateHighlights])
+		}, [updateHighlights])
 
 		const updateCursorPosition = useCallback(() => {
 			if (textAreaRef.current) {
@@ -1045,41 +1024,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			[updateCursorPosition],
 		)
 
-		// Separate the API config submission logic
-		const submitApiConfig = useCallback(async () => {
-			const apiValidationResult = validateApiConfiguration(mode, apiConfiguration)
-			const modelIdValidationResult = validateModelId(mode, apiConfiguration, openRouterModels)
-
-			if (!apiValidationResult && !modelIdValidationResult && apiConfiguration) {
-				try {
-					await ModelsServiceClient.updateApiConfigurationProto(
-						UpdateApiConfigurationRequest.create({
-							apiConfiguration: convertApiConfigurationToProto(apiConfiguration),
-						}),
-					)
-				} catch (error) {
-					console.error("Failed to update API configuration:", error)
-				}
-			} else {
-				StateServiceClient.getLatestState(EmptyRequest.create())
-					.then(() => {
-						console.log("State refreshed")
-					})
-					.catch((error) => {
-						console.error("Error refreshing state:", error)
-					})
-			}
-		}, [apiConfiguration, openRouterModels])
-
 		const onModeToggle = useCallback(() => {
-			// if (textAreaDisabled) return
-			let changeModeDelay = 0
-			if (showModelSelector) {
-				// user has model selector open, so we should save it before switching modes
-				submitApiConfig()
-				changeModeDelay = 250 // necessary to let the api config update (we send message and wait for it to be saved) FIXME: this is a hack and we ideally should check for api config changes, then wait for it to be saved, before switching modes
-			}
-			setTimeout(async () => {
+			void (async () => {
 				const convertedProtoMode = mode === "plan" ? PlanActMode.ACT : PlanActMode.PLAN
 				const response = await StateServiceClient.togglePlanActModeProto(
 					TogglePlanActModeRequest.create({
@@ -1098,8 +1044,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					}
 					textAreaRef.current?.focus()
 				}, 100)
-			}, changeModeDelay)
-		}, [mode, showModelSelector, submitApiConfig, inputValue, selectedImages, selectedFiles])
+			})()
+		}, [mode, inputValue, selectedImages, selectedFiles, setInputValue])
 
 		useShortcut(usePlatform().togglePlanActKeys, onModeToggle, { disableTextInputs: false }) // important that we don't disable the text input here
 
@@ -1124,7 +1070,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			if (inputValue.endsWith(" ")) {
 				const event = {
 					target: {
-						value: inputValue + "@",
+						value: `${inputValue}@`,
 						selectionStart: inputValue.length + 1,
 					},
 				} as React.ChangeEvent<HTMLTextAreaElement>
@@ -1136,7 +1082,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			// Otherwise add space then @
 			const event = {
 				target: {
-					value: inputValue + " @",
+					value: `${inputValue} @`,
 					selectionStart: inputValue.length + 2,
 				},
 			} as React.ChangeEvent<HTMLTextAreaElement>
@@ -1145,7 +1091,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		}, [inputValue, handleInputChange, updateHighlights])
 
 		const handleModelButtonClick = () => {
-			setShowModelSelector(!showModelSelector)
+			navigateToSettingsModelPicker({ targetSection: "api-config" })
 		}
 
 		// Get model display name
@@ -1158,9 +1104,10 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				ollamaModelId,
 				liteLlmModelId,
 				requestyModelId,
-				shengSuanYunModelId,
+				vercelAiGatewayModelId,
 			} = getModeSpecificFields(apiConfiguration, mode)
-			const unknownModel = t("mcp.unknown")
+			const unknownModel = "unknown"
+
 			if (!apiConfiguration) {
 				return unknownModel
 			}
@@ -1181,42 +1128,12 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					return `${selectedProvider}:${liteLlmModelId}`
 				case "requesty":
 					return `${selectedProvider}:${requestyModelId}`
-				case "shengsuanyun":
-					return `${selectedProvider}:${shengSuanYunModelId}`
-				case "anthropic":
-				case "openrouter":
+				case "vercel-ai-gateway":
+					return `${selectedProvider}:${vercelAiGatewayModelId || selectedModelId}`
 				default:
 					return `${selectedProvider}:${selectedModelId}`
 			}
-		}, [apiConfiguration, mode, t])
-
-		// Calculate arrow position and menu position based on button location
-		useEffect(() => {
-			if (showModelSelector && buttonRef.current) {
-				const buttonRect = buttonRef.current.getBoundingClientRect()
-				const buttonCenter = buttonRect.left + buttonRect.width / 2
-
-				// Calculate distance from right edge of viewport using viewport coordinates
-				const rightPosition = document.documentElement.clientWidth - buttonCenter - 5
-
-				setArrowPosition(rightPosition)
-				setMenuPosition(buttonRect.top + 1) // Added +1 to move menu down by 1px
-			}
-		}, [showModelSelector, viewportWidth, viewportHeight])
-
-		useEffect(() => {
-			if (!showModelSelector) {
-				// Attempt to save if possible
-				// NOTE: we cannot call this here since it will create an infinite loop between this effect and the callback since getLatestState will update state. Instead we should submitapiconfig when the menu is explicitly closed, rather than as an effect of showModelSelector changing.
-				// handleApiConfigSubmit()
-
-				// Reset any active styling by blurring the button
-				const button = buttonRef.current?.querySelector("a")
-				if (button) {
-					button.blur()
-				}
-			}
-		}, [showModelSelector])
+		}, [apiConfiguration, mode])
 
 		// Function to show error message for unsupported files for drag and drop
 		const showUnsupportedFileErrorMessage = () => {
@@ -1334,7 +1251,9 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			}
 
 			// 1c. Filter for valid schemes (file or vscode-file) and non-empty strings
-			const validUris = uris.filter((uri) => uri && (uri.startsWith("vscode-file:") || uri.startsWith("file:")))
+			const validUris = uris.filter(
+				(uri) => uri && (uri.startsWith("vscode-file:") || uri.startsWith("file:") || uri.startsWith("vscode-remote:")),
+			)
 
 			if (validUris.length > 0) {
 				setPendingInsertions([])
@@ -1457,44 +1376,14 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					onDragLeave={handleDragLeave}
 					onDragOver={onDragOver}
 					onDrop={onDrop}>
-					{isVoiceRecording && (
-						<div
-							className={cn(
-								"absolute pointer-events-none z-10 overflow-hidden rounded-xs transition-all ease-in-out duration-300 left-3.5 right-3.5 top-2.5 bottom-2.5",
-							)}>
-							<PulsingBorder
-								bloom={1}
-								className="w-full h-full"
-								colorBack={"rgba(0,0,0,0)"}
-								colors={[
-									"#9d57fa", // purple
-									"#57c7fa", // cyan
-									"#fa57a8", // pink
-									"#9d57fa", // purple again for smooth loop
-								]}
-								intensity={0.4}
-								pulse={0.3}
-								roundness={0} // Match textarea border radius
-								scale={1.0}
-								smoke={0.25}
-								smokeSize={0.8}
-								softness={0.8}
-								speed={1.5}
-								spotSize={0.5}
-								spots={4}
-								thickness={0.1}
-							/>
-						</div>
-					)}
-
 					{showDimensionError && (
 						<div className="absolute inset-2.5 bg-[rgba(var(--vscode-errorForeground-rgb),0.1)] border-2 border-error rounded-xs flex items-center justify-center z-10 pointer-events-none">
-							<span className="text-error font-bold text-xs text-center">{t("chat.errorImageSize")}</span>
+							<span className="text-error font-bold text-xs text-center">{t("chat.imageDimensionError")}</span>
 						</div>
 					)}
 					{showUnsupportedFileError && (
 						<div className="absolute inset-2.5 bg-[rgba(var(--vscode-errorForeground-rgb),0.1)] border-2 border-error rounded-xs flex items-center justify-center z-10 pointer-events-none">
-							<span className="text-error font-bold text-xs">{t("chat.errorUnsupportedFile")}</span>
+							<span className="text-error font-bold text-xs">{t("chat.unsupportedFileError")}</span>
 						</div>
 					)}
 					{showSlashCommandsMenu && (
@@ -1502,6 +1391,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							<SlashCommandMenu
 								globalWorkflowToggles={globalWorkflowToggles}
 								localWorkflowToggles={localWorkflowToggles}
+								mcpServers={mcpServers}
 								onMouseDown={handleMenuMouseDown}
 								onSelect={handleSlashCommandsSelect}
 								query={slashCommandsQuery}
@@ -1531,9 +1421,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					<div
 						className={cn(
 							"absolute bottom-2.5 top-2.5 whitespace-pre-wrap break-words rounded-xs overflow-hidden bg-input-background",
-							isTextAreaFocused || isVoiceRecording
-								? "left-3.5 right-3.5"
-								: "left-3.5 right-3.5 border border-input-border",
+							isTextAreaFocused ? "left-3.5 right-3.5" : "left-3.5 right-3.5 border border-input-border",
 						)}
 						ref={highlightLayerRef}
 						style={{
@@ -1547,11 +1435,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							fontSize: "var(--vscode-editor-font-size)",
 							lineHeight: "var(--vscode-editor-line-height)",
 							borderRadius: 2,
-							borderLeft: isTextAreaFocused || isVoiceRecording ? 0 : undefined,
-							borderRight: isTextAreaFocused || isVoiceRecording ? 0 : undefined,
-							borderTop: isTextAreaFocused || isVoiceRecording ? 0 : undefined,
-							borderBottom: isTextAreaFocused || isVoiceRecording ? 0 : undefined,
-							padding: `9px ${dictationSettings?.dictationEnabled ? "48" : "28"}px ${9 + thumbnailsHeight}px 9px`,
+							borderLeft: isTextAreaFocused ? 0 : undefined,
+							borderRight: isTextAreaFocused ? 0 : undefined,
+							borderTop: isTextAreaFocused ? 0 : undefined,
+							borderBottom: isTextAreaFocused ? 0 : undefined,
+							padding: `9px 28px ${9 + thumbnailsHeight}px 9px`,
 						}}
 					/>
 					<DynamicTextArea
@@ -1614,7 +1502,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							// borderLeft: "9px solid transparent", // NOTE: react-textarea-autosize doesn't calculate correct height when using borderLeft/borderRight so we need to use horizontal padding instead
 							// Instead of using boxShadow, we use a div with a border to better replicate the behavior when the textarea is focused
 							// boxShadow: "0px 0px 0px 1px var(--vscode-input-border)",
-							padding: `9px ${dictationSettings?.dictationEnabled ? "48" : "28"}px 9px 9px`,
+							padding: "9px 28px 9px 9px",
 							cursor: "text",
 							flex: 1,
 							zIndex: 1,
@@ -1630,7 +1518,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					/>
 					{!inputValue && selectedImages.length === 0 && selectedFiles.length === 0 && (
 						<div className="text-xs absolute bottom-5 left-6.5 right-16 text-(--vscode-input-placeholderForeground)/50 whitespace-nowrap overflow-hidden text-ellipsis pointer-events-none z-1">
-							{t("chat.inputHint")}
+							{t("chat.contextHint")}
 						</div>
 					)}
 					{(selectedImages.length > 0 || selectedFiles.length > 0) && (
@@ -1654,59 +1542,16 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						className="absolute flex items-end bottom-4.5 right-5 z-10 h-8 text-xs"
 						style={{ height: textAreaBaseHeight }}>
 						<div className="flex flex-row items-center">
-							{dictationSettings?.dictationEnabled === true && dictationSettings?.featureEnabled && (
-								<VoiceRecorder
-									disabled={sendingDisabled}
-									isAuthenticated={false}
-									language={dictationSettings?.dictationLanguage || "en"}
-									onProcessingStateChange={(isProcessing, message) => {
-										if (isProcessing && message) {
-											// Show processing message in input
-											setInputValue(`${inputValue} [${message}]`.trim())
-										}
-										// When processing is done, the onTranscription callback will handle the final text
-									}}
-									onRecordingStateChange={setIsVoiceRecording}
-									onTranscription={(text) => {
-										// Remove any processing text first
-										const processingPattern = /\s*\[Transcribing\.\.\.\]$/
-										const cleanedValue = inputValue.replace(processingPattern, "")
-
-										if (!text) {
-											setInputValue(cleanedValue)
-											return
-										}
-
-										// Append the transcribed text to the cleaned input
-										const newValue = cleanedValue + (cleanedValue ? " " : "") + text
-										setInputValue(newValue)
-										// Focus the textarea and move cursor to end
-										setTimeout(() => {
-											if (textAreaRef.current) {
-												textAreaRef.current.focus()
-												const length = newValue.length
-												textAreaRef.current.setSelectionRange(length, length)
-											}
-										}, 0)
-									}}
-								/>
-							)}
-							{!isVoiceRecording && (
-								<div
-									className={cn(
-										"input-icon-button",
-										{ disabled: sendingDisabled },
-										"codicon codicon-send text-sm",
-									)}
-									data-testid="send-button"
-									onClick={() => {
-										if (!sendingDisabled) {
-											setIsTextAreaFocused(false)
-											onSend()
-										}
-									}}
-								/>
-							)}
+							<div
+								className={cn("input-icon-button", { disabled: sendingDisabled }, "codicon codicon-send text-sm")}
+								data-testid="send-button"
+								onClick={() => {
+									if (!sendingDisabled) {
+										setIsTextAreaFocused(false)
+										onSend()
+									}
+								}}
+							/>
 						</div>
 					</div>
 				</div>
@@ -1756,23 +1601,17 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 							<ClineRulesToggleModal />
 
-							<ModelContainer ref={modelSelectorRef}>
-								<ModelPickerModal
-									currentMode={mode}
-									isOpen={showModelSelector}
-									onOpenChange={setShowModelSelector}>
-									<ModelButtonWrapper ref={buttonRef}>
-										<ModelDisplayButton
-											disabled={false}
-											isActive={showModelSelector}
-											onClick={handleModelButtonClick}
-											role="button"
-											tabIndex={0}
-											title={t("chat.selectModel")}>
-											<ModelButtonContent className="text-xs">{modelDisplayName}</ModelButtonContent>
-										</ModelDisplayButton>
-									</ModelButtonWrapper>
-								</ModelPickerModal>
+							<ModelContainer>
+								<ModelButtonWrapper>
+									<ModelDisplayButton
+										disabled={false}
+										onClick={handleModelButtonClick}
+										role="button"
+										tabIndex={0}
+										title={t("chat.openApiSettings")}>
+										<ModelButtonContent className="text-xs">{modelDisplayName}</ModelButtonContent>
+									</ModelDisplayButton>
+								</ModelButtonWrapper>
 							</ModelContainer>
 						</ButtonGroup>
 					</div>
@@ -1782,29 +1621,29 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							className="text-xs px-2 flex flex-col gap-1"
 							hidden={shownTooltipMode === null}
 							side="top">
-							{t("chat.modeTooltip", {
-								mode: shownTooltipMode === "act" ? t("chat.act") : t("chat.plan"),
-								action: shownTooltipMode === "act" ? t("chat.modeActionAct") : t("chat.modeActionPlan"),
+							{t("chat.planActTooltip", {
+								mode: shownTooltipMode === "act" ? t("chat.actMode") : t("chat.planMode"),
+								action:
+									shownTooltipMode === "act"
+										? t("chat.planActTooltipActAction")
+										: t("chat.planActTooltipPlanAction"),
 							})}
 							<p className="text-description/80 text-xs mb-0">
-								{t("chat.toggleWith")} <kbd className="text-muted-foreground mx-1">{togglePlanActKeys}</kbd>
+								{t("chat.planActTooltipToggle", { keys: togglePlanActKeys })}
 							</p>
 						</TooltipContent>
 						<TooltipTrigger>
 							<SwitchContainer data-testid="mode-switch" disabled={false} onClick={onModeToggle}>
 								<Slider isAct={mode === "act"} isPlan={mode === "plan"} />
-								{[t("chat.plan"), t("chat.act")].map((m) => (
+								{[t("chat.planMode"), t("chat.actMode")].map((m) => (
 									<div
-										aria-checked={mode === (m === t("chat.plan") ? "plan" : "act")}
+										aria-checked={mode === m.toLowerCase()}
 										className={cn(
 											"pt-0.5 pb-px px-2 z-10 text-xs w-1/2 text-center bg-transparent",
-											mode === (m === t("chat.plan") ? "plan" : "act")
-												? "text-white"
-												: "text-input-foreground",
+											mode === m.toLowerCase() ? "text-white" : "text-input-foreground",
 										)}
-										key={m}
 										onMouseLeave={() => setShownTooltipMode(null)}
-										onMouseOver={() => setShownTooltipMode(m === t("chat.plan") ? "plan" : "act")}
+										onMouseOver={() => setShownTooltipMode(m.toLowerCase() === "plan" ? "plan" : "act")}
 										role="switch">
 										{m}
 									</div>
@@ -1817,11 +1656,5 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		)
 	},
 )
-
-// Update TypeScript interface for styled-component props
-interface ModelSelectorTooltipProps {
-	arrowPosition: number
-	menuPosition: number
-}
 
 export default ChatTextArea

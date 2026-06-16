@@ -15,7 +15,7 @@ interface TerminalSettingsSectionProps {
 }
 
 export const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ renderSectionHeader }) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const {
 		shellIntegrationTimeout,
 		terminalReuseEnabled,
@@ -35,9 +35,9 @@ export const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = (
 
 		setInputValue(value)
 
-		const seconds = parseFloat(value)
+		const seconds = Number.parseFloat(value)
 		if (Number.isNaN(seconds) || seconds <= 0) {
-			setInputError(t("settings.terminal.timeoutError"))
+			setInputError(t("settingsSections.enterPositiveNumber"))
 			return
 		}
 
@@ -95,7 +95,7 @@ export const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = (
 				<div className="mb-5" id="terminal-settings-section">
 					<div className="mb-4">
 						<label className="font-medium block mb-1" htmlFor="default-terminal-profile">
-							{t("settings.terminal.defaultProfile")}
+							{t("settingsSections.defaultTerminalProfile")}
 						</label>
 						<VSCodeDropdown
 							className="w-full"
@@ -109,77 +109,76 @@ export const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = (
 							))}
 						</VSCodeDropdown>
 						<p className="text-xs text-(--vscode-descriptionForeground) mt-1">
-							{t("settings.terminal.defaultProfileDescription")}
+							{t("settingsSections.defaultTerminalProfileDescription")}
 						</p>
 					</div>
 
-					<div className="mb-4">
-						<div className="mb-2">
-							<label className="font-medium block mb-1">{t("settings.terminal.timeout")}</label>
-							<div className="flex items-center">
-								<VSCodeTextField
-									className="w-full"
-									onBlur={handleInputBlur}
-									onChange={(event) => handleTimeoutChange(event as Event)}
-									placeholder={t("settings.terminal.timeoutPlaceholder")}
-									value={inputValue}
-								/>
+						<div className="mb-4">
+							<div className="mb-2">
+								<label className="font-medium block mb-1">{t("settingsSections.shellIntegrationTimeout")}</label>
+								<div className="flex items-center">
+									<VSCodeTextField
+										className="w-full"
+										onBlur={handleInputBlur}
+										onChange={(event) => handleTimeoutChange(event as Event)}
+										placeholder={t("settingsSections.shellIntegrationPlaceholder")}
+										value={inputValue}
+									/>
+								</div>
+								{inputError && <div className="text-(--vscode-errorForeground) text-xs mt-1">{inputError}</div>}
 							</div>
-							{inputError && <div className="text-(--vscode-errorForeground) text-xs mt-1">{inputError}</div>}
+							<p className="text-xs text-(--vscode-descriptionForeground)">
+								{t("settingsSections.shellIntegrationDescription")}
+							</p>
 						</div>
-						<p className="text-xs text-(--vscode-descriptionForeground)">
-							{t("settings.terminal.timeoutDescription")}
-						</p>
-					</div>
-
-					<div className="mb-4">
-						<div className="flex items-center mb-2">
-							<VSCodeCheckbox
-								checked={terminalReuseEnabled ?? true}
-								onChange={(event) => handleTerminalReuseChange(event as Event)}>
-								{t("settings.terminal.aggressiveReuse")}
-							</VSCodeCheckbox>
+						<div className="mb-4">
+							<div className="flex items-center mb-2">
+								<VSCodeCheckbox
+									checked={terminalReuseEnabled ?? true}
+									onChange={(event) => handleTerminalReuseChange(event as Event)}>
+									{t("settingsSections.enableAggressiveTerminalReuse")}
+								</VSCodeCheckbox>
+							</div>
+							<p className="text-xs text-(--vscode-descriptionForeground)">
+								{t("settingsSections.terminalReuseDescription")}
+							</p>
 						</div>
-						<p className="text-xs text-(--vscode-descriptionForeground)">
-							{t("settings.terminal.aggressiveReuseDescription")}
-						</p>
-					</div>
 					{isVsCodePlatform && (
 						<div className="mb-4">
 							<label className="font-medium block mb-1" htmlFor="terminal-execution-mode">
-								{t("settings.terminal.executionMode")}
+							{t("settingsSections.terminalExecutionMode")}
 							</label>
 							<VSCodeDropdown
 								className="w-full"
 								id="terminal-execution-mode"
 								onChange={(event) => handleExecutionModeChange(event as Event)}
 								value={vscodeTerminalExecutionMode ?? "vscodeTerminal"}>
-								<VSCodeOption value="vscodeTerminal">{t("settings.terminal.vscodeTerminal")}</VSCodeOption>
-								<VSCodeOption value="backgroundExec">{t("settings.terminal.backgroundExec")}</VSCodeOption>
+								<VSCodeOption value="vscodeTerminal">{t("settingsSections.vsCodeTerminal")}</VSCodeOption>
+								<VSCodeOption value="backgroundExec">{t("settingsSections.backgroundExec")}</VSCodeOption>
 							</VSCodeDropdown>
 							<p className="text-xs text-[var(--vscode-descriptionForeground)] mt-1">
-								{t("settings.terminal.executionModeDescription")}
+								{t("settingsSections.terminalExecutionModeDescription")}
 							</p>
 						</div>
 					)}
 					<TerminalOutputLineLimitSlider />
 					<div className="mt-5 p-3 bg-(--vscode-textBlockQuote-background) rounded border border-(--vscode-textBlockQuote-border)">
 						<p className="text-[13px] m-0">
-							<strong>{t("settings.terminal.havingIssues")}</strong> {t("settings.terminal.checkOur")}{" "}
+							<strong>{t("settingsSections.havingTerminalIssues")}</strong> Check our{" "}
 							<a
 								className="text-(--vscode-textLink-foreground) underline hover:no-underline"
 								href="https://docs.cline.bot/troubleshooting/terminal-quick-fixes"
 								rel="noopener noreferrer"
 								target="_blank">
-								{t("settings.terminal.quickFixes")}
+								{t("settingsSections.terminalQuickFixes")}
 							</a>{" "}
-							{t("settings.terminal.orThe")}{" "}
+							or the{" "}
 							<a
 								className="text-(--vscode-textLink-foreground) underline hover:no-underline"
 								href="https://docs.cline.bot/troubleshooting/terminal-integration-guide"
 								rel="noopener noreferrer"
 								target="_blank">
-								{t("settings.terminal.troubleshootingGuide")}
+									{t("settingsSections.completeTroubleshootingGuide")}
 							</a>
 							.
 						</p>

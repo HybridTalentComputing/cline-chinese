@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next"
+
 export interface QuickWinTask {
 	id: string
 	title: string
@@ -8,32 +10,69 @@ export interface QuickWinTask {
 	buttonText?: string
 }
 
+const useQuickWinTasks = () => {
+	const { t } = useTranslation("common")
+	const quickWinTasks: QuickWinTask[] = [
+		{
+			id: "nextjs_notetaking_app",
+			title: t("suggestedTasks.buildNextjsApp"),
+			description: t("suggestedTasks.buildNextjsAppDesc"),
+			icon: "WebAppIcon",
+			actionCommand: "cline/createNextJsApp",
+			prompt: "Make a beautiful Next.js notetaking app, using Tailwind CSS for styling. Set up the basic structure and a simple UI for adding and viewing notes.",
+			buttonText: ">",
+		},
+		{
+			id: "terminal_cli_tool",
+			title: t("suggestedTasks.craftCliTool"),
+			description: t("suggestedTasks.craftCliToolDesc"),
+			icon: "TerminalIcon",
+			actionCommand: "cline/createCliTool",
+			prompt: "Make a terminal CLI tool using Node.js that organizes files in a directory by type, size, or date. It should have options to sort files into folders, show file statistics, find duplicates, and clean up empty directories. Include colorful output and progress indicators.",
+			buttonText: ">",
+		},
+		{
+			id: "snake_game",
+			title: t("suggestedTasks.developGame"),
+			description: t("suggestedTasks.developGameDesc"),
+			icon: "GameIcon",
+			actionCommand: "cline/createSnakeGame",
+			prompt: "Make a classic Snake game using HTML, CSS, and JavaScript. The game should be playable in the browser, with keyboard controls for the snake, a scoring system, and a game over state.",
+			buttonText: ">",
+		},
+	]
+	return quickWinTasks
+}
+
+// For backward compatibility, keep the static export (translations won't work here but this maintains the interface)
 export const quickWinTasks: QuickWinTask[] = [
 	{
 		id: "nextjs_notetaking_app",
-		title: "新建一个 Next.js 应用",
-		description: "使用 Next.js 和 Tailwind CSS 创建一个漂亮的笔记应用程序。",
+		title: "Build a Next.js App",
+		description: "Create a beautiful notetaking app with Next.js and Tailwind",
 		icon: "WebAppIcon",
 		actionCommand: "cline/createNextJsApp",
-		prompt: "使用 Tailwind CSS 进行样式设计，制作一个美观的 Next.js 笔记应用。设置基本结构以及用于添加和查看笔记的简洁 UI。",
+		prompt: "Make a beautiful Next.js notetaking app, using Tailwind CSS for styling. Set up the basic structure and a simple UI for adding and viewing notes.",
 		buttonText: ">",
 	},
 	{
 		id: "terminal_cli_tool",
-		title: "制作 CLI 工具",
-		description: "开发一个强大的终端 CLI 来自动执行一项很酷的任务。",
+		title: "Craft a CLI Tool",
+		description: "Develop a powerful terminal CLI to automate a cool task",
 		icon: "TerminalIcon",
 		actionCommand: "cline/createCliTool",
-		prompt: "使用 Node.js 制作一个终端 CLI 工具，使用免费天气 API 获取给定城市的当前天气，并以用户友好的格式显示。",
+		prompt: "Make a terminal CLI tool using Node.js that organizes files in a directory by type, size, or date. It should have options to sort files into folders, show file statistics, find duplicates, and clean up empty directories. Include colorful output and progress indicators.",
 		buttonText: ">",
 	},
 	{
 		id: "snake_game",
-		title: "开发一个游戏",
-		description: "编写一个在浏览器中运行的经典贪吃蛇游戏。",
+		title: "Develop a Game",
+		description: "Code a classic Snake game that runs in the browser.",
 		icon: "GameIcon",
 		actionCommand: "cline/createSnakeGame",
-		prompt: "使用 HTML、CSS 和 JavaScript 制作一款经典的贪吃蛇游戏。该游戏应该可以在浏览器中运行，并支持键盘操控贪吃蛇、计分系统以及游戏结束状态。",
+		prompt: "Make a classic Snake game using HTML, CSS, and JavaScript. The game should be playable in the browser, with keyboard controls for the snake, a scoring system, and a game over state.",
 		buttonText: ">",
 	},
 ]
+
+export { useQuickWinTasks }

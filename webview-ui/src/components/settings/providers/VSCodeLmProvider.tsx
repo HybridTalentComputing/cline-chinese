@@ -16,7 +16,7 @@ interface VSCodeLmProviderProps {
 }
 
 export const VSCodeLmProvider = ({ currentMode }: VSCodeLmProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const [vsCodeLmModels, setVsCodeLmModels] = useState<vscodemodels.LanguageModelChatSelector[]>([])
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
@@ -27,7 +27,7 @@ export const VSCodeLmProvider = ({ currentMode }: VSCodeLmProviderProps) => {
 	const requestVsCodeLmModels = useCallback(async () => {
 		try {
 			const response = await ModelsServiceClient.getVsCodeLmModels(EmptyRequest.create({}))
-			if (response && response.models) {
+			if (response?.models) {
 				setVsCodeLmModels(response.models)
 			}
 		} catch (error) {
@@ -46,7 +46,7 @@ export const VSCodeLmProvider = ({ currentMode }: VSCodeLmProviderProps) => {
 		<div>
 			<DropdownContainer className="dropdown-container" zIndex={DROPDOWN_Z_INDEX - 2}>
 				<label htmlFor="vscode-lm-model">
-					<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.vscodeLm.languageModel")}</span>
+					<span style={{ fontWeight: 500 }}>{t("providers.vscodeLm.languageModel")}</span>
 				</label>
 				{vsCodeLmModels.length > 0 ? (
 					<VSCodeDropdown
@@ -70,7 +70,7 @@ export const VSCodeLmProvider = ({ currentMode }: VSCodeLmProviderProps) => {
 								? `${vsCodeLmModelSelector.vendor ?? ""}/${vsCodeLmModelSelector.family ?? ""}`
 								: ""
 						}>
-						<VSCodeOption value="">{t("settings.apiConfig.vscodeLm.selectModel")}</VSCodeOption>
+						<VSCodeOption value="">{t("settings.selectModel")}</VSCodeOption>
 						{vsCodeLmModels.map((model) => (
 							<VSCodeOption key={`${model.vendor}/${model.family}`} value={`${model.vendor}/${model.family}`}>
 								{model.vendor} - {model.family}
@@ -84,19 +84,11 @@ export const VSCodeLmProvider = ({ currentMode }: VSCodeLmProviderProps) => {
 							marginTop: "5px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						{t("settings.apiConfig.vscodeLm.description")}
+							{t("providers.vscodeLm.description")}{" "}
+							<a href="https://marketplace.visualstudio.com/items?itemName=GitHub.copilot">{t("providers.vscodeLm.copilotExtension")}</a>{" "}
+						{t("providers.vscodeLm.enableClaudeModels")}
 					</p>
 				)}
-
-				<p
-					style={{
-						fontSize: "12px",
-						marginTop: "5px",
-						color: "var(--vscode-errorForeground)",
-						fontWeight: 500,
-					}}>
-					{t("settings.apiConfig.vscodeLm.experimentalNote")}
-				</p>
 			</DropdownContainer>
 		</div>
 	)

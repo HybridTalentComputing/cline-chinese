@@ -1,5 +1,6 @@
 import { Empty, StringRequest } from "@shared/proto/cline/common"
-// import { telemetryService } from "@/services/telemetry"
+import { telemetryService } from "@/services/telemetry"
+import { Logger } from "@/shared/services/Logger"
 import { Controller } from ".."
 
 /**
@@ -26,15 +27,15 @@ export async function toggleFavoriteModel(controller: Controller, request: Strin
 		controller.stateManager.setGlobalState("favoritedModelIds", updatedFavorites)
 
 		// Capture telemetry for model favorite toggle
-		const _isFavorited = !favoritedModelIds.includes(modelId)
-		// telemetryService.captureModelFavoritesUsage(modelId, isFavorited)
+		const isFavorited = !favoritedModelIds.includes(modelId)
+		telemetryService.captureModelFavoritesUsage(modelId, isFavorited)
 
 		// Post state to webview without changing any other configuration
 		await controller.postStateToWebview()
 
 		return Empty.create()
 	} catch (error) {
-		console.error(`Failed to toggle favorite status for model ${request.value}:`, error)
+		Logger.error(`Failed to toggle favorite status for model ${request.value}:`, error)
 		throw error
 	}
 }

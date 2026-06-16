@@ -2,13 +2,15 @@ import { StringRequest } from "@shared/proto/cline/common"
 import { TaskFeedbackType } from "@shared/WebviewMessage"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
+import { cn } from "@/lib/utils"
 import { TaskServiceClient } from "@/services/grpc-client"
 
 interface TaskFeedbackButtonsProps {
 	messageTs: number
 	isFromHistory?: boolean
-	style?: React.CSSProperties
+	classNames?: string
 }
 
 const IconWrapper = styled.span`
@@ -19,7 +21,8 @@ const ButtonWrapper = styled.div`
 	transform: scale(0.85);
 `
 
-const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, isFromHistory = false, style }) => {
+const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, isFromHistory = false, classNames }) => {
+	const { t } = useTranslation("common")
 	const [feedback, setFeedback] = useState<TaskFeedbackType | null>(null)
 	const [shouldShow, setShouldShow] = useState<boolean>(true)
 
@@ -71,15 +74,15 @@ const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, is
 	}
 
 	return (
-		<Container style={style}>
+		<div className={cn("flex items-center justify-end shrink-0", classNames)}>
 			<ButtonsContainer>
 				<ButtonWrapper>
 					<VSCodeButton
 						appearance="icon"
-						aria-label="有帮助"
+						aria-label={t("taskFeedback.helpful")}
 						disabled={feedback !== null}
 						onClick={() => handleFeedback("thumbs_up")}
-						title="有帮助">
+						title={t("taskFeedback.helpful")}>
 						<IconWrapper>
 							<span
 								className={`codicon ${feedback === "thumbs_up" ? "codicon-thumbsup-filled" : "codicon-thumbsup"}`}
@@ -90,10 +93,10 @@ const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, is
 				<ButtonWrapper>
 					<VSCodeButton
 						appearance="icon"
-						aria-label="没啥用"
+						aria-label={t("taskFeedback.notHelpful")}
 						disabled={feedback !== null && feedback !== "thumbs_down"}
 						onClick={() => handleFeedback("thumbs_down")}
-						title="没啥用">
+						title={t("taskFeedback.notHelpful")}>
 						<IconWrapper>
 							<span
 								className={`codicon ${feedback === "thumbs_down" ? "codicon-thumbsdown-filled" : "codicon-thumbsdown"}`}
@@ -105,19 +108,13 @@ const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, is
 					href="https://github.com/cline/cline/issues/new?template=bug_report.yml"
 					appearance="icon"
 					title="Report a bug"
-					aria-label="Report a bug">
+					aria-label={t("reportBug.title")}>
 					<span className="codicon codicon-bug" />
 				</VSCodeButtonLink> */}
 			</ButtonsContainer>
-		</Container>
+		</div>
 	)
 }
-
-const Container = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-`
 
 const ButtonsContainer = styled.div`
 	display: flex;

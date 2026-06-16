@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button"
 import { useTranslation } from "react-i18next"
+import { Button } from "@/components/ui/button"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import Section from "../Section"
@@ -10,20 +10,20 @@ interface DebugSectionProps {
 }
 
 const DebugSection = ({ onResetState, renderSectionHeader }: DebugSectionProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { setShowWelcome } = useExtensionState()
 	return (
 		<div>
 			{renderSectionHeader("debug")}
 			<Section>
-				<Button onClick={() => onResetState()} variant="danger">
-					{t("settings.debug.resetWorkspace")}
+				<Button onClick={() => onResetState()} variant="error">
+					Reset Workspace State
 				</Button>
-				<Button onClick={() => onResetState(true)} variant="danger">
-					{t("settings.debug.resetGlobal")}
+				<Button onClick={() => onResetState(true)} variant="error">
+					Reset Global State
 				</Button>
 				<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
-					{t("settings.debug.resetGlobalDescription")}
+					{t("settingsSections.resetStateDescription")}
 				</p>
 			</Section>
 			<Section>
@@ -34,7 +34,7 @@ const DebugSection = ({ onResetState, renderSectionHeader }: DebugSectionProps) 
 							.finally(() => setShowWelcome(true))
 					}
 					variant="secondary">
-					{t("settings.debug.resetOnboarding")}
+					Reset Onboarding State
 				</Button>
 			</Section>
 		</div>

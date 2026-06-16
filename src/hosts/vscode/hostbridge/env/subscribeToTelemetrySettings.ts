@@ -12,7 +12,9 @@ export async function subscribeToTelemetrySettings(
 	_requestId?: string,
 ): Promise<void> {
 	vscode.env.onDidChangeTelemetryEnabled((isTelemetryEnabled) => {
-		const event = { isEnabled: isTelemetryEnabled ? Setting.ENABLED : Setting.DISABLED }
+		const event = {
+			isEnabled: isTelemetryEnabled ? Setting.ENABLED : Setting.DISABLED,
+		}
 		responseStream(event, false)
 	})
 }

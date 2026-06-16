@@ -1,6 +1,8 @@
 import { McpDisplayMode } from "@shared/McpDisplayMode"
 import { VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react"
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import React, { useCallback, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import ChatErrorBoundary from "@/components/chat/ChatErrorBoundary"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
@@ -11,7 +13,7 @@ import { useExtensionState } from "../../../context/ExtensionStateContext"
 import ImagePreview from "./ImagePreview"
 import LinkPreview from "./LinkPreview"
 import McpDisplayModeDropdown from "./McpDisplayModeDropdown"
-import { buildDisplaySegments, DisplaySegment, processResponseUrls, UrlMatch } from "./utils/mcpRichUtil"
+import { buildDisplaySegments, DisplaySegment, processResponseUrls, truncateDataUris, UrlMatch } from "./utils/mcpRichUtil"
 
 // Maximum number of URLs to process in total, per response
 export const MAX_URLS = 50
@@ -76,6 +78,7 @@ interface McpResponseDisplayProps {
 }
 
 const McpResponseDisplay: React.FC<McpResponseDisplayProps> = ({ responseText }) => {
+	const { t } = useTranslation("misc")
 	const { mcpResponsesCollapsed, mcpDisplayMode } = useExtensionState() // Get setting from context
 	const [isExpanded, setIsExpanded] = useState(!mcpResponsesCollapsed) // Initialize with context setting
 	const [isLoading, setIsLoading] = useState(false) // Initial loading state for rich content
@@ -88,13 +91,13 @@ const McpResponseDisplay: React.FC<McpResponseDisplayProps> = ({ responseText })
 	}, [])
 
 	const toggleExpand = useCallback(() => {
-		setIsExpanded((prev) => !prev)
+		setIsExpanded((prev) => {
+			const newExpanded = !prev
+			// Save collapsed state so future MCP responses start in the same state
+			updateSetting("mcpResponsesCollapsed", !newExpanded)
+			return newExpanded
+		})
 	}, [])
-
-	// Effect to update isExpanded if mcpResponsesCollapsed changes from context
-	useEffect(() => {
-		setIsExpanded(!mcpResponsesCollapsed)
-	}, [mcpResponsesCollapsed])
 
 	// Find all URLs in the text and determine if they're images
 	useEffect(() => {
@@ -129,7 +132,7 @@ const McpResponseDisplay: React.FC<McpResponseDisplayProps> = ({ responseText })
 		)
 
 		return cleanup
-	}, [responseText, mcpDisplayMode, isExpanded])
+	}, [responseText, mcpDisplayMode, isExpanded, urlMatches.length])
 
 	// Helper function to render a display segment
 	const renderSegment = (segment: DisplaySegment): JSX.Element => {
@@ -189,11 +192,11 @@ const McpResponseDisplay: React.FC<McpResponseDisplayProps> = ({ responseText })
 		}
 
 		if (mcpDisplayMode === "plain") {
-			return <UrlText>{responseText}</UrlText>
+			return <UrlText>{truncateDataUris(responseText)}</UrlText>
 		}
 
 		if (mcpDisplayMode === "markdown") {
-			return <MarkdownBlock markdown={responseText} />
+			return <MarkdownBlock markdown={truncateDataUris(responseText)} />
 		}
 
 		if (error) {
@@ -223,8 +226,12 @@ const McpResponseDisplay: React.FC<McpResponseDisplayProps> = ({ responseText })
 						marginBottom: isExpanded ? "8px" : "0px",
 					}}>
 					<div className="header-title">
-						<span className={`codicon codicon-chevron-${isExpanded ? "down" : "right"} header-icon`}></span>
-						Response
+						{isExpanded ? (
+							<ChevronDownIcon className="header-icon" size={16} />
+						) : (
+							<ChevronRightIcon className="header-icon" size={16} />
+						)}
+						{t("mcp.chatDisplay.response")}
 					</div>
 					<DropdownContainer
 						style={{ minWidth: isExpanded ? "auto" : "0", visibility: isExpanded ? "visible" : "hidden" }}>
@@ -247,13 +254,17 @@ const McpResponseDisplay: React.FC<McpResponseDisplayProps> = ({ responseText })
 			<ResponseContainer>
 				<ResponseHeader onClick={toggleExpand}>
 					<div className="header-title">
-						<span className={`codicon codicon-chevron-${isExpanded ? "down" : "right"} header-icon`}></span>
-						Response (Error)
+						{isExpanded ? (
+							<ChevronDownIcon className="header-icon" size={16} />
+						) : (
+							<ChevronRightIcon className="header-icon" size={16} />
+						)}
+						{t("mcp.chatDisplay.responseError")}
 					</div>
 				</ResponseHeader>
 				{isExpanded && (
 					<div className="response-content">
-						<div style={{ color: "var(--vscode-errorForeground)" }}>Error parsing response:</div>
+						<div style={{ color: "var(--vscode-errorForeground)" }}>{t("mcp.chatDisplay.errorParsingResponse")}</div>
 						<UrlText>{responseText}</UrlText>
 					</div>
 				)}

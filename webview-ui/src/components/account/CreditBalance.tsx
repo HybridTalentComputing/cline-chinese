@@ -12,13 +12,13 @@ type CreditBalanceProps = {
 }
 
 export const CreditBalance = ({ balance, fetchCreditBalance, creditUrl, lastFetchTime, isLoading }: CreditBalanceProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	return (
 		<div
 			className="w-full flex flex-col items-center"
-			title={t("account.creditBalance.lastUpdated", { time: new Date(lastFetchTime).toLocaleTimeString() })}>
+			title={`Last updated: ${new Date(lastFetchTime).toLocaleTimeString()}`}>
 			<div className="text-sm text-(--vscode-descriptionForeground) mb-3 font-azeret-mono font-light">
-				{t("account.creditBalance.currentBalance")}
+				{t("account.currentBalance")}
 			</div>
 
 			<div className="font-bold text-2xl mb-6 flex items-center gap-2">
@@ -28,13 +28,13 @@ export const CreditBalance = ({ balance, fetchCreditBalance, creditUrl, lastFetc
 					className={`mt-1 ${isLoading ? "animate-spin" : ""}`}
 					disabled={isLoading}
 					onClick={fetchCreditBalance}>
-					<span className="codicon codicon-refresh"></span>
+					<span className="codicon codicon-refresh" />
 				</VSCodeButton>
 			</div>
 
 			<div className="w-full">
 				<VSCodeButtonLink className="w-full" href={creditUrl.href}>
-					{t("account.creditBalance.addCredits")}
+					{t("account.addCredits")}
 				</VSCodeButtonLink>
 			</div>
 		</div>

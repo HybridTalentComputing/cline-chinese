@@ -1,7 +1,19 @@
+import { isZhCN } from "../i18n/getLocaleText"
 import { SystemPromptSection } from "../templates/placeholders"
 import { TemplateEngine } from "../templates/TemplateEngine"
 import type { PromptVariant, SystemPromptContext } from "../types"
-import { getPromptTranslation } from "../../i18n"
+
+const USER_CUSTOM_INSTRUCTIONS_TEMPLATE_TEXT = `USER'S CUSTOM INSTRUCTIONS
+
+The following additional instructions are provided by the user, and should be followed to the best of your ability without interfering with the TOOL USE guidelines.
+
+{{CUSTOM_INSTRUCTIONS}}`
+
+const USER_CUSTOM_INSTRUCTIONS_TEMPLATE_TEXT_ZH_CN = `USER'S CUSTOM INSTRUCTIONS
+
+用户提供了以下附加指令，应尽最大努力遵循这些指令，但不得干扰 TOOL USE 指南。
+
+{{CUSTOM_INSTRUCTIONS}}`
 
 export async function getUserInstructions(variant: PromptVariant, context: SystemPromptContext): Promise<string | undefined> {
 	const customInstructions = buildUserInstructions(
@@ -19,8 +31,9 @@ export async function getUserInstructions(variant: PromptVariant, context: Syste
 		return undefined
 	}
 
-	const t = getPromptTranslation(context)
-	const template = variant.componentOverrides?.[SystemPromptSection.USER_INSTRUCTIONS]?.template || t.userInstructions.template
+	const template =
+		variant.componentOverrides?.[SystemPromptSection.USER_INSTRUCTIONS]?.template ||
+		(isZhCN(context.locale) ? USER_CUSTOM_INSTRUCTIONS_TEMPLATE_TEXT_ZH_CN : USER_CUSTOM_INSTRUCTIONS_TEMPLATE_TEXT)
 
 	return new TemplateEngine().resolve(template, context, {
 		CUSTOM_INSTRUCTIONS: customInstructions,

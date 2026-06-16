@@ -21,7 +21,7 @@ interface DoubaoProviderProps {
  * The ByteDance Doubao provider configuration component
  */
 export const DoubaoProvider = ({ showModelOptions, isPopup, currentMode }: DoubaoProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -40,7 +40,7 @@ export const DoubaoProvider = ({ showModelOptions, isPopup, currentMode }: Douba
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={doubaoModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

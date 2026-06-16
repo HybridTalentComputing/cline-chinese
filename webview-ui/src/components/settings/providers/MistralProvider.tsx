@@ -21,7 +21,7 @@ interface MistralProviderProps {
  * The Mistral provider configuration component
  */
 export const MistralProvider = ({ showModelOptions, isPopup, currentMode }: MistralProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -40,7 +40,7 @@ export const MistralProvider = ({ showModelOptions, isPopup, currentMode }: Mist
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={mistralModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

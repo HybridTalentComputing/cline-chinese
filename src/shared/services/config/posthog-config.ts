@@ -1,3 +1,5 @@
+import { BUILD_CONSTANTS } from "../../constants"
+
 export interface PostHogClientConfig {
 	/**
 	 * The main API key for PostHog telemetry service.
@@ -7,6 +9,7 @@ export interface PostHogClientConfig {
 	 * The API key for PostHog used only for error tracking service.
 	 */
 	errorTrackingApiKey?: string | undefined
+	enableErrorAutocapture?: boolean
 	host: string
 	uiHost: string
 }
@@ -31,14 +34,15 @@ const useDevEnv = process.env.IS_DEV === "true" || process.env.CLINE_ENVIRONMENT
  * PostHog configuration for Production Environment.
  * NOTE: The production environment variables will be injected at build time in CI/CD pipeline.
  * IMPORTANT: The secrets must be added to the GitHub Secrets and matched with the environment variables names
- * defined in the .github/workflows/publish.yml workflow.
+ * defined in the .github/workflows/ext-vscode-publish-stable.yml workflow.
  * NOTE: The development environment variables should be retrieved from 1password shared vault.
  */
 export const posthogConfig: PostHogClientConfig = {
-	apiKey: process.env.TELEMETRY_SERVICE_API_KEY,
-	errorTrackingApiKey: process.env.ERROR_SERVICE_API_KEY,
+	apiKey: BUILD_CONSTANTS.TELEMETRY_SERVICE_API_KEY,
+	errorTrackingApiKey: BUILD_CONSTANTS.ERROR_SERVICE_API_KEY,
 	host: "https://data.cline.bot",
 	uiHost: useDevEnv ? "https://us.i.posthog.com" : "https://us.posthog.com",
+	enableErrorAutocapture: BUILD_CONSTANTS.ENABLE_ERROR_AUTOCAPTURE === "true",
 }
 
 const isTestEnv = process.env.E2E_TEST === "true" || process.env.IS_TEST === "true"

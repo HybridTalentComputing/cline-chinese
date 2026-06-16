@@ -46,6 +46,7 @@ export const useApiConfigurationHandlers = () => {
 			...apiConfiguration,
 			...updates,
 		}
+
 		const protoConfig = convertApiConfigurationToProto(updatedConfig)
 		await ModelsServiceClient.updateApiConfigurationProto(
 			UpdateApiConfigurationRequest.create({

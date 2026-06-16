@@ -1,5 +1,5 @@
 import type { UsageTransaction as ClineAccountUsageTransaction } from "@shared/ClineAccount"
-import type { UsageTransaction as ProtoUsageTransaction } from "@shared/proto/cline/account"
+import type { UsageTransaction as ProtoUsageTransaction, UserOrganization } from "@shared/proto/cline/account"
 
 export const getMainRole = (roles?: string[]) => {
 	if (!roles) {
@@ -23,7 +23,7 @@ export const getClineUris = (base: string, type: "dashboard" | "credits", route?
 		return dashboard
 	}
 
-	const credits = new URL("/" + (route ?? "account"), dashboard)
+	const credits = new URL(`/${route ?? "account"}`, dashboard)
 	credits.searchParams.set("tab", "credits")
 	credits.searchParams.set("redirect", "true")
 	return credits
@@ -50,4 +50,8 @@ export function convertProtoUsageTransaction(protoTransaction: ProtoUsageTransac
  */
 export function convertProtoUsageTransactions(protoTransactions: ProtoUsageTransaction[]): ClineAccountUsageTransaction[] {
 	return protoTransactions.map(convertProtoUsageTransaction)
+}
+
+export const isAdminOrOwner = (activeOrg: UserOrganization): boolean => {
+	return activeOrg.roles.findIndex((role) => role === "admin" || role === "owner") > -1
 }

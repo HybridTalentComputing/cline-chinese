@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { cleanPathPrefix } from "@/components/common/CodeAccordian"
 import ScreenReaderAnnounce from "@/components/common/ScreenReaderAnnounce"
 import { useMenuAnnouncement } from "@/hooks/useMenuAnnouncement"
@@ -28,6 +29,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	isLoading = false,
 }) => {
 	const menuRef = useRef<HTMLDivElement>(null)
+	const { t } = useTranslation("common")
 
 	// State to show delayed loading indicator
 	const [showDelayedLoading, setShowDelayedLoading] = useState(false)
@@ -35,8 +37,15 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 	const filteredOptions = useMemo(() => {
 		const options = getContextMenuOptions(searchQuery, selectedType, queryItems, dynamicSearchResults)
+		// While a search is in flight, don't tell the user "No results found" —
+		// the answer is "still searching", not "nothing matched". Suppress
+		// eagerly on `isLoading` (not just after the 500 ms spinner delay) so
+		// there's no NoResults flicker before the spinner appears.
+		if (isLoading && options.length === 1 && options[0].type === ContextMenuOptionType.NoResults) {
+			return []
+		}
 		return options
-	}, [searchQuery, selectedType, queryItems, dynamicSearchResults])
+	}, [searchQuery, selectedType, queryItems, dynamicSearchResults, isLoading])
 
 	// Effect to handle delayed loading indicator (show "Searching..." after 500ms of searching)
 	useEffect(() => {
@@ -45,13 +54,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 			loadingTimeoutRef.current = null
 		}
 
-		if (isLoading && searchQuery) {
+		// Arm the timer whenever a search is in flight. Don't gate on
+		// `searchQuery`: the "Add File"/"Add Folder" flow runs ripgrep on an
+		// empty query, and the render site already guards with
+		// `filteredOptions.length === 0` so the spinner stays hidden when
+		// real options are showing.
+		if (isLoading) {
 			setShowDelayedLoading(false)
 			loadingTimeoutRef.current = setTimeout(() => {
 				if (isLoading) {
 					setShowDelayedLoading(true)
 				}
-			}, 500) // 500ms delay before showing "Searching..."
+			}, 500)
 		} else {
 			setShowDelayedLoading(false)
 		}
@@ -63,7 +77,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				loadingTimeoutRef.current = null
 			}
 		}
-	}, [isLoading, searchQuery])
+	}, [isLoading])
 
 	useEffect(() => {
 		if (menuRef.current) {
@@ -83,36 +97,39 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 	// Shared label definitions for simple option types
 	const SIMPLE_OPTION_LABELS: Partial<Record<ContextMenuOptionType, string>> = {
-		[ContextMenuOptionType.Problems]: "Problems",
-		[ContextMenuOptionType.Terminal]: "Terminal",
-		[ContextMenuOptionType.URL]: "Paste URL to fetch contents",
-		[ContextMenuOptionType.NoResults]: "No results found",
+		[ContextMenuOptionType.Problems]: t("contextMenu.problems"),
+		[ContextMenuOptionType.Terminal]: t("contextMenu.terminal"),
+		[ContextMenuOptionType.URL]: t("contextMenu.pasteUrl"),
+		[ContextMenuOptionType.NoResults]: t("contextMenu.noResults"),
 	}
 
 	// Get accessible label for an option (used for screen readers and aria-label)
-	const getOptionLabel = useCallback((option: ContextMenuQueryItem): string => {
-		// Check simple labels first
-		const simpleLabel = SIMPLE_OPTION_LABELS[option.type]
-		if (simpleLabel) {
-			return simpleLabel
-		}
+	const getOptionLabel = useCallback(
+		(option: ContextMenuQueryItem): string => {
+			// Check simple labels first
+			const simpleLabel = SIMPLE_OPTION_LABELS[option.type]
+			if (simpleLabel) {
+				return simpleLabel
+			}
 
-		switch (option.type) {
-			case ContextMenuOptionType.Git:
-				if (option.value) {
-					return `${option.label}${option.description ? `, ${option.description}` : ""}`
-				}
-				return "Git Commits"
-			case ContextMenuOptionType.File:
-			case ContextMenuOptionType.Folder:
-				if (option.value) {
-					return option.label || option.value
-				}
-				return `Add ${option.type === ContextMenuOptionType.File ? "File" : "Folder"}`
-			default:
-				return option.label || option.value || ""
-		}
-	}, [])
+			switch (option.type) {
+				case ContextMenuOptionType.Git:
+					if (option.value) {
+						return `${option.label}${option.description ? `, ${option.description}` : ""}`
+					}
+					return t("contextMenu.gitCommits")
+				case ContextMenuOptionType.File:
+				case ContextMenuOptionType.Folder:
+					if (option.value) {
+						return option.label || option.value
+					}
+					return option.type === ContextMenuOptionType.File ? t("contextMenu.addFile") : t("contextMenu.addFolder")
+				default:
+					return option.label || option.value || ""
+			}
+		},
+		[SIMPLE_OPTION_LABELS, t],
+	)
 
 	const renderOptionContent = (option: ContextMenuQueryItem) => {
 		// Handle simple label types
@@ -144,7 +161,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						</div>
 					)
 				}
-				return <span>Git Commits</span>
+				return <span>{t("contextMenu.gitCommits")}</span>
 			case ContextMenuOptionType.File:
 			case ContextMenuOptionType.Folder:
 				if (option.value) {
@@ -165,12 +182,16 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 									direction: displayText.includes(":") ? "ltr" : "rtl",
 									textAlign: "left",
 								}}>
-								{displayText.includes(":") ? displayText : cleanPathPrefix(displayText) + "\u200E"}
+								{displayText.includes(":") ? displayText : `${cleanPathPrefix(displayText)}\u200E`}
 							</span>
 						</>
 					)
 				}
-				return <span>添加 {option.type === ContextMenuOptionType.File ? "文件" : "文件夹"}</span>
+				return (
+					<span>
+						{option.type === ContextMenuOptionType.File ? t("contextMenu.addFile") : t("contextMenu.addFolder")}
+					</span>
+				)
 			default:
 				return null
 		}
@@ -217,7 +238,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				onSelect(option.type, mentionValue)
 			}
 		},
-		[onSelect],
+		[onSelect, isOptionSelectable],
 	)
 
 	return (
@@ -233,11 +254,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 			<ScreenReaderAnnounce message={announcement} />
 			<div
 				aria-activedescendant={
-					filteredOptions.length > 0 && isOptionSelectable(filteredOptions[selectedIndex])
+					filteredOptions.length > selectedIndex &&
+					selectedIndex > -1 &&
+					isOptionSelectable(filteredOptions[selectedIndex])
 						? `context-menu-item-${selectedIndex}`
 						: undefined
 				}
-				aria-label="Context mentions"
+				aria-label={t("contextMenu.ariaLabel")}
 				ref={menuRef}
 				role="listbox"
 				style={{
@@ -250,9 +273,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 					flexDirection: "column",
 					maxHeight: "200px",
 					overflowY: "auto",
-				}}>
+				}}
+				tabIndex={0}>
 				{/* Can't use virtuoso since it requires fixed height and menu height is dynamic based on # of items */}
-				{showDelayedLoading && searchQuery && (
+				{showDelayedLoading && filteredOptions.length === 0 && (
 					<div
 						style={{
 							padding: "8px 12px",
@@ -262,7 +286,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							opacity: 0.7,
 						}}>
 						<i className="codicon codicon-loading codicon-modifier-spin" style={{ fontSize: "14px" }} />
-						<span>搜索...</span>
+						<span>{t("contextMenu.searching")}</span>
 					</div>
 				)}
 				{filteredOptions.map((option, index) => {

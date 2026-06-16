@@ -331,7 +331,7 @@ Hey, the PR looks good overall but I'm concerned about removing those timeouts. 
 Could you add back the timeouts after focusing the sidebar? Something like:
 
 ```typescript
-await vscode.commands.executeCommand("cline-chinese.SidebarProvider.focus")
+await vscode.commands.executeCommand("claude-dev.SidebarProvider.focus")
 await setTimeoutPromise(100)  // Give UI time to update
 visibleWebview = WebviewProvider.getSidebarInstance()
 ```
@@ -347,8 +347,6 @@ A few notes:
 So until the settings page is update, and this is added to settings in a way that's clean and doesn't confuse new users, I don't think we can merge this. Please bear with us.
 </request_changes_comment>
 <request_changes_comment>
-Also, don't forget to add a changeset since this fixes a user-facing bug.
-
 The architectural change is solid - moving the focus logic to the command handlers makes sense. Just don't want to introduce subtle timing issues by removing those timeouts.
 </request_changes_comment>
 </example_comments_that_i_have_written_before>

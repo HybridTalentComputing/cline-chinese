@@ -29,6 +29,8 @@ coverage-unit
 
 *evals.env
 .env
+.secrets
+.github/act/.secrets
 
 .worktrees
 
@@ -36,6 +38,25 @@ coverage-unit
 src/generated/
 src/shared/proto/
 webview-ui/src/services/grpc-client.ts
+*.tsbuildinfo
 
 # E2E Tests
 test-results
+
+/.github/act
+/pkg
+.secrets
+
+*.tsbuildinfo
+
+# Smoke test results (generated)
+evals/smoke-tests/results/
+
+.tui-test
+secrets.json
+tui-traces
+tests/**/cache
+
+# Backup created by scripts/marketplace-readme.mjs while publishing.
+# Should never be committed: only exists if a publish aborts mid-swap.
+.README.github.bak

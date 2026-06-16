@@ -1,7 +1,21 @@
 import { Anthropic } from "@anthropic-ai/sdk"
+import type {
+	MessageCreateParamsStreaming as BetaMessageCreateParamsStreaming,
+	BetaRawMessageStreamEvent,
+} from "@anthropic-ai/sdk/resources/beta/messages/messages"
 import { Tool as AnthropicTool } from "@anthropic-ai/sdk/resources/index"
+import type { MessageCreateParamsStreaming as AnthropicMessageCreateParamsStreaming } from "@anthropic-ai/sdk/resources/messages/messages"
 import { Stream as AnthropicStream } from "@anthropic-ai/sdk/streaming"
-import { AnthropicModelId, anthropicDefaultModelId, anthropicModels, CLAUDE_SONNET_1M_SUFFIX, ModelInfo } from "@shared/api"
+import {
+	ANTHROPIC_FAST_MODE_SUFFIX,
+	AnthropicModelId,
+	anthropicDefaultModelId,
+	anthropicModels,
+	CLAUDE_SONNET_1M_SUFFIX,
+	ModelInfo,
+} from "@shared/api"
+import { isClaudeOpusAdaptiveThinkingModel, resolveClaudeOpusAdaptiveThinking } from "@shared/utils/reasoning-support"
+import { buildExternalBasicHeaders } from "@/services/EnvUtils"
 import { ClineStorageMessage } from "@/shared/messages/content"
 import { fetch } from "@/shared/net"
 import { ApiHandler, CommonApiHandlerOptions } from "../index"
@@ -9,10 +23,13 @@ import { withRetry } from "../retry"
 import { sanitizeAnthropicMessages } from "../transform/anthropic-format"
 import { ApiStream } from "../transform/stream"
 
+export const ANTHROPIC_FAST_MODE_BETA = "fast-mode-2026-02-01"
+
 interface AnthropicHandlerOptions extends CommonApiHandlerOptions {
 	apiKey?: string
 	anthropicBaseUrl?: string
 	apiModelId?: string
+	reasoningEffort?: string
 	thinkingBudgetTokens?: number
 }
 
@@ -33,6 +50,7 @@ export class AnthropicHandler implements ApiHandler {
 				this.client = new Anthropic({
 					apiKey: this.options.apiKey,
 					baseURL: this.options.anthropicBaseUrl || undefined,
+					defaultHeaders: buildExternalBasicHeaders(),
 					fetch, // Use configured fetch with proxy support
 				})
 			} catch (error) {
@@ -47,10 +65,30 @@ export class AnthropicHandler implements ApiHandler {
 		const client = this.ensureClient()
 
 		const model = this.getModel()
-		let stream: AnthropicStream<Anthropic.RawMessageStreamEvent>
+		let stream: AnthropicStream<Anthropic.RawMessageStreamEvent> | AsyncIterable<BetaRawMessageStreamEvent>
 
-		const modelId = model.id.endsWith(CLAUDE_SONNET_1M_SUFFIX) ? model.id.slice(0, -CLAUDE_SONNET_1M_SUFFIX.length) : model.id
-		const enable1mContextWindow = model.id.endsWith(CLAUDE_SONNET_1M_SUFFIX)
+		const useFastMode = model.id.endsWith(ANTHROPIC_FAST_MODE_SUFFIX)
+		const baseModelId = useFastMode ? model.id.slice(0, -ANTHROPIC_FAST_MODE_SUFFIX.length) : model.id
+		const modelId = baseModelId.endsWith(CLAUDE_SONNET_1M_SUFFIX)
+			? baseModelId.slice(0, -CLAUDE_SONNET_1M_SUFFIX.length)
+			: baseModelId
+		const enable1mContextWindow = baseModelId.endsWith(CLAUDE_SONNET_1M_SUFFIX)
+		const fastModeBetas = enable1mContextWindow
+			? [ANTHROPIC_FAST_MODE_BETA, "context-1m-2025-08-07"]
+			: [ANTHROPIC_FAST_MODE_BETA]
+		const createFastModeMessage = (
+			body: AnthropicMessageCreateParamsStreaming,
+		): Promise<AsyncIterable<BetaRawMessageStreamEvent>> => {
+			return (
+				client.beta.messages.create as unknown as (
+					params: BetaMessageCreateParamsStreaming & { speed: "fast" },
+				) => Promise<AsyncIterable<BetaRawMessageStreamEvent>>
+			)({
+				...body,
+				betas: fastModeBetas,
+				speed: "fast",
+			})
+		}
 
 		const budget_tokens = this.options.thinkingBudgetTokens || 0
 
@@ -58,59 +96,86 @@ export class AnthropicHandler implements ApiHandler {
 		const nativeToolsOn = tools?.length && tools?.length > 0
 		const reasoningOn = (model.info.supportsReasoning ?? false) && budget_tokens !== 0
 
+		// Claude Opus 4.5+ uses adaptive thinking instead of budgeted extended thinking.
+		const isAdaptiveThinkingModel = isClaudeOpusAdaptiveThinkingModel(modelId)
+		const adaptiveThinking = isAdaptiveThinkingModel
+			? resolveClaudeOpusAdaptiveThinking(this.options.reasoningEffort, budget_tokens)
+			: undefined
+		const adaptiveThinkingEnabled = adaptiveThinking?.enabled === true
+		const adaptiveThinkingEffort = adaptiveThinking?.effort
+		const thinkingEnabled = isAdaptiveThinkingModel ? adaptiveThinkingEnabled : reasoningOn
+		const thinkingConfig = thinkingEnabled
+			? isAdaptiveThinkingModel
+				? ({ type: "adaptive" } as any)
+				: { type: "enabled", budget_tokens: budget_tokens }
+			: undefined
+		const outputConfig = isAdaptiveThinkingModel && adaptiveThinkingEffort ? { effort: adaptiveThinkingEffort } : undefined
+
 		if (model.info.supportsPromptCache) {
 			const anthropicMessages = sanitizeAnthropicMessages(messages, true)
+			const requestBody: AnthropicMessageCreateParamsStreaming & Record<string, unknown> = {
+				model: modelId,
+				thinking: thinkingConfig,
+				max_tokens: model.info.maxTokens || 8192,
+				// "Thinking isn't compatible with temperature, top_p, or top_k modifications as well as forced tool use."
+				// (https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#important-considerations-when-using-extended-thinking)
+				// Adaptive Claude Opus models do not support temperature.
+				temperature: isAdaptiveThinkingModel ? undefined : reasoningOn ? undefined : 0,
+				system: [
+					{
+						text: systemPrompt,
+						type: "text",
+						cache_control: { type: "ephemeral" },
+					},
+				], // setting cache breakpoint for system prompt so new tasks can reuse it
+				messages: anthropicMessages,
+				// tools, // cache breakpoints go from tools > system > messages, and since tools dont change, we can just set the breakpoint at the end of system (this avoids having to set a breakpoint at the end of tools which by itself does not meet min requirements for haiku caching)
+				stream: true,
+				tools: nativeToolsOn ? tools : undefined,
+				// tool_choice options:
+				// - none: disables tool use, even if tools are provided. Claude will not call any tools.
+				// - auto: allows Claude to decide whether to call any provided tools or not. This is the default value when tools are provided.
+				// - any: tells Claude that it must use one of the provided tools, but doesn’t force a particular tool.
+				// NOTE: Forcing tool use when tools are provided will result in error when thinking is also enabled.
+				tool_choice: nativeToolsOn && !thinkingEnabled ? { type: "any" } : undefined,
+			}
+			if (outputConfig) {
+				requestBody.output_config = outputConfig
+			}
 
-			stream = await client.messages.create(
-				{
-					model: modelId,
-					thinking: reasoningOn ? { type: "enabled", budget_tokens: budget_tokens } : undefined,
-					max_tokens: model.info.maxTokens || 8192,
-					// "Thinking isn’t compatible with temperature, top_p, or top_k modifications as well as forced tool use."
-					// (https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#important-considerations-when-using-extended-thinking)
-					temperature: reasoningOn ? undefined : 0,
-					system: [
-						{
-							text: systemPrompt,
-							type: "text",
-							cache_control: { type: "ephemeral" },
-						},
-					], // setting cache breakpoint for system prompt so new tasks can reuse it
-					messages: anthropicMessages,
-					// tools, // cache breakpoints go from tools > system > messages, and since tools dont change, we can just set the breakpoint at the end of system (this avoids having to set a breakpoint at the end of tools which by itself does not meet min requirements for haiku caching)
-					stream: true,
-					tools: nativeToolsOn ? tools : undefined,
-					// tool_choice options:
-					// - none: disables tool use, even if tools are provided. Claude will not call any tools.
-					// - auto: allows Claude to decide whether to call any provided tools or not. This is the default value when tools are provided.
-					// - any: tells Claude that it must use one of the provided tools, but doesn’t force a particular tool.
-					// NOTE: Forcing tool use when tools are provided will result in error when thinking is also enabled.
-					tool_choice: nativeToolsOn && !reasoningOn ? { type: "any" } : undefined,
-				},
-				(() => {
-					// 1m context window beta header
-					if (enable1mContextWindow) {
-						return {
-							headers: {
-								"anthropic-beta": "context-1m-2025-08-07",
-							},
-						}
-					} else {
-						return undefined
-					}
-				})(),
-			)
+			stream = useFastMode
+				? await createFastModeMessage(requestBody)
+				: await client.messages.create(
+						requestBody,
+						(() => {
+							// 1m context window beta header
+							if (enable1mContextWindow) {
+								return {
+									headers: {
+										"anthropic-beta": "context-1m-2025-08-07",
+									},
+								}
+							}
+							return undefined
+						})(),
+					)
 		} else {
-			stream = await client.messages.create({
+			const requestBody: AnthropicMessageCreateParamsStreaming & Record<string, unknown> = {
 				model: modelId,
 				max_tokens: model.info.maxTokens || 8192,
-				temperature: 0,
+				temperature: isAdaptiveThinkingModel ? undefined : reasoningOn ? undefined : 0,
 				system: [{ text: systemPrompt, type: "text" }],
 				messages: sanitizeAnthropicMessages(messages, false),
 				tools: nativeToolsOn ? tools : undefined,
-				tool_choice: { type: "auto" },
+				tool_choice: thinkingEnabled ? undefined : { type: "auto" },
 				stream: true,
-			})
+				thinking: thinkingConfig,
+			}
+			if (outputConfig) {
+				requestBody.output_config = outputConfig
+			}
+
+			stream = useFastMode ? await createFastModeMessage(requestBody) : await client.messages.create(requestBody)
 		}
 
 		const lastStartedToolCall = { id: "", name: "", arguments: "" }

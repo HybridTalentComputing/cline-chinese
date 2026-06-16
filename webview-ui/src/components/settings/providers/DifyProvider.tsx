@@ -6,6 +6,7 @@ import { DebouncedTextField } from "../common/DebouncedTextField"
 import { ModelInfoView } from "../common/ModelInfoView"
 import { normalizeApiConfiguration } from "../utils/providerUtils"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
+import { useDebouncedInput } from "../utils/useDebouncedInput"
 
 interface DifyProviderProps {
 	showModelOptions: boolean
@@ -14,9 +15,18 @@ interface DifyProviderProps {
 }
 
 export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
+
+	// Use debounced input for proper state management
+	const [_baseUrlValue, _setBaseUrlValue] = useDebouncedInput(apiConfiguration?.difyBaseUrl || "", (value) =>
+		handleFieldChange("difyBaseUrl", value),
+	)
+
+	const [_apiKeyValue, _setApiKeyValue] = useDebouncedInput(apiConfiguration?.difyApiKey || "", (value) =>
+		handleFieldChange("difyApiKey", value),
+	)
 
 	// Get the normalized configuration
 	const { selectedModelId, selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, currentMode)
@@ -29,10 +39,10 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 					onChange={(value) => {
 						handleFieldChange("difyBaseUrl", value)
 					}}
-					placeholder={t("settings.apiConfig.enterBaseUrl")}
+					placeholder={t("providers.dify.baseUrlPlaceholder")}
 					style={{ width: "100%", marginBottom: 10 }}
 					type="text">
-					<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.baseUrl")}</span>
+					<span style={{ fontWeight: 500 }}>{t("providers.dify.baseUrl")}</span>
 				</DebouncedTextField>
 
 				<ApiKeyField
@@ -44,9 +54,9 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 				/>
 
 				<div style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", marginTop: "5px" }}>
-					<p>{t("settings.apiConfig.difyDescription")}</p>
+					<p>{t("providers.dify.platformDescription")}</p>
 					<p style={{ marginTop: "8px" }}>
-						<strong>{t("settings.apiConfig.note")}</strong> {t("settings.apiConfig.difyNote")}
+						<strong>{t("commonFields.note")}:</strong> {t("providers.dify.noteModelSelection")}
 					</p>
 				</div>
 			</div>

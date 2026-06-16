@@ -19,7 +19,7 @@ interface AutoApproveModalProps {
 }
 
 const AutoApproveModal: React.FC<AutoApproveModalProps> = ({ isVisible, setIsVisible, buttonRef, ACTION_METADATA }) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("common")
 	const { autoApprovalSettings } = useExtensionState()
 	const { isChecked, updateAction } = useAutoApproveActions()
 	const modalRef = useRef<HTMLDivElement>(null)
@@ -28,7 +28,7 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({ isVisible, setIsVis
 
 	useClickAway(modalRef, (e) => {
 		// Skip if click was on the button that toggles the modal
-		if (buttonRef.current && buttonRef.current.contains(e.target as Node)) {
+		if (buttonRef.current?.contains(e.target as Node)) {
 			return
 		}
 		setIsVisible(false)
@@ -74,14 +74,14 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({ isVisible, setIsVis
 					maxHeight: "60vh",
 				}}>
 				<div className="mb-2.5 text-muted-foreground text-xs cursor-pointer" onClick={() => setIsVisible(false)}>
-					{t("autoApprove.modal.description")}{" "}
+					Let Cline take these actions without asking for approval.{" "}
 					<a
 						className="text-link hover:text-link-hover"
 						href="https://docs.cline.bot/features/auto-approve#auto-approve"
 						rel="noopener"
 						style={{ fontSize: "inherit" }}
 						target="_blank">
-						{t("autoApprove.modal.docs")}
+						Docs
 					</a>
 				</div>
 
@@ -131,9 +131,10 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({ isVisible, setIsVis
 								enableNotifications: checked,
 							})
 						}}>
-						<span className="text-sm">{t("autoApprove.modal.enableNotifications")}</span>
+						<span className="text-sm">{t("autoApprove.enableNotifications")}</span>
 					</VSCodeCheckbox>
 				</div>
+				<div className="mt-1 text-xs text-muted-foreground">{t("autoApprove.notificationsDescription")}</div>
 			</div>
 		</div>
 	)

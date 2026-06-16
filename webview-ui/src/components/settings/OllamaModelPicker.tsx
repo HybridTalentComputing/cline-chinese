@@ -1,6 +1,7 @@
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { highlight } from "../history/HistoryView"
 
@@ -13,12 +14,9 @@ export interface OllamaModelPickerProps {
 	placeholder?: string
 }
 
-const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({
-	ollamaModels,
-	selectedModelId,
-	onModelChange,
-	placeholder = "Search and select a model...",
-}) => {
+const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({ ollamaModels, selectedModelId, onModelChange, placeholder }) => {
+	const { t } = useTranslation("settings")
+	const resolvedPlaceholder = placeholder ?? t("settings.searchSelectModel")
 	const [searchTerm, setSearchTerm] = useState(selectedModelId || "")
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -100,7 +98,7 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [searchTerm])
+	}, [])
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
@@ -116,7 +114,7 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({
 		if (selectedModelId !== searchTerm) {
 			setSearchTerm(selectedModelId || "")
 		}
-	}, [selectedModelId])
+	}, [selectedModelId, searchTerm])
 
 	return (
 		<div style={{ width: "100%" }}>
@@ -138,7 +136,8 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({
 						setIsDropdownVisible(true)
 					}}
 					onKeyDown={handleKeyDown}
-					placeholder={placeholder}
+					placeholder={resolvedPlaceholder}
+					role="combobox"
 					style={{
 						width: "100%",
 						zIndex: OLLAMA_MODEL_PICKER_Z_INDEX,
@@ -147,7 +146,7 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({
 					value={searchTerm}>
 					{searchTerm && (
 						<div
-							aria-label="Clear search"
+							aria-label={t("clearSearch")}
 							className="input-icon-button codicon codicon-close"
 							onClick={() => {
 								handleModelChange("")
@@ -164,7 +163,7 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({
 					)}
 				</VSCodeTextField>
 				{isDropdownVisible && modelSearchResults.length > 0 && (
-					<DropdownList ref={dropdownListRef}>
+					<DropdownList ref={dropdownListRef} role="listbox">
 						{modelSearchResults.map((item, index) => (
 							<DropdownItem
 								isSelected={index === selectedIndex}
@@ -174,7 +173,8 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({
 									setIsDropdownVisible(false)
 								}}
 								onMouseEnter={() => setSelectedIndex(index)}
-								ref={(el) => (itemRefs.current[index] = el)}>
+								ref={(el) => (itemRefs.current[index] = el)}
+								role="option">
 								<span dangerouslySetInnerHTML={{ __html: item.html }} />
 							</DropdownItem>
 						))}

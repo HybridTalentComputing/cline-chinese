@@ -1,4 +1,5 @@
 import { GlobalFileNames } from "@core/storage/disk"
+import { getAxiosSettings } from "@shared/net"
 import { EmptyRequest } from "@shared/proto/cline/common"
 import { ShengSuanYunCompatibleModelInfo, ShengSuanYunModelInfo } from "@shared/proto/cline/models"
 import { fileExistsAtPath } from "@utils/fs"
@@ -21,7 +22,9 @@ export async function refreshShengSuanYunModels(
 	const shengSuanYunModelsFilePath = path.join(await ensureCacheDirectoryExists(controller), GlobalFileNames.shengSuanYunModels)
 	let models: Record<string, Partial<ShengSuanYunModelInfo>> = {}
 	try {
-		const response = await axios.get("https://router.shengsuanyun.com/api/v1/models/")
+		const response = await axios.get("https://router.shengsuanyun.com/api/v1/models/", {
+			...getAxiosSettings(),
+		})
 		if (response.data?.data && Array.isArray(response.data?.data)) {
 			const rawModels = response.data.data
 			const parsePrice = (price: any) => {

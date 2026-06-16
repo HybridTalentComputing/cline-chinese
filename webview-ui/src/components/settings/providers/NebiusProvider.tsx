@@ -21,7 +21,7 @@ interface NebiusProviderProps {
  * The Nebius AI Studio provider configuration component
  */
 export const NebiusProvider = ({ showModelOptions, isPopup, currentMode }: NebiusProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -30,7 +30,7 @@ export const NebiusProvider = ({ showModelOptions, isPopup, currentMode }: Nebiu
 	return (
 		<div>
 			<ApiKeyField
-				helpText={`${t("settings.apiConfig.apiKeyStoredLocally")} (${t("settings.apiConfig.note")} ${t("settings.apiConfig.clineBestWithClaude")})`}
+				helpText={t("providers.openaiCompatible.noteComplexPrompts")}
 				initialValue={apiConfiguration?.nebiusApiKey || ""}
 				onChange={(value) => handleFieldChange("nebiusApiKey", value)}
 				providerName="Nebius"
@@ -40,7 +40,7 @@ export const NebiusProvider = ({ showModelOptions, isPopup, currentMode }: Nebiu
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={nebiusModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

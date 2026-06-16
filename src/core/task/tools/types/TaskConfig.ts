@@ -1,7 +1,9 @@
 import type { ApiHandler } from "@core/api"
 import type { FileContextTracker } from "@core/context/context-tracking/FileContextTracker"
 import type { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
+import type { CommandPermissionController } from "@core/permissions"
 import type { DiffViewProvider } from "@integrations/editor/DiffViewProvider"
+import type { CommandExecutionOptions } from "@integrations/terminal"
 import type { BrowserSession } from "@services/browser/BrowserSession"
 import type { UrlContentFetcher } from "@services/browser/UrlContentFetcher"
 import type { McpHub } from "@services/mcp/McpHub"
@@ -13,7 +15,6 @@ import type { ClineContent } from "@shared/messages/content"
 import type { Mode } from "@shared/storage/types"
 import type { ClineDefaultTool } from "@shared/tools"
 import type { ClineAskResponse } from "@shared/WebviewMessage"
-import * as vscode from "vscode"
 import { WorkspaceRootManager } from "@/core/workspace"
 import type { ContextManager } from "../../../context/context-management/ContextManager"
 import type { StateManager } from "../../../storage/StateManager"
@@ -35,9 +36,10 @@ export interface TaskConfig {
 	mode: Mode
 	strictPlanModeEnabled: boolean
 	yoloModeToggled: boolean
+	doubleCheckCompletionEnabled: boolean
 	vscodeTerminalExecutionMode: "vscodeTerminal" | "backgroundExec"
 	enableParallelToolCalling: boolean
-	context: vscode.ExtensionContext
+	isSubagentExecution: boolean
 
 	// Multi-workspace support (optional for backward compatibility)
 	workspaceManager?: WorkspaceRootManager
@@ -74,6 +76,7 @@ export interface TaskServices {
 	diffViewProvider: DiffViewProvider
 	fileContextTracker: FileContextTracker
 	clineIgnoreController: ClineIgnoreController
+	commandPermissionController: CommandPermissionController
 	contextManager: ContextManager
 	stateManager: StateManager
 }
@@ -101,7 +104,12 @@ export interface TaskCallbacks {
 
 	removeLastPartialMessageIfExistsWithType: (type: "ask" | "say", askOrSay: ClineAsk | ClineSay) => Promise<void>
 
-	executeCommandTool: (command: string, timeoutSeconds: number | undefined) => Promise<[boolean, any]>
+	executeCommandTool: (
+		command: string,
+		timeoutSeconds: number | undefined,
+		options?: CommandExecutionOptions,
+	) => Promise<[boolean, any]>
+	cancelRunningCommandTool?: () => Promise<boolean>
 
 	doesLatestTaskCompletionHaveNewChanges: () => Promise<boolean>
 

@@ -18,19 +18,20 @@ export const ContextWindowSwitcher = ({
 	base1mModelId,
 	onModelChange,
 }: ContextWindowSwitcherProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const switcherInfo = useMemo(() => {
 		if (selectedModelId === base200kModelId) {
 			return {
 				current: base200kModelId,
 				alternate: base1mModelId,
-				linkText: t("settings.providers.contextWindowSwitcher.switchTo1M"),
+				linkText: t("settings.switchTo1mContext"),
 			}
-		} else if (selectedModelId === base1mModelId) {
+		}
+		if (selectedModelId === base1mModelId) {
 			return {
 				current: base1mModelId,
 				alternate: base200kModelId,
-				linkText: t("settings.providers.contextWindowSwitcher.switchTo200K"),
+				linkText: t("settings.switchTo200kContext"),
 			}
 		}
 		return null

@@ -1,5 +1,6 @@
-import { LiteLLMModelInfo, liteLlmDefaultModelId, liteLlmModelInfoSaneDefaults } from "@shared/api"
-import OpenAI, { APIError, OpenAIError } from "openai"
+import { Anthropic, APIError as AnthropicAPIError } from "@anthropic-ai/sdk"
+import { liteLlmDefaultModelId, liteLlmModelInfoSaneDefaults, ModelInfo } from "@shared/api"
+import OpenAI, { APIError as OpenAIAPIError, OpenAIError } from "openai"
 import type { ChatCompletionTool as OpenAITool } from "openai/resources/chat/completions"
 import { OcaAuthService } from "@/services/auth/oca/OcaAuthService"
 import {
@@ -8,19 +9,27 @@ import {
 	OCI_HEADER_OPC_REQUEST_ID,
 } from "@/services/auth/oca/utils/constants"
 import { createOcaHeaders } from "@/services/auth/oca/utils/utils"
-import { Logger } from "@/services/logging/Logger"
+import { buildExternalBasicHeaders } from "@/services/EnvUtils"
+import { OcaModelInfo } from "@/shared/api"
 import { ClineStorageMessage } from "@/shared/messages/content"
 import { fetch } from "@/shared/net"
+import { ApiFormat } from "@/shared/proto/index.cline"
+import { Logger } from "@/shared/services/Logger"
 import { ApiHandler, type CommonApiHandlerOptions } from ".."
 import { withRetry } from "../retry"
+import { sanitizeAnthropicMessages } from "../transform/anthropic-format"
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { convertToOpenAIResponsesInput } from "../transform/openai-response-format"
 import { ApiStream } from "../transform/stream"
 import { getOpenAIToolParams, ToolCallProcessor } from "../transform/tool-call-processor"
+import { convertOpenAIToolsToAnthropicTools, handleAnthropicMessagesApiStreamResponse } from "../utils/messages_api_support"
+import { handleResponsesApiStreamResponse } from "../utils/responses_api_support"
 
 export interface OcaHandlerOptions extends CommonApiHandlerOptions {
 	ocaBaseUrl?: string
 	ocaModelId?: string
-	ocaModelInfo?: LiteLLMModelInfo
+	ocaModelInfo?: OcaModelInfo
+	ocaReasoningEffort?: string
 	thinkingBudgetTokens?: number
 	ocaUsePromptCache?: boolean
 	taskId?: string
@@ -29,13 +38,16 @@ export interface OcaHandlerOptions extends CommonApiHandlerOptions {
 
 export class OcaHandler implements ApiHandler {
 	protected options: OcaHandlerOptions
-	protected client: OpenAI | undefined
+	protected openAIClient: OpenAI | undefined
+	protected anthropicClient: Anthropic | undefined
+	protected externalHeaders: Record<string, string> = {}
 
 	constructor(options: OcaHandlerOptions) {
 		this.options = options
 	}
 
-	protected initializeClient(options: OcaHandlerOptions) {
+	protected initializeOpenAIClient(options: OcaHandlerOptions): OpenAI {
+		const externalHeaders = buildExternalBasicHeaders()
 		return new (class OCIOpenAI extends OpenAI {
 			protected override async prepareOptions(opts: any): Promise<void> {
 				const token = await OcaAuthService.getInstance().getAuthToken()
@@ -45,7 +57,7 @@ export class OcaHandler implements ApiHandler {
 				opts.headers ??= {}
 				// OCA Headers
 				const ociHeaders = await createOcaHeaders(token, options.taskId!)
-				opts.headers = { ...opts.headers, ...ociHeaders }
+				opts.headers = { ...opts.headers, ...externalHeaders, ...ociHeaders }
 				Logger.log(`Making request with customer opc-request-id: ${opts.headers?.["opc-request-id"]}`)
 				return super.prepareOptions(opts)
 			}
@@ -55,7 +67,7 @@ export class OcaHandler implements ApiHandler {
 				error: Object | undefined,
 				message: string | undefined,
 				headers: any | undefined,
-			): APIError {
+			): OpenAIAPIError {
 				interface OciError {
 					code?: string
 					message?: string
@@ -86,34 +98,101 @@ export class OcaHandler implements ApiHandler {
 		})
 	}
 
-	protected ensureClient(): OpenAI {
-		if (!this.client) {
+	protected initializeAnthropicClient(options: OcaHandlerOptions): Anthropic {
+		const externalHeaders = buildExternalBasicHeaders()
+		return new (class OCIAnthropic extends Anthropic {
+			protected override async prepareOptions(opts: any): Promise<void> {
+				const token = await OcaAuthService.getInstance().getAuthToken()
+				if (!token) {
+					throw new OpenAIError("Unable to handle auth, Oracle Code Assist (OCA) access token is not available")
+				}
+				opts.headers ??= {}
+				// OCA Headers
+				const ociHeaders = await createOcaHeaders(token, options.taskId!)
+				opts.headers = { ...opts.headers, ...externalHeaders, ...ociHeaders }
+				Logger.log(`Making request with customer opc-request-id: ${opts.headers?.["opc-request-id"]}`)
+				return super.prepareOptions(opts)
+			}
+
+			protected override makeStatusError(
+				status: number | undefined,
+				error: Object | undefined,
+				message: string | undefined,
+				headers: any | undefined,
+			): AnthropicAPIError {
+				interface OciError {
+					code?: string
+					message?: string
+				}
+				let ociErrorMessage = message
+				if (typeof error === "object" && error !== null) {
+					try {
+						ociErrorMessage = JSON.stringify(error)
+						const ociErr = error as OciError
+						if (ociErr.code !== undefined && ociErr.message !== undefined) {
+							ociErrorMessage = `${ociErr.code}: ${ociErr.message}`
+						}
+					} catch {}
+				}
+				const opcRequestId = headers?.[OCI_HEADER_OPC_REQUEST_ID]
+				if (opcRequestId) {
+					ociErrorMessage += `\n(${OCI_HEADER_OPC_REQUEST_ID}: ${opcRequestId})`
+				}
+				const statusCode = typeof status === "number" ? status : 500
+				return super.makeStatusError(statusCode, error ?? {}, ociErrorMessage, headers)
+			}
+		})({
+			baseURL:
+				options.ocaBaseUrl ||
+				(options.ocaMode === "internal" ? DEFAULT_INTERNAL_OCA_BASE_URL : DEFAULT_EXTERNAL_OCA_BASE_URL),
+			apiKey: "noop",
+			fetch, // Use configured fetch with proxy support
+		})
+	}
+
+	protected ensureOpenAIClient(): OpenAI {
+		if (!this.openAIClient) {
 			if (!this.options.ocaModelId) {
 				throw new Error("Oracle Code Assist (OCA) model is not selected")
 			}
 			try {
-				this.client = this.initializeClient(this.options)
+				this.openAIClient = this.initializeOpenAIClient(this.options)
 			} catch (error) {
 				throw new Error(`Error creating Oracle Code Assist (OCA) client: ${error.message}`)
 			}
 		}
-		return this.client
+		return this.openAIClient
 	}
 
-	async calculateCost(prompt_tokens: number, completion_tokens: number): Promise<number | undefined> {
+	protected ensureAnthropicClient(): Anthropic {
+		if (!this.anthropicClient) {
+			if (!this.options.ocaModelId) {
+				throw new Error("Oracle Code Assist (OCA) model is not selected")
+			}
+			try {
+				this.anthropicClient = this.initializeAnthropicClient(this.options)
+			} catch (error) {
+				throw new Error(`Error creating Oracle Code Assist (OCA) client: ${error.message}`)
+			}
+		}
+		return this.anthropicClient
+	}
+
+	async getApiCosts(prompt_tokens: number, completion_tokens: number): Promise<number | undefined> {
 		// Reference: https://github.com/BerriAI/litellm/blob/122ee634f434014267af104814022af1d9a0882f/litellm/proxy/spend_tracking/spend_management_endpoints.py#L1473
-		const client = this.ensureClient()
+		const client = this.ensureOpenAIClient()
 		const modelId = this.options.ocaModelId || liteLlmDefaultModelId
 		const token = await OcaAuthService.getInstance().getAuthToken()
 		if (!token) {
 			throw new OpenAIError("Unable to handle auth, Oracle Code Assist (OCA) access token is not available")
 		}
+		const externalHeaders = buildExternalBasicHeaders()
 		const ociHeaders = await createOcaHeaders(token, this.options.taskId!)
 		Logger.log(`Making calculate cost request with customer opc-request-id: ${ociHeaders["opc-request-id"]}`)
 		try {
 			const response = await fetch(`${client.baseURL}/spend/calculate`, {
 				method: "POST",
-				headers: ociHeaders,
+				headers: { ...externalHeaders, ...ociHeaders },
 				body: JSON.stringify({
 					completion_response: {
 						model: modelId,
@@ -128,19 +207,41 @@ export class OcaHandler implements ApiHandler {
 			if (response.ok) {
 				const data: { cost: number } = await response.json()
 				return data.cost
-			} else {
-				console.error("Error calculating spend:", response.statusText)
-				return undefined
 			}
+			Logger.error("Error calculating spend:", response.statusText)
+			return undefined
 		} catch (error) {
-			console.error("Error calculating spend:", error)
+			Logger.error("Error calculating spend:", error)
 			return undefined
 		}
 	}
 
+	async calculateCost(
+		modelInfo: ModelInfo,
+		inputTokens: number,
+		outputTokens: number,
+		_cacheWriteTokens?: number,
+		_cacheReadTokens?: number,
+	) {
+		const inputCost = (await this.getApiCosts(1e6, 0)) || 0
+		const outputCost = (await this.getApiCosts(0, 1e6)) || 0
+		const totalCost = (inputCost * inputTokens) / 1e6 + (outputCost * outputTokens) / 1e6
+		return totalCost
+	}
+
 	@withRetry()
 	async *createMessage(systemPrompt: string, messages: ClineStorageMessage[], tools?: OpenAITool[]): ApiStream {
-		const client = this.ensureClient()
+		if (this.options.ocaModelInfo?.apiFormat == ApiFormat.OPENAI_RESPONSES) {
+			yield* this.createMessageResponsesApi(systemPrompt, messages, tools)
+		} else if (this.options.ocaModelInfo?.apiFormat == ApiFormat.ANTHROPIC_CHAT) {
+			yield* this.createMessageMessagesApi(systemPrompt, messages, tools)
+		} else {
+			yield* this.createMessageChatApi(systemPrompt, messages, tools)
+		}
+	}
+
+	async *createMessageChatApi(systemPrompt: string, messages: ClineStorageMessage[], tools?: OpenAITool[]): ApiStream {
+		const client = this.ensureOpenAIClient()
 		const formattedMessages = convertToOpenAiMessages(messages)
 		const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
 			role: "system",
@@ -193,7 +294,7 @@ export class OcaHandler implements ApiHandler {
 
 		const toolCallProcessor = new ToolCallProcessor()
 
-		const stream = await client.chat.completions.create({
+		const chatCompletionsParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: this.options.ocaModelId || liteLlmDefaultModelId,
 			messages: [enhancedSystemMessage, ...enhancedMessages],
 			temperature,
@@ -206,13 +307,16 @@ export class OcaHandler implements ApiHandler {
 				litellm_session_id: `cline-${this.options.taskId}`,
 				...getOpenAIToolParams(tools),
 			}), // Add session ID for LiteLLM tracking
-		})
+		}
 
-		const inputCost = (await this.calculateCost(1e6, 0)) || 0
-		const outputCost = (await this.calculateCost(0, 1e6)) || 0
+		if (this.options.ocaModelInfo?.supportsReasoningEffort) {
+			chatCompletionsParams["reasoning_effort"] = this.options.ocaReasoningEffort || ("medium" as any)
+		}
+
+		const stream = await client.chat.completions.create(chatCompletionsParams)
 
 		for await (const chunk of stream) {
-			const delta = chunk.choices[0]?.delta
+			const delta = chunk.choices?.[0]?.delta
 
 			// Handle normal text content
 			if (delta?.content) {
@@ -241,8 +345,11 @@ export class OcaHandler implements ApiHandler {
 
 			// Handle token usage information
 			if (chunk.usage) {
-				const totalCost =
-					(inputCost * chunk.usage.prompt_tokens) / 1e6 + (outputCost * chunk.usage.completion_tokens) / 1e6
+				const totalCost = await this.calculateCost(
+					this.options.ocaModelInfo!,
+					chunk.usage.prompt_tokens,
+					chunk.usage.completion_tokens,
+				)
 
 				// Extract cache-related information if available
 				// Need to use type assertion since these properties are not in the standard OpenAI types
@@ -268,6 +375,93 @@ export class OcaHandler implements ApiHandler {
 				}
 			}
 		}
+	}
+
+	async *createMessageResponsesApi(systemPrompt: string, messages: ClineStorageMessage[], tools?: OpenAITool[]): ApiStream {
+		const client = this.ensureOpenAIClient()
+		const inputMessages = convertToOpenAIResponsesInput(messages, { usePreviousResponseId: false }).input
+		// Convert messages to Responses API input format
+		const input: OpenAI.Responses.ResponseInputItem[] = [{ role: "system", content: systemPrompt }, ...inputMessages]
+
+		// Convert ChatCompletion tools to Responses API format if provided
+		const responseTools = tools
+			?.filter((tool) => tool?.type === "function")
+			.map((tool: any) => ({
+				type: "function" as const,
+				name: tool.function.name,
+				description: tool.function.description,
+				parameters: tool.function.parameters,
+				strict: tool.function.strict ?? true, // Responses API defaults to strict mode
+			}))
+
+		let temperature: number | undefined = this.options.ocaModelInfo?.temperature ?? 0
+		const maxOutputTokens: number | undefined = this.options.ocaModelInfo?.maxTokens
+
+		const ocaModelInfo = this.options.ocaModelInfo
+		if (!ocaModelInfo) {
+			throw new Error("Oracle Code Assist (OCA) model info is required for Responses API")
+		}
+
+		const reasoningOn = !!ocaModelInfo.supportsReasoning
+		if (reasoningOn) {
+			temperature = undefined
+		}
+
+		const responsesParams: OpenAI.Responses.ResponseCreateParamsStreaming = {
+			model: this.options.ocaModelId || liteLlmDefaultModelId,
+			input,
+			stream: true,
+			tools: responseTools,
+			...(typeof temperature === "number" ? { temperature } : {}),
+			...(typeof maxOutputTokens === "number" && maxOutputTokens > 0 ? { max_output_tokens: maxOutputTokens } : {}),
+		}
+
+		if (reasoningOn) {
+			responsesParams.reasoning = { effort: this.options.ocaReasoningEffort as any, summary: "auto" }
+		}
+
+		// Create the response using Responses API
+		const stream = await client.responses.create(responsesParams)
+
+		yield* handleResponsesApiStreamResponse(stream, ocaModelInfo, this.calculateCost.bind(this))
+	}
+
+	async *createMessageMessagesApi(systemPrompt: string, messages: ClineStorageMessage[], tools?: OpenAITool[]): ApiStream {
+		const client = this.ensureAnthropicClient()
+
+		const modelId = this.options.ocaModelId || liteLlmDefaultModelId
+
+		const budgetTokens = this.options.thinkingBudgetTokens || 0
+		const reasoningOn = this.options.ocaModelInfo?.supportsReasoning && budgetTokens !== 0
+
+		let temperature: number | undefined = this.options.ocaModelInfo?.temperature ?? 0
+		const maxTokens: number | undefined = this.options.ocaModelInfo?.maxTokens || 8192
+
+		if (reasoningOn) {
+			temperature = 0
+		}
+
+		const anthropicTools = convertOpenAIToolsToAnthropicTools(tools)
+		const anthropicMessages = sanitizeAnthropicMessages(messages, this.options.ocaUsePromptCache ?? false)
+
+		const stream = await client.messages.create({
+			model: modelId,
+			max_tokens: maxTokens,
+			temperature: reasoningOn ? undefined : temperature,
+			system: [
+				{
+					text: systemPrompt,
+					type: "text",
+					cache_control: this.options.ocaUsePromptCache ? { type: "ephemeral" } : undefined,
+				},
+			],
+			messages: anthropicMessages,
+			stream: true,
+			tools: anthropicTools,
+			thinking: reasoningOn ? { type: "enabled", budget_tokens: budgetTokens } : undefined,
+		})
+
+		yield* handleAnthropicMessagesApiStreamResponse(stream)
 	}
 
 	getModel() {

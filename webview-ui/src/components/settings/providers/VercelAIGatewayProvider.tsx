@@ -1,10 +1,10 @@
 import { Mode } from "@shared/storage/types"
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { DebouncedTextField } from "../common/DebouncedTextField"
-import OpenRouterModelPicker from "../OpenRouterModelPicker"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
+import VercelModelPicker from "../VercelModelPicker"
 
 /**
  * Props for the VercelAIGatewayProvider component
@@ -19,7 +19,7 @@ interface VercelAIGatewayProviderProps {
  * The Vercel AI Gateway provider configuration component
  */
 export const VercelAIGatewayProvider = ({ showModelOptions, isPopup, currentMode }: VercelAIGatewayProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
@@ -29,10 +29,10 @@ export const VercelAIGatewayProvider = ({ showModelOptions, isPopup, currentMode
 				<DebouncedTextField
 					initialValue={apiConfiguration?.vercelAiGatewayApiKey || ""}
 					onChange={(value) => handleFieldChange("vercelAiGatewayApiKey", value)}
-					placeholder={t("settings.apiConfig.apiKeyPlaceholder")}
+					placeholder={t("commonFields.enterApiKey")}
 					style={{ width: "100%" }}
 					type="password">
-					<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.vercelAiGatewayApiKey")}</span>
+					<span style={{ fontWeight: 500 }}>{t("providers.vercelAiGateway.apiKey")}</span>
 				</DebouncedTextField>
 				<p
 					style={{
@@ -40,28 +40,22 @@ export const VercelAIGatewayProvider = ({ showModelOptions, isPopup, currentMode
 						marginTop: "5px",
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					{t("settings.apiConfig.apiKeyStoredLocally")}
+					{t("commonFields.apiKeyStoredLocally")}
 					{!apiConfiguration?.vercelAiGatewayApiKey && (
 						<>
 							{" "}
-							<Trans
-								components={{
-									signupLink: (
-										<VSCodeLink
-											href="https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai"
-											style={{ display: "inline", fontSize: "inherit" }}>
-											{t("settings.apiConfig.signingUpHere")}
-										</VSCodeLink>
-									),
-								}}
-								i18nKey="settings.apiConfig.getVercelAiGatewayApiKey"
-							/>
+							You can get a Vercel AI Gateway API key by{" "}
+							<VSCodeLink
+								href="https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai"
+								style={{ display: "inline", fontSize: "inherit" }}>
+								signing up here.
+							</VSCodeLink>
 						</>
 					)}
 				</p>
 			</div>
 
-			{showModelOptions && <OpenRouterModelPicker currentMode={currentMode} isPopup={isPopup} />}
+			{showModelOptions && <VercelModelPicker currentMode={currentMode} isPopup={isPopup} />}
 		</div>
 	)
 }

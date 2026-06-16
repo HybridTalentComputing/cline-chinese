@@ -14,11 +14,15 @@ import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandler
  * Component to display OpenRouter balance information
  */
 const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { data: keyInfo, isLoading, error } = useOpenRouterKeyInfo(apiKey)
 
 	if (isLoading) {
-		return <span style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)" }}>{t("settings.apiConfig.openRouter.loading")}</span>
+		return (
+			<span style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)" }}>
+				{t("providers.openRouter.loading")}
+			</span>
+		)
 	}
 
 	if (error || !keyInfo || keyInfo.limit === null) {
@@ -41,12 +45,8 @@ const OpenRouterBalanceDisplay = ({ apiKey }: { apiKey: string }) => {
 				paddingLeft: 4,
 				cursor: "pointer",
 			}}
-			title={t("settings.apiConfig.openRouter.balanceTooltip", {
-				balance: formattedBalance,
-				limit: formatPrice(keyInfo.limit),
-				usage: formatPrice(keyInfo.usage),
-			})}>
-			{t("settings.apiConfig.openRouter.balance", { balance: formattedBalance })}
+			title={`Remaining balance: ${formattedBalance}\nLimit: ${formatPrice(keyInfo.limit)}\nUsage: ${formatPrice(keyInfo.usage)}`}>
+			{t("providers.openRouter.balance")} {formattedBalance}
 		</VSCodeLink>
 	)
 }
@@ -64,7 +64,7 @@ interface OpenRouterProviderProps {
  * The OpenRouter provider configuration component
  */
 export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: OpenRouterProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
@@ -74,11 +74,11 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: O
 				<DebouncedTextField
 					initialValue={apiConfiguration?.openRouterApiKey || ""}
 					onChange={(value) => handleFieldChange("openRouterApiKey", value)}
-					placeholder={t("settings.apiConfig.apiKeyPlaceholder")}
+					placeholder={t("commonFields.enterApiKey")}
 					style={{ width: "100%" }}
 					type="password">
 					<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-						<span style={{ fontWeight: 500 }}>OpenRouter {t("settings.providers.apiKey")}</span>
+						<span style={{ fontWeight: 500 }}>{t("providers.openRouter.apiKey")}</span>
 						{apiConfiguration?.openRouterApiKey && (
 							<OpenRouterBalanceDisplay apiKey={apiConfiguration.openRouterApiKey} />
 						)}
@@ -95,7 +95,7 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: O
 							}
 						}}
 						style={{ margin: "5px 0 0 0" }}>
-						{t("settings.apiConfig.getOpenRouterApiKey")}
+						{t("providers.openRouter.getApiKey")}
 					</VSCodeButton>
 				)}
 				<p
@@ -104,7 +104,7 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: O
 						marginTop: "5px",
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					{t("settings.apiConfig.apiKeyStoredLocally")}
+					{t("providers.openRouter.keyStoredLocally")}
 				</p>
 			</div>
 

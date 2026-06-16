@@ -21,7 +21,7 @@ interface XaiProviderProps {
 }
 
 export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -49,8 +49,8 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					<span style={{ color: "var(--vscode-errorForeground)" }}>
-						(<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.note")}</span>{" "}
-						{t("settings.apiConfig.clineBestWithClaude")})
+						(<span style={{ fontWeight: 500 }}>{t("commonFields.note")}:</span>{" "}
+						{t("providers.xai.noteComplexPrompts")}) models. Less capable models may not work as expected.)
 					</span>
 				</p>
 			</div>
@@ -58,7 +58,7 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={xaiModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(
@@ -70,7 +70,7 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 						selectedModelId={selectedModelId}
 					/>
 
-					{selectedModelId && selectedModelId.includes("3-mini") && (
+					{selectedModelId?.includes("3-mini") && (
 						<>
 							<VSCodeCheckbox
 								checked={reasoningEffortSelected}
@@ -86,13 +86,13 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 									}
 								}}
 								style={{ marginTop: 0 }}>
-								{t("settings.apiConfig.modifyReasoningEffort")}
+								{t("providers.xai.modifyReasoningEffort")}
 							</VSCodeCheckbox>
 
 							{reasoningEffortSelected && (
 								<div>
 									<label htmlFor="reasoning-effort-dropdown">
-										<span style={{}}>{t("settings.apiConfig.reasoningEffort")}</span>
+										<span style={{}}>{t("providers.xai.reasoningEffort")}</span>
 									</label>
 									<DropdownContainer className="dropdown-container" zIndex={DROPDOWN_Z_INDEX - 100}>
 										<VSCodeDropdown
@@ -106,8 +106,8 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 											}}
 											style={{ width: "100%", marginTop: 3 }}
 											value={modeFields.reasoningEffort || "high"}>
-											<VSCodeOption value="low">{t("settings.providers.low")}</VSCodeOption>
-											<VSCodeOption value="high">{t("settings.providers.high")}</VSCodeOption>
+											<VSCodeOption value="low">low</VSCodeOption>
+											<VSCodeOption value="high">high</VSCodeOption>
 										</VSCodeDropdown>
 									</DropdownContainer>
 									<p
@@ -117,7 +117,7 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 											marginBottom: 0,
 											color: "var(--vscode-descriptionForeground)",
 										}}>
-										{t("settings.apiConfig.reasoningEffortDescription")}
+										{t("providers.xai.reasoningEffortDescription")}
 									</p>
 								</div>
 							)}

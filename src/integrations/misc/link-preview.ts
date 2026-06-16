@@ -1,6 +1,7 @@
 import axios from "axios"
 import ogs from "open-graph-scraper"
 import { fetch, getAxiosSettings } from "@/shared/net"
+import { Logger } from "@/shared/services/Logger"
 
 export interface OpenGraphData {
 	title?: string
@@ -47,7 +48,7 @@ export async function fetchOpenGraphData(url: string): Promise<OpenGraphData> {
 				const baseUrl = `${urlObj.protocol}//${urlObj.hostname}`
 				imageUrl = new URL(imageUrl, baseUrl).href
 			} catch (error) {
-				console.error(`Error converting relative URL to absolute: ${imageUrl}`, error)
+				Logger.error(`Error converting relative URL to absolute: ${imageUrl}`, error)
 			}
 		}
 
@@ -100,7 +101,7 @@ export async function detectImageUrl(url: string): Promise<boolean> {
 		})
 
 		const contentType = response.headers["content-type"]
-		return contentType && contentType.startsWith("image/")
+		return !!contentType && typeof contentType === "string" && contentType.startsWith("image/")
 	} catch (_error) {
 		// If we can't determine, fall back to checking the file extension
 		return /\.(jpg|jpeg|png|gif|webp|bmp|svg|tiff|tif|avif)$/i.test(url)

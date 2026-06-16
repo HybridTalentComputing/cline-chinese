@@ -11,8 +11,11 @@ import { AuthHandler } from "@/hosts/external/AuthHandler"
 import { HostProvider } from "@/hosts/host-provider"
 import { DiffViewProvider } from "@/integrations/editor/DiffViewProvider"
 import { StandaloneTerminalManager } from "@/integrations/terminal"
+import { Logger } from "@/shared/services/Logger"
+import { createStorageContext } from "@/shared/storage/storage-context"
 import { HOSTBRIDGE_PORT, waitForHostBridgeReady } from "./hostbridge-client"
 import { setLockManager } from "./lock-manager"
+import { startMemoryMonitoring, stopMemoryMonitoring } from "./memory-monitor"
 import { PROTOBUS_PORT, startProtobusService } from "./protobus-service"
 import { log } from "./utils"
 import { initializeContext } from "./vscode-context"
@@ -34,6 +37,11 @@ async function main() {
 
 	// Resource loading assumes cwd is the installation directory
 	process.chdir(__dirname)
+
+	// Record where V8 will write heap snapshots if --heapsnapshot-near-heap-limit
+	// is active and the process approaches the heap limit. The snapshots are
+	// written to the current working directory.
+	log(`Heap snapshots (if triggered near OOM) will be written to: ${process.cwd()}`)
 
 	// Initialize context with optional custom directory from CLI
 	const { extensionContext, DATA_DIR, EXTENSION_DIR } = initializeContext(args.config)
@@ -59,7 +67,9 @@ async function main() {
 		// The host bridge should be available before creating the host provider because it depends on the host bridge.
 		setupHostProvider(extensionContext, EXTENSION_DIR, DATA_DIR)
 
-		const webviewProvider = await initialize(extensionContext)
+		// Create shared file-backed storage
+		const storageContext = createStorageContext()
+		const webviewProvider = await initialize(storageContext)
 
 		// Enable the localhost HTTP server that handles auth redirects.
 		AuthHandler.getInstance().setEnabled(true)
@@ -89,6 +99,9 @@ async function main() {
 		globalLockManager.touchInstance()
 
 		log("All services started successfully")
+
+		// Start periodic memory usage logging for diagnostics
+		startMemoryMonitoring()
 	} catch (err) {
 		log(`FATAL ERROR during startup: ${err}`)
 		log(`Cleaning up and shutting down...`)
@@ -106,8 +119,8 @@ function setupHostProvider(extensionContext: any, extensionDir: string, dataDir:
 	}
 	const createCommentReview = () => new ExternalCommentReviewController()
 	const createTerminalManager = () => new StandaloneTerminalManager()
-	const getCallbackUrl = (): Promise<string> => {
-		return AuthHandler.getInstance().getCallbackUrl()
+	const getCallbackUrl = (path: string, preferredPort?: number): Promise<string> => {
+		return AuthHandler.getInstance().getCallbackUrl(path, preferredPort)
 	}
 	// cline-core expects the binaries to be unpacked in the directory where it is running.
 	const getBinaryLocation = async (name: string): Promise<string> => path.join(process.cwd(), name)
@@ -150,6 +163,32 @@ function setupGlobalErrorHandlers() {
 	// Handle process warnings (optional, for debugging)
 	process.on("warning", (warning: Error) => {
 		log(`Process Warning: ${warning.name}: ${warning.message}`)
+	})
+
+	// On abnormal exit (e.g. near-OOM crash), scan the working directory for
+	// any .heapsnapshot files that V8 wrote on its way out and log their paths
+	// and sizes. This is best-effort: if V8 has no heap left, this handler may
+	// not run at all, but when it does it pinpoints the diagnostic data for
+	// anyone reading the log after the fact.
+	process.on("exit", (code) => {
+		if (code !== 0) {
+			try {
+				const fs = require("fs")
+				const snapshots = fs.readdirSync(process.cwd()).filter((f: string) => f.endsWith(".heapsnapshot"))
+				if (snapshots.length > 0) {
+					log(`[MEMORY] Heap snapshots available for analysis:`)
+					for (const snap of snapshots) {
+						const fullPath = path.join(process.cwd(), snap)
+						const sizeMB = Math.round(fs.statSync(fullPath).size / (1024 * 1024))
+						log(`[MEMORY]   ${fullPath} (${sizeMB}MB)`)
+					}
+					log(`[MEMORY] To analyze: open Chrome DevTools → Memory tab → Load profile`)
+				}
+			} catch {
+				// Best-effort: if we can't scan the directory (e.g. the process
+				// is too far gone to do I/O), swallow the error silently.
+			}
+		}
 	})
 
 	// Graceful shutdown handlers
@@ -216,6 +255,9 @@ async function shutdownGracefully(lockManager?: SqliteLockManager) {
 			log(`Warning: Failed to clean up lock manager: ${error}`)
 		}
 
+		// Stop memory monitoring and capture final snapshot
+		stopMemoryMonitoring()
+
 		// Step 3: Tear down services
 		log("Tearing down services...")
 		try {
@@ -251,10 +293,10 @@ function parseArgs(): CliArgs {
 		switch (arg) {
 			case "--port":
 			case "-p":
-				args.port = parseInt(argv[++i], 10)
+				args.port = Number.parseInt(argv[++i], 10)
 				break
 			case "--host-bridge-port":
-				args.hostBridgePort = parseInt(argv[++i], 10)
+				args.hostBridgePort = Number.parseInt(argv[++i], 10)
 				break
 			case "--config":
 			case "-c":
@@ -271,7 +313,7 @@ function parseArgs(): CliArgs {
 }
 
 function showHelp() {
-	console.log(`
+	Logger.log(`
 Cline Core - Standalone Server
 
 Usage: node cline-core.js [options]

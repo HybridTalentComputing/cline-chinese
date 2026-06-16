@@ -27,7 +27,8 @@ const HookRow: React.FC<HookRowProps> = ({
 	onToggle,
 	onDelete,
 }) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
+
 	const handleEditClick = () => {
 		FileServiceClient.openFile(StringRequest.create({ value: absolutePath })).catch((err) =>
 			console.error("Failed to open file:", err),
@@ -59,7 +60,7 @@ const HookRow: React.FC<HookRowProps> = ({
 
 				{/* Toggle Switch */}
 				<div className="flex items-center space-x-2 gap-2">
-					<div title={isWindows ? t("clineRules.hooks.windowsTooltip") : undefined}>
+					<div title={isWindows ? t("rules.hookTogglingNotSupported") : undefined}>
 						<Switch
 							checked={enabled}
 							className="mx-1"
@@ -70,18 +71,18 @@ const HookRow: React.FC<HookRowProps> = ({
 						/>
 					</div>
 					<Button
-						aria-label={t("clineRules.ruleRow.editRuleFile")}
+						aria-label={t("rules.editHookFile")}
 						onClick={handleEditClick}
 						size="xs"
-						title={t("clineRules.ruleRow.editRuleFile")}
+						title={t("rules.editHookFile")}
 						variant="icon">
 						<PenIcon />
 					</Button>
 					<Button
-						aria-label={t("clineRules.ruleRow.deleteRuleFile")}
+						aria-label={t("rules.deleteHookFile")}
 						onClick={handleDeleteClick}
 						size="xs"
-						title={t("clineRules.ruleRow.deleteRuleFile")}
+						title={t("rules.deleteHookFile")}
 						variant="icon">
 						<Trash2Icon />
 					</Button>

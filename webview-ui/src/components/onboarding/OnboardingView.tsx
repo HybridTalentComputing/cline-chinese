@@ -1,6 +1,6 @@
 import type { ModelInfo } from "@shared/api"
 import type { OnboardingModel, OnboardingModelGroup, OpenRouterModelInfo } from "@shared/proto/index.cline"
-import { AlertCircleIcon, CircleCheckIcon, CircleIcon, ListIcon, LoaderCircleIcon, StarIcon, ZapIcon } from "lucide-react"
+import { AlertCircleIcon, CircleCheckIcon, CircleIcon, ListIcon, LoaderCircleIcon, ZapIcon } from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ClineLogoWhite from "@/assets/ClineLogoWhite"
@@ -13,18 +13,19 @@ import { cn } from "@/lib/utils"
 import { AccountServiceClient, StateServiceClient } from "@/services/grpc-client"
 import ApiConfigurationSection from "../settings/sections/ApiConfigurationSection"
 import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurationHandlers"
+import WelcomeView from "../welcome/WelcomeView"
 import {
 	getCapabilities,
 	getClineUIOnboardingGroups,
-	getOverviewLabel,
 	getPriceRange,
 	getSpeedLabel,
 	type OnboardingModelsByGroup,
 } from "./data-models"
-import { NEW_USER_TYPE, STEP_CONFIG } from "./data-steps"
+import { getStepConfig, getUserTypeSelections, NEW_USER_TYPE } from "./data-steps"
+import { useOnboardingModels } from "./useOnboardingModels"
 
 type ModelSelectionProps = {
-	userType: NEW_USER_TYPE.POWER
+	userType: NEW_USER_TYPE.FREE | NEW_USER_TYPE.POWER
 	selectedModelId: string
 	onSelectModel: (modelId: string) => void
 	onboardingModels: OnboardingModelsByGroup
@@ -42,8 +43,8 @@ const ModelSelection = ({
 	setSearchTerm,
 	onboardingModels,
 }: ModelSelectionProps) => {
-	const { t } = useTranslation()
-	const modelGroups = onboardingModels["power"]
+	const { t } = useTranslation("settings")
+	const modelGroups = onboardingModels[userType === NEW_USER_TYPE.FREE ? "free" : "power"]
 
 	const searchedModels = useMemo(() => {
 		if (!models || !searchTerm) {
@@ -71,42 +72,36 @@ const ModelSelection = ({
 					<ItemTitle className="flex w-full justify-between">
 						<span className="font-semibold">{model.name || id}</span>
 						{model.badge ? (
-							<Badge variant="info">{model.badge}</Badge>
+							<Badge className="capitalize" variant="info">
+								{model.badge}
+							</Badge>
 						) : model.info ? (
-							<Badge>{getPriceRange(model.info, t)}</Badge>
+							<Badge>{getPriceRange(model.info)}</Badge>
 						) : null}
 					</ItemTitle>
 					{isSelected && model.info && (
 						<ItemDescription>
-							<span className="text-foreground/70 text-sm">{t("onboarding.model.support")}</span>
-							<span className="text-foreground text-sm">{getCapabilities(model.info, t).join(", ")}</span>
+							<span className="text-foreground/70 text-sm">{t("onboarding.support")} </span>
+							<span className="text-foreground text-sm">{getCapabilities(model.info).join(", ")}</span>
 						</ItemDescription>
 					)}
 				</ItemHeader>
 				{model.badge && isSelected && (
 					<ItemContent className="w-full border-t border-muted-foreground pt-5 text-ellipsis overflow-hidden">
 						<div className="flex flex-col gap-3">
-							{model.score && (
-								<div className="inline-flex gap-1 [&_svg]:stroke-warning [&_svg]:size-3 items-center text-sm">
-									<StarIcon />
-									<span>{t("onboarding.model.overview")}</span>
-									<span className="text-foreground/70">{model.score}%</span>
-									<span className="text-foreground/70 hidden xs:block">{getOverviewLabel(model.score, t)}</span>
-								</div>
-							)}
 							<div className="inline-flex gap-1 [&_svg]:stroke-success [&_svg]:size-3 items-center text-sm">
 								<ZapIcon />
-								<span>{t("onboarding.model.speed")}</span>
-								<span className="text-foreground/70">{getSpeedLabel(t, model.latency)}</span>
+								<span>{t("onboarding.speed")} </span>
+								<span className="text-foreground/70">{getSpeedLabel(model.latency)}</span>
 							</div>
 							{model.info && (
 								<div className="flex w-full justify-between">
 									<div className="inline-flex gap-1 [&_svg]:stroke-foreground [&_svg]:size-3 items-center text-sm">
 										<ListIcon />
-										<span>{t("onboarding.model.context")}</span>
+										<span>{t("onboarding.context")} </span>
 										<span className="text-foreground/70">{(model?.info.contextWindow || 0) / 1000}k</span>
 									</div>
-									<Badge>{getPriceRange(model.info, t)}</Badge>
+									<Badge>{getPriceRange(model.info)}</Badge>
 								</div>
 							)}
 						</div>
@@ -121,9 +116,7 @@ const ModelSelection = ({
 			<div className="flex w-full max-w-lg flex-col gap-6 my-4">
 				{modelGroups.map((group) => (
 					<div className="flex flex-col gap-3" key={group.group}>
-						<h4 className="text-sm font-bold text-foreground/70 uppercase mb-2">
-							{group.group == "frontier" ? "前沿模型" : group.group == "open source" ? "开源模型" : group.group}
-						</h4>
+						<h4 className="text-sm font-bold text-foreground/70 uppercase mb-2">{group.group}</h4>
 						{group.models.map((model) => (
 							<ModelItem id={model.id} isSelected={selectedModelId === model.id} key={model.id} model={model} />
 						))}
@@ -134,7 +127,7 @@ const ModelSelection = ({
 			{/* SEARCH MODEL */}
 			<div className="flex w-full max-w-lg flex-col gap-6 my-4 border-t border-muted-foreground">
 				<div className="flex flex-col gap-3 mt-6" key="search-results">
-					<h4 className="text-sm font-bold text-foreground/70 uppercase mb-2">{t("onboarding.model.otherOptions")}</h4>
+					<h4 className="text-sm font-bold text-foreground/70 uppercase mb-2">{t("modelPicker.otherOptions")}</h4>
 					<Input
 						autoFocus={false}
 						className="focus-visible:border-button-background"
@@ -145,7 +138,7 @@ const ModelSelection = ({
 							setSearchTerm(e.target.value)
 						}}
 						onClick={() => onSelectModel("")}
-						placeholder={t("onboarding.model.searchPlaceholder")}
+						placeholder={t("modelPicker.searchModel")}
 						type="search"
 						value={searchTerm}
 					/>
@@ -188,7 +181,7 @@ const ModelSelection = ({
 							})}
 						{searchTerm.length > 0 && searchedModels.length === 0 && (
 							<p className="px-1 mt-1 text-sm text-foreground/70">
-								{t("onboarding.model.noResult", { searchTerm })}
+								{t("modelPicker.noResultFound", { term: searchTerm })}
 							</p>
 						)}
 					</div>
@@ -204,27 +197,11 @@ type UserTypeSelectionProps = {
 }
 
 const UserTypeSelectionStep = ({ userType, onSelectUserType }: UserTypeSelectionProps) => {
-	const { t } = useTranslation()
-	const selections = useMemo(
-		() => [
-			{
-				title: t("onboarding.userType.power.title"),
-				description: t("onboarding.userType.power.description"),
-				type: NEW_USER_TYPE.POWER,
-			},
-			{
-				title: t("onboarding.userType.byok.title"),
-				description: t("onboarding.userType.byok.description"),
-				type: NEW_USER_TYPE.BYOK,
-			},
-		],
-		[t],
-	)
-
+	const { t } = useTranslation("settings")
 	return (
 		<div className="flex flex-col w-full items-center">
 			<div className="flex w-full max-w-lg flex-col gap-3 my-2">
-				{selections.map((option) => {
+				{getUserTypeSelections(t).map((option) => {
 					const isSelected = userType === option.type
 
 					return (
@@ -278,7 +255,7 @@ const OnboardingStepContent = ({
 	if (step === 2) {
 		return null
 	}
-	if (userType === NEW_USER_TYPE.POWER) {
+	if (userType === NEW_USER_TYPE.FREE || userType === NEW_USER_TYPE.POWER) {
 		return (
 			<ModelSelection
 				models={models}
@@ -295,14 +272,14 @@ const OnboardingStepContent = ({
 	return <ApiConfigurationSection />
 }
 
-const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingModelGroup }) => {
-	const { t } = useTranslation()
+const OnboardingViewContent = ({ onboardingModels }: { onboardingModels: OnboardingModelGroup }) => {
+	const { t } = useTranslation("settings")
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 	const { openRouterModels, hideSettings, hideAccount, setShowWelcome } = useExtensionState()
 
 	const [stepNumber, setStepNumber] = useState(0)
 	const [isActionLoading, setIsActionLoading] = useState(false)
-	const [userType, setUserType] = useState<NEW_USER_TYPE>(NEW_USER_TYPE.POWER)
+	const [userType, setUserType] = useState<NEW_USER_TYPE>(NEW_USER_TYPE.FREE)
 
 	const [selectedModelId, setSelectedModelId] = useState("")
 	const [searchTerm, setSearchTerm] = useState("")
@@ -311,17 +288,20 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 
 	useEffect(() => {
 		setSearchTerm("")
-		// Only POWER users need to select a model
-		if (userType === NEW_USER_TYPE.POWER) {
-			const modelGroup = models.power[0]
-			const userGroupInitModel = modelGroup.models[0]
-			setSelectedModelId(userGroupInitModel.id)
-		}
+		const userGroup = userType === NEW_USER_TYPE.POWER ? NEW_USER_TYPE.POWER : NEW_USER_TYPE.FREE
+		const modelGroup = models[userGroup][0]
+		const userGroupInitModel = modelGroup.models[0]
+		setSelectedModelId(userGroupInitModel.id)
 	}, [userType, models])
 
 	const onUserTypeClick = useCallback((userType: NEW_USER_TYPE) => {
 		setUserType(userType)
-		const action = userType === NEW_USER_TYPE.POWER ? "power_user_selected" : "byok_user_selected"
+		const action =
+			userType === NEW_USER_TYPE.POWER
+				? "power_user_selected"
+				: userType === NEW_USER_TYPE.FREE
+					? "free_user_selected"
+					: "byok_user_selected"
 		// User selection is available in step 0 only
 		StateServiceClient.captureOnboardingProgress({ step: 0, action })
 	}, [])
@@ -341,8 +321,8 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 					actModeOpenRouterModelId: selectedModelId,
 					planModeOpenRouterModelInfo: openRouterModels[selectedModelId],
 					actModeOpenRouterModelInfo: openRouterModels[selectedModelId],
-					planModeApiProvider: "shengsuanyun",
-					actModeApiProvider: "shengsuanyun",
+					planModeApiProvider: "cline",
+					actModeApiProvider: "cline",
 				})
 			}
 			hideAccount()
@@ -359,14 +339,14 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 				case "signup":
 					setStepNumber(stepNumber + 1)
 					setIsActionLoading(true)
-					await AccountServiceClient.shengSuanYunLoginClicked({})
+					await AccountServiceClient.accountLoginClicked({})
 						.catch(() => {})
 						.finally(() => setIsActionLoading(false))
 					await finishOnboarding(true, stepNumber + 1)
 					break
 				case "signin":
 					setIsActionLoading(true)
-					await AccountServiceClient.shengSuanYunLoginClicked({})
+					await AccountServiceClient.accountLoginClicked({})
 						.catch(() => {})
 						.finally(() => setIsActionLoading(false))
 					await finishOnboarding(true, stepNumber + 1)
@@ -390,10 +370,10 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 	)
 
 	const stepDisplayInfo = useMemo(() => {
-		const step = stepNumber === 0 || stepNumber === 2 ? STEP_CONFIG[stepNumber] : null
-		const title = step ? t(step.title) : userType ? t(STEP_CONFIG[userType].title) : t(STEP_CONFIG[0].title)
-		const description = step ? (step.description ? t(step.description) : null) : null
-		const buttons = step ? step.buttons : userType ? STEP_CONFIG[userType].buttons : STEP_CONFIG[0].buttons
+		const step = stepNumber === 0 || stepNumber === 2 ? getStepConfig(t)[stepNumber] : null
+		const title = step ? step.title : userType ? getStepConfig(t)[userType].title : getStepConfig(t)[0].title
+		const description = step ? step.description : null
+		const buttons = step ? step.buttons : userType ? getStepConfig(t)[userType].buttons : getStepConfig(t)[0].buttons
 		return { title, description, buttons }
 	}, [stepNumber, userType, t])
 
@@ -431,21 +411,55 @@ const OnboardingView = ({ onboardingModels }: { onboardingModels: OnboardingMode
 							className={`w-full rounded-xs ${isActionLoading ? "animate-pulse" : ""}`}
 							disabled={isActionLoading}
 							key={btn.text}
-							onClick={() => handleFooterAction(btn.action as any)}
-							variant={btn.variant as any}>
-							{t(btn.text)}
+							onClick={() => handleFooterAction(btn.action as "done" | "next" | "signin" | "signup" | "back")}
+							variant={
+								btn.variant as
+									| "link"
+									| "error"
+									| "cline"
+									| "default"
+									| "text"
+									| "success"
+									| "secondary"
+									| "outline"
+									| "outline-primary"
+									| "ghost"
+									| "icon"
+									| "danger"
+									| null
+									| undefined
+							}>
+							{btn.text}
 						</Button>
 					))}
 
 					{stepNumber !== 2 && (
 						<div className="items-center justify-center flex text-sm text-foreground gap-2 mb-3 text-pretty">
-							<AlertCircleIcon className="shrink-0 size-2" /> {t("onboarding.footer.changeLater")}
+							<AlertCircleIcon className="shrink-0 size-2" /> {t("onboarding.canChangeLater")}
 						</div>
 					)}
 				</footer>
 			</div>
 		</div>
 	)
+}
+
+const OnboardingView = () => {
+	const { status, models } = useOnboardingModels()
+
+	if (status === "loading") {
+		return (
+			<div className="fixed inset-0 flex items-center justify-center">
+				<LoaderCircleIcon className="animate-spin" />
+			</div>
+		)
+	}
+
+	if (status === "empty") {
+		return <WelcomeView />
+	}
+
+	return <OnboardingViewContent onboardingModels={models} />
 }
 
 export default OnboardingView

@@ -1,9 +1,12 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { LiteLLMModelInfo, liteLlmDefaultModelId, liteLlmModelInfoSaneDefaults } from "@shared/api"
+import { isClaudeOpusAdaptiveThinkingModel, resolveClaudeOpusAdaptiveThinking } from "@shared/utils/reasoning-support"
 import OpenAI from "openai"
 import { StateManager } from "@/core/storage/StateManager"
+import { buildExternalBasicHeaders } from "@/services/EnvUtils"
 import { ClineStorageMessage } from "@/shared/messages/content"
-import { fetch } from "@/shared/net"
+import { createOpenAIClient, fetch } from "@/shared/net"
+import { Logger } from "@/shared/services/Logger"
 import { isAnthropicModelId } from "@/utils/model-utils"
 import { ApiHandler, CommonApiHandlerOptions } from ".."
 import { withRetry } from "../retry"
@@ -15,6 +18,7 @@ interface LiteLlmHandlerOptions extends CommonApiHandlerOptions {
 	liteLlmBaseUrl?: string
 	liteLlmModelId?: string
 	liteLlmModelInfo?: LiteLLMModelInfo
+	reasoningEffort?: string
 	thinkingBudgetTokens?: number
 	liteLlmUsePromptCache?: boolean
 	ulid?: string
@@ -63,33 +67,33 @@ export async function fetchLiteLlmModelsInfo(baseUrl: string, apiKey: string): P
 			headers: {
 				accept: "application/json",
 				"x-litellm-api-key": apiKey,
+				...buildExternalBasicHeaders(),
 			},
 		})
 
 		if (response.ok) {
 			const data: LiteLlmModelInfoResponse = await response.json()
 			return data
-		} else {
-			console.error("Failed to fetch LiteLLM model info:", response.statusText)
-			// Try with Authorization header instead
-			const retryResponse = await fetch(url, {
-				method: "GET",
-				headers: {
-					accept: "application/json",
-					Authorization: `Bearer ${apiKey}`,
-				},
-			})
-
-			if (retryResponse.ok) {
-				const data: LiteLlmModelInfoResponse = await retryResponse.json()
-				return data
-			} else {
-				console.error("Failed to fetch LiteLLM model info with Authorization header:", retryResponse.statusText)
-				throw new Error(`Failed to fetch LiteLLM model info: ${retryResponse.statusText}`)
-			}
 		}
+		Logger.error("Failed to fetch LiteLLM model info:", response.statusText)
+		// Try with Authorization header instead
+		const retryResponse = await fetch(url, {
+			method: "GET",
+			headers: {
+				accept: "application/json",
+				Authorization: `Bearer ${apiKey}`,
+				...buildExternalBasicHeaders(),
+			},
+		})
+
+		if (retryResponse.ok) {
+			const data: LiteLlmModelInfoResponse = await retryResponse.json()
+			return data
+		}
+		Logger.error("Failed to fetch LiteLLM model info with Authorization header:", retryResponse.statusText)
+		throw new Error(`Failed to fetch LiteLLM model info: ${retryResponse.statusText}`)
 	} catch (error) {
-		console.error("Error fetching LiteLLM model info:", error)
+		Logger.error("Error fetching LiteLLM model info:", error)
 		throw error
 	}
 }
@@ -98,7 +102,7 @@ export class LiteLlmHandler implements ApiHandler {
 	private options: LiteLlmHandlerOptions
 	private client: OpenAI | undefined
 	private modelInfoCache: LiteLlmModelInfoResponse | undefined
-	private modelInfoCacheTimestamp: number = 0
+	private modelInfoCacheTimestamp = 0
 	private readonly modelInfoCacheTTL = 5 * 60 * 1000 // 5 minutes
 
 	constructor(options: LiteLlmHandlerOptions) {
@@ -111,10 +115,9 @@ export class LiteLlmHandler implements ApiHandler {
 				throw new Error("LiteLLM API key is required")
 			}
 			try {
-				this.client = new OpenAI({
+				this.client = createOpenAIClient({
 					baseURL: this.options.liteLlmBaseUrl || "http://localhost:4000",
 					apiKey: this.options.liteLlmApiKey || "noop",
-					fetch, // Use configured fetch with proxy support
 				})
 			} catch (error) {
 				throw new Error(`Error creating LiteLLM client: ${error.message}`)
@@ -169,7 +172,7 @@ export class LiteLlmHandler implements ApiHandler {
 				}
 			}
 		} catch (error) {
-			console.warn("Error getting LiteLLM model cost info:", error)
+			Logger.warn("Error getting LiteLLM model cost info:", error)
 		}
 
 		// Fallback to zero costs if we can't get the information
@@ -200,7 +203,7 @@ export class LiteLlmHandler implements ApiHandler {
 
 			return totalCost
 		} catch (error) {
-			console.error("Error calculating spend:", error)
+			Logger.error("Error calculating spend:", error)
 			return undefined
 		}
 	}
@@ -221,11 +224,23 @@ export class LiteLlmHandler implements ApiHandler {
 		// Configuration for extended thinking
 		const budgetTokens = this.options.thinkingBudgetTokens || 0
 		const reasoningOn = budgetTokens !== 0
-		const thinkingConfig = reasoningOn ? { type: "enabled", budget_tokens: budgetTokens } : undefined
+		const isAdaptiveThinkingModel = isClaudeOpusAdaptiveThinkingModel(modelId)
+		const adaptiveThinking = isAdaptiveThinkingModel
+			? resolveClaudeOpusAdaptiveThinking(this.options.reasoningEffort, budgetTokens)
+			: undefined
+		const thinkingConfig = isAdaptiveThinkingModel
+			? adaptiveThinking?.enabled
+				? ({ type: "adaptive" } as any)
+				: undefined
+			: reasoningOn
+				? { type: "enabled", budget_tokens: budgetTokens }
+				: undefined
 
 		let temperature: number | undefined = this.options.liteLlmModelInfo?.temperature ?? 1
 
-		if ((isOminiModel || isAnthropicModelId(modelId)) && reasoningOn) {
+		if (isAdaptiveThinkingModel) {
+			temperature = undefined
+		} else if ((isOminiModel || isAnthropicModelId(modelId)) && reasoningOn) {
 			temperature = undefined // OAI omni and Anthropic extended thinking mode doesn't support temperature
 		}
 
@@ -247,12 +262,10 @@ export class LiteLlmHandler implements ApiHandler {
 		}
 
 		// Find the last two user messages to apply caching
-		const userMsgIndices: number[] = []
-		formattedMessages.forEach((msg, index) => {
-			if (msg.role === "user") {
-				userMsgIndices.push(index)
-			}
-		})
+		const userMsgIndices = formattedMessages.reduce(
+			(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
+			[] as number[],
+		)
 		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
 		const secondLastUserMsgIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
@@ -273,7 +286,8 @@ export class LiteLlmHandler implements ApiHandler {
 								},
 							] as any,
 						}
-					} else if (Array.isArray(message.content)) {
+					}
+					if (Array.isArray(message.content)) {
 						// Apply cache control to the last content item in the array
 						return {
 							...message,
@@ -305,11 +319,14 @@ export class LiteLlmHandler implements ApiHandler {
 			drop_params: true,
 			...(!isCodexModel && { stream_options: { include_usage: true } }), // Codex models are only on the responses api, which doesn't take the stream_options parameter. we will need to migrate to the responses api for this to work
 			...(thinkingConfig && { thinking: thinkingConfig }), // Add thinking configuration when applicable
+			...(isAdaptiveThinkingModel && adaptiveThinking?.effort
+				? { output_config: { effort: adaptiveThinking.effort } }
+				: {}),
 			...(this.options.ulid && { litellm_session_id: `cline-${this.options.ulid}` }), // Add session ID for LiteLLM tracking
 		} as LiteLlmChatCompletionCreateParams)
 
 		for await (const chunk of stream) {
-			const delta = chunk.choices[0]?.delta
+			const delta = chunk.choices?.[0]?.delta
 
 			// Handle normal text content
 			if (delta?.content) {
@@ -376,7 +393,7 @@ export class LiteLlmHandler implements ApiHandler {
 		const cachedModelInfo = StateManager.get().getModelInfo("liteLlm", modelId)
 
 		// Fall back to provided model info or defaults if not in cache
-		const modelInfo = cachedModelInfo || liteLlmModelInfoSaneDefaults
+		const modelInfo = cachedModelInfo || this.options.liteLlmModelInfo || liteLlmModelInfoSaneDefaults
 
 		return {
 			id: modelId,

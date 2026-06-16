@@ -13,7 +13,8 @@ const ServersToggleList = ({
 	hasTrashIcon: boolean
 	listGap?: "small" | "medium" | "large"
 }) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
+
 	const gapClasses = {
 		small: "gap-0",
 		medium: "gap-2.5",
@@ -30,7 +31,7 @@ const ServersToggleList = ({
 		</div>
 	) : (
 		<div className="flex flex-col items-center gap-3 my-5 text-(--vscode-descriptionForeground)">
-			{t("mcp.serversToggle.noServersInstalled")}
+			{t("mcp.configureView.noServersInstalled")}
 		</div>
 	)
 }

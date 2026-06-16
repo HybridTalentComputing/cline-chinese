@@ -1,25 +1,24 @@
 import type { UsageTransaction as ClineAccountUsageTransaction, PaymentTransaction } from "@shared/ClineAccount"
 import { isClineInternalTester } from "@shared/internal/account"
 import type { UserOrganization } from "@shared/proto/cline/account"
-// import { EmptyRequest } from "@shared/proto/cline/common"
+import { EmptyRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeDivider, VSCodeDropdown, VSCodeOption, VSCodeTag } from "@vscode/webview-ui-toolkit/react"
-// import deepEqual from "fast-deep-equal"
+import deepEqual from "fast-deep-equal"
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useInterval } from "react-use"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { type ClineUser, handleSignOut } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { cn } from "@/lib/utils"
-// import { AccountServiceClient } from "@/services/grpc-client"
-import { getClineEnvironmentClassname } from "@/utils/environmentColors"
+import { AccountServiceClient } from "@/services/grpc-client"
+import ViewHeader from "../common/ViewHeader"
 import VSCodeButtonLink from "../common/VSCodeButtonLink"
 import { updateSetting } from "../settings/utils/settingsHandlers"
-// import { AccountWelcomeView } from "./AccountWelcomeView"
+import { AccountWelcomeView } from "./AccountWelcomeView"
 import { CreditBalance } from "./CreditBalance"
 import CreditsHistoryTable from "./CreditsHistoryTable"
-import { getClineUris, getMainRole } from "./helpers"
-import { SSYAccountView } from "./SSYAccountView"
+import { convertProtoUsageTransactions, getClineUris, getMainRole } from "./helpers"
+import { RemoteConfigToggle } from "./RemoteConfigToggle"
 
 type AccountViewProps = {
 	clineUser: ClineUser | null
@@ -42,52 +41,41 @@ type CachedData = {
 	lastFetchTime: number
 }
 
+type DisplayedCreditData = Omit<CachedData, "lastFetchTime">
+
 const ClineEnvOptions = ["Production", "Staging", "Local"] as const
 
 const AccountView = ({ onDone, clineUser, organizations, activeOrganization }: AccountViewProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { environment } = useExtensionState()
-	const titleColor = getClineEnvironmentClassname(environment)
 
 	return (
-		<div className="fixed inset-0 flex flex-col overflow-hidden pt-[10px] pl-[20px]">
-			<div className="flex justify-between items-center mb-[17px] pr-[17px]">
-				<h3 className={cn("text-(--vscode-foreground) m-0", titleColor)}>
-					{t("account.view.title")}
-					{environment !== "production" ? t("account.view.environment", { environment }) : ""}
-				</h3>
-				<VSCodeButton onClick={onDone}>{t("account.view.done")}</VSCodeButton>
-			</div>
-			<div className="grow overflow-hidden pr-[8px] flex flex-col">
-				<div className="h-full mb-1.5">
-					{/* {clineUser?.uid ? (
-						<ClineAccountView
-							activeOrganization={activeOrganization}
-							clineEnv={environment === "local" ? "Local" : environment === "staging" ? "Staging" : "Production"}
-							clineUser={clineUser}
-							key={clineUser.uid}
-							userOrganizations={organizations}
-						/>
-						<SSYAccountView />
-					) : (
-						<AccountWelcomeView />
-					)} */}
-
-					<SSYAccountView />
-				</div>
+		<div className="fixed inset-0 flex flex-col overflow-hidden">
+			<ViewHeader environment={environment} onDone={onDone} showEnvironmentSuffix title={t("account.title")} />
+			<div className="grow flex flex-col px-5 overflow-y-auto">
+				{clineUser?.uid ? (
+					<ClineAccountView
+						activeOrganization={activeOrganization}
+						clineEnv={environment === "local" ? "Local" : environment === "staging" ? "Staging" : "Production"}
+						clineUser={clineUser}
+						key={clineUser.uid}
+						userOrganizations={organizations}
+					/>
+				) : (
+					<AccountWelcomeView />
+				)}
 			</div>
 		</div>
 	)
 }
 
 export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganization, clineEnv }: ClineAccountViewProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { email, displayName, appBaseUrl, uid } = clineUser
-	const { remoteConfigSettings } = useExtensionState()
+	const { remoteConfigSettings, environment } = useExtensionState()
 
 	// Determine if dropdown should be locked by remote config
 	const isLockedByRemoteConfig = Object.keys(remoteConfigSettings || {}).length > 0
-	console.log("isLockedByRemoteConfig", isLockedByRemoteConfig)
 
 	// Source of truth: Dedicated state for dropdown value that persists through failures
 	// and represents that user's current selection.
@@ -102,6 +90,13 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 	const [usageData, setUsageData] = useState<ClineAccountUsageTransaction[]>([])
 	const [paymentsData, setPaymentsData] = useState<PaymentTransaction[]>([])
 	const [lastFetchTime, setLastFetchTime] = useState<number>(Date.now())
+	const displayedDataRef = useRef<CachedData>({
+		balance: null,
+		usageData: [],
+		paymentsData: [],
+		lastFetchTime: Date.now(),
+	})
+	const isLoadingRef = useRef(false)
 
 	// Load cached data for current dropdown value
 	const loadCachedData = useCallback((id: string) => {
@@ -111,23 +106,16 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 			setUsageData(cached.usageData)
 			setPaymentsData(cached.paymentsData)
 			setLastFetchTime(cached.lastFetchTime)
+			displayedDataRef.current = cached
 			return true
 		}
 		return false
 	}, [])
 
 	// Simple cache function without dependencies
-	const cacheCurrentData = useCallback(
-		(id: string) => {
-			dataCache.current.set(id, {
-				balance,
-				usageData,
-				paymentsData,
-				lastFetchTime,
-			})
-		},
-		[balance, usageData, paymentsData, lastFetchTime],
-	)
+	const cacheCurrentData = useCallback((id: string) => {
+		dataCache.current.set(id, displayedDataRef.current)
+	}, [])
 	// Track the active organization ID to detect changes
 	const [lastActiveOrgId, setLastActiveOrgId] = useState<string | undefined>(activeOrganization?.organizationId)
 	// Use ref for debounce timeout to avoid re-renders
@@ -139,25 +127,30 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 
 	const isClineTester = useMemo(() => (email ? isClineInternalTester(email) : false), [email])
 
-	const fetchUserCredit = useCallback(async () => {
-		// try {
-		// 	const response = await AccountServiceClient.getUserCredits(EmptyRequest.create())
-		// 	const newBalance = response?.balance?.currentBalance
-		// 	// Always update balance, even if it's 0 or null - don't skip undefined
-		// 	setBalance(newBalance ?? null)
-		// 	const newUsage = convertProtoUsageTransactions(response.usageTransactions)
-		// 	setUsageData((prev) => (deepEqual(newUsage, prev) ? prev : newUsage))
-		// 	const newPaymentsData = response.paymentTransactions
-		// 	setPaymentsData((prev) => (deepEqual(newPaymentsData, prev) ? prev : newPaymentsData))
-		// } catch (error) {
-		// 	console.error("Failed to fetch user credit:", error)
-		// }
+	const applyDisplayedData = useCallback((nextData: DisplayedCreditData, fetchedAt = Date.now()) => {
+		setBalance(nextData.balance)
+		setUsageData((prev) => (deepEqual(nextData.usageData, prev) ? prev : nextData.usageData))
+		setPaymentsData((prev) => (deepEqual(nextData.paymentsData, prev) ? prev : nextData.paymentsData))
+		setLastFetchTime(fetchedAt)
+		displayedDataRef.current = {
+			...nextData,
+			lastFetchTime: fetchedAt,
+		}
+	}, [])
+
+	const fetchUserCredit = useCallback(async (): Promise<DisplayedCreditData> => {
+		const response = await AccountServiceClient.getUserCredits(EmptyRequest.create())
+		return {
+			balance: response?.balance?.currentBalance ?? null,
+			usageData: convertProtoUsageTransactions(response.usageTransactions),
+			paymentsData: response.paymentTransactions,
+		}
 	}, [])
 
 	const fetchCreditBalance = useCallback(
 		async (id: string, skipCache = false) => {
 			try {
-				if (isLoading) {
+				if (isLoadingRef.current) {
 					return // Prevent multiple concurrent fetches
 				}
 
@@ -166,30 +159,41 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 					// If we have cached data, show it first, then fetch in background
 				}
 
+				isLoadingRef.current = true
 				setIsLoading(true)
+				let nextData: DisplayedCreditData
 				if (id === uid) {
-					await fetchUserCredit()
+					nextData = await fetchUserCredit()
 				} else {
-					// const response = await AccountServiceClient.getOrganizationCredits({
-					// 	organizationId: id,
-					// })
-					// Update balance - handle all values including 0 and null
-					// const newBalance = response.balance?.currentBalance
-					// setBalance(newBalance ?? null)
-					// const newUsage = convertProtoUsageTransactions(response.usageTransactions)
-					// setUsageData((prev) => (deepEqual(newUsage, prev) ? prev : newUsage))
+					const response = await AccountServiceClient.getOrganizationCredits({
+						organizationId: id,
+					})
+					nextData = {
+						balance: response.balance?.currentBalance ?? null,
+						usageData: convertProtoUsageTransactions(response.usageTransactions),
+						paymentsData: [],
+					}
 				}
 
-				// Cache the updated data
-				cacheCurrentData(id)
+				const fetchedAt = Date.now()
+				applyDisplayedData(nextData, fetchedAt)
+				dataCache.current.set(id, {
+					...nextData,
+					lastFetchTime: fetchedAt,
+				})
 			} catch (error) {
 				console.error("Failed to fetch credit balance:", error)
 			} finally {
-				setLastFetchTime(Date.now())
+				isLoadingRef.current = false
 				setIsLoading(false)
 			}
 		},
-		[isLoading, uid, fetchUserCredit, loadCachedData],
+		[
+			uid,
+			fetchUserCredit,
+			loadCachedData, // Cache the updated data
+			applyDisplayedData,
+		],
 	)
 
 	const handleOrganizationChange = useCallback(
@@ -218,6 +222,12 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 					setBalance(null)
 					setUsageData([])
 					setPaymentsData([])
+					displayedDataRef.current = {
+						balance: null,
+						usageData: [],
+						paymentsData: [],
+						lastFetchTime: displayedDataRef.current.lastFetchTime,
+					}
 				}
 
 				// Set flag to indicate manual fetch in progress
@@ -231,7 +241,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 
 				// Send the change to the server
 				const organizationId = newValue === uid ? undefined : newValue
-				// await AccountServiceClient.setUserOrganization({ organizationId })
+				await AccountServiceClient.setUserOrganization({ organizationId })
 
 				// Clear the manual fetch flag after everything is done
 				manualFetchInProgressRef.current = false
@@ -254,7 +264,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 			initialFetchCompleteRef.current = true
 		}
 		initialFetch()
-	}, [])
+	}, [dropdownValue, fetchCreditBalance])
 
 	useEffect(() => {
 		// Handle organization changes with 500ms debounce
@@ -285,6 +295,12 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 					setBalance(null)
 					setUsageData([])
 					setPaymentsData([])
+					displayedDataRef.current = {
+						balance: null,
+						usageData: [],
+						paymentsData: [],
+						lastFetchTime: displayedDataRef.current.lastFetchTime,
+					}
 				}
 			}
 
@@ -319,11 +335,11 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 
 	return (
 		<div className="h-full flex flex-col">
-			<div className="flex flex-col pr-3 h-full">
-				<div className="flex flex-col w-full">
-					<div className="flex items-center mb-6 flex-wrap gap-y-4">
+			<div className="flex flex-col h-full">
+				<div className="flex flex-col w-full gap-1 mb-6">
+					<div className="flex items-center flex-wrap gap-y-4">
 						{/* {user.photoUrl ? (
-								<img src={user.photoUrl} alt="Profile" className="size-16 rounded-full mr-4" />
+								<img src={user.photoUrl} alt={t("account.profile")} className="size-16 rounded-full mr-4" />
 							) : ( */}
 						<div className="size-16 rounded-full bg-button-background flex items-center justify-center text-2xl text-button-foreground mr-4">
 							{displayName?.[0] || email?.[0] || "?"}
@@ -344,7 +360,7 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 											disabled={isLoading || isLockedByRemoteConfig}
 											onChange={handleOrganizationChange}>
 											<VSCodeOption key="personal" value={uid}>
-												{t("account.view.personal")}
+												Personal
 											</VSCodeOption>
 											{userOrganizations?.map((org: UserOrganization) => (
 												<VSCodeOption key={org.organizationId} value={org.organizationId}>
@@ -354,26 +370,30 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 										</VSCodeDropdown>
 									</TooltipTrigger>
 									<TooltipContent hidden={!isLockedByRemoteConfig}>
-										{t("account.view.lockedByRemoteConfig")}
+										{t("account.cannotChangeWithRemoteConfig")}
 									</TooltipContent>
 								</Tooltip>
 								{activeOrganization && (
-									<VSCodeTag className="text-xs p-2" title={t("account.view.role")}>
+									<VSCodeTag className="text-xs p-2" title={t("account.role")}>
 										{getMainRole(activeOrganization.roles)}
 									</VSCodeTag>
 								)}
 							</div>
 						</div>
 					</div>
+					<div className="w-full flex gap-2 flex-col min-[225px]:flex-row">
+						<RemoteConfigToggle activeOrganization={activeOrganization} />
+					</div>
 				</div>
+
 				<div className="w-full flex gap-2 flex-col min-[225px]:flex-row">
 					<div className="w-full min-[225px]:w-1/2">
 						<VSCodeButtonLink appearance="primary" className="w-full" href={getClineUris(clineUrl, "dashboard").href}>
-							{t("account.view.dashboard")}
+							{t("account.dashboard")}
 						</VSCodeButtonLink>
 					</div>
 					<VSCodeButton appearance="secondary" className="w-full min-[225px]:w-1/2" onClick={() => handleSignOut()}>
-						{t("account.view.logout")}
+						{t("account.logOut")}
 					</VSCodeButton>
 				</div>
 
@@ -398,10 +418,11 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 					/>
 				</div>
 
-				{isClineTester && (
+				{/* Hide environment switching UI when in self-hosted mode */}
+				{isClineTester && environment !== "selfHosted" && (
 					<div className="w-full gap-1 items-end">
 						<VSCodeDivider className="w-full my-3" />
-						<div className="text-sm font-semibold">{t("account.view.clineEnvironment")}</div>
+						<div className="text-sm font-semibold">{t("account.clineEnvironment")}</div>
 						<VSCodeDropdown
 							className="w-full mt-1"
 							currentValue={clineEnv}
@@ -424,4 +445,5 @@ export const ClineAccountView = ({ clineUser, userOrganizations, activeOrganizat
 		</div>
 	)
 }
+
 export default memo(AccountView)

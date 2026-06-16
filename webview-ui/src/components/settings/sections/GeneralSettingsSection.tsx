@@ -1,17 +1,17 @@
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useTranslation } from "react-i18next"
-import { updateSetting } from "@/components/settings/utils/settingsHandlers"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import PreferredLanguageSetting from "../PreferredLanguageSetting"
 import Section from "../Section"
+import { updateSetting } from "../utils/settingsHandlers"
 
 interface GeneralSettingsSectionProps {
 	renderSectionHeader: (tabId: string) => JSX.Element | null
 }
 
 const GeneralSettingsSection = ({ renderSectionHeader }: GeneralSettingsSectionProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { telemetrySetting, remoteConfigSettings } = useExtensionState()
 
 	return (
@@ -23,18 +23,18 @@ const GeneralSettingsSection = ({ renderSectionHeader }: GeneralSettingsSectionP
 				<div className="mb-[5px]">
 					<Tooltip>
 						<TooltipContent hidden={remoteConfigSettings?.telemetrySetting === undefined}>
-							{t("settings.general.remoteConfigManaged")}
+							{t("settings.remotelyConfiguredMessage")}
 						</TooltipContent>
 						<TooltipTrigger asChild>
 							<div className="flex items-center gap-2 mb-[5px]">
 								<VSCodeCheckbox
-									checked={telemetrySetting === "enabled"}
+									checked={telemetrySetting !== "disabled"}
 									disabled={remoteConfigSettings?.telemetrySetting === "disabled"}
 									onChange={(e: any) => {
 										const checked = e.target.checked === true
 										updateSetting("telemetrySetting", checked ? "enabled" : "disabled")
 									}}>
-									{t("settings.general.allowTelemetry")}
+									{t("settingsSections.allowErrorUsageReporting")}
 								</VSCodeCheckbox>
 								{!!remoteConfigSettings?.telemetrySetting && (
 									<i className="codicon codicon-lock text-description text-sm" />
@@ -44,22 +44,21 @@ const GeneralSettingsSection = ({ renderSectionHeader }: GeneralSettingsSectionP
 					</Tooltip>
 
 					<p className="text-sm mt-[5px] text-description">
-						通过发送使用数据和错误报告来帮助改进
-						Cline。绝不会发送代码、提示词或个人信息。有关更多详细信息，请参阅我们的
+						{t("settingsSections.telemetryDescription")}{" "}
 						<VSCodeLink
 							className="text-inherit"
 							href="https://docs.cline.bot/more-info/telemetry"
 							style={{ fontSize: "inherit", textDecoration: "underline" }}>
-							{t("settings.general.telemetryOverview")}
-						</VSCodeLink>
-						和
+							{t("settingsSections.telemetryOverview")}
+						</VSCodeLink>{" "}
+						{t("settingsSections.telemetryAnd")}
+						{" "}
 						<VSCodeLink
 							className="text-inherit"
 							href="https://cline.bot/privacy"
 							style={{ fontSize: "inherit", textDecoration: "underline" }}>
-							{t("settings.general.privacyPolicy")}
-						</VSCodeLink>
-						。
+							{t("settingsSections.privacyPolicy")}
+						</VSCodeLink>{" "}
 					</p>
 				</div>
 			</Section>

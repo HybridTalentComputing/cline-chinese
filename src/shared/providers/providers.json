@@ -1,16 +1,20 @@
 {
 	"list": [
 		{
-			"value": "shengsuanyun",
-			"label": "胜算云"
+			"value": "cline",
+			"label": "Cline"
 		},
 		{
-			"value": "openrouter",
-			"label": "OpenRouter"
+			"value": "openai-codex",
+			"label": "ChatGPT Subscription"
 		},
 		{
 			"value": "gemini",
 			"label": "Google Gemini"
+		},
+		{
+			"value": "shengsuanyun",
+			"label": "\u80dc\u7b97\u4e91"
 		},
 		{
 			"value": "openai",
@@ -26,7 +30,7 @@
 		},
 		{
 			"value": "vscode-lm",
-			"label": "VS Code LM API"
+			"label": "GitHub Copilot"
 		},
 		{
 			"value": "deepseek",
@@ -35,6 +39,10 @@
 		{
 			"value": "openai-native",
 			"label": "OpenAI"
+		},
+		{
+			"value": "openrouter",
+			"label": "OpenRouter"
 		},
 		{
 			"value": "ollama",
@@ -159,6 +167,10 @@
 		{
 			"value": "nousResearch",
 			"label": "NousResearch"
+		},
+		{
+			"value": "wandb",
+			"label": "W&B Inference by CoreWeave"
 		}
 	]
 }

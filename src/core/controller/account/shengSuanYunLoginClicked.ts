@@ -1,14 +1,14 @@
-import { EmptyRequest, String } from "@shared/proto/cline/common"
+import { Empty, EmptyRequest } from "@shared/proto/cline/common"
 import { HostProvider } from "@/hosts/host-provider"
 import { openExternal } from "@/utils/env"
 import { Controller } from ".."
 
-export async function shengSuanYunLoginClicked(controller: Controller, _: EmptyRequest): Promise<String> {
-	const callbackHost = await HostProvider.get().getCallbackUrl()
-	const callbackUrl = `${callbackHost}/ssy`
-	const id = "cline-chinese"
-	const authUrl = new URL(`https://router.shengsuanyun.com/auth?from=${id}&callback_url=${callbackUrl}`)
-	const authUrlString = authUrl.toString()
-	await openExternal(authUrlString)
-	return String.create({ value: authUrlString })
+export async function shengSuanYunLoginClicked(_: Controller, __: EmptyRequest): Promise<Empty> {
+	const callbackUrl = await HostProvider.get().getCallbackUrl("/ssy")
+	const authUrl = new URL("https://router.shengsuanyun.com/auth")
+	authUrl.searchParams.set("callback_url", callbackUrl)
+
+	await openExternal(authUrl.toString())
+
+	return {}
 }

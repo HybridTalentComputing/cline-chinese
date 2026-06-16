@@ -1,5 +1,5 @@
 import { BooleanRequest, EmptyRequest } from "@shared/proto/cline/common"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { memo, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ClineLogoWhite from "@/assets/ClineLogoWhite"
@@ -9,7 +9,7 @@ import { AccountServiceClient, StateServiceClient } from "@/services/grpc-client
 import { validateApiConfiguration } from "@/utils/validate"
 
 const WelcomeView = memo(() => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("common")
 	const { apiConfiguration, mode } = useExtensionState()
 	const [apiErrorMessage, setApiErrorMessage] = useState<string | undefined>(undefined)
 	const [showApiOptions, setShowApiOptions] = useState(false)
@@ -46,18 +46,21 @@ const WelcomeView = memo(() => {
 					<ClineLogoWhite className="size-16" />
 				</div>
 				<p>
-					{t("welcome.description", {
-						interpolation: { escapeValue: false },
-					})}
+					{t("welcome.description")}{" "}
+					<VSCodeLink className="inline" href="https://www.anthropic.com/claude/sonnet">
+						{t("welcome.descriptionLink")}
+					</VSCodeLink>
+					{t("welcome.descriptionCapabilities")} <i>{t("welcome.descriptionPermission")}</i>.{" "}
+					{t("welcome.descriptionMcp")}
 				</p>
 
-				<p className="text-(--vscode-descriptionForeground)">{t("welcome.subDescription")}</p>
+				<p className="text-(--vscode-descriptionForeground)">{t("welcome.signupPrompt")}</p>
 
 				<VSCodeButton appearance="primary" className="w-full mt-1" disabled={isLoading} onClick={handleLogin}>
 					{t("welcome.getStartedFree")}
 					{isLoading && (
 						<span className="ml-1 animate-spin">
-							<span className="codicon codicon-refresh"></span>
+							<span className="codicon codicon-refresh" />
 						</span>
 					)}
 				</VSCodeButton>

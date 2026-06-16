@@ -1,6 +1,8 @@
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { QuoteIcon } from "lucide-react"
 import React from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
+import { Button } from "@/components/ui/button"
 
 interface QuoteButtonProps {
 	top: number
@@ -15,42 +17,26 @@ interface ButtonContainerProps {
 }
 
 const ButtonContainer = styled.div<ButtonContainerProps>`
-	position: absolute;
 	top: ${(props) => props.$top}px; // Use transient prop $top
 	left: ${(props) => props.$left}px; // Use transient prop $left
-	z-index: 10; // Ensure it's above the text
-	background-color: var(--vscode-button-background);
-	border: 1px solid var(--vscode-button-border);
-	border-radius: 4px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-	transition: transform 0.1s ease;
-
-	&:hover {
-		transform: scale(1.05);
-		background-color: var(--vscode-button-hoverBackground);
-	}
 `
 
 const QuoteButton: React.FC<QuoteButtonProps> = ({ top, left, onClick }) => {
+	const { t } = useTranslation("common")
 	return (
 		// Pass transient props to the styled component
-		<ButtonContainer $left={left} $top={top} className="quote-button-class">
-			<VSCodeButton
-				appearance="icon"
-				aria-label="Quote selection"
+		<ButtonContainer $left={left} $top={top} className="quote-button-class absolute">
+			<Button
+				aria-label={t("quoteButton.quoteSelection")}
+				className="p-3 h-auto min-w-auto rounded-md shadow-sm transition-transform hover:scale-105 z-10"
 				onClick={(e) => {
 					e.stopPropagation() // Prevent triggering mouseup on the parent
 					onClick()
 				}}
-				style={{ padding: "2px 4px", height: "auto", minWidth: "auto" }}
-				title="Quote selection in reply">
-				{" "}
-				{/* Adjust padding */}
-				<span
-					className="codicon codicon-quote"
-					style={{ fontSize: "12px", color: "var(--vscode-button-foreground)" }}></span>{" "}
-				{/* Adjust font size */}
-			</VSCodeButton>
+				size="sm"
+				title={t("quoteButton.quoteInReply")}>
+				<QuoteIcon className="size-2 fill-button-foreground rotate-180 stroke-1" />
+			</Button>
 		</ButtonContainer>
 	)
 }

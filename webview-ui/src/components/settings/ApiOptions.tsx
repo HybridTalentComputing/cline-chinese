@@ -20,7 +20,7 @@ import { BasetenProvider } from "./providers/BasetenProvider"
 import { BedrockProvider } from "./providers/BedrockProvider"
 import { CerebrasProvider } from "./providers/CerebrasProvider"
 import { ClaudeCodeProvider } from "./providers/ClaudeCodeProvider"
-// import { ClineProvider } from "./providers/ClineProvider"
+import { ClineProvider } from "./providers/ClineProvider"
 import { DeepSeekProvider } from "./providers/DeepSeekProvider"
 import { DifyProvider } from "./providers/DifyProvider"
 import { DoubaoProvider } from "./providers/DoubaoProvider"
@@ -41,6 +41,7 @@ import { OcaProvider } from "./providers/OcaProvider"
 import { OllamaProvider } from "./providers/OllamaProvider"
 import { OpenAICompatibleProvider } from "./providers/OpenAICompatible"
 import { OpenAINativeProvider } from "./providers/OpenAINative"
+import { OpenAiCodexProvider } from "./providers/OpenAiCodexProvider"
 import { OpenRouterProvider } from "./providers/OpenRouterProvider"
 import { QwenCodeProvider } from "./providers/QwenCodeProvider"
 import { QwenProvider } from "./providers/QwenProvider"
@@ -52,6 +53,7 @@ import { TogetherProvider } from "./providers/TogetherProvider"
 import { VercelAIGatewayProvider } from "./providers/VercelAIGatewayProvider"
 import { VertexProvider } from "./providers/VertexProvider"
 import { VSCodeLmProvider } from "./providers/VSCodeLmProvider"
+import { WandbProvider } from "./providers/WandbProvider"
 import { XaiProvider } from "./providers/XaiProvider"
 import { ZAiProvider } from "./providers/ZAiProvider"
 import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
@@ -62,6 +64,7 @@ interface ApiOptionsProps {
 	modelIdErrorMessage?: string
 	isPopup?: boolean
 	currentMode: Mode
+	initialModelTab?: "recommended" | "free"
 }
 
 // This is necessary to ensure dropdown opens downward, important for when this is used in popup
@@ -88,8 +91,15 @@ declare module "vscode" {
 	}
 }
 
-const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, isPopup, currentMode }: ApiOptionsProps) => {
-	const { t } = useTranslation()
+const ApiOptions = ({
+	showModelOptions,
+	apiErrorMessage,
+	modelIdErrorMessage,
+	isPopup,
+	currentMode,
+	initialModelTab,
+}: ApiOptionsProps) => {
+	const { t } = useTranslation("settings")
 	// Use full context state for immediate save payload
 	const { apiConfiguration, remoteConfigSettings } = useExtensionState()
 
@@ -108,7 +118,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 						value: apiConfiguration?.ollamaBaseUrl || "",
 					}),
 				)
-				if (response && response.values) {
+				if (response?.values) {
 					setOllamaModels(response.values)
 				}
 			} catch (error) {
@@ -141,8 +151,9 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 		}
 
 		// Filter by remote config if remoteConfiguredProviders is set
-		if (remoteConfigSettings?.remoteConfiguredProviders && remoteConfigSettings.remoteConfiguredProviders.length > 0) {
-			providers = providers.filter((option) => remoteConfigSettings.remoteConfiguredProviders!.includes(option.value))
+		const remoteProviders: string[] = remoteConfigSettings?.remoteConfiguredProviders || []
+		if (remoteProviders.length > 0) {
+			providers = providers.filter((option) => remoteProviders.includes(option.value))
 		}
 
 		return providers
@@ -192,6 +203,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 		if (!isDropdownVisible) {
 			return
 		}
+
 		switch (event.key) {
 			case "ArrowDown":
 				event.preventDefault()
@@ -236,7 +248,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 		if (dropdownListRef.current) {
 			dropdownListRef.current.scrollTop = 0
 		}
-	}, [searchTerm])
+	}, [])
 
 	// Scroll selected item into view
 	useEffect(() => {
@@ -273,16 +285,16 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 						<TooltipTrigger>
 							<div className="flex items-center gap-2 mb-1">
 								<label htmlFor="api-provider">
-									<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.provider")}</span>
+									<span style={{ fontWeight: 500 }}>{t("settings.apiProvider")}</span>
 								</label>
 								<i className="codicon codicon-lock text-description text-sm" />
 							</div>
 						</TooltipTrigger>
-						<TooltipContent>{t("settings.apiConfig.remoteConfigManaged")}</TooltipContent>
+						<TooltipContent>{t("settings.providerManagedByOrg")}</TooltipContent>
 					</Tooltip>
 				) : (
 					<label htmlFor="api-provider">
-						<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.provider")}</span>
+						<span style={{ fontWeight: 500 }}>{t("settings.apiProvider")}</span>
 					</label>
 				)}
 				<ProviderDropdownWrapper ref={dropdownRef}>
@@ -298,7 +310,8 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder={t("settings.apiConfig.searchProvider")}
+						placeholder={t("settings.searchSelectProvider")}
+						role="combobox"
 						style={{
 							width: "100%",
 							zIndex: DROPDOWN_Z_INDEX,
@@ -308,7 +321,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 						value={searchTerm}>
 						{searchTerm && searchTerm !== currentProviderLabel && (
 							<div
-								aria-label="Clear search"
+								aria-label={t("settings.clearSearch")}
 								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									setSearchTerm("")
@@ -325,7 +338,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 						)}
 					</VSCodeTextField>
 					{isDropdownVisible && (
-						<ProviderDropdownList ref={dropdownListRef}>
+						<ProviderDropdownList ref={dropdownListRef} role="listbox">
 							{providerSearchResults.map((item, index) => (
 								<ProviderDropdownItem
 									data-testid={`provider-option-${item.value}`}
@@ -335,7 +348,8 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 									onMouseEnter={() => setSelectedIndex(index)}
 									ref={(el) => {
 										itemRefs.current[index] = el
-									}}>
+									}}
+									role="option">
 									<span>{item.html}</span>
 								</ProviderDropdownItem>
 							))}
@@ -348,12 +362,15 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 				<HicapProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
 			)}
 
-			{/* {apiConfiguration && selectedProvider === "cline" && (
-				<ClineProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
-			)} */}
-			{selectedProvider === "shengsuanyun" && (
-				<ShengSuanYunProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
+			{apiConfiguration && selectedProvider === "cline" && (
+				<ClineProvider
+					currentMode={currentMode}
+					initialModelTab={initialModelTab}
+					isPopup={isPopup}
+					showModelOptions={showModelOptions}
+				/>
 			)}
+
 			{apiConfiguration && selectedProvider === "asksage" && (
 				<AskSageProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
 			)}
@@ -368,6 +385,10 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 
 			{apiConfiguration && selectedProvider === "openai-native" && (
 				<OpenAINativeProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
+			)}
+
+			{apiConfiguration && selectedProvider === "openai-codex" && (
+				<OpenAiCodexProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
 			)}
 
 			{apiConfiguration && selectedProvider === "qwen" && (
@@ -462,6 +483,10 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 				<NebiusProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
 			)}
 
+			{apiConfiguration && selectedProvider === "wandb" && (
+				<WandbProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
+			)}
+
 			{apiConfiguration && selectedProvider === "xai" && (
 				<XaiProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
 			)}
@@ -484,6 +509,10 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 
 			{apiConfiguration && selectedProvider === "zai" && (
 				<ZAiProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
+			)}
+
+			{apiConfiguration && selectedProvider === "shengsuanyun" && (
+				<ShengSuanYunProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
 			)}
 
 			{apiConfiguration && selectedProvider === "minimax" && (

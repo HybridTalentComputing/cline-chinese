@@ -1,6 +1,7 @@
+import { Logger } from "@/shared/services/Logger"
 import type { ClineDefaultTool } from "@/shared/tools"
 import { ClineToolSet } from "../registry/ClineToolSet"
-import { type ClineToolSpec, resolveInstruction } from "../spec"
+import { type ClineToolSpec, resolveDescription, resolveInstruction } from "../spec"
 import { STANDARD_PLACEHOLDERS } from "../templates/placeholders"
 import { TemplateEngine } from "../templates/TemplateEngine"
 import type { ComponentRegistry, PromptVariant, SystemPromptContext } from "../types"
@@ -34,7 +35,7 @@ export class PromptBuilder {
 		for (const componentId of componentOrder) {
 			const componentFn = this.components[componentId]
 			if (!componentFn) {
-				console.warn(`Warning: Component '${componentId}' not found`)
+				Logger.warn(`Warning: Component '${componentId}' not found`)
 				continue
 			}
 
@@ -44,7 +45,7 @@ export class PromptBuilder {
 					sections[componentId] = result
 				}
 			} catch (error) {
-				console.warn(`Warning: Failed to build component '${componentId}':`, error)
+				Logger.warn(`Warning: Failed to build component '${componentId}':`, error)
 			}
 		}
 
@@ -131,47 +132,25 @@ export class PromptBuilder {
 		}
 	}
 
-	private static getEnabledTools(variant: PromptVariant, context: SystemPromptContext) {
-		let resolvedTools: ReturnType<typeof ClineToolSet.getTools> = []
-
-		// If the variant explicitly lists tools, resolve each by id with fallback to GENERIC
-		if (variant?.tools?.length) {
-			const requestedIds = [...variant.tools]
-			resolvedTools = ClineToolSet.getToolsForVariantWithFallback(variant.family, requestedIds)
-
-			// Preserve requested order
-			resolvedTools = requestedIds
-				.map((id) => resolvedTools.find((t) => t.config.id === id))
-				.filter((t): t is NonNullable<typeof t> => Boolean(t))
-		} else {
-			// Otherwise, use all tools registered for the variant, or generic if none
-			resolvedTools = ClineToolSet.getTools(variant.family)
-			// Sort by id for stable ordering
-			resolvedTools = resolvedTools.sort((a, b) => a.config.id.localeCompare(b.config.id))
-		}
-
-		// Filter by context requirements
-		const enabledTools = resolvedTools.filter(
-			(tool) => !tool.config.contextRequirements || tool.config.contextRequirements(context),
-		)
-
-		return enabledTools
+	private static getEnabledTools(variant: PromptVariant, context: SystemPromptContext): ClineToolSpec[] {
+		return ClineToolSet.getEnabledToolSpecs(variant, context)
 	}
 
 	public static async getToolsPrompts(variant: PromptVariant, context: SystemPromptContext) {
 		const enabledTools = PromptBuilder.getEnabledTools(variant, context)
 
-		const ids = enabledTools.map((tool) => tool.config.id)
-		return Promise.all(enabledTools.map((tool) => PromptBuilder.tool(tool.config, ids, context)))
+		const ids = enabledTools.map((tool) => tool.id)
+		return Promise.all(enabledTools.map((tool) => PromptBuilder.tool(tool, ids, context)))
 	}
 
 	public static tool(config: ClineToolSpec, registry: ClineDefaultTool[], context: SystemPromptContext): string {
 		// Skip tools without parameters or description - those are placeholder tools
-		if (!config.parameters?.length && !config.description?.length) {
+		if (!config.parameters?.length && !config.description) {
 			return ""
 		}
-		const title = `## ${config.id}`
-		const description = [`Description: ${config.description}`]
+		const displayName = config.name || config.id
+		const title = `## ${displayName}`
+		const description = [`Description: ${resolveDescription(config.description, context)}`]
 
 		if (!config.parameters?.length) {
 			config.parameters = []
@@ -208,7 +187,7 @@ export class PromptBuilder {
 			title,
 			description.join("\n"),
 			PromptBuilder.buildParametersSection(filteredParams, context),
-			PromptBuilder.buildUsageSection(config.id, filteredParams),
+			PromptBuilder.buildUsageSection(displayName, filteredParams),
 		]
 
 		return sections.filter(Boolean).join("\n")

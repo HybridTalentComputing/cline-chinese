@@ -2,13 +2,12 @@ import { McpViewTab } from "@shared/mcp"
 import { EmptyRequest } from "@shared/proto/cline/common"
 import { McpServers } from "@shared/proto/cline/mcp"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
-import { getEnvironmentColor } from "@/utils/environmentColors"
+import ViewHeader from "../../common/ViewHeader"
 import AddRemoteServerForm from "./tabs/add-server/AddRemoteServerForm"
 import ConfigureServersView from "./tabs/installed/ConfigureServersView"
 import McpMarketplaceView from "./tabs/marketplace/McpMarketplaceView"
@@ -19,7 +18,7 @@ type McpViewProps = {
 }
 
 const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
 	const { remoteConfigSettings, setMcpServers, environment } = useExtensionState()
 	// Show marketplace by default unless remote config explicitly disables it
 	const showMarketplace = remoteConfigSettings?.mcpMarketplaceEnabled !== false
@@ -64,7 +63,7 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 					console.error("Failed to fetch MCP servers:", error)
 				})
 		}
-	}, [showMarketplace])
+	}, [showMarketplace, setMcpMarketplaceCatalog, setMcpServers])
 
 	return (
 		<div
@@ -77,22 +76,7 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 				display: "flex",
 				flexDirection: "column",
 			}}>
-			<div
-				style={{
-					display: "flex",
-					justifyContent: "space-between",
-					alignItems: "center",
-					padding: "10px 17px 5px 20px",
-				}}>
-				<h3
-					style={{
-						color: getEnvironmentColor(environment),
-						margin: 0,
-					}}>
-					{t("mcp.title")}
-				</h3>
-				<VSCodeButton onClick={onDone}>{t("settings.done")}</VSCodeButton>
-			</div>
+			<ViewHeader environment={environment} onDone={onDone} title={t("mcp.configuration.title")} />
 
 			<div style={{ flex: 1, overflow: "auto" }}>
 				{/* Tabs container */}
@@ -105,16 +89,16 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 					}}>
 					{showMarketplace && (
 						<TabButton isActive={activeTab === "marketplace"} onClick={() => handleTabChange("marketplace")}>
-							{t("mcp.tabs.marketplace")}
+							{t("mcp.configuration.marketplace")}
 						</TabButton>
 					)}
 					{showRemoteServers && (
 						<TabButton isActive={activeTab === "addRemote"} onClick={() => handleTabChange("addRemote")}>
-							{t("mcp.tabs.remoteServers")}
+							{t("mcp.configuration.remoteServers")}
 						</TabButton>
 					)}
 					<TabButton isActive={activeTab === "configure"} onClick={() => handleTabChange("configure")}>
-						{t("mcp.tabs.configure")}
+						{t("mcp.configuration.configure")}
 					</TabButton>
 				</div>
 

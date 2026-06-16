@@ -1,6 +1,10 @@
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import { memo, useMemo } from "react"
-import CodeBlock, { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
+import { useTranslation } from "react-i18next"
+import CodeBlock from "@/components/common/CodeBlock"
+import { cn } from "@/lib/utils"
 import { getLanguageFromPath } from "@/utils/getLanguageFromPath"
+import { Button } from "../ui/button"
 
 interface CodeAccordianProps {
 	code?: string
@@ -20,7 +24,7 @@ We need to remove leading non-alphanumeric characters from the path in order for
 [^a-zA-Z0-9]+: Matches one or more characters that are not alphanumeric.
 The replace method removes these matched characters, effectively trimming the string up to the first alphanumeric character.
 */
-export const cleanPathPrefix = (path: string): string => path.replace(/^[^\u4e00-\u9fa5a-zA-Z0-9]+/, "")
+export const cleanPathPrefix = (path: string): string => path.replace(/^[^一-龥a-zA-Z0-9]+/, "")
 
 const CodeAccordian = ({
 	code,
@@ -33,6 +37,7 @@ const CodeAccordian = ({
 	onToggleExpand,
 	isLoading,
 }: CodeAccordianProps) => {
+	const { t } = useTranslation("misc")
 	const inferredLanguage = useMemo(
 		() => code && (language ?? (path ? getLanguageFromPath(path) : undefined)),
 		[path, language, code],
@@ -46,96 +51,53 @@ const CodeAccordian = ({
 	}, [code])
 
 	return (
-		<div
-			style={{
-				borderRadius: 3,
-				backgroundColor: CODE_BLOCK_BG_COLOR,
-				overflow: "hidden", // This ensures the inner scrollable area doesn't overflow the rounded corners
-				border: "1px solid var(--vscode-editorGroup-border)",
-			}}>
+		<div className="bg-code overflow-hidden rounded-xs border border-editor-group-border">
 			{(path || isFeedback || isConsoleLogs) && (
-				<div
-					aria-label={isExpanded ? "Collapse code block" : "Expand code block"}
+				<Button
+					aria-label={
+						isExpanded ? t("common.codeAccordian.collapseCodeBlock") : t("common.codeAccordian.expandCodeBlock")
+					}
+					className={cn("text-description flex items-center cursor-pointer select-none w-full py-[9px] px-2.5", {
+						"cursor-wait opacity-70": isLoading,
+					})}
 					onClick={isLoading ? undefined : onToggleExpand}
 					onKeyDown={(e) => {
-						if (isLoading) return
-						if (e.key === "Enter" || e.key === " ") {
+						if (!isLoading) {
 							e.preventDefault()
-							e.stopPropagation()
-							onToggleExpand()
+							if (e.key === "Enter" || e.key === " ") {
+								e.stopPropagation()
+								onToggleExpand()
+							}
 						}
 					}}
-					style={{
-						color: "var(--vscode-descriptionForeground)",
-						display: "flex",
-						alignItems: "center",
-						padding: "9px 10px",
-						cursor: isLoading ? "wait" : "pointer",
-						opacity: isLoading ? 0.7 : 1,
-						// pointerEvents: isLoading ? "none" : "auto",
-						userSelect: "none",
-						WebkitUserSelect: "none",
-						MozUserSelect: "none",
-						msUserSelect: "none",
-					}}
-					tabIndex={0}>
+					tabIndex={0}
+					variant="text">
 					{isFeedback || isConsoleLogs ? (
-						<div style={{ display: "flex", alignItems: "center" }}>
-							<span
-								className={`codicon codicon-${isFeedback ? "feedback" : "output"}`}
-								style={{ marginRight: "6px" }}></span>
-							<span
-								style={{
-									whiteSpace: "nowrap",
-									overflow: "hidden",
-									textOverflow: "ellipsis",
-									marginRight: "8px",
-								}}>
-								{isFeedback ? "User Edits" : "Console Logs"}
+						<div className="flex items-center">
+							<span className={`mr-1.5 codicon codicon-${isFeedback ? "feedback" : "output"}`} />
+							<span className="whitespace-nowrap overflow-hidden text-ellipsis mr-2">
+								{isFeedback ? t("common.codeAccordian.userEdits") : t("common.codeAccordian.consoleLogs")}
 							</span>
 						</div>
 					) : (
-						<>
+						<span className="whitespace-nowrap overflow-hidden text-ellipsis mr-2 [direction: rtl] text-left">
 							{path?.startsWith(".") && <span>.</span>}
 							{path && !path.startsWith(".") && <span>/</span>}
-							<span
-								style={{
-									whiteSpace: "nowrap",
-									overflow: "hidden",
-									textOverflow: "ellipsis",
-									marginRight: "8px",
-									// trick to get ellipsis at beginning of string
-									direction: "rtl",
-									textAlign: "left",
-								}}>
-								{cleanPathPrefix(path ?? "") + "\u200E"}
-							</span>
-						</>
+							{`${cleanPathPrefix(path ?? "")}‎`}
+						</span>
 					)}
-					<div style={{ flexGrow: 1 }}></div>
+					<div className="grow" />
 					{numberOfEdits !== undefined && (
-						<div
-							style={{
-								display: "flex",
-								alignItems: "center",
-								marginRight: "8px",
-								color: "var(--vscode-descriptionForeground)",
-							}}>
-							<span className="codicon codicon-diff-single" style={{ marginRight: "4px" }}></span>
+						<div className="flex items-center mr-2 text-description">
+							<span className="codicon codicon-diff-single mr-1" />
 							<span>{numberOfEdits}</span>
 						</div>
 					)}
-					<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
-				</div>
+					{isExpanded ? <ChevronDownIcon className="size-4" /> : <ChevronRightIcon className="size-4" />}
+				</Button>
 			)}
 			{(!(path || isFeedback || isConsoleLogs) || isExpanded) && (
-				<div
-					//className="code-block-scrollable" this doesn't seem to be necessary anymore, on silicon macs it shows the native mac scrollbar instead of the vscode styled one
-					style={{
-						overflowX: "auto",
-						overflowY: "hidden",
-						maxWidth: "100%",
-					}}>
+				<div className="overflow-x-auto overflow-y-hidden max-w-full">
 					<CodeBlock
 						source={`${"```"}${diff !== undefined ? "diff" : inferredLanguage}\n${(
 							code ?? diff ?? ""

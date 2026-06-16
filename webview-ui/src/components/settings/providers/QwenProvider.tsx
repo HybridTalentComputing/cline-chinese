@@ -41,7 +41,7 @@ export const qwenApiOptions: QwenApiRegions[] = Object.values(QwenApiRegions)
  * The Alibaba Qwen provider configuration component
  */
 export const QwenProvider = ({ showModelOptions, isPopup, currentMode }: QwenProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -58,7 +58,7 @@ export const QwenProvider = ({ showModelOptions, isPopup, currentMode }: QwenPro
 		<div>
 			<DropdownContainer className="dropdown-container" style={{ position: "inherit" }}>
 				<label htmlFor="qwen-line-provider">
-					<span style={{ fontWeight: 500, marginTop: 5 }}>{t("settings.apiConfig.alibabaApiLine")}</span>
+					<span style={{ fontWeight: 500, marginTop: 5 }}>{t("providers.qwen.alibabaApiLine")}</span>
 				</label>
 				<VSCodeDropdown
 					id="qwen-line-provider"
@@ -70,7 +70,7 @@ export const QwenProvider = ({ showModelOptions, isPopup, currentMode }: QwenPro
 					value={apiConfiguration?.qwenApiLine || qwenApiOptions[0]}>
 					{qwenApiOptions.map((line) => (
 						<VSCodeOption key={line} value={line}>
-							{line.charAt(0).toUpperCase() + line.slice(1)} {t("settings.apiConfig.api")}
+							{line.charAt(0).toUpperCase() + line.slice(1)} API
 						</VSCodeOption>
 					))}
 				</VSCodeDropdown>
@@ -81,7 +81,8 @@ export const QwenProvider = ({ showModelOptions, isPopup, currentMode }: QwenPro
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				{t("settings.apiConfig.qwenApiLineDescription")}
+				Please select the appropriate API interface based on your location. If you are in China, choose the China API
+				interface. Otherwise, choose the International API interface.
 			</p>
 
 			<ApiKeyField
@@ -94,7 +95,7 @@ export const QwenProvider = ({ showModelOptions, isPopup, currentMode }: QwenPro
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={qwenModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

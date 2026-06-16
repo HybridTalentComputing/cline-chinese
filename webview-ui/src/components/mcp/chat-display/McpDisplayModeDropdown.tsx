@@ -13,7 +13,8 @@ interface McpDisplayModeDropdownProps {
 }
 
 const McpDisplayModeDropdown: React.FC<McpDisplayModeDropdownProps> = ({ value, onChange, id, className, style, onClick }) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
+
 	const handleChange = (e: any) => {
 		const newMode = e.target.value as McpDisplayMode
 		onChange(newMode)
@@ -21,9 +22,9 @@ const McpDisplayModeDropdown: React.FC<McpDisplayModeDropdownProps> = ({ value, 
 
 	return (
 		<VSCodeDropdown className={className} id={id} onChange={handleChange} onClick={onClick} style={style} value={value}>
-			<VSCodeOption value="plain">{t("settings.features.mcpDisplayModeOptions.plain")}</VSCodeOption>
-			<VSCodeOption value="rich">{t("settings.features.mcpDisplayModeOptions.rich")}</VSCodeOption>
-			<VSCodeOption value="markdown">{t("settings.features.mcpDisplayModeOptions.markdown")}</VSCodeOption>
+			<VSCodeOption value="plain">{t("mcp.chatDisplay.plainText")}</VSCodeOption>
+			<VSCodeOption value="rich">{t("mcp.chatDisplay.richDisplay")}</VSCodeOption>
+			<VSCodeOption value="markdown">{t("mcp.chatDisplay.markdown")}</VSCodeOption>
 		</VSCodeDropdown>
 	)
 }

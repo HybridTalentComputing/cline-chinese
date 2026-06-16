@@ -1,13 +1,16 @@
+import { ModelInfo } from "@shared/api"
 import { UpdateApiConfigurationRequestNew } from "@shared/proto/index.cline"
 import { Mode } from "@shared/storage/types"
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { useEffect } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { RefreshCwIcon } from "lucide-react"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ModelsServiceClient } from "@/services/grpc-client"
 import { DebouncedTextField } from "../common/DebouncedTextField"
+import { ModelAutocomplete } from "../common/ModelAutocomplete"
 import { ModelInfoView } from "../common/ModelInfoView"
-import { ModelSelector } from "../common/ModelSelector"
+import { LockIcon, RemotelyConfiguredInputWrapper } from "../common/RemotelyConfiguredInputWrapper"
 import ThinkingBudgetSlider from "../ThinkingBudgetSlider"
 import { normalizeApiConfiguration } from "../utils/providerUtils"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
@@ -22,25 +25,16 @@ interface LiteLlmProviderProps {
 }
 
 export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: LiteLlmProviderProps) => {
-	const { t } = useTranslation()
-	const { apiConfiguration, liteLlmModels, refreshLiteLlmModels } = useExtensionState()
+	const { t } = useTranslation("settings")
+	const { apiConfiguration, remoteConfigSettings, liteLlmModels, refreshLiteLlmModels } = useExtensionState()
 	const { handleModeFieldsChange } = useApiConfigurationHandlers()
 
+	const [isLoading, setIsLoading] = useState(false)
+
 	// Get the normalized configuration with model info
-	const { selectedModelId, selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, currentMode, liteLlmModels)
+	const { selectedModelId, selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, currentMode)
 
-	// Refresh models when both base URL and API key are configured
-	useEffect(() => {
-		if (apiConfiguration?.liteLlmBaseUrl && apiConfiguration?.liteLlmApiKey) {
-			refreshLiteLlmModels()
-		}
-	}, [refreshLiteLlmModels, apiConfiguration?.liteLlmApiKey, apiConfiguration?.liteLlmBaseUrl])
-
-	// Handle model change
-	const handleModelChange = (e: any) => {
-		const newModelId = e.target.value
-		const modelInfo = liteLlmModels[newModelId]
-
+	const handleModelChange = (newModelId: string, modelInfo: ModelInfo | undefined) => {
 		handleModeFieldsChange(
 			{
 				liteLlmModelId: { plan: "planModeLiteLlmModelId", act: "actModeLiteLlmModelId" },
@@ -54,54 +48,88 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 		)
 	}
 
+	const onRefreshModels = async () => {
+		try {
+			setIsLoading(true)
+			await refreshLiteLlmModels()
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
 	return (
 		<div>
-			<DebouncedTextField
-				initialValue={apiConfiguration?.liteLlmBaseUrl || ""}
-				onChange={async (value) => {
-					await ModelsServiceClient.updateApiConfiguration(
-						UpdateApiConfigurationRequestNew.create({
-							updates: {
-								options: {
-									liteLlmBaseUrl: value,
+			<RemotelyConfiguredInputWrapper hidden={remoteConfigSettings?.liteLlmBaseUrl === undefined}>
+				<DebouncedTextField
+					disabled={remoteConfigSettings?.liteLlmBaseUrl !== undefined}
+					initialValue={apiConfiguration?.liteLlmBaseUrl || ""}
+					onChange={async (value) => {
+						await ModelsServiceClient.updateApiConfiguration(
+							UpdateApiConfigurationRequestNew.create({
+								updates: {
+									options: {
+										liteLlmBaseUrl: value,
+									},
 								},
-							},
-							updateMask: ["options.liteLlmBaseUrl"],
-						}),
-					)
-				}}
-				placeholder={t("settings.apiConfig.liteLlmBaseUrlPlaceholder")}
-				style={{ width: "100%" }}
-				type="text">
-				<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.baseUrlOptional")}</span>
-			</DebouncedTextField>
-			<DebouncedTextField
-				initialValue={apiConfiguration?.liteLlmApiKey || ""}
-				onChange={async (value) => {
-					await ModelsServiceClient.updateApiConfiguration(
-						UpdateApiConfigurationRequestNew.create({
-							updates: {
-								secrets: {
-									liteLlmApiKey: value,
+								updateMask: ["options.liteLlmBaseUrl"],
+							}),
+						)
+					}}
+					placeholder={t("providers.liteLlm.defaultBaseUrl")}
+					style={{ width: "100%" }}
+					type="text">
+					<div className="flex items-center gap-2 mb-1">
+						<span style={{ fontWeight: 500 }}>{t("providers.litellm.baseUrlOptional")}</span>
+						{remoteConfigSettings?.liteLlmBaseUrl !== undefined && <LockIcon />}
+					</div>
+				</DebouncedTextField>
+			</RemotelyConfiguredInputWrapper>
+			<RemotelyConfiguredInputWrapper hidden={!remoteConfigSettings?.configuredApiKeys?.litellm}>
+				<DebouncedTextField
+					disabled={remoteConfigSettings?.configuredApiKeys?.litellm}
+					initialValue={apiConfiguration?.liteLlmApiKey || ""}
+					onChange={async (value) => {
+						await ModelsServiceClient.updateApiConfiguration(
+							UpdateApiConfigurationRequestNew.create({
+								updates: {
+									secrets: {
+										liteLlmApiKey: value,
+									},
 								},
-							},
-							updateMask: ["secrets.liteLlmApiKey"],
-						}),
-					)
-				}}
-				placeholder={t("settings.apiConfig.liteLlmApiKeyPlaceholder")}
-				style={{ width: "100%" }}
-				type="password">
-				<span style={{ fontWeight: 500 }}>{t("settings.providers.apiKey")}</span>
-			</DebouncedTextField>
+								updateMask: ["secrets.liteLlmApiKey"],
+							}),
+						)
+					}}
+					placeholder={t("providers.litellm.defaultNoopPlaceholder")}
+					style={{ width: "100%" }}
+					type="password">
+					<div className="flex items-center gap-2 mb-1">
+						<span style={{ fontWeight: 500 }}>{t("providers.litellm.apiKey")}</span>
+						{remoteConfigSettings?.configuredApiKeys?.litellm && <LockIcon />}
+					</div>
+				</DebouncedTextField>
+			</RemotelyConfiguredInputWrapper>
 			{showModelOptions && (
 				<>
-					<ModelSelector
-						label={t("settings.providers.model")}
+					<ModelAutocomplete
+						label={t("settings.model")}
 						models={liteLlmModels}
 						onChange={handleModelChange}
+						placeholder={t("providers.litellm.searchModelPlaceholder")}
 						selectedModelId={selectedModelId}
 					/>
+					<VSCodeButton
+						className={`my-2 ${isLoading ? "animate-pulse" : ""}`}
+						disabled={isLoading}
+						onClick={onRefreshModels}>
+						{isLoading ? (
+							t("commonFields.loading")
+						) : (
+							<>
+								Refresh models <RefreshCwIcon className="ml-1" />
+							</>
+						)}
+					</VSCodeButton>
 
 					{selectedModelInfo?.supportsReasoning && <ThinkingBudgetSlider currentMode={currentMode} />}
 
@@ -114,18 +142,12 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				<Trans
-					components={{
-						thinkingLink: (
-							<VSCodeLink
-								href="https://docs.litellm.ai/docs/reasoning_content"
-								style={{ display: "inline", fontSize: "inherit" }}>
-								{t("settings.apiConfig.thinkingModeConfiguration")}
-							</VSCodeLink>
-						),
-					}}
-					i18nKey="settings.apiConfig.liteLlmExtendedThinking"
-				/>
+				{t("providers.litellm.extendedThinkingAvailable")}{" "}
+				<VSCodeLink
+					href="https://docs.litellm.ai/docs/reasoning_content"
+					style={{ display: "inline", fontSize: "inherit" }}>
+					{t("providers.litellm.thinkingModeConfiguration")}
+				</VSCodeLink>
 			</p>
 
 			<p
@@ -134,16 +156,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				<Trans
-					components={{
-						quickstartLink: (
-							<VSCodeLink href="https://docs.litellm.ai/docs/" style={{ display: "inline", fontSize: "inherit" }}>
-								{t("settings.apiConfig.quickstartGuide")}
-							</VSCodeLink>
-						),
-					}}
-					i18nKey="settings.apiConfig.liteLlmDescription"
-				/>
+				{t("providers.litellm.seeQuickstart")}
 			</p>
 		</div>
 	)

@@ -24,29 +24,41 @@ service AccountService {
 
   // Handles authentication state changes from the Firebase context.
   // Updates the user info in global state and returns the updated value.
-  rpc shengSuanYunLoginClicked(EmptyRequest) returns (String);
-  rpc shengSuanYunLogoutClicked(EmptyRequest) returns (Empty);
-  rpc shengSuanYunUserData(EmptyRequest) returns (UserCreditsData);
-  rpc subscribeSsyAuthCallback(EmptyRequest) returns (stream String);
   rpc authStateChanged(AuthStateChangedRequest) returns (AuthState);
 
   // Fetches all user credits data
   // (balance, usage transactions, payment transactions)
-  // rpc getUserCredits(EmptyRequest) returns (UserCreditsData);
+  rpc getUserCredits(EmptyRequest) returns (UserCreditsData);
 
-  // rpc getOrganizationCredits(GetOrganizationCreditsRequest) returns (OrganizationCreditsData);
+  rpc getOrganizationCredits(GetOrganizationCreditsRequest) returns (OrganizationCreditsData);
+
   // Fetches all user organizations data
   // Returns a list of UserOrganization objects
-  // rpc getUserOrganizations(EmptyRequest) returns (UserOrganizationsResponse);
+  rpc getUserOrganizations(EmptyRequest) returns (UserOrganizationsResponse);
 
-  // rpc setUserOrganization(UserOrganizationUpdateRequest) returns (Empty);
+  rpc setUserOrganization(UserOrganizationUpdateRequest) returns (Empty);
 
   rpc openrouterAuthClicked(EmptyRequest) returns (Empty);
 
   rpc requestyAuthClicked(StringRequest) returns (Empty);
 
+  rpc hicapAuthClicked(EmptyRequest) returns (Empty);
+
+  rpc shengSuanYunLoginClicked(EmptyRequest) returns (Empty);
+
   // Returns a link the webview can use to redirect back to the user's IDE.
   rpc getRedirectUrl(EmptyRequest) returns (String);
+
+  // OpenAI Codex OAuth authentication
+  // Starts the OAuth flow and opens browser for user to sign in with ChatGPT Plus/Pro
+  rpc openAiCodexSignIn(EmptyRequest) returns (Empty);
+
+  // Signs out of OpenAI Codex and clears stored credentials
+  rpc openAiCodexSignOut(EmptyRequest) returns (Empty);
+
+  // Submits a spend limit increase request to the user's org admin.
+  // Called when the user hits a SPEND_LIMIT_EXCEEDED (429) error and clicks "Request Increase".
+  rpc submitLimitIncreaseRequest(EmptyRequest) returns (SubmitLimitIncreaseResponse);
 }
 
 message AuthStateChangedRequest {
@@ -65,7 +77,6 @@ message UserInfo {
   optional string email = 3;
   optional string photo_url = 4;
   optional string app_base_url = 5; // Cline app base URL
-  optional double balance = 6;
 }
 
 message UserOrganization {
@@ -85,11 +96,9 @@ message UserOrganizationUpdateRequest {
 }
 
 message UserCreditsData {
-  optional UserCreditsBalance balance = 1;
+  UserCreditsBalance balance = 1;
   repeated UsageTransaction usage_transactions = 2;
   repeated PaymentTransaction payment_transactions = 3;
-  optional UserInfo user = 4;
-  optional float rate = 5;
 }
 
 message GetOrganizationCreditsRequest {
@@ -119,10 +128,12 @@ message UsageTransaction {
   int32 prompt_tokens = 10;
   int32 total_tokens = 11;
   string user_id = 12;
-  optional string spent_at = 13;
-  optional string model = 14;
-  optional string credits = 15;
-  string operation = 16;
+  string operation = 13;
+}
+
+// Response from a spend limit increase request submission
+message SubmitLimitIncreaseResponse {
+  bool success = 1;
 }
 
 message PaymentTransaction {

@@ -2,13 +2,15 @@ import { flip, offset, shift, useFloating } from "@floating-ui/react"
 import { CheckpointRestoreRequest } from "@shared/proto/cline/checkpoints"
 import { Int64Request } from "@shared/proto/cline/common"
 import { ClineCheckpointRestore } from "@shared/WebviewMessage"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { BookmarkIcon } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { createPortal } from "react-dom"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
+import { Button } from "@/components/ui/button"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { cn } from "@/lib/utils"
 import { CheckpointsServiceClient } from "@/services/grpc-client"
 
 interface CheckmarkControlProps {
@@ -17,12 +19,13 @@ interface CheckmarkControlProps {
 }
 
 export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: CheckmarkControlProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
 	const [compareDisabled, setCompareDisabled] = useState(false)
 	const [restoreTaskDisabled, setRestoreTaskDisabled] = useState(false)
 	const [restoreWorkspaceDisabled, setRestoreWorkspaceDisabled] = useState(false)
 	const [restoreBothDisabled, setRestoreBothDisabled] = useState(false)
 	const [showRestoreConfirm, setShowRestoreConfirm] = useState(false)
+	const [showMoreOptions, setShowMoreOptions] = useState(false)
 	const { onRelinquishControl } = useExtensionState()
 
 	// Debounce
@@ -51,7 +54,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 				closeMenuTimeoutRef.current = null
 			}
 		}
-	}, [showRestoreConfirm])
+	}, [])
 
 	// Clear "Restore Files" button when checkpoint is no longer checked out
 	useEffect(() => {
@@ -94,6 +97,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 			setRestoreWorkspaceDisabled(false)
 			setRestoreBothDisabled(false)
 			setShowRestoreConfirm(false)
+			setShowMoreOptions(false)
 		})
 	}, [onRelinquishControl])
 
@@ -109,6 +113,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 			)
 		} catch (err) {
 			console.error("Checkpoint restore task error:", err)
+		} finally {
 			setRestoreTaskDisabled(false)
 		}
 	}
@@ -125,6 +130,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 			)
 		} catch (err) {
 			console.error("Checkpoint restore workspace error:", err)
+		} finally {
 			setRestoreWorkspaceDisabled(false)
 		}
 	}
@@ -141,6 +147,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 			)
 		} catch (err) {
 			console.error("Checkpoint restore both error:", err)
+		} finally {
 			setRestoreBothDisabled(false)
 		}
 	}
@@ -167,19 +174,19 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 			isMenuOpen={showRestoreConfirm}
 			onMouseEnter={handleControlsMouseEnter}
 			onMouseLeave={handleControlsMouseLeave}>
-			<i
-				className="codicon codicon-bookmark"
-				style={{
-					color: isCheckpointCheckedOut ? "var(--vscode-textLink-foreground)" : "var(--vscode-descriptionForeground)",
-					fontSize: "12px",
-					flexShrink: 0,
-				}}
+			<BookmarkIcon
+				className={cn("text-xs text-description shrink-0 size-2", {
+					"text-link": isCheckpointCheckedOut,
+				})}
 			/>
 			<DottedLine $isCheckedOut={isCheckpointCheckedOut} className="hover-show-inverse" />
 			<div className="hover-content">
-				<Label $isCheckedOut={isCheckpointCheckedOut}>
-					{isCheckpointCheckedOut ? t("chatRow.checkpoint.labelRestored") : t("chatRow.checkpoint.label")}
-				</Label>
+				<span
+					className={cn("text-[9px] text-description shrink-0", {
+						"text-link": isCheckpointCheckedOut,
+					})}>
+					{isCheckpointCheckedOut ? t("common.checkpoint.checkpointRestored") : t("common.checkpoint.checkpoint")}
+				</span>
 				<DottedLine $isCheckedOut={isCheckpointCheckedOut} />
 				<ButtonGroup>
 					<CustomButton
@@ -200,7 +207,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 							}
 						}}
 						style={{ cursor: compareDisabled ? "wait" : "pointer" }}>
-						{t("chatRow.checkpoint.compare")}
+						{t("common.checkpoint.compare")}
 					</CustomButton>
 					<DottedLine $isCheckedOut={isCheckpointCheckedOut} small />
 					<div ref={refs.setReference} style={{ position: "relative", marginTop: -2 }}>
@@ -208,7 +215,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 							$isCheckedOut={isCheckpointCheckedOut}
 							isActive={showRestoreConfirm}
 							onClick={() => setShowRestoreConfirm(true)}>
-							{t("chatRow.checkpoint.restore")}
+							{t("common.checkpoint.restore")}
 						</CustomButton>
 						{showRestoreConfirm &&
 							createPortal(
@@ -218,51 +225,67 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 									onMouseLeave={handleMouseLeave}
 									ref={refs.setFloating}
 									style={floatingStyles}>
-									<RestoreOption>
-										<VSCodeButton
-											disabled={restoreWorkspaceDisabled || isCheckpointCheckedOut}
-											onClick={handleRestoreWorkspace}
-											style={{
-												cursor: isCheckpointCheckedOut
-													? "not-allowed"
-													: restoreWorkspaceDisabled
-														? "wait"
-														: "pointer",
-												width: "100%",
-												marginBottom: "10px",
-											}}>
-											{t("chatRow.checkpoint.restoreFiles")}
-										</VSCodeButton>
-										<p>
-											{t("chatRow.checkpoint.restoreFilesDescription")}
-										</p>
-									</RestoreOption>
-									<RestoreOption>
-										<VSCodeButton
-											disabled={restoreTaskDisabled}
-											onClick={handleRestoreTask}
-											style={{
-												cursor: restoreTaskDisabled ? "wait" : "pointer",
-												width: "100%",
-												marginBottom: "10px",
-											}}>
-											{t("chatRow.checkpoint.restoreTask")}
-										</VSCodeButton>
-										<p>{t("chatRow.checkpoint.restoreTaskDescription")}</p>
-									</RestoreOption>
-									<RestoreOption>
-										<VSCodeButton
+									<PrimaryRestoreOption>
+										<Button
 											disabled={restoreBothDisabled}
 											onClick={handleRestoreBoth}
 											style={{
 												cursor: restoreBothDisabled ? "wait" : "pointer",
-												width: "100%",
-												marginBottom: "10px",
 											}}>
-											{t("chatRow.checkpoint.restoreBoth")}
-										</VSCodeButton>
-										<p>{t("chatRow.checkpoint.restoreBothDescription")}</p>
-									</RestoreOption>
+											<i className="codicon codicon-debug-restart" style={{ marginRight: "6px" }} />
+											{t("common.checkpoint.restoreFilesAndTask")}
+										</Button>
+										<p>{t("common.checkpoint.restoreFilesAndTaskDesc")}</p>
+									</PrimaryRestoreOption>
+
+									<MoreOptionsToggle onClick={() => setShowMoreOptions(!showMoreOptions)}>
+										{t("common.checkpoint.moreOptions")}
+										<i
+											className={`codicon codicon-chevron-${showMoreOptions ? "up" : "down"}`}
+											style={{ marginLeft: "4px", fontSize: "10px" }}
+										/>
+									</MoreOptionsToggle>
+
+									{showMoreOptions && (
+										<AdditionalOptions>
+											<RestoreOption>
+												<Button
+													disabled={restoreWorkspaceDisabled || isCheckpointCheckedOut}
+													onClick={handleRestoreWorkspace}
+													style={{
+														cursor: isCheckpointCheckedOut
+															? "not-allowed"
+															: restoreWorkspaceDisabled
+																? "wait"
+																: "pointer",
+													}}
+													variant="secondary">
+													<i
+														className="codicon codicon-file-symlink-directory"
+														style={{ marginRight: "6px" }}
+													/>
+													{t("common.checkpoint.restoreFilesOnly")}
+												</Button>
+												<p>{t("common.checkpoint.restoreFilesOnlyDesc")}</p>
+											</RestoreOption>
+											<RestoreOption>
+												<Button
+													disabled={restoreTaskDisabled}
+													onClick={handleRestoreTask}
+													style={{
+														cursor: restoreTaskDisabled ? "wait" : "pointer",
+													}}
+													variant="secondary">
+													<i
+														className="codicon codicon-comment-discussion"
+														style={{ marginRight: "6px" }}
+													/>
+													{t("common.checkpoint.restoreTaskOnlyAlt")}
+												</Button>
+												<p>{t("common.checkpoint.restoreTaskOnlyAltDesc")}</p>
+											</RestoreOption>
+										</AdditionalOptions>
+									)}
 								</RestoreConfirmTooltip>,
 								document.body,
 							)}
@@ -277,15 +300,20 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 const Container = styled.div<{ isMenuOpen?: boolean; $isCheckedOut?: boolean }>`
 	display: flex;
 	align-items: center;
-	padding: 4px 0;
+	padding: 8px 0px 0px 0px;
 	gap: 4px;
 	position: relative;
 	min-width: 0;
 	min-height: 17px;
-	margin-top: -10px;
-	margin-bottom: -10px;
+	margin-top: -2px;
+	margin-bottom: 1px;
 	opacity: ${(props) => (props.$isCheckedOut ? 1 : props.isMenuOpen ? 1 : 0.5)};
 	height: 0.5rem;
+
+	&:first-of-type {
+		padding-top: 0px;
+	}
+
 	&:hover {
 		opacity: 1;
 	}
@@ -309,12 +337,6 @@ const Container = styled.div<{ isMenuOpen?: boolean; $isCheckedOut?: boolean }>`
 	&:hover .hover-show-inverse {
 		display: none;
 	}
-`
-
-const Label = styled.span<{ $isCheckedOut?: boolean }>`
-	color: ${(props) => (props.$isCheckedOut ? "var(--vscode-textLink-foreground)" : "var(--vscode-descriptionForeground)")};
-	font-size: 9px;
-	shrink: 0;
 `
 
 const DottedLine = styled.div<{ small?: boolean; $isCheckedOut?: boolean }>`
@@ -395,22 +417,64 @@ const CustomButton = styled.button<{ disabled?: boolean; isActive?: boolean; $is
 	}
 `
 
-const RestoreOption = styled.div`
-	&:not(:last-child) {
-		margin-bottom: 10px;
-		padding-bottom: 4px;
-		border-bottom: 1px solid var(--vscode-editorGroup-border);
-	}
+const PrimaryRestoreOption = styled.div`
+	margin-bottom: 12px;
 
 	p {
-		margin: 0 0 2px 0;
+		margin: 8px 0 0 0;
 		color: var(--vscode-descriptionForeground);
 		font-size: 11px;
 		line-height: 14px;
 	}
+`
 
-	&:last-child p {
-		margin: 0 0 -2px 0;
+const MoreOptionsToggle = styled.button`
+	width: 100%;
+	padding: 2px 0;
+	background: transparent;
+	color: var(--vscode-textLink-foreground);
+	border: none;
+	font-size: 11px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	transition: opacity 0.1s ease;
+	opacity: 0.8;
+    margin-bottom: -4px;
+	&:hover {
+		opacity: 1;
+	}
+`
+
+const AdditionalOptions = styled.div`
+	padding-top: 8px;
+	margin-top: 6px;
+	border-top: 1px solid var(--vscode-editorGroup-border);
+	animation: slideDown 0.15s ease-out;
+
+	@keyframes slideDown {
+		from {
+			opacity: 0;
+			transform: translateY(-4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+`
+
+const RestoreOption = styled.div`
+	&:not(:last-child) {
+		margin-bottom: 12px;
+	}
+
+	p {
+		margin: 8px 0 0 0;
+		color: var(--vscode-descriptionForeground);
+		font-size: 11px;
+		line-height: 14px;
 	}
 `
 
@@ -418,10 +482,11 @@ const RestoreConfirmTooltip = styled.div`
 	position: fixed;
 	background: ${CODE_BLOCK_BG_COLOR};
 	border: 1px solid var(--vscode-editorGroup-border);
-	padding: 12px;
-	border-radius: 3px;
-	width: min(calc(100vw - 54px), 600px);
+	padding: 14px;
+	border-radius: 5px;
+	width: min(calc(100vw - 54px), 200px);
 	z-index: 1000;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
 	// Add invisible padding to create a safe hover zone
 	&::before {
@@ -464,9 +529,10 @@ const RestoreConfirmTooltip = styled.div`
 	}
 
 	p {
-		margin: 0 0 6px 0;
+		margin: 0;
 		color: var(--vscode-descriptionForeground);
-		font-size: 12px;
+		font-size: 11px;
+		line-height: 14px;
 		white-space: normal;
 		word-wrap: break-word;
 	}

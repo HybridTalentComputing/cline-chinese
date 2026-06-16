@@ -2,12 +2,13 @@ import { DeepSeekModelId, deepSeekDefaultModelId, deepSeekModels, ModelInfo } fr
 import { calculateApiCostOpenAI } from "@utils/cost"
 import OpenAI from "openai"
 import type { ChatCompletionTool as OpenAITool } from "openai/resources/chat/completions"
+import { buildExternalBasicHeaders } from "@/services/EnvUtils"
 import { ClineStorageMessage } from "@/shared/messages/content"
 import { fetch } from "@/shared/net"
 import { ApiHandler, CommonApiHandlerOptions } from "../"
 import { withRetry } from "../retry"
 import { convertToOpenAiMessages } from "../transform/openai-format"
-import { convertToR1Format } from "../transform/r1-format"
+import { addReasoningContent } from "../transform/r1-format"
 import { ApiStream } from "../transform/stream"
 import { getOpenAIToolParams, ToolCallProcessor } from "../transform/tool-call-processor"
 
@@ -33,6 +34,7 @@ export class DeepSeekHandler implements ApiHandler {
 				this.client = new OpenAI({
 					baseURL: "https://api.deepseek.com/v1",
 					apiKey: this.options.deepSeekApiKey,
+					defaultHeaders: buildExternalBasicHeaders(),
 					fetch, // Use configured fetch with proxy support
 				})
 			} catch (error) {
@@ -79,16 +81,13 @@ export class DeepSeekHandler implements ApiHandler {
 		const client = this.ensureClient()
 		const model = this.getModel()
 
-		const isDeepseekReasoner = model.id.includes("deepseek-reasoner")
+		const isDeepSeekThinkingModel =
+			model.id.includes("deepseek-reasoner") || model.id === "deepseek-v4-flash" || model.id === "deepseek-v4-pro"
 
-		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
-		]
-
-		if (isDeepseekReasoner) {
-			openAiMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-		}
+		const convertedMessages = convertToOpenAiMessages(messages)
+		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = isDeepSeekThinkingModel
+			? [{ role: "system", content: systemPrompt }, ...addReasoningContent(convertedMessages, messages)]
+			: [{ role: "system", content: systemPrompt }, ...convertedMessages]
 
 		const stream = await client.chat.completions.create({
 			model: model.id,
@@ -96,15 +95,15 @@ export class DeepSeekHandler implements ApiHandler {
 			messages: openAiMessages,
 			stream: true,
 			stream_options: { include_usage: true },
-			// Only set temperature for non-reasoner models
-			...(model.id === "deepseek-reasoner" ? {} : { temperature: 0 }),
+			// Only set temperature for non-thinking models
+			...(isDeepSeekThinkingModel ? {} : { temperature: 0 }),
 			...getOpenAIToolParams(tools),
 		})
 
 		const toolCallProcessor = new ToolCallProcessor()
 
 		for await (const chunk of stream) {
-			const delta = chunk.choices[0]?.delta
+			const delta = chunk.choices?.[0]?.delta
 			if (delta?.content) {
 				yield {
 					type: "text",

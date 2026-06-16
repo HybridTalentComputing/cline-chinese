@@ -8,13 +8,13 @@ const NewTaskButton: React.FC<{
 	onClick: () => void
 	className?: string
 }> = ({ className, onClick }) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("common")
 	return (
 		<Tooltip>
-			<TooltipContent side="left">{t("chat.newTask.startANewTask")}</TooltipContent>
+			<TooltipContent side="left">{t("taskHeader.startNewTask")}</TooltipContent>
 			<TooltipTrigger className={cn("flex items-center", className)}>
 				<Button
-					aria-label={t("chat.newTask.newTask")}
+					aria-label={t("taskHeader.newTask")}
 					onClick={(e) => {
 						e.preventDefault()
 						e.stopPropagation()

@@ -6,7 +6,7 @@ type McpResourceRowProps = {
 }
 
 const McpResourceRow = ({ item }: McpResourceRowProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
 	const hasUri = "uri" in item
 	const uri = hasUri ? item.uri : item.uriTemplate
 
@@ -37,13 +37,13 @@ const McpResourceRow = ({ item }: McpResourceRowProps) => {
 						? item.description
 						: !item.description && item.name
 							? item.name
-							: t("mcp.resource.noDescription")}
+							: t("mcp.serverRow.noDescription")}
 			</div>
 			<div
 				style={{
 					fontSize: "12px",
 				}}>
-				<span style={{ opacity: 0.8 }}>{t("mcp.resource.returns")}</span>
+				<span style={{ opacity: 0.8 }}>{t("mcp.marketplace.returns")} </span>
 				<code
 					style={{
 						color: "var(--vscode-textPreformat-foreground)",
@@ -51,7 +51,7 @@ const McpResourceRow = ({ item }: McpResourceRowProps) => {
 						padding: "1px 4px",
 						borderRadius: "3px",
 					}}>
-					{item.mimeType || t("mcp.resource.unknown")}
+					{item.mimeType || t("mcp.marketplace.unknown")}
 				</code>
 			</div>
 		</div>

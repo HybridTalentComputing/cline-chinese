@@ -1,8 +1,9 @@
 import { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
 import { listFiles } from "@services/glob/list-files"
-import { fileExistsAtPath } from "@utils/fs"
+import { fileExistsAtPath, isDirectory } from "@utils/fs"
 import * as fs from "fs/promises"
 import * as path from "path"
+import { Logger } from "@/shared/services/Logger"
 import { LanguageParser, loadRequiredLanguageParsers } from "./languageParser"
 
 // TODO: implement caching behavior to avoid having to keep analyzing project for new tasks.
@@ -10,9 +11,12 @@ export async function parseSourceCodeForDefinitionsTopLevel(
 	dirPath: string,
 	clineIgnoreController?: ClineIgnoreController,
 ): Promise<string> {
-	// check if the path exists
-	const dirExists = await fileExistsAtPath(path.resolve(dirPath))
-	if (!dirExists) {
+	// ensure input is a directory before listing files
+	const resolvedPath = path.resolve(dirPath)
+	if (!(await isDirectory(resolvedPath))) {
+		if (await fileExistsAtPath(resolvedPath)) {
+			return `The provided path is a file, not a directory. To view this file use read_file instead, or pass the parent directory to list_code_definition_names.`
+		}
 		return "This directory does not exist or you do not have permission to access it."
 	}
 
@@ -173,7 +177,7 @@ async function parseFile(
 			lastLine = endLine
 		})
 	} catch (error) {
-		console.log(`Error parsing file: ${error}\n`)
+		Logger.log(`Error parsing file: ${error}\n`)
 	}
 
 	if (formattedOutput.length > 0) {

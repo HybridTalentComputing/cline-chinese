@@ -21,7 +21,7 @@ interface SambanovaProviderProps {
  * The SambaNova provider configuration component
  */
 export const SambanovaProvider = ({ showModelOptions, isPopup, currentMode }: SambanovaProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -40,7 +40,7 @@ export const SambanovaProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={sambanovaModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

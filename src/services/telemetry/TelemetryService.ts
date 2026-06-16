@@ -1,10 +1,12 @@
 import { HostProvider } from "@hosts/host-provider"
 import type { BrowserSettings } from "@shared/BrowserSettings"
+import { ApiFormat, apiFormatToJSON } from "@shared/proto/cline/models"
 import { ShowMessageType } from "@shared/proto/host/window"
 import type { TaskFeedbackType } from "@shared/WebviewMessage"
 import * as os from "os"
 import { ClineAccountUserInfo } from "@/services/auth/AuthService"
 import { Setting } from "@/shared/proto/index.host"
+import { Logger } from "@/shared/services/Logger"
 import { Mode } from "@/shared/storage/types"
 import { version as extensionVersion } from "../../../package.json"
 import { setDistinctId } from "../logging/distinctId"
@@ -16,7 +18,7 @@ import { TelemetryProviderFactory } from "./TelemetryProviderFactory"
  * When adding a new category, add it both here and to the initial values in telemetryCategoryEnabled
  * Ensure `if (!this.isCategoryEnabled('<category_name>')` is added to the capture method
  */
-type TelemetryCategory = "checkpoints" | "browser" | "focus_chain" | "dictation" | "subagents" | "hooks"
+type TelemetryCategory = "checkpoints" | "browser" | "focus_chain" | "subagents" | "skills" | "hooks"
 
 /**
  * Terminal type for telemetry differentiation
@@ -87,8 +89,22 @@ export type TelemetryMetadata = {
 	/** The operating system version e.g. 'Windows 10 Pro', 'Darwin Kernel Version 21.6.0...'
 	 * This is the value returned by os.version() */
 	os_version: string
+	/** Whether the current workspace is a VS Code remote workspace */
+	is_remote_workspace: boolean
 	/** Whether the extension is running in development mode */
 	is_dev: string | undefined
+}
+
+/**
+ * Token usage data shared across telemetry capture methods.
+ * Used by both `captureTokenUsage` and `captureConversationTurnEvent`.
+ */
+export interface TokenUsage {
+	tokensIn?: number
+	tokensOut?: number
+	cacheWriteTokens?: number
+	cacheReadTokens?: number
+	totalCost?: number
 }
 
 /**
@@ -106,13 +122,18 @@ export class TelemetryService {
 	private telemetryCategoryEnabled: Map<TelemetryCategory, boolean> = new Map([
 		["checkpoints", true], // Checkpoints telemetry enabled
 		["browser", true], // Browser telemetry enabled
-		["dictation", true], // Dictation telemetry enabled
 		["focus_chain", true], // Focus Chain telemetry enabled
 		["subagents", true], // CLI Subagents telemetry enabled
+		["skills", true], // Skills telemetry enabled
 		["hooks", true], // Hooks telemetry enabled
 	])
 
 	private userId?: string
+	private activeOrg: {
+		organization_id: string
+		organization_name: string
+		member_id: string
+	} | null = null
 	private taskTurnCounts = new Map<string, number>()
 	private taskToolCallCounts = new Map<string, number>()
 	private taskErrorCounts = new Map<string, number>()
@@ -155,6 +176,23 @@ export class TelemetryService {
 			CONTEXT_MODIFICATIONS_TOTAL: "cline.hooks.context_modifications.total",
 			CACHE_ACCESSES_TOTAL: "cline.hooks.cache.accesses.total",
 		},
+		AI_OUTPUT: {
+			ACCEPTED_LINES_ADDED: "cline.ai_output.accepted.lines_added.total",
+			ACCEPTED_LINES_DELETED: "cline.ai_output.accepted.lines_deleted.total",
+			ACCEPTED_LINES_CHANGED: "cline.ai_output.accepted.lines_changed.total",
+			ACCEPTED_FILES_CREATED: "cline.ai_output.accepted.files_created.total",
+			ACCEPTED_FILES_DELETED: "cline.ai_output.accepted.files_deleted.total",
+			ACCEPTED_FILES_MOVED: "cline.ai_output.accepted.files_moved.total",
+			REJECTED_LINES_ADDED: "cline.ai_output.rejected.lines_added.total",
+			REJECTED_LINES_DELETED: "cline.ai_output.rejected.lines_deleted.total",
+			REJECTED_LINES_CHANGED: "cline.ai_output.rejected.lines_changed.total",
+			REJECTED_FILES_CREATED: "cline.ai_output.rejected.files_created.total",
+			REJECTED_FILES_DELETED: "cline.ai_output.rejected.files_deleted.total",
+			REJECTED_FILES_MOVED: "cline.ai_output.rejected.files_moved.total",
+		},
+		GRPC: {
+			RESPONSE_SIZE_BYTES: "cline.grpc.response.size_bytes",
+		},
 	}
 	// Event constants for tracking user interactions and system events
 	private static readonly EVENTS = {
@@ -162,6 +200,7 @@ export class TelemetryService {
 
 		USER: {
 			OPT_OUT: "user.opt_out",
+			OPT_IN: "user.opt_in",
 			TELEMETRY_ENABLED: "user.telemetry_enabled",
 			EXTENSION_ACTIVATED: "user.extension_activated",
 			EXTENSION_STORAGE_ERROR: "user.extension_storage_error",
@@ -170,19 +209,6 @@ export class TelemetryService {
 			AUTH_FAILED: "user.auth_failed",
 			AUTH_LOGGED_OUT: "user.auth_logged_out",
 			ONBOARDING_PROGRESS: "user.onboarding_progress",
-		},
-		DICTATION: {
-			// Tracks when voice recording is started
-			RECORDING_STARTED: "voice.recording_started",
-			// Tracks when voice recording is stopped
-			RECORDING_STOPPED: "voice.recording_stopped",
-			// Tracks when voice transcription is started
-			TRANSCRIPTION_STARTED: "voice.transcription_started",
-			// Tracks when voice transcription is completed successfully
-			TRANSCRIPTION_COMPLETED: "voice.transcription_completed",
-			// Tracks when voice transcription fails
-			TRANSCRIPTION_ERROR: "voice.transcription_error",
-			// Tracks when voice feature is enabled or disabled in settings
 		},
 		// Workspace-related events for multi-root support
 		WORKSPACE: {
@@ -284,6 +310,8 @@ export class TelemetryService {
 			SUBAGENT_DISABLED: "task.subagent_disabled",
 			SUBAGENT_STARTED: "task.subagent_started",
 			SUBAGENT_COMPLETED: "task.subagent_completed",
+			// Skills telemetry events
+			SKILL_USED: "task.skill_used",
 		},
 		// UI interaction events for tracking user engagement
 		UI: {
@@ -309,6 +337,19 @@ export class TelemetryService {
 			// Tracks when hook discovery completes
 			DISCOVERY_COMPLETED: "hooks.discovery_completed",
 		},
+		// Worktree-related events for tracking worktree feature usage
+		WORKTREE: {
+			// Tracks when user opens worktrees view from home page
+			VIEW_OPENED: "worktree.view_opened",
+			// Tracks when a worktree is created
+			CREATED: "worktree.created",
+			// Tracks when a worktree merge is attempted
+			MERGE_ATTEMPTED: "worktree.merge_attempted",
+		},
+		HOST: {
+			// Tracks events detected from the host environment
+			DETECTED: "host.detected",
+		},
 	}
 
 	public static async create(): Promise<TelemetryService> {
@@ -321,6 +362,8 @@ export class TelemetryService {
 			cline_type: hostVersion.clineType || "unknown",
 			os_type: os.platform(),
 			os_version: os.version(),
+			// `remoteName` is normalized by the host bridge to `undefined` for local workspaces.
+			is_remote_workspace: !!hostVersion.remoteName,
 			is_dev: process.env.IS_DEV,
 		}
 		return new TelemetryService(providers, metadata)
@@ -335,7 +378,7 @@ export class TelemetryService {
 		private telemetryMetadata: TelemetryMetadata,
 	) {
 		this.capture({ event: TelemetryService.EVENTS.USER.TELEMETRY_ENABLED })
-		console.info(`[TelemetryService] Initialized with ${providers.length} telemetry provider(s)`)
+		Logger.info(`[TelemetryService] Initialized with ${providers.length} telemetry provider(s)`)
 	}
 
 	public addProvider(provider: ITelemetryProvider) {
@@ -377,11 +420,23 @@ export class TelemetryService {
 					})
 			}
 		}
+	}
 
-		// Update all providers
-		this.providers.forEach((provider) => {
-			provider.setOptIn(didUserOptIn)
-		})
+	/**
+	 * Captures when a user explicitly opts out of telemetry.
+	 * Uses captureRequired to ensure the event is sent before telemetry is disabled.
+	 * Should only be called on explicit user action, not on init/sync.
+	 */
+	public captureUserOptOut(): void {
+		this.captureRequired(TelemetryService.EVENTS.USER.OPT_OUT, {})
+	}
+
+	/**
+	 * Captures when a user explicitly opts back into telemetry.
+	 * Should only be called on explicit user action, not on init/sync.
+	 */
+	public captureUserOptIn(): void {
+		this.capture({ event: TelemetryService.EVENTS.USER.OPT_IN })
 	}
 
 	/**
@@ -424,7 +479,7 @@ export class TelemetryService {
 					provider.log(event, properties)
 				}
 			} catch (error) {
-				console.error(`[TelemetryService] Provider failed for event ${event}:`, error)
+				Logger.error(`[TelemetryService] Provider failed for event ${event}:`, error)
 			}
 		})
 	}
@@ -433,6 +488,7 @@ export class TelemetryService {
 		return {
 			...this.telemetryMetadata,
 			...(this.userId ? { userId: this.userId } : {}),
+			...this.activeOrg,
 			...(extra ?? {}),
 		}
 	}
@@ -449,7 +505,7 @@ export class TelemetryService {
 			try {
 				provider.recordCounter(name, value, attrs, description, required)
 			} catch (error) {
-				console.error(`[TelemetryService] recordCounter failed: ${name}`, error)
+				Logger.error(`[TelemetryService] recordCounter failed: ${name}`, error)
 			}
 		})
 	}
@@ -466,7 +522,7 @@ export class TelemetryService {
 			try {
 				provider.recordHistogram(name, value, attrs, description, required)
 			} catch (error) {
-				console.error(`[TelemetryService] recordHistogram failed: ${name}`, error)
+				Logger.error(`[TelemetryService] recordHistogram failed: ${name}`, error)
 			}
 		})
 	}
@@ -487,7 +543,7 @@ export class TelemetryService {
 			try {
 				provider.recordGauge(name, value, attrs, description, required)
 			} catch (error) {
-				console.error(`[TelemetryService] recordGauge failed: ${name}`, error)
+				Logger.error(`[TelemetryService] recordGauge failed: ${name}`, error)
 			}
 		})
 	}
@@ -505,7 +561,9 @@ export class TelemetryService {
 	}
 
 	public captureExtensionActivated() {
-		this.captureToProviders(TelemetryService.EVENTS.USER.EXTENSION_ACTIVATED, {}, false)
+		this.capture({
+			event: TelemetryService.EVENTS.USER.EXTENSION_ACTIVATED,
+		})
 	}
 
 	public captureExtensionStorageError(errorMessage: string, eventName: string) {
@@ -586,139 +644,28 @@ export class TelemetryService {
 		}
 
 		this.userId = userInfo.id
+		const activeOrg = userInfo.organizations?.find((org) => org.active)
+		if (activeOrg) {
+			this.activeOrg = {
+				organization_id: activeOrg.organizationId,
+				organization_name: activeOrg.name,
+				member_id: activeOrg.memberId,
+			}
+		} else {
+			this.activeOrg = null
+		}
 		// Update all providers with error isolation
 		this.providers.forEach((provider) => {
 			try {
 				provider.identifyUser(userInfo, propertiesWithMetadata)
 			} catch (error) {
-				console.error(`[TelemetryService] Provider failed for user identification:`, error)
+				Logger.error(`[TelemetryService] Provider failed for user identification:`, error)
 			}
 		})
 
 		if (userInfo.id) {
 			setDistinctId(userInfo.id)
 		}
-	}
-
-	// Dictation events
-	/**
-	 * Records when voice recording is started
-	 * @param taskId Optional task identifier if recording was started during a task
-	 * @param platform The platform where recording is happening (macOS, Windows, Linux)
-	 */
-	public captureVoiceRecordingStarted(taskId?: string, platform?: string) {
-		if (!this.isCategoryEnabled("dictation")) {
-			return
-		}
-
-		this.capture({
-			event: TelemetryService.EVENTS.DICTATION.RECORDING_STARTED,
-			properties: {
-				taskId,
-				platform: platform ?? process.platform,
-				timestamp: new Date().toISOString(),
-			},
-		})
-	}
-
-	/**
-	 * Records when voice recording is stopped
-	 * @param taskId Optional task identifier if recording was stopped during a task
-	 * @param durationMs Duration of the recording in milliseconds
-	 * @param success Whether the recording was successful
-	 * @param platform The platform where recording happened
-	 */
-	public captureVoiceRecordingStopped(taskId?: string, durationMs?: number, success?: boolean, platform?: string) {
-		if (!this.isCategoryEnabled("dictation")) {
-			return
-		}
-
-		this.capture({
-			event: TelemetryService.EVENTS.DICTATION.RECORDING_STOPPED,
-			properties: {
-				taskId,
-				durationMs,
-				success,
-				platform: platform ?? process.platform,
-				timestamp: new Date().toISOString(),
-			},
-		})
-	}
-
-	/**
-	 * Records when voice transcription is started
-	 * @param taskId Optional task identifier if transcription was started during a task
-	 * @param language Language hint provided for transcription
-	 */
-	public captureVoiceTranscriptionStarted(taskId?: string, language?: string) {
-		if (!this.isCategoryEnabled("dictation")) {
-			return
-		}
-
-		this.capture({
-			event: TelemetryService.EVENTS.DICTATION.TRANSCRIPTION_STARTED,
-			properties: {
-				taskId,
-				language,
-				timestamp: new Date().toISOString(),
-			},
-		})
-	}
-
-	/**
-	 * Records when voice transcription is completed successfully
-	 * @param taskId Optional task identifier if transcription was completed during a task
-	 * @param transcriptionLength Length of the transcribed text
-	 * @param durationMs Time taken for transcription in milliseconds
-	 * @param language Language used for transcription
-	 * @param isOrgAccount Whether the transcription was done using an organization account
-	 */
-	public captureVoiceTranscriptionCompleted(
-		taskId?: string,
-		transcriptionLength?: number,
-		durationMs?: number,
-		language?: string,
-		isOrgAccount?: boolean,
-	) {
-		if (!this.isCategoryEnabled("dictation")) {
-			return
-		}
-
-		this.capture({
-			event: TelemetryService.EVENTS.DICTATION.TRANSCRIPTION_COMPLETED,
-			properties: {
-				taskId,
-				transcriptionLength,
-				durationMs,
-				language,
-				accountType: isOrgAccount ? "organization" : "personal",
-				timestamp: new Date().toISOString(),
-			},
-		})
-	}
-
-	/**
-	 * Records when voice transcription fails
-	 * @param taskId Optional task identifier if transcription failed during a task
-	 * @param errorType Type of error that occurred (e.g., "no_openai_key", "api_error", "network_error")
-	 * @param errorMessage The error message
-	 * @param durationMs Time taken before failure in milliseconds
-	 */
-	public captureVoiceTranscriptionError(taskId?: string, errorType?: string, errorMessage?: string, durationMs?: number) {
-		if (!this.isCategoryEnabled("dictation")) {
-			return
-		}
-
-		this.capture({
-			event: TelemetryService.EVENTS.DICTATION.TRANSCRIPTION_ERROR,
-			properties: {
-				taskId,
-				errorType,
-				errorMessage,
-				durationMs,
-				timestamp: new Date().toISOString(),
-			},
-		})
 	}
 
 	// Task events
@@ -754,11 +701,53 @@ export class TelemetryService {
 	 * Records when cline calls the task completion_result tool signifying that cline is done with the task
 	 * @param ulid Unique identifier for the task
 	 */
-	public captureTaskCompleted(ulid: string) {
+	public captureTaskCompleted(
+		ulid: string,
+		args?: {
+			provider?: string
+			modelId?: string
+			apiFormat?: ApiFormat
+			timeToFirstTokenMs?: number
+			durationMs?: number
+			mode: Mode
+		},
+	) {
+		const apiFormatName = args?.apiFormat !== undefined ? apiFormatToJSON(args.apiFormat) : undefined
 		this.capture({
 			event: TelemetryService.EVENTS.TASK.COMPLETED,
-			properties: { ulid },
+			properties: {
+				ulid,
+				provider: args?.provider,
+				modelId: args?.modelId,
+				apiFormat: args?.apiFormat,
+				apiFormatName,
+				timeToFirstTokenMs: args?.timeToFirstTokenMs,
+				durationMs: args?.durationMs,
+				mode: args?.mode,
+			},
 		})
+
+		if (Number.isFinite(args?.timeToFirstTokenMs)) {
+			this.recordHistogram(TelemetryService.METRICS.API.TTFT_SECONDS, (args?.timeToFirstTokenMs ?? 0) / 1000, {
+				ulid,
+				provider: args?.provider,
+				model: args?.modelId,
+				apiFormat: apiFormatName,
+				mode: args?.mode,
+			})
+		}
+
+		if (Number.isFinite(args?.durationMs)) {
+			this.recordHistogram(TelemetryService.METRICS.API.DURATION_SECONDS, (args?.durationMs ?? 0) / 1000, {
+				ulid,
+				provider: args?.provider,
+				model: args?.modelId,
+				apiFormat: apiFormatName,
+				scope: "task",
+				mode: args?.mode,
+			})
+		}
+
 		this.resetTaskAggregates(ulid)
 	}
 
@@ -773,22 +762,16 @@ export class TelemetryService {
 	 */
 	public captureConversationTurnEvent(
 		ulid: string,
-		provider: string = "unknown",
-		model: string = "unknown",
+		provider = "unknown",
+		model = "unknown",
 		source: "user" | "assistant",
 		mode: Mode,
-		tokenUsage: {
-			tokensIn?: number
-			tokensOut?: number
-			cacheWriteTokens?: number
-			cacheReadTokens?: number
-			totalCost?: number
-		} = {},
+		tokenUsage: TokenUsage = {},
 		isNativeToolCall?: boolean,
 	) {
 		// Ensure required parameters are provided
 		if (!ulid || !provider || !model || !source) {
-			console.warn("TelemetryService: Missing required parameters for message capture")
+			Logger.warn("TelemetryService: Missing required parameters for message capture")
 			return
 		}
 
@@ -857,29 +840,60 @@ export class TelemetryService {
 	 * @param ulid Unique identifier for the task
 	 * @param tokensIn Number of input tokens consumed
 	 * @param tokensOut Number of output tokens generated
+	 * @param provider The API provider identifier (e.g. "anthropic", "openai", "cline")
 	 * @param model The model used for token calculation
 	 */
-	public captureTokenUsage(ulid: string, tokensIn: number, tokensOut: number, model: string) {
+	public captureTokenUsage(
+		ulid: string,
+		tokensIn: number,
+		tokensOut: number,
+		provider: string,
+		model: string,
+		options?: TokenUsage,
+	) {
 		this.capture({
 			event: TelemetryService.EVENTS.TASK.TOKEN_USAGE,
 			properties: {
 				ulid,
 				tokensIn,
 				tokensOut,
+				provider,
 				model,
+				...options,
 			},
 		})
 
+		const attributes = { ulid, provider, model }
+
 		if (Number.isFinite(tokensIn)) {
 			const value = tokensIn ?? 0
-			this.recordCounter(TelemetryService.METRICS.TASK.TOKENS_INPUT_TOTAL, value, { ulid, model })
-			this.recordHistogram(TelemetryService.METRICS.TASK.TOKENS_INPUT_PER_RESPONSE, value, { ulid, model })
+			this.recordCounter(TelemetryService.METRICS.TASK.TOKENS_INPUT_TOTAL, value, attributes)
+			this.recordHistogram(TelemetryService.METRICS.TASK.TOKENS_INPUT_PER_RESPONSE, value, attributes)
 		}
 
 		if (Number.isFinite(tokensOut)) {
 			const value = tokensOut ?? 0
-			this.recordCounter(TelemetryService.METRICS.TASK.TOKENS_OUTPUT_TOTAL, value, { ulid, model })
-			this.recordHistogram(TelemetryService.METRICS.TASK.TOKENS_OUTPUT_PER_RESPONSE, value, { ulid, model })
+			this.recordCounter(TelemetryService.METRICS.TASK.TOKENS_OUTPUT_TOTAL, value, attributes)
+			this.recordHistogram(TelemetryService.METRICS.TASK.TOKENS_OUTPUT_PER_RESPONSE, value, attributes)
+		}
+
+		if (Number.isFinite(options?.cacheWriteTokens)) {
+			const cacheWriteTokens = options!.cacheWriteTokens ?? 0
+			this.recordCounter(TelemetryService.METRICS.CACHE.WRITE_TOTAL, cacheWriteTokens, attributes)
+			this.recordHistogram(TelemetryService.METRICS.CACHE.WRITE_PER_EVENT, cacheWriteTokens, attributes)
+		}
+
+		if (Number.isFinite(options?.cacheReadTokens)) {
+			const cacheReadTokens = options!.cacheReadTokens ?? 0
+			this.recordCounter(TelemetryService.METRICS.CACHE.READ_TOTAL, cacheReadTokens, attributes)
+			this.recordHistogram(TelemetryService.METRICS.CACHE.READ_PER_EVENT, cacheReadTokens, attributes)
+		}
+
+		if (Number.isFinite(options?.totalCost)) {
+			const totalCost = options!.totalCost ?? 0
+			const costAttributes = { ...attributes, currency: "USD" }
+			this.recordCounter(TelemetryService.METRICS.TASK.COST_TOTAL, totalCost, costAttributes)
+			this.recordHistogram(TelemetryService.METRICS.TASK.COST_PER_EVENT, totalCost, costAttributes)
 		}
 	}
 
@@ -931,7 +945,7 @@ export class TelemetryService {
 	 * @param feedbackType The type of feedback ("thumbs_up" or "thumbs_down")
 	 */
 	public captureTaskFeedback(ulid: string, feedbackType: TaskFeedbackType) {
-		console.info("TelemetryService: Capturing task feedback", {
+		Logger.info("TelemetryService: Capturing task feedback", {
 			ulid,
 			feedbackType,
 		})
@@ -1001,6 +1015,42 @@ export class TelemetryService {
 		const toolCallCount = this.incrementTaskCounter(this.taskToolCallCounts, ulid)
 		this.recordCounter(TelemetryService.METRICS.TOOLS.CALLS_TOTAL, 1, toolAttributes)
 		this.recordHistogram(TelemetryService.METRICS.TOOLS.CALLS_PER_TASK, toolCallCount, toolAttributes)
+	}
+
+	public captureSkillUsed(args: {
+		ulid: string
+		skillName: string
+		skillSource: "global" | "project"
+		skillsAvailableGlobal: number
+		skillsAvailableProject: number
+		provider?: string
+		modelId?: string
+	}): void {
+		if (!this.isCategoryEnabled("skills")) {
+			return
+		}
+
+		if (!args.ulid || !args.skillName) {
+			return
+		}
+
+		const skillsAvailableGlobal = Math.max(0, args.skillsAvailableGlobal)
+		const skillsAvailableProject = Math.max(0, args.skillsAvailableProject)
+
+		const properties = {
+			ulid: args.ulid,
+			skillName: args.skillName,
+			skillSource: args.skillSource,
+			skillsAvailableGlobal,
+			skillsAvailableProject,
+			provider: args.provider,
+			modelId: args.modelId,
+		}
+
+		this.capture({
+			event: TelemetryService.EVENTS.TASK.SKILL_USED,
+			properties,
+		})
 	}
 
 	/**
@@ -1481,9 +1531,9 @@ export class TelemetryService {
 	 * Records when slash commands or workflows are activated
 	 * @param ulid Unique identifier for the task
 	 * @param commandName The name of the command (e.g., "newtask", "reportbug", or custom workflow name)
-	 * @param commandType Whether it's a built-in command or custom workflow
+	 * @param commandType Whether it's a built-in command, custom workflow, or MCP prompt
 	 */
-	public captureSlashCommandUsed(ulid: string, commandName: string, commandType: "builtin" | "workflow") {
+	public captureSlashCommandUsed(ulid: string, commandName: string, commandType: "builtin" | "workflow" | "mcp_prompt") {
 		this.capture({
 			event: TelemetryService.EVENTS.TASK.SLASH_COMMAND_USED,
 			properties: {
@@ -1625,18 +1675,31 @@ export class TelemetryService {
 	 * @param success Whether the command output was successfully captured
 	 * @param terminalType The type of terminal ("standalone")
 	 * @param method The standalone-specific method used to capture output
+	 * @param exitCode The process exit code (useful for diagnosing failure types: 1=error, 127=not found, 126=permission denied)
 	 */
-	public captureTerminalExecution(success: boolean, terminalType: "standalone", method: StandaloneOutputMethod): void
+	public captureTerminalExecution(
+		success: boolean,
+		terminalType: "standalone",
+		method: StandaloneOutputMethod,
+		exitCode?: number | null,
+	): void
 	/**
 	 * Implementation of captureTerminalExecution
 	 */
-	public captureTerminalExecution(success: boolean, terminalType: TerminalType, method: TerminalOutputMethod): void {
+	public captureTerminalExecution(
+		success: boolean,
+		terminalType: TerminalType,
+		method: TerminalOutputMethod,
+		exitCode?: number | null,
+	): void {
 		this.capture({
 			event: TelemetryService.EVENTS.TASK.TERMINAL_EXECUTION,
 			properties: {
 				success,
 				terminalType,
 				method,
+				// Only include exitCode for standalone terminals when it's a meaningful value
+				...(terminalType === "standalone" && exitCode !== undefined && exitCode !== null && { exitCode }),
 			},
 		})
 	}
@@ -1837,6 +1900,51 @@ export class TelemetryService {
 	}
 
 	/**
+	 * Records when user opens the worktrees view
+	 * @param source Where the user opened the view from (home_page or menu_bar)
+	 */
+	public captureWorktreeViewOpened(source: "home_page" | "menu_bar") {
+		this.capture({
+			event: TelemetryService.EVENTS.WORKTREE.VIEW_OPENED,
+			properties: {
+				source,
+			},
+		})
+	}
+
+	/**
+	 * Records when a worktree is created
+	 * @param success Whether the creation was successful
+	 * @param worktreeCount Total number of worktrees after creation (to track power users)
+	 */
+	public captureWorktreeCreated(success: boolean, worktreeCount?: number) {
+		this.capture({
+			event: TelemetryService.EVENTS.WORKTREE.CREATED,
+			properties: {
+				success,
+				worktree_count: worktreeCount,
+			},
+		})
+	}
+
+	/**
+	 * Records when a worktree merge is attempted
+	 * @param success Whether the merge was successful
+	 * @param hasConflicts Whether merge conflicts were detected
+	 * @param deleteAfterMerge Whether user chose to delete worktree after merge
+	 */
+	public captureWorktreeMergeAttempted(success: boolean, hasConflicts: boolean, deleteAfterMerge: boolean) {
+		this.capture({
+			event: TelemetryService.EVENTS.WORKTREE.MERGE_ATTEMPTED,
+			properties: {
+				success,
+				has_conflicts: hasConflicts,
+				delete_after_merge: deleteAfterMerge,
+			},
+		})
+	}
+
+	/**
 	 * Checks if a specific telemetry category is enabled
 	 * @param category The telemetry category to check
 	 * @returns Boolean indicating whether the specified telemetry category is enabled
@@ -1870,7 +1978,6 @@ export class TelemetryService {
 		return this.providers.length > 0
 			? this.providers[0].getSettings()
 			: {
-					extensionEnabled: false,
 					hostEnabled: false,
 					level: "off" as const,
 				}
@@ -1896,15 +2003,27 @@ export class TelemetryService {
 	}
 
 	/**
-	 * Records when a mention fails to retrieve content
-	 * @param mentionType Type of mention that failed
-	 * @param errorType Category of error (not_found, permission_denied, network_error, parse_error)
-	 * @param errorMessage Optional error message for debugging (will be truncated)
+	 * Records when a mention fails to retrieve content or when the mention
+	 * picker's file/folder search itself fails.
+	 *
+	 * `ripgrep_spawn_failed` and `workspace_unavailable` are picker-search
+	 * failures, surfaced by the `searchFiles` controller; the others are
+	 * mention-content retrieval failures.
+	 *
+	 * @param fsContext Optional filesystem info, emitted as `fs_class` and `fs_type`.
 	 */
 	public captureMentionFailed(
 		mentionType: "file" | "folder" | "url" | "problems" | "terminal" | "git-changes" | "commit",
-		errorType: "not_found" | "permission_denied" | "network_error" | "parse_error" | "unknown",
+		errorType:
+			| "not_found"
+			| "permission_denied"
+			| "network_error"
+			| "parse_error"
+			| "ripgrep_spawn_failed"
+			| "workspace_unavailable"
+			| "unknown",
 		errorMessage?: string,
+		fsContext?: { fsClass?: "local" | "network" | "unknown"; fsType?: string },
 	) {
 		this.capture({
 			event: TelemetryService.EVENTS.TASK.MENTION_FAILED,
@@ -1912,6 +2031,8 @@ export class TelemetryService {
 				mentionType,
 				errorType,
 				errorMessage: errorMessage?.substring(0, MAX_ERROR_MESSAGE_LENGTH),
+				...(fsContext?.fsClass ? { fs_class: fsContext.fsClass } : {}),
+				...(fsContext?.fsType ? { fs_type: fsContext.fsType } : {}),
 				timestamp: new Date().toISOString(),
 			},
 		})
@@ -1923,12 +2044,19 @@ export class TelemetryService {
 	 * @param resultCount Number of results returned
 	 * @param searchType Type of search (file, folder, or all)
 	 * @param isEmpty Whether the search returned no results
+	 * @param fsContext Optional filesystem info, emitted as `fs_class` and `fs_type`.
+	 * @param searchSource Which backend served the search: `host_index` (e.g.
+	 *   JetBrains FilenameIndex) or `ripgrep` (default everywhere). Emitted as
+	 *   the `search_source` property so we can tell, for a given fs_class, how
+	 *   often the host index actually picks up the load.
 	 */
 	public captureMentionSearchResults(
 		query: string,
 		resultCount: number,
 		searchType: "file" | "folder" | "all",
 		isEmpty: boolean,
+		fsContext?: { fsClass?: "local" | "network" | "unknown"; fsType?: string },
+		searchSource?: "host_index" | "ripgrep",
 	) {
 		this.capture({
 			event: TelemetryService.EVENTS.TASK.MENTION_SEARCH_RESULTS,
@@ -1937,6 +2065,9 @@ export class TelemetryService {
 				resultCount,
 				searchType,
 				isEmpty,
+				...(fsContext?.fsClass ? { fs_class: fsContext.fsClass } : {}),
+				...(fsContext?.fsType ? { fs_type: fsContext.fsType } : {}),
+				...(searchSource ? { search_source: searchSource } : {}),
 				timestamp: new Date().toISOString(),
 			},
 		})
@@ -2126,6 +2257,147 @@ export class TelemetryService {
 	}
 
 	/**
+	 * Records when a file edit (write_to_file, replace_in_file, apply_patch) is accepted by the user
+	 * Tracks lines added, deleted, and changed for the accepted edit.
+	 *
+	 * @param args Properties for the accepted AI output event
+	 */
+	public captureAiOutputAccepted(args: {
+		ulid: string
+		tool: string
+		provider?: string
+		model?: string
+		source: "agent" | "human"
+		linesAdded: number
+		linesDeleted: number
+		linesChanged: number
+		filesCreated?: number
+		filesDeleted?: number
+		filesMoved?: number
+	}): void {
+		this.capture({
+			event: "task.ai_output.accepted",
+			properties: {
+				ulid: args.ulid,
+				tool: args.tool,
+				provider: args.provider,
+				model: args.model,
+				source: args.source,
+				linesAdded: args.linesAdded,
+				linesDeleted: args.linesDeleted,
+				linesChanged: args.linesChanged,
+				filesCreated: args.filesCreated ?? 0,
+				filesDeleted: args.filesDeleted ?? 0,
+				filesMoved: args.filesMoved ?? 0,
+			},
+		})
+
+		const attrs = { ulid: args.ulid, tool: args.tool, provider: args.provider, model: args.model, source: args.source }
+		this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.ACCEPTED_LINES_ADDED, args.linesAdded, attrs)
+		this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.ACCEPTED_LINES_DELETED, args.linesDeleted, attrs)
+		this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.ACCEPTED_LINES_CHANGED, args.linesChanged, attrs)
+		if (args.filesCreated) {
+			this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.ACCEPTED_FILES_CREATED, args.filesCreated, attrs)
+		}
+		if (args.filesDeleted) {
+			this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.ACCEPTED_FILES_DELETED, args.filesDeleted, attrs)
+		}
+		if (args.filesMoved) {
+			this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.ACCEPTED_FILES_MOVED, args.filesMoved, attrs)
+		}
+	}
+
+	/**
+	 * Records when a file edit (write_to_file, replace_in_file, apply_patch) is rejected by the user
+	 * Tracks lines that would have been added, deleted, and changed.
+	 *
+	 * @param args Properties for the rejected AI output event
+	 */
+	public captureAiOutputRejected(args: {
+		ulid: string
+		tool: string
+		provider?: string
+		model?: string
+		source: "agent" | "human"
+		linesAdded: number
+		linesDeleted: number
+		linesChanged: number
+		filesCreated?: number
+		filesDeleted?: number
+		filesMoved?: number
+	}): void {
+		this.capture({
+			event: "task.ai_output.rejected",
+			properties: {
+				ulid: args.ulid,
+				tool: args.tool,
+				provider: args.provider,
+				model: args.model,
+				source: args.source,
+				linesAdded: args.linesAdded,
+				linesDeleted: args.linesDeleted,
+				linesChanged: args.linesChanged,
+				filesCreated: args.filesCreated ?? 0,
+				filesDeleted: args.filesDeleted ?? 0,
+				filesMoved: args.filesMoved ?? 0,
+			},
+		})
+
+		const attrs = { ulid: args.ulid, tool: args.tool, provider: args.provider, model: args.model, source: args.source }
+		this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.REJECTED_LINES_ADDED, args.linesAdded, attrs)
+		this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.REJECTED_LINES_DELETED, args.linesDeleted, attrs)
+		this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.REJECTED_LINES_CHANGED, args.linesChanged, attrs)
+		if (args.filesCreated) {
+			this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.REJECTED_FILES_CREATED, args.filesCreated, attrs)
+		}
+		if (args.filesDeleted) {
+			this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.REJECTED_FILES_DELETED, args.filesDeleted, attrs)
+		}
+		if (args.filesMoved) {
+			this.recordCounter(TelemetryService.METRICS.AI_OUTPUT.REJECTED_FILES_MOVED, args.filesMoved, attrs)
+		}
+	}
+
+	public captureHostEvent(name: string, content: string) {
+		this.capture({
+			event: TelemetryService.EVENTS.HOST.DETECTED,
+			properties: {
+				name,
+				content,
+			},
+		})
+	}
+
+	/**
+	 * Records the size of a gRPC response message for observability.
+	 *
+	 * @param sizeUtf8Bytes Size in UTF-8 bytes (use `Buffer.byteLength`, not `string.length`)
+	 * @param service The gRPC service name
+	 * @param method The gRPC method name
+	 * @param requestId Optional request ID for correlation
+	 */
+	public captureGrpcResponseSize(sizeUtf8Bytes: number, service: string, method: string, requestId?: string): void {
+		this.recordHistogram(
+			TelemetryService.METRICS.GRPC.RESPONSE_SIZE_BYTES,
+			sizeUtf8Bytes,
+			{
+				service,
+				method,
+				...(requestId && { request_id: requestId }),
+			},
+			"Size of gRPC response messages in bytes",
+		)
+
+		if (sizeUtf8Bytes > 4 * 1024 * 1024) {
+			Logger.warn(
+				`[TelemetryService] Large gRPC response: ${service}.${method} ` +
+					`size=${(sizeUtf8Bytes / (1024 * 1024)).toFixed(1)}MB` +
+					(requestId ? ` request_id=${requestId}` : ""),
+			)
+		}
+	}
+
+	/**
 	 * Safely executes a telemetry call with error protection.
 	 *
 	 * Use for critical execution paths where telemetry errors could break functionality:
@@ -2156,7 +2428,7 @@ export class TelemetryService {
 			telemetryFn()
 		} catch (error) {
 			const contextStr = context ? ` [Context: ${context}]` : ""
-			console.error(`[Telemetry] Failed to capture telemetry${contextStr}:`, error)
+			Logger.error(`[Telemetry] Failed to capture telemetry${contextStr}:`, error)
 		}
 	}
 

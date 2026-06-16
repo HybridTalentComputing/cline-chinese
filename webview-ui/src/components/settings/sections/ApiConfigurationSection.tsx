@@ -13,10 +13,11 @@ import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandler
 
 interface ApiConfigurationSectionProps {
 	renderSectionHeader?: (tabId: string) => JSX.Element | null
+	initialModelTab?: "recommended" | "free"
 }
 
-const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectionProps) => {
-	const { t } = useTranslation()
+const ApiConfigurationSection = ({ renderSectionHeader, initialModelTab }: ApiConfigurationSectionProps) => {
+	const { t } = useTranslation("settings")
 	const { planActSeparateModelsSetting, mode, apiConfiguration } = useExtensionState()
 	const [currentTab, setCurrentTab] = useState<Mode>(mode)
 	const { handleFieldsChange } = useApiConfigurationHandlers()
@@ -36,7 +37,7 @@ const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectio
 									opacity: 1,
 									cursor: "pointer",
 								}}>
-								{t("settings.apiConfig.planMode")}
+								{t("settings.planMode")}
 							</TabButton>
 							<TabButton
 								disabled={currentTab === "act"}
@@ -46,17 +47,17 @@ const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectio
 									opacity: 1,
 									cursor: "pointer",
 								}}>
-								{t("settings.apiConfig.actMode")}
+								{t("settings.actMode")}
 							</TabButton>
 						</div>
 
 						{/* Content container */}
 						<div className="-mb-3">
-							<ApiOptions currentMode={currentTab} showModelOptions={true} />
+							<ApiOptions currentMode={currentTab} initialModelTab={initialModelTab} showModelOptions={true} />
 						</div>
 					</div>
 				) : (
-					<ApiOptions currentMode={mode} showModelOptions={true} />
+					<ApiOptions currentMode={mode} initialModelTab={initialModelTab} showModelOptions={true} />
 				)}
 
 				<div className="mb-[5px]">
@@ -79,10 +80,10 @@ const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectio
 								console.error("Failed to update separate models setting:", error)
 							}
 						}}>
-						{t("settings.apiConfig.separateModels")}
+						{t("settings.useDifferentModels")}
 					</VSCodeCheckbox>
-					<p className="text-sm mt-[5px] text-description">
-						{t("settings.apiConfig.separateModelsDescription")}
+					<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
+						{t("settings.useDifferentModelsDescription")}
 					</p>
 				</div>
 			</Section>

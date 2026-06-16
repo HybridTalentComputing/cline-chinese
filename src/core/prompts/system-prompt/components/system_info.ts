@@ -2,10 +2,35 @@ import osModule from "node:os"
 import { getShell } from "@utils/shell"
 import osName from "os-name"
 import { getWorkspacePaths } from "@/hosts/vscode/hostbridge/workspace/getWorkspacePaths"
+import { isZhCN } from "../i18n/getLocaleText"
 import { SystemPromptSection } from "../templates/placeholders"
 import { TemplateEngine } from "../templates/TemplateEngine"
 import type { PromptVariant, SystemPromptContext } from "../types"
-import { getPromptTranslation } from "../../i18n"
+
+const SYSTEM_INFO_TEMPLATE_TEXT = `SYSTEM INFORMATION
+
+Operating System: {{os}}
+IDE: {{ide}}
+Default Shell: {{shell}}
+Home Directory: {{homeDir}}
+{{WORKSPACE_TITLE}}: {{workingDir}}`
+
+/**
+ * Get the shell that will actually be used for command execution.
+ * When using background exec mode, commands run in the system default shell
+ * (cmd.exe on Windows, /bin/bash on Unix), not the VS Code configured shell.
+ */
+function getEffectiveShell(context: SystemPromptContext): string {
+	if (context.terminalExecutionMode === "backgroundExec") {
+		// Background exec uses the system default shell, not VS Code config
+		if (process.platform === "win32") {
+			return process.env.COMSPEC || "cmd.exe"
+		}
+		return process.env.SHELL || "/bin/bash"
+	}
+	// VS Code terminal mode (or undefined) uses the VS Code configured shell
+	return getShell()
+}
 
 export async function getSystemEnv(context: SystemPromptContext, isTesting = false) {
 	const currentWorkDir = context.cwd || process.cwd()
@@ -23,7 +48,7 @@ export async function getSystemEnv(context: SystemPromptContext, isTesting = fal
 		: {
 				os: osName(),
 				ide: context.ide,
-				shell: getShell(),
+				shell: getEffectiveShell(context),
 				homeDir: osModule.homedir(),
 				workingDir: currentWorkDir,
 				workspaces: workspaces,
@@ -31,7 +56,6 @@ export async function getSystemEnv(context: SystemPromptContext, isTesting = fal
 }
 
 export async function getSystemInfo(variant: PromptVariant, context: SystemPromptContext): Promise<string> {
-	const t = getPromptTranslation(context)
 	const testMode = !!process?.env?.CI || !!process?.env?.IS_TEST || context.isTesting || false
 	const info = await getSystemEnv(context, testMode)
 
@@ -40,24 +64,25 @@ export async function getSystemInfo(variant: PromptVariant, context: SystemPromp
 
 	let WORKSPACE_TITLE: string
 	let workingDirInfo: string
+	const isZh = isZhCN(context.locale)
 
 	if (isMultiRoot && context.workspaceRoots) {
 		// Multi-root workspace with feature flag enabled
-		WORKSPACE_TITLE = t.systemInfo.workspaceRoots
+		WORKSPACE_TITLE = isZh ? "工作区根目录" : "Workspace Roots"
 		const rootsInfo = context.workspaceRoots
 			.map((root) => {
 				const vcsInfo = root.vcs ? ` (${root.vcs})` : ""
 				return `\n  - ${root.name}: ${root.path}${vcsInfo}`
 			})
 			.join("")
-		workingDirInfo = rootsInfo + `\n\n${t.systemInfo.primaryWorkingDirectory}: ${context.cwd}`
+		workingDirInfo = rootsInfo + (isZh ? `\n\n主工作目录: ${context.cwd}` : `\n\nPrimary Working Directory: ${context.cwd}`)
 	} else {
 		// Single workspace
-		WORKSPACE_TITLE = t.systemInfo.currentWorkingDirectory
+		WORKSPACE_TITLE = isZh ? "当前工作目录" : "Current Working Directory"
 		workingDirInfo = info.workingDir
 	}
 
-	const template = variant.componentOverrides?.[SystemPromptSection.SYSTEM_INFO]?.template || t.systemInfo.template
+	const template = variant.componentOverrides?.[SystemPromptSection.SYSTEM_INFO]?.template || SYSTEM_INFO_TEMPLATE_TEXT
 
 	return new TemplateEngine().resolve(template, context, {
 		os: info.os,

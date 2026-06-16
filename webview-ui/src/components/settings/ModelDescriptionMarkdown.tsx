@@ -11,7 +11,7 @@ interface ModelDescriptionMarkdownProps {
 }
 
 export const ModelDescriptionMarkdown = memo(({ markdown, key, isPopup }: ModelDescriptionMarkdownProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	// Update the markdown content when the prop changes
 	const [reactContent, setMarkdown] = useRemark()
 	const contentRef = useRef<HTMLDivElement>(null)
@@ -31,7 +31,7 @@ export const ModelDescriptionMarkdown = memo(({ markdown, key, isPopup }: ModelD
 			// Check if content is truncated by comparing scrollHeight with clientHeight
 			setIsTruncated(element.scrollHeight > element.clientHeight)
 		}
-	}, [reactContent, isExpanded])
+	}, [isExpanded])
 
 	return (
 		<div className="inline-block mb-2 description line-clamp-3" key={key}>
@@ -53,9 +53,7 @@ export const ModelDescriptionMarkdown = memo(({ markdown, key, isPopup }: ModelD
 							})}
 							onClick={() => setIsExpanded(!isExpanded)}
 							variant="link">
-							{isExpanded
-								? t("chatRow.seeLess", { defaultValue: "See less" })
-								: t("chatRow.seeMore", { defaultValue: "See more" })}
+							{isExpanded ? t("settings.seeLess") : t("settings.seeMore")}
 						</Button>
 					</div>
 				)}

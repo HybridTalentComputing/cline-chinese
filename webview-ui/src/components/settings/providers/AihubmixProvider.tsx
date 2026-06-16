@@ -24,7 +24,7 @@ interface AIhubmixProviderProps {
  * The AIhubmix provider configuration component
  */
 export const AIhubmixProvider = ({ showModelOptions, isPopup, currentMode }: AIhubmixProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange, handleModeFieldsChange } = useApiConfigurationHandlers()
 	const { selectedModelId, selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, currentMode)
@@ -76,14 +76,14 @@ export const AIhubmixProvider = ({ showModelOptions, isPopup, currentMode }: AIh
 			.catch((error) => {
 				console.error("Failed to fetch AIhubmix models:", error)
 			})
-	}, [])
+	}, [ensureSelectedPresent])
 
 	console.log("apiConfiguration", apiConfiguration)
 
 	return (
 		<div>
 			<ApiKeyField
-				helpText={t("settings.apiConfig.aihubmixDiscount")}
+				helpText="Now request 10% discount!"
 				initialValue={apiConfiguration?.aihubmixApiKey || ""}
 				onChange={(value) => handleFieldChange("aihubmixApiKey", value)}
 				providerName="AIhubmix"
@@ -93,7 +93,7 @@ export const AIhubmixProvider = ({ showModelOptions, isPopup, currentMode }: AIh
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={models}
 						onChange={(e) => {
 							const newModelId = e.target.value

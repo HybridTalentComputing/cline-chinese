@@ -1,6 +1,6 @@
 import { EmptyRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { LINKS } from "@/constants"
 import { McpServiceClient } from "@/services/grpc-client"
@@ -10,21 +10,17 @@ type AddLocalServerFormProps = {
 }
 
 const AddLocalServerForm = ({}: AddLocalServerFormProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
+
 	return (
 		<FormContainer>
 			<div className="text-(--vscode-foreground)">
-				<Trans
-					components={{
-						code: <code />,
-						link: (
-							<VSCodeLink href={LINKS.DOCUMENTATION.LOCAL_MCP_SERVER_DOCS} style={{ display: "inline" }}>
-								{t("mcp.addLocalServer.learnMore")}
-							</VSCodeLink>
-						),
-					}}
-					i18nKey="mcp.addLocalServer.description"
-				/>
+				{t("mcp.addLocalServer.description")}
+				<code>{t("mcp.addLocalServer.settingsFileName")}</code>
+				{t("mcp.addLocalServer.descriptionSuffix")}
+				<VSCodeLink href={LINKS.DOCUMENTATION.LOCAL_MCP_SERVER_DOCS} style={{ display: "inline" }}>
+					{t("mcp.addLocalServer.here")}
+				</VSCodeLink>
 			</div>
 
 			<VSCodeButton
@@ -35,7 +31,7 @@ const AddLocalServerForm = ({}: AddLocalServerFormProps) => {
 					})
 				}}
 				style={{ width: "100%", marginBottom: "5px", marginTop: 8 }}>
-				{t("mcp.addLocalServer.openConfig")}
+				{t("mcp.addLocalServer.openSettings")}
 			</VSCodeButton>
 		</FormContainer>
 	)

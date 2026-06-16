@@ -23,7 +23,8 @@ const RulesToggleList = ({
 	isRemote?: boolean
 	alwaysEnabledMap?: Record<string, boolean>
 }) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
+
 	const gapClasses = {
 		small: "gap-0",
 		medium: "gap-2.5",
@@ -54,7 +55,7 @@ const RulesToggleList = ({
 				<>
 					{showNoRules && (
 						<div className="flex flex-col items-center gap-3 my-3 text-(--vscode-descriptionForeground)">
-							{ruleType === "workflow" ? t("clineRules.noWorkflowsFound") : t("clineRules.noRulesFound")}
+							{ruleType === "workflow" ? t("rules.noWorkflowsFound") : t("rules.noRulesFound")}
 						</div>
 					)}
 					{showNewRule && <NewRuleRow isGlobal={isGlobal} ruleType={ruleType} />}

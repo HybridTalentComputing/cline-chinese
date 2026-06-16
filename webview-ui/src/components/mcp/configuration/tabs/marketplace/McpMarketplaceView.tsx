@@ -16,7 +16,7 @@ import McpMarketplaceCard from "./McpMarketplaceCard"
 import McpSubmitCard from "./McpSubmitCard"
 
 const McpMarketplaceView = () => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
 	const { mcpServers, mcpMarketplaceCatalog, setMcpMarketplaceCatalog, remoteConfigSettings } = useExtensionState()
 
 	const showMarketplace = remoteConfigSettings?.mcpMarketplaceEnabled !== false
@@ -61,21 +61,7 @@ const McpMarketplaceView = () => {
 			})
 	}, [items, searchQuery, selectedCategory, sortBy])
 
-	useEffect(() => {
-		// Fetch marketplace catalog on initial load
-		fetchMarketplace()
-	}, [])
-
-	useEffect(() => {
-		// Update loading state when catalog arrives
-		if (mcpMarketplaceCatalog?.items) {
-			setIsLoading(false)
-			setIsRefreshing(false)
-			setError(null)
-		}
-	}, [mcpMarketplaceCatalog])
-
-	const fetchMarketplace = (forceRefresh: boolean = false) => {
+	const fetchMarketplace = (forceRefresh = false) => {
 		if (forceRefresh) {
 			setIsRefreshing(true)
 		} else {
@@ -96,6 +82,23 @@ const McpMarketplaceView = () => {
 				})
 		}
 	}
+
+	useEffect(() => {
+		// Fetch marketplace catalog on initial load
+		fetchMarketplace()
+	}, [
+		// Fetch marketplace catalog on initial load
+		fetchMarketplace,
+	])
+
+	useEffect(() => {
+		// Update loading state when catalog arrives
+		if (mcpMarketplaceCatalog?.items) {
+			setIsLoading(false)
+			setIsRefreshing(false)
+			setError(null)
+		}
+	}, [mcpMarketplaceCatalog])
 
 	if (isLoading || isRefreshing) {
 		return (
@@ -144,7 +147,7 @@ const McpMarketplaceView = () => {
 				{/* Search row */}
 				<VSCodeTextField
 					onInput={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
-					placeholder={t("mcp.marketplace.searchPlaceholder")}
+					placeholder={t("mcp.marketplace.searchMcp")}
 					style={{ width: "100%" }}
 					value={searchQuery}>
 					<div
@@ -157,7 +160,7 @@ const McpMarketplaceView = () => {
 					/>
 					{searchQuery && (
 						<div
-							aria-label="清除"
+							aria-label={t("mcp.marketplace.clearSearch")}
 							className="codicon codicon-close"
 							onClick={() => setSearchQuery("")}
 							slot="end"
@@ -235,10 +238,10 @@ const McpMarketplaceView = () => {
 							marginTop: "-2.5px",
 						}}
 						value={sortBy}>
-						<VSCodeRadio value="downloadCount">{t("mcp.marketplace.sortOptions.mostInstalls")}</VSCodeRadio>
-						<VSCodeRadio value="newest">{t("mcp.marketplace.sortOptions.newest")}</VSCodeRadio>
-						<VSCodeRadio value="stars">{t("mcp.marketplace.sortOptions.stars")}</VSCodeRadio>
-						<VSCodeRadio value="name">{t("mcp.marketplace.sortOptions.name")}</VSCodeRadio>
+						<VSCodeRadio value="downloadCount">{t("mcp.marketplace.mostInstalls")}</VSCodeRadio>
+						<VSCodeRadio value="newest">{t("mcp.marketplace.newest")}</VSCodeRadio>
+						<VSCodeRadio value="stars">{t("mcp.marketplace.githubStars")}</VSCodeRadio>
+						<VSCodeRadio value="name">{t("mcp.marketplace.name")}</VSCodeRadio>
 					</VSCodeRadioGroup>
 				</div>
 			</div>
@@ -267,7 +270,7 @@ const McpMarketplaceView = () => {
 			{remoteConfigSettings?.allowedMCPServers && (
 				<div className="flex items-center gap-2 px-5 py-3 mx-5 mb-4 bg-vscode-textBlockQuote-background border-l-[3px] border-vscode-textLink-foreground">
 					<i className="codicon codicon-lock text-sm" />
-					<span className="text-[13px]">{t("mcp.marketplace.remoteConfigManaged")}</span>
+					<span className="text-[13px]">{t("mcp.marketplace.orgPreconfigured")}</span>
 				</div>
 			)}
 
@@ -282,9 +285,7 @@ const McpMarketplaceView = () => {
 							padding: "20px",
 							color: "var(--vscode-descriptionForeground)",
 						}}>
-						{searchQuery || selectedCategory
-							? t("mcp.marketplace.noMatchingServers")
-							: t("mcp.marketplace.noServersFound")}
+						{searchQuery || selectedCategory ? t("mcp.marketplace.noMatching") : t("mcp.marketplace.noMarketplace")}
 					</div>
 				) : (
 					filteredItems.map((item) => (

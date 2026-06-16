@@ -21,7 +21,7 @@ interface QwenCodeProviderProps {
  * The Qwen Code provider configuration component
  */
 export const QwenCodeProvider = ({ showModelOptions, isPopup, currentMode }: QwenCodeProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
@@ -30,30 +30,24 @@ export const QwenCodeProvider = ({ showModelOptions, isPopup, currentMode }: Qwe
 
 	return (
 		<div>
-			<h3 style={{ color: "var(--vscode-foreground)", margin: "8px 0" }}>{t("settings.apiConfig.qwenCodeApiConfiguration")}</h3>
+			<h3 style={{ color: "var(--vscode-foreground)", margin: "8px 0" }}>{t("providers.qwenCode.title")}</h3>
 			<VSCodeTextField
 				onInput={(e: any) => handleFieldChange("qwenCodeOauthPath", e.target.value)}
-				placeholder={t("settings.apiConfig.oauthCredentialsPathPlaceholder")}
+				placeholder="~/.qwen/oauth_creds.json"
 				style={{ width: "100%" }}
 				value={apiConfiguration?.qwenCodeOauthPath || ""}>
-				{t("settings.apiConfig.oauthCredentialsPath")}
+				{t("providers.qwenCode.oauthCredsPath")}
 			</VSCodeTextField>
 			<div style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", marginTop: "4px" }}>
-				{t("settings.apiConfig.oauthCredentialsPathDescription")}
+				{t("providers.qwenCode.credsPathDescription")}
 			</div>
 
 			<div style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", marginTop: "12px" }}>
-				{t("settings.apiConfig.qwenCodeDescription")}
+				{t("providers.qwenCode.oauthExplanation")}
 			</div>
 
 			<div style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", marginTop: "8px" }}>
-				{t("settings.apiConfig.qwenCodeToGetStarted")}
-				<br />
-				{t("settings.apiConfig.qwenCodeStep1")}
-				<br />
-				{t("settings.apiConfig.qwenCodeStep2")}
-				<br />
-				{t("settings.apiConfig.qwenCodeStep3")}
+				{t("providers.qwenCode.getStartedSteps")}
 			</div>
 
 			<VSCodeLink
@@ -64,13 +58,13 @@ export const QwenCodeProvider = ({ showModelOptions, isPopup, currentMode }: Qwe
 					display: "inline-block",
 					fontSize: "12px",
 				}}>
-				{t("settings.apiConfig.setupInstructions")}
+				{t("providers.qwenCode.setupInstructions")}
 			</VSCodeLink>
 
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={qwenCodeModels}
 						onChange={(modelId) => {
 							const fieldName = currentMode === "plan" ? "planModeApiModelId" : "actModeApiModelId"

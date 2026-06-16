@@ -1,8 +1,8 @@
 import { McpMarketplaceItem, McpServer } from "@shared/mcp"
 import { StringRequest } from "@shared/proto/cline/common"
 import { useEffect, useMemo, useRef, useState } from "react"
-import styled from "styled-components"
 import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 
@@ -13,7 +13,7 @@ interface McpMarketplaceCardProps {
 }
 
 const McpMarketplaceCard = ({ item, installedServers, setError }: McpMarketplaceCardProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
 	const isInstalled = installedServers.some((server) => server.name === item.mcpId)
 	const [isDownloading, setIsDownloading] = useState(false)
 	const [isLoading, setIsLoading] = useState(false)
@@ -131,10 +131,10 @@ const McpMarketplaceCard = ({ item, installedServers, setError }: McpMarketplace
 								style={{}}>
 								<StyledInstallButton $isInstalled={isInstalled} disabled={isInstalled || isDownloading}>
 									{isInstalled
-										? t("mcp.marketplace.card.installed")
+										? t("mcp.marketplace.installed")
 										: isDownloading
-											? t("mcp.marketplace.card.installing")
-											: t("mcp.marketplace.card.install")}
+											? t("mcp.marketplace.installing")
+											: t("mcp.marketplace.install")}
 								</StyledInstallButton>
 							</div>
 						</div>
@@ -210,7 +210,7 @@ const McpMarketplaceCard = ({ item, installedServers, setError }: McpMarketplace
 								<span
 									className="codicon codicon-key"
 									style={{ flexShrink: 0 }}
-									title={t("mcp.marketplace.card.requiresApiKey")}
+									title={t("mcp.serverRow.requiresApiKey")}
 								/>
 							)}
 						</div>
@@ -219,22 +219,6 @@ const McpMarketplaceCard = ({ item, installedServers, setError }: McpMarketplace
 
 				{/* Description and tags */}
 				<div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-					{/* {!item.isRecommended && (
-						<div
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: "4px",
-								fontSize: "12px",
-								color: "var(--vscode-notificationsWarningIcon-foreground)",
-								marginTop: -3,
-								marginBottom: -3,
-							}}>
-							<span className="codicon codicon-warning" style={{ fontSize: "14px" }} />
-							<span>Community Made (use at your own risk)</span>
-						</div>
-					)} */}
-
 					<p style={{ fontSize: "13px", margin: 0 }}>{item.description}</p>
 					<div
 						onScroll={(e) => {

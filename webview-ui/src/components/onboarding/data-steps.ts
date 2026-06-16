@@ -1,4 +1,7 @@
+import type { TFunction } from "i18next"
+
 export enum NEW_USER_TYPE {
+	FREE = "free",
 	POWER = "power",
 	BYOK = "byok",
 }
@@ -9,41 +12,45 @@ type UserTypeSelection = {
 	type: NEW_USER_TYPE
 }
 
-export const STEP_CONFIG = {
+export const getStepConfig = (t: TFunction) => ({
 	0: {
-		title: "onboarding.userType.title",
-		description: "onboarding.userType.description",
+		title: t("onboarding.howWillYouUse"),
+		description: t("onboarding.selectOption"),
 		buttons: [
-			{ text: "onboarding.button.continue", action: "next", variant: "default" },
-			{ text: "onboarding.button.login", action: "signin", variant: "secondary" },
+			{ text: t("onboarding.continue"), action: "next", variant: "default" },
+			{ text: t("onboarding.loginToCline"), action: "signin", variant: "secondary" },
+		],
+	},
+	[NEW_USER_TYPE.FREE]: {
+		title: t("onboarding.selectFreeModel"),
+		buttons: [
+			{ text: t("onboarding.createMyAccount"), action: "signup", variant: "default" },
+			{ text: t("onboarding.back"), action: "back", variant: "secondary" },
 		],
 	},
 	[NEW_USER_TYPE.POWER]: {
-		title: "onboarding.step.power.title",
+		title: t("onboarding.selectYourModel"),
 		buttons: [
-			{ text: "onboarding.button.createAccount", action: "signup", variant: "default" },
-			{ text: "onboarding.button.back", action: "back", variant: "secondary" },
+			{ text: t("onboarding.createMyAccount"), action: "signup", variant: "default" },
+			{ text: t("onboarding.back"), action: "back", variant: "secondary" },
 		],
 	},
 	[NEW_USER_TYPE.BYOK]: {
-		title: "onboarding.step.byok.title",
+		title: t("onboarding.configureYourProvider"),
 		buttons: [
-			{ text: "onboarding.button.continue", action: "done", variant: "default" },
-			{ text: "onboarding.button.back", action: "back", variant: "secondary" },
+			{ text: t("onboarding.continue"), action: "done", variant: "default" },
+			{ text: t("onboarding.back"), action: "back", variant: "secondary" },
 		],
 	},
 	2: {
-		title: "onboarding.step.almost.title",
-		description: "onboarding.step.almost.description",
-		buttons: [{ text: "onboarding.button.back", action: "back", variant: "secondary" }],
+		title: t("onboarding.almostThere"),
+		description: t("onboarding.completeInBrowser"),
+		buttons: [{ text: t("onboarding.back"), action: "back", variant: "secondary" }],
 	},
-} as const
+})
 
-export const USER_TYPE_SELECTIONS: UserTypeSelection[] = [
-	{ title: "onboarding.userType.power.title", description: "onboarding.userType.power.description", type: NEW_USER_TYPE.POWER },
-	{
-		title: "onboarding.userType.byok.title",
-		description: "onboarding.userType.byok.description",
-		type: NEW_USER_TYPE.BYOK,
-	},
+export const getUserTypeSelections = (t: TFunction): UserTypeSelection[] => [
+	{ title: t("onboarding.absolutelyFree"), description: t("onboarding.getStartedNoCost"), type: NEW_USER_TYPE.FREE },
+	{ title: t("onboarding.frontierModel"), description: t("onboarding.frontierModelDescription"), type: NEW_USER_TYPE.POWER },
+	{ title: t("onboarding.bringOwnKey"), description: t("onboarding.bringOwnKeyDescription"), type: NEW_USER_TYPE.BYOK },
 ]

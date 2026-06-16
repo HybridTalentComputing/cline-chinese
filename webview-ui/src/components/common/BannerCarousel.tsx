@@ -1,7 +1,9 @@
 import { ChevronLeft, ChevronRight, XIcon } from "lucide-react"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useRemark } from "react-remark"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 interface BannerActions {
 	label: string
@@ -38,17 +40,19 @@ const BannerCardContent: React.FC<BannerCardContentProps> = ({ banner, isActive,
 
 	return (
 		<div
-			className="p-3"
+			className={cn("p-3 transition-opacity duration-400 ease-in-out opacity-0", {
+				"opacity-100": isActive && !isTransitioning,
+				"cursor-auto": isActive,
+			})}
 			style={{
 				gridArea: "stack",
-				opacity: isActive && !isTransitioning ? 1 : 0,
-				transition: "opacity 0.4s ease-in-out",
-				pointerEvents: isActive ? "auto" : "none",
+				pointerEvents: isActive ? "auto" : "none", // Disable interaction on inactive cards
 			}}>
 			{/* Title with optional icon */}
 			<h3
-				className="font-semibold mb-2 flex items-center gap-2 text-base"
-				style={{ paddingRight: showDismissButton ? "24px" : "0" }}>
+				className={cn("font-semibold mb-2 flex items-center gap-2 text-base pr-0", {
+					"pr-6": showDismissButton,
+				})}>
 				<span className="shrink-0">{banner.icon}</span>
 				{banner.title}
 			</h3>
@@ -73,6 +77,7 @@ const BannerCardContent: React.FC<BannerCardContentProps> = ({ banner, isActive,
 }
 
 export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
+	const { t } = useTranslation("misc")
 	const [currentIndex, setCurrentIndex] = useState(0)
 	const [isPaused, setIsPaused] = useState(false)
 	const [isTransitioning, setIsTransitioning] = useState(false)
@@ -120,7 +125,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
 
 		autoPlayIntervalRef.current = setInterval(() => {
 			setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length)
-		}, 5000) // Rotate every 5 seconds
+		}, 6500) // Rotate every 6.5 seconds
 
 		return () => {
 			if (autoPlayIntervalRef.current) {
@@ -142,11 +147,11 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
 		return null
 	}
 
-	const showDismissButton = safeCurrentIndex === banners.length - 1 && currentBanner.onDismiss
+	const showDismissButton = !!currentBanner.onDismiss
 
 	return (
 		<div
-			aria-label="Announcements"
+			aria-label={t("common.banner.announcements")}
 			aria-live="polite"
 			aria-roledescription="carousel"
 			className="mx-3 mb-3"
@@ -155,18 +160,16 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
 			role="region">
 			{/* Card container */}
 			<div className="relative bg-muted rounded-sm">
-				{/* Dismiss button - only show on last card, dismisses ALL banners */}
+				{/* Dismiss button - shows on each card that has onDismiss defined */}
 				{showDismissButton && (
 					<Button
-						aria-label="Dismiss all banners"
+						aria-label={t("common.banner.dismissBanner")}
 						className="absolute top-2.5 right-2 z-10"
 						data-testid="banner-dismiss-button"
 						onClick={(e) => {
 							e.stopPropagation()
-							// Dismiss ALL banners, not just the current one
-							banners.forEach((banner) => {
-								banner.onDismiss?.()
-							})
+							// Dismiss only the current banner
+							currentBanner.onDismiss?.()
 						}}
 						size="icon"
 						variant="icon">
@@ -178,8 +181,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
 				<div className="grid" style={{ gridTemplateAreas: "'stack'" }}>
 					{banners.map((banner, idx) => {
 						const isActive = idx === safeCurrentIndex
-						const isLastBanner = idx === banners.length - 1
-						const showDismiss = isLastBanner && banner.onDismiss
+						const showDismiss = !!banner.onDismiss
 
 						return (
 							<BannerCardContent
@@ -187,7 +189,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
 								isActive={isActive}
 								isTransitioning={isTransitioning}
 								key={banner.id}
-								showDismissButton={!!showDismiss}
+								showDismissButton={showDismiss}
 							/>
 						)
 					})}
@@ -203,10 +205,14 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
 
 						{/* Navigation arrows */}
 						<div className="flex gap-0.5">
-							<Button aria-label="Previous banner" onClick={handlePrevious} size="icon" variant="icon">
+							<Button
+								aria-label={t("common.banner.previousBanner")}
+								onClick={handlePrevious}
+								size="icon"
+								variant="icon">
 								<ChevronLeft className="size-4" />
 							</Button>
-							<Button aria-label="Next banner" onClick={handleNext} size="icon" variant="icon">
+							<Button aria-label={t("common.banner.nextBanner")} onClick={handleNext} size="icon" variant="icon">
 								<ChevronRight className="size-4" />
 							</Button>
 						</div>

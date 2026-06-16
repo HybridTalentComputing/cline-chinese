@@ -12,7 +12,7 @@ type McpToolRowProps = {
 }
 
 const McpToolRow = ({ tool, serverName }: McpToolRowProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("misc")
 	const { autoApprovalSettings } = useExtensionState()
 
 	const { setMcpServers } = useExtensionState()
@@ -49,7 +49,7 @@ const McpToolRow = ({ tool, serverName }: McpToolRowProps) => {
 				onClick={(e) => e.stopPropagation()}
 				style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "4px" }}>
 				<div style={{ display: "flex", alignItems: "center", minWidth: 0, flex: "1 1 auto" }}>
-					<span className="codicon codicon-symbol-method" style={{ marginRight: "6px", flexShrink: 0 }}></span>
+					<span className="codicon codicon-symbol-method" style={{ marginRight: "6px", flexShrink: 0 }} />
 					<span style={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis" }}>{tool.name}</span>
 				</div>
 				{serverName && autoApprovalSettings.actions.useMcp && (
@@ -58,7 +58,7 @@ const McpToolRow = ({ tool, serverName }: McpToolRowProps) => {
 						data-tool={tool.name}
 						onChange={handleAutoApproveChange}
 						style={{ fontSize: "11px" }}>
-						{t("mcp.tool.autoApprove")}
+						{t("mcp.serverRow.autoApprove")}
 					</VSCodeCheckbox>
 				)}
 			</div>
@@ -91,7 +91,7 @@ const McpToolRow = ({ tool, serverName }: McpToolRowProps) => {
 								fontSize: "11px",
 								textTransform: "uppercase",
 							}}>
-							{t("mcp.tool.parameters")}
+							{t("mcp.serverRow.parameters")}
 						</div>
 						{Object.entries(tool.inputSchema.properties as Record<string, any>).map(([paramName, schema]) => {
 							const isRequired =
@@ -129,7 +129,7 @@ const McpToolRow = ({ tool, serverName }: McpToolRowProps) => {
 											overflowWrap: "break-word",
 											wordBreak: "break-word",
 										}}>
-										{schema.description || t("mcp.tool.noDescription")}
+										{schema.description || t("mcp.serverRow.noDescription")}
 									</span>
 								</div>
 							)

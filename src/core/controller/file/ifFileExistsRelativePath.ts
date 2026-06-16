@@ -15,7 +15,6 @@ export async function ifFileExistsRelativePath(_controller: Controller, request:
 
 	if (!workspacePath) {
 		// If no workspace is open, return false
-		console.error("Error in ifFileExistsRelativePath: No workspace path available") // TODO
 		return BooleanResponse.create({ value: false })
 	}
 
@@ -33,7 +32,9 @@ export async function ifFileExistsRelativePath(_controller: Controller, request:
 	const absolutePath = typeof resolvedPath === "string" ? resolvedPath : resolvedPath.absolutePath
 	// Check if the file exists
 	try {
-		return BooleanResponse.create({ value: fs.statSync(absolutePath).isFile() })
+		return BooleanResponse.create({
+			value: fs.statSync(absolutePath).isFile(),
+		})
 	} catch {
 		return BooleanResponse.create({ value: false })
 	}

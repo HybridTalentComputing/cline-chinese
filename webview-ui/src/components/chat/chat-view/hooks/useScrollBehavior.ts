@@ -240,33 +240,25 @@ export function useScrollBehavior(
 			if (!isCollapsing) {
 				disableAutoScrollRef.current = true
 			}
-
+			// Only scroll on collapse, never on expand - expanding should stay in place
 			if (isCollapsing && isAtBottom) {
 				const timer = setTimeout(() => {
 					scrollToBottomAuto()
 				}, 0)
 				return () => clearTimeout(timer)
-			} else if (isLast || isSecondToLast) {
-				if (isCollapsing) {
-					if (isSecondToLast && !isLastCollapsedApiReq) {
-						return
-					}
-					const timer = setTimeout(() => {
-						scrollToBottomAuto()
-					}, 0)
-					return () => clearTimeout(timer)
-				} else {
-					const timer = setTimeout(() => {
-						virtuosoRef.current?.scrollToIndex({
-							index: groupedMessages.length - (isLast ? 1 : 2),
-							align: "start",
-						})
-					}, 0)
-					return () => clearTimeout(timer)
-				}
 			}
+			if (isCollapsing && (isLast || isSecondToLast)) {
+				if (isSecondToLast && !isLastCollapsedApiReq) {
+					return
+				}
+				const timer = setTimeout(() => {
+					scrollToBottomAuto()
+				}, 0)
+				return () => clearTimeout(timer)
+			}
+			// When expanding, don't scroll - let the element expand in place
 		},
-		[groupedMessages, expandedRows, scrollToBottomAuto, isAtBottom],
+		[groupedMessages, expandedRows, scrollToBottomAuto, isAtBottom, setExpandedRows],
 	)
 
 	const handleRowHeightChange = useCallback(
@@ -286,18 +278,26 @@ export function useScrollBehavior(
 
 	useEffect(() => {
 		if (!disableAutoScrollRef.current) {
+			scrollToBottomSmooth()
 			setTimeout(() => {
-				scrollToBottomSmooth()
-			}, 50)
+				if (!disableAutoScrollRef.current) {
+					scrollToBottomAuto()
+				}
+			}, 40)
+			setTimeout(() => {
+				if (!disableAutoScrollRef.current) {
+					scrollToBottomAuto()
+				}
+			}, 70)
 			// return () => clearTimeout(timer) // dont cleanup since if visibleMessages.length changes it cancels.
 		}
-	}, [groupedMessages.length, scrollToBottomSmooth])
+	}, [scrollToBottomSmooth, scrollToBottomAuto])
 
 	useEffect(() => {
 		if (pendingScrollToMessage !== null) {
 			scrollToMessage(pendingScrollToMessage)
 		}
-	}, [pendingScrollToMessage, groupedMessages, scrollToMessage])
+	}, [pendingScrollToMessage, scrollToMessage])
 
 	useEffect(() => {
 		if (!messages?.length) {

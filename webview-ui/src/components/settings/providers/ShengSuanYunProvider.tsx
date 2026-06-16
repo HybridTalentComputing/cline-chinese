@@ -1,5 +1,8 @@
+import { EmptyRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { AccountServiceClient } from "@/services/grpc-client"
 import { ApiKeyField } from "../common/ApiKeyField"
 import ShengSuanYunModelPicker from "../ShengSuanYunModelPicker"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
@@ -21,6 +24,20 @@ export const ShengSuanYunProvider = ({ showModelOptions, isPopup, currentMode }:
 				providerName="胜算云"
 				signupUrl="https://console.shengsuanyun.com/user/keys"
 			/>
+			{!apiConfiguration?.shengSuanYunApiKey && (
+				<VSCodeButton
+					appearance="primary"
+					onClick={async () => {
+						try {
+							await AccountServiceClient.shengSuanYunLoginClicked(EmptyRequest.create())
+						} catch (error) {
+							console.error("Failed to open ShengSuanYun auth:", error)
+						}
+					}}
+					style={{ margin: "5px 0 0 0" }}>
+					登录胜算云
+				</VSCodeButton>
+			)}
 			{showModelOptions && <ShengSuanYunModelPicker currentMode={currentMode} isPopup={isPopup} />}
 		</div>
 	)

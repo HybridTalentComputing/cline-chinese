@@ -68,9 +68,6 @@ export const TRUNCATE_KEEP_LINES = 100
 /** Default max lines for command output */
 export const DEFAULT_TERMINAL_OUTPUT_LINE_LIMIT = 500
 
-/** Max lines for subagent commands (more context needed) */
-export const DEFAULT_SUBAGENT_TERMINAL_OUTPUT_LINE_LIMIT = 2000
-
 // =============================================================================
 // Background Command Tracking
 // =============================================================================
@@ -102,6 +99,14 @@ export const COMPILING_NULLIFIERS = [
 	"error",
 	"fail",
 ]
+
+// =============================================================================
+// Shell Integration Stream Timeout
+// =============================================================================
+// Prevents indefinite hangs when shell integration stream stalls
+
+/** Timeout for shell integration stream to prevent indefinite "Thinking..." hangs (30 seconds) */
+export const SHELL_INTEGRATION_STREAM_TIMEOUT_MS = 30_000
 
 /**
  * Check if terminal output indicates compilation/building.

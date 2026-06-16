@@ -18,8 +18,8 @@ interface TogetherProviderProps {
 /**
  * The Together provider configuration component
  */
-export const TogetherProvider = ({ currentMode }: TogetherProviderProps) => {
-	const { t } = useTranslation()
+export const TogetherProvider = ({ showModelOptions, isPopup, currentMode }: TogetherProviderProps) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -37,9 +37,9 @@ export const TogetherProvider = ({ currentMode }: TogetherProviderProps) => {
 				onChange={(value) =>
 					handleModeFieldChange({ plan: "planModeTogetherModelId", act: "actModeTogetherModelId" }, value, currentMode)
 				}
-				placeholder={t("settings.apiConfig.enterModelId")}
+				placeholder={t("providers.together.modelIdPlaceholder")}
 				style={{ width: "100%" }}>
-				<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.modelId")}</span>
+				<span style={{ fontWeight: 500 }}>{t("providers.openaiCompatible.modelId")}</span>
 			</DebouncedTextField>
 			<p
 				style={{
@@ -48,8 +48,7 @@ export const TogetherProvider = ({ currentMode }: TogetherProviderProps) => {
 					color: "var(--vscode-descriptionForeground)",
 				}}>
 				<span style={{ color: "var(--vscode-errorForeground)" }}>
-					(<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.note")}</span>{" "}
-					{t("settings.apiConfig.clineBestWithClaude")})
+					{t("providers.openaiCompatible.noteComplexPrompts")}
 				</span>
 			</p>
 		</div>

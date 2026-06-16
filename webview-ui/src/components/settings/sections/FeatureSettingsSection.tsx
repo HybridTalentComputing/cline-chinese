@@ -1,461 +1,459 @@
-import { McpDisplayMode } from "@shared/McpDisplayMode"
-import { EmptyRequest } from "@shared/proto/index.cline"
-import { OpenaiReasoningEffort } from "@shared/storage/types"
-import { VSCodeButton, VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { memo, useEffect, useState } from "react"
+import { UpdateSettingsRequest } from "@shared/proto/cline/state"
+import { memo, type ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import McpDisplayModeDropdown from "@/components/mcp/chat-display/McpDisplayModeDropdown"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { PLATFORM_CONFIG, PlatformType } from "@/config/platform.config"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { StateServiceClient } from "@/services/grpc-client"
-import { isMacOSOrLinux } from "@/utils/platformUtils"
 import Section from "../Section"
-import SubagentOutputLineLimitSlider from "../SubagentOutputLineLimitSlider"
+import SettingsSlider from "../SettingsSlider"
 import { updateSetting } from "../utils/settingsHandlers"
+
+// Reusable checkbox component for feature settings
+interface FeatureCheckboxProps {
+	checked: boolean | undefined
+	onChange: (checked: boolean) => void
+	label: string
+	description: ReactNode
+	disabled?: boolean
+	isRemoteLocked?: boolean
+	remoteTooltip?: string
+	isVisible?: boolean
+}
+
+// Interface for feature toggle configuration
+interface FeatureToggle {
+	id: string
+	label: string
+	description: ReactNode
+	settingKey: keyof UpdateSettingsRequest
+	stateKey: string
+	/** If set, the setting value is nested with this key (e.g., "enabled" -> { enabled: checked }) */
+	nestedKey?: string
+}
+
+const agentFeatures: FeatureToggle[] = [
+	{
+		id: "subagents",
+		label: "Subagents",
+		description: "Let Cline run focused subagents in parallel to explore the codebase for you.",
+		stateKey: "subagentsEnabled",
+		settingKey: "subagentsEnabled",
+	},
+	{
+		id: "native-tool-call",
+		label: "Native Tool Call",
+		description: "Use native function calling when available",
+		stateKey: "nativeToolCallSetting",
+		settingKey: "nativeToolCallEnabled",
+	},
+	{
+		id: "parallel-tool-calling",
+		label: "Parallel Tool Calling",
+		description: "Execute multiple tool calls simultaneously",
+		stateKey: "enableParallelToolCalling",
+		settingKey: "enableParallelToolCalling",
+	},
+	{
+		id: "strict-plan-mode",
+		label: "Strict Plan Mode",
+		description: "Prevents file edits while in Plan mode",
+		stateKey: "strictPlanModeEnabled",
+		settingKey: "strictPlanModeEnabled",
+	},
+	{
+		id: "auto-compact",
+		label: "Auto Compact",
+		description: "Automatically compress conversation history.",
+		stateKey: "useAutoCondense",
+		settingKey: "useAutoCondense",
+	},
+	{
+		id: "focus-chain",
+		label: "Focus Chain",
+		description: "Maintain context focus across interactions",
+		stateKey: "focusChainEnabled",
+		settingKey: "focusChainSettings",
+		nestedKey: "enabled",
+	},
+]
+
+const editorFeatures: FeatureToggle[] = [
+	{
+		id: "show-feature-tips",
+		label: "Feature Tips",
+		description: "Show rotating tips during the thinking phase to help you discover Cline features.",
+		stateKey: "showFeatureTips",
+		settingKey: "showFeatureTips",
+	},
+	{
+		id: "background-edit",
+		label: "Background Edit",
+		description: "Allow edits without stealing editor focus",
+		stateKey: "backgroundEditEnabled",
+		settingKey: "backgroundEditEnabled",
+	},
+	{
+		id: "checkpoints",
+		label: "Checkpoints",
+		description: "Save progress at key points for easy rollback",
+		stateKey: "enableCheckpointsSetting",
+		settingKey: "enableCheckpointsSetting",
+	},
+	{
+		id: "cline-web-tools",
+		label: "Cline Web Tools",
+		description: "Access web browsing and search capabilities",
+		stateKey: "clineWebToolsEnabled",
+		settingKey: "clineWebToolsEnabled",
+	},
+	{
+		id: "worktrees",
+		label: "Worktrees",
+		description: "Enables git worktree management for running parallel Cline tasks.",
+		stateKey: "worktreesEnabled",
+		settingKey: "worktreesEnabled",
+	},
+]
+
+const experimentalFeatures: FeatureToggle[] = [
+	{
+		id: "yolo",
+		label: "Yolo Mode",
+		description:
+			"Execute tasks without user's confirmation. Auto-switches from Plan to Act mode and disables the ask question tool. Use with extreme caution.",
+		stateKey: "yoloModeToggled",
+		settingKey: "yoloModeToggled",
+	},
+	{
+		id: "double-check-completion",
+		label: "Double-Check Completion",
+		description:
+			"Rejects the first completion attempt and asks the model to re-verify its work against the original task requirements before accepting.",
+		stateKey: "doubleCheckCompletionEnabled",
+		settingKey: "doubleCheckCompletionEnabled",
+	},
+	{
+		id: "lazy-teammate",
+		label: "Lazy Teammate Mode",
+		description: "Sometimes Cline just isn't feeling it today. For entertainment purposes only.",
+		stateKey: "lazyTeammateModeEnabled",
+		settingKey: "lazyTeammateModeEnabled",
+	},
+]
+
+const advancedFeatures: FeatureToggle[] = [
+	{
+		id: "hooks",
+		label: "Hooks",
+		description: "Enable lifecycle and tool hooks during task execution.",
+		stateKey: "hooksEnabled",
+		settingKey: "hooksEnabled",
+	},
+]
+
+const FeatureRow = memo(
+	({
+		checked = false,
+		onChange,
+		label,
+		description,
+		disabled,
+		isRemoteLocked,
+		isVisible = true,
+		remoteTooltip,
+	}: FeatureCheckboxProps) => {
+		if (!isVisible) {
+			return null
+		}
+
+		const checkbox = (
+			<div className="flex items-center justify-between w-full">
+				<div>{label}</div>
+				<div>
+					<Switch
+						checked={checked}
+						className="shrink-0"
+						disabled={disabled || isRemoteLocked}
+						id={label}
+						onCheckedChange={onChange}
+						size="lg"
+					/>
+					{isRemoteLocked && <i className="codicon codicon-lock text-description text-sm" />}
+				</div>
+			</div>
+		)
+
+		return (
+			<div className="flex flex-col items-start justify-between gap-4 py-3 w-full">
+				<div className="space-y-0.5 flex-1 w-full">
+					{isRemoteLocked ? (
+						<Tooltip>
+							<TooltipTrigger asChild>{checkbox}</TooltipTrigger>
+							<TooltipContent className="max-w-xs" side="top">
+								{remoteTooltip}
+							</TooltipContent>
+						</Tooltip>
+					) : (
+						checkbox
+					)}
+				</div>
+				<div className="text-xs text-description">{description}</div>
+			</div>
+		)
+	},
+)
 
 interface FeatureSettingsSectionProps {
 	renderSectionHeader: (tabId: string) => JSX.Element | null
 }
 
 const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
+
+	const featureTranslations: Record<string, { label: string; description: ReactNode }> = {
+		subagents: { label: t("featureSettings.subagents"), description: t("featureSettings.subagentsDescription") },
+		"native-tool-call": {
+			label: t("featureSettings.nativeToolCall"),
+			description: t("featureSettings.nativeToolCallDescription"),
+		},
+		"parallel-tool-calling": {
+			label: t("featureSettings.parallelToolCalling"),
+			description: t("featureSettings.parallelToolCallingDescription"),
+		},
+		"strict-plan-mode": {
+			label: t("featureSettings.strictPlanMode"),
+			description: t("featureSettings.strictPlanModeDescription"),
+		},
+		"auto-compact": { label: t("featureSettings.autoCompact"), description: t("featureSettings.autoCompactDescription") },
+		"focus-chain": { label: t("featureSettings.focusChain"), description: t("featureSettings.focusChainDescription") },
+		"show-feature-tips": {
+			label: t("featureSettings.featureTips"),
+			description: t("featureSettings.featureTipsDescription"),
+		},
+		"background-edit": {
+			label: t("featureSettings.backgroundEdit"),
+			description: t("featureSettings.backgroundEditDescription"),
+		},
+		checkpoints: { label: t("featureSettings.checkpoints"), description: t("featureSettings.checkpointsDescription") },
+		"cline-web-tools": {
+			label: t("featureSettings.clineWebTools"),
+			description: t("featureSettings.clineWebToolsDescription"),
+		},
+		worktrees: { label: t("featureSettings.worktrees"), description: t("featureSettings.worktreesDescription") },
+		yolo: { label: t("featureSettings.yoloMode"), description: t("featureSettings.yoloModeDescription") },
+		"double-check-completion": {
+			label: t("featureSettings.doubleCheckCompletion"),
+			description: t("featureSettings.doubleCheckCompletionDescription"),
+		},
+		"lazy-teammate": {
+			label: t("featureSettings.lazyTeammateMode"),
+			description: t("featureSettings.lazyTeammateModeDescription"),
+		},
+		hooks: { label: t("featureSettings.hooks"), description: t("featureSettings.hooksDescription") },
+	}
+
 	const {
 		enableCheckpointsSetting,
+		hooksEnabled,
 		mcpDisplayMode,
-		mcpResponsesCollapsed,
-		openaiReasoningEffort,
 		strictPlanModeEnabled,
 		yoloModeToggled,
-		dictationSettings,
 		useAutoCondense,
-		clineWebToolsEnabled,
-		focusChainSettings,
-		multiRootSetting,
-		hooksEnabled,
-		remoteConfigSettings,
 		subagentsEnabled,
+		clineWebToolsEnabled,
+		worktreesEnabled,
+		focusChainSettings,
+		remoteConfigSettings,
 		nativeToolCallSetting,
 		enableParallelToolCalling,
 		backgroundEditEnabled,
+		doubleCheckCompletionEnabled,
+		lazyTeammateModeEnabled,
+		showFeatureTips,
 	} = useExtensionState()
 
-	const [isClineCliInstalled, setIsClineCliInstalled] = useState(false)
+	const handleFocusChainIntervalChange = useCallback(
+		(value: number) => {
+			updateSetting("focusChainSettings", { ...focusChainSettings, remindClineInterval: value })
+		},
+		[focusChainSettings],
+	)
 
-	const handleReasoningEffortChange = (newValue: OpenaiReasoningEffort) => {
-		updateSetting("openaiReasoningEffort", newValue)
+	const isYoloRemoteLocked = remoteConfigSettings?.yoloModeToggled !== undefined
+
+	// State lookup for mapped features
+	const featureState: Record<string, boolean | undefined> = {
+		showFeatureTips,
+		enableCheckpointsSetting,
+		strictPlanModeEnabled,
+		hooksEnabled,
+		nativeToolCallSetting,
+		focusChainEnabled: focusChainSettings?.enabled,
+		useAutoCondense,
+		subagentsEnabled,
+		clineWebToolsEnabled: clineWebToolsEnabled?.user,
+		worktreesEnabled: worktreesEnabled?.user,
+		enableParallelToolCalling,
+		backgroundEditEnabled,
+		doubleCheckCompletionEnabled,
+		lazyTeammateModeEnabled,
+		yoloModeToggled: isYoloRemoteLocked ? remoteConfigSettings?.yoloModeToggled : yoloModeToggled,
 	}
 
-	// Poll for CLI installation status while the component is mounted
-	useEffect(() => {
-		const checkInstallation = async () => {
-			try {
-				const result = await StateServiceClient.checkCliInstallation(EmptyRequest.create())
-				setIsClineCliInstalled(result.value)
-			} catch (error) {
-				console.error("Failed to check CLI installation:", error)
+	// Visibility lookup for features with feature flags
+	const featureVisibility: Record<string, boolean | undefined> = {
+		clineWebToolsEnabled: clineWebToolsEnabled?.featureFlag,
+		worktreesEnabled: worktreesEnabled?.featureFlag,
+	}
+
+	// Handler for feature toggle changes, supports nested settings like focusChainSettings
+	const handleFeatureChange = useCallback(
+		(feature: FeatureToggle, checked: boolean) => {
+			if (feature.nestedKey) {
+				// For nested settings, spread the existing value and set the nested key
+				let currentValue = {}
+				if (feature.settingKey === "focusChainSettings") {
+					currentValue = focusChainSettings ?? {}
+				}
+				updateSetting(feature.settingKey, { ...currentValue, [feature.nestedKey]: checked })
+			} else {
+				updateSetting(feature.settingKey, checked)
 			}
-		}
-
-		checkInstallation()
-
-		// Poll ever 1.5 seconds to see if CLI is installed (only when form is open)
-		const pollInterval = setInterval(checkInstallation, 1500)
-
-		return () => {
-			clearInterval(pollInterval)
-		}
-	}, [])
+		},
+		[focusChainSettings],
+	)
 
 	return (
-		<div>
+		<div className="mb-2">
 			{renderSectionHeader("features")}
 			<Section>
-				<div style={{ marginBottom: 20 }}>
-					{/* Subagents - Only show on macOS and Linux */}
-					{isMacOSOrLinux() && PLATFORM_CONFIG.type === PlatformType.VSCODE && (
-						<div
-							className="relative p-3 mb-3 rounded-md"
-							id="subagents-section"
-							style={{
-								border: "1px solid var(--vscode-widget-border)",
-								backgroundColor: "var(--vscode-list-hoverBackground)",
-							}}>
-							<div
-								className="absolute -top-2 -right-2 px-2 py-0.5 rounded text-xs font-semibold"
-								style={{
-									backgroundColor: "var(--vscode-button-secondaryBackground)",
-									color: "var(--vscode-button-secondaryForeground)",
-								}}>
-								{t("settings.features.new")}
-							</div>
-
-							<div
-								className="mt-1.5 mb-2 px-2 pt-0.5 pb-1.5 rounded"
-								style={{
-									backgroundColor: "color-mix(in srgb, var(--vscode-sideBar-background) 99%, black)",
-								}}>
-								<p
-									className="text-xs mb-2 flex items-start"
-									style={{ color: "var(--vscode-inputValidation-warningForeground)" }}>
-									<span
-										className="codicon codicon-warning mr-1"
-										style={{ fontSize: "12px", marginTop: "1px", flexShrink: 0 }}></span>
-									<span>
-										子代理需要安装 Cline CLI。请使用{" "}
-										<code
-											className="ml-1 px-1 rounded"
-											style={{
-												backgroundColor: "var(--vscode-editor-background)",
-												color: "var(--vscode-foreground)",
-												opacity: 0.9,
-											}}>
-											npm install -g cline
-										</code>{" "}
-										安装，然后运行{" "}
-										<code
-											className="ml-1 px-1 rounded"
-											style={{
-												backgroundColor: "var(--vscode-editor-background)",
-												color: "var(--vscode-foreground)",
-												opacity: 0.9,
-											}}>
-											cline auth
-										</code>{" "}
-										以使用 Cline 进行身份验证或配置 API 提供商。
-									</span>
-								</p>
-								{!isClineCliInstalled && (
-									<VSCodeButton
-										appearance="secondary"
-										onClick={async () => {
-											try {
-												await StateServiceClient.installClineCli(EmptyRequest.create())
-											} catch (error) {
-												console.error("Failed to initiate CLI installation:", error)
-											}
-										}}
-										style={{
-											transform: "scale(0.85)",
-											transformOrigin: "left center",
-											marginLeft: "-2px",
-										}}>
-										{t("settings.features.installNow")}
-									</VSCodeButton>
-								)}
-							</div>
-							<VSCodeCheckbox
-								checked={subagentsEnabled}
-								disabled={!isClineCliInstalled}
-								onChange={(e: any) => {
-									const checked = e.target.checked === true
-									updateSetting("subagentsEnabled", checked)
-								}}>
-								<span className="font-semibold">
-									{subagentsEnabled
-										? t("settings.features.subagentsEnabled")
-										: t("settings.features.enableSubagents")}
-								</span>
-							</VSCodeCheckbox>
-							<p className="text-xs mt-1 mb-0">
-								<span className="text-[var(--vscode-errorForeground)]">
-									{t("settings.features.experimental")}
-								</span>{" "}
-								<span className="text-description">{t("settings.features.subagentsExplanation")}</span>
-							</p>
-							{subagentsEnabled && (
-								<div className="mt-3">
-									<SubagentOutputLineLimitSlider />
-								</div>
-							)}
-						</div>
-					)}
-
+				<div className="mb-5 flex flex-col gap-3">
+					{/* Core features */}
 					<div>
-						<VSCodeCheckbox
-							checked={enableCheckpointsSetting}
-							onChange={(e: any) => {
-								const checked = e.target.checked === true
-								updateSetting("enableCheckpointsSetting", checked)
-							}}>
-							{t("settings.features.enableCheckpoints")}
-						</VSCodeCheckbox>
-						<p className="text-xs text-(--vscode-descriptionForeground)">
-							{t("settings.features.checkpointsDescription")}
-						</p>
-					</div>
-					<div style={{ marginTop: 10 }}>
-						<label
-							className="block text-sm font-medium text-(--vscode-foreground) mb-1"
-							htmlFor="mcp-display-mode-dropdown">
-							{t("settings.features.mcpDisplayMode")}
-						</label>
-						<McpDisplayModeDropdown
-							className="w-full"
-							id="mcp-display-mode-dropdown"
-							onChange={(newMode: McpDisplayMode) => updateSetting("mcpDisplayMode", newMode)}
-							value={mcpDisplayMode}
-						/>
-						<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
-							{t("settings.features.mcpDisplayModeDescription")}
-						</p>
-					</div>
-					<div style={{ marginTop: 10 }}>
-						<VSCodeCheckbox
-							checked={mcpResponsesCollapsed}
-							onChange={(e: any) => {
-								const checked = e.target.checked === true
-								updateSetting("mcpResponsesCollapsed", checked)
-							}}>
-							{t("settings.features.collapseMcpResponses")}
-						</VSCodeCheckbox>
-						<p className="text-xs text-(--vscode-descriptionForeground)">
-							{t("settings.features.collapseMcpResponsesDescription")}
-						</p>
-					</div>
-					<div style={{ marginTop: 10 }}>
-						<label
-							className="block text-sm font-medium text-(--vscode-foreground) mb-1"
-							htmlFor="openai-reasoning-effort-dropdown">
-							{t("settings.features.openaiReasoningEffort")}
-						</label>
-						<VSCodeDropdown
-							className="w-full"
-							currentValue={openaiReasoningEffort || "medium"}
-							id="openai-reasoning-effort-dropdown"
-							onChange={(e: any) => {
-								const newValue = e.target.currentValue as OpenaiReasoningEffort
-								handleReasoningEffortChange(newValue)
-							}}>
-							<VSCodeOption value="minimal">
-								{t("settings.features.openaiReasoningEffortOptions.minimal")}
-							</VSCodeOption>
-							<VSCodeOption value="low">{t("settings.features.openaiReasoningEffortOptions.low")}</VSCodeOption>
-							<VSCodeOption value="medium">
-								{t("settings.features.openaiReasoningEffortOptions.medium")}
-							</VSCodeOption>
-							<VSCodeOption value="high">{t("settings.features.openaiReasoningEffortOptions.high")}</VSCodeOption>
-						</VSCodeDropdown>
-						<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
-							{t("settings.features.openaiReasoningEffortDescription")}
-						</p>
-					</div>
-					<div style={{ marginTop: 10 }}>
-						<VSCodeCheckbox
-							checked={strictPlanModeEnabled}
-							onChange={(e: any) => {
-								const checked = e.target.checked === true
-								updateSetting("strictPlanModeEnabled", checked)
-							}}>
-							{t("settings.features.strictPlanMode")}
-						</VSCodeCheckbox>
-						<p className="text-xs text-(--vscode-descriptionForeground)">
-							{t("settings.features.strictPlanModeDescription")}
-						</p>
-					</div>
-					{
-						<div style={{ marginTop: 10 }}>
-							<VSCodeCheckbox
-								checked={focusChainSettings?.enabled || false}
-								onChange={(e: any) => {
-									const checked = e.target.checked === true
-									updateSetting("focusChainSettings", { ...focusChainSettings, enabled: checked })
-								}}>
-								{t("settings.features.enableFocusChain")}
-							</VSCodeCheckbox>
-							<p className="text-xs text-(--vscode-descriptionForeground)">
-								{t("settings.features.focusChainDescription")}
-							</p>
+						<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
+							{t("featureSettings.agent")}
 						</div>
-					}
-					{focusChainSettings?.enabled && (
-						<div style={{ marginTop: 10, marginLeft: 20 }}>
-							<label
-								className="block text-sm font-medium text-(--vscode-foreground) mb-1"
-								htmlFor="focus-chain-remind-interval">
-								{t("settings.features.focusChainReminderInterval")}
-							</label>
-							<VSCodeTextField
-								className="w-20"
-								id="focus-chain-remind-interval"
-								onChange={(e: any) => {
-									const value = parseInt(e.target.value, 10)
-									if (!Number.isNaN(value) && value >= 1 && value <= 100) {
-										updateSetting("focusChainSettings", {
-											...focusChainSettings,
-											remindClineInterval: value,
-										})
-									}
-								}}
-								value={String(focusChainSettings?.remindClineInterval || 6)}
-							/>
-							<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
-								{t("settings.features.focusChainReminderIntervalDescription")}
-							</p>
-						</div>
-					)}
-					{dictationSettings?.featureEnabled && (
-						<div className="mt-2.5">
-							<VSCodeCheckbox
-								checked={dictationSettings?.dictationEnabled}
-								onChange={(e: any) => {
-									const checked = e.target.checked === true
-									const updatedDictationSettings = {
-										...dictationSettings,
-										dictationEnabled: checked,
-									}
-									updateSetting("dictationSettings", updatedDictationSettings)
-								}}>
-								{t("settings.features.enableDictation")}
-							</VSCodeCheckbox>
-							<p className="text-xs text-description mt-1">{t("settings.features.dictationDescription")}</p>
-						</div>
-					)}
-					<div style={{ marginTop: 10 }}>
-						<VSCodeCheckbox
-							checked={useAutoCondense}
-							onChange={(e: any) => {
-								const checked = e.target.checked === true
-								updateSetting("useAutoCondense", checked)
-							}}>
-							{t("settings.features.enableAutoCompact")}
-						</VSCodeCheckbox>
-						<p className="text-xs text-(--vscode-descriptionForeground)">
-							启用先进的上下文管理系统，为下一代模型使用基于 LLM 的压缩。
-							<a
-								className="text-(--vscode-textLink-foreground) hover:text-(--vscode-textLink-activeForeground)"
-								href="https://docs.cline.bot/features/auto-compact"
-								rel="noopener noreferrer"
-								target="_blank">
-								{t("settings.features.learnMore")}
-							</a>
-						</p>
-					</div>
-					{clineWebToolsEnabled?.featureFlag && (
-						<div style={{ marginTop: 10 }}>
-							<VSCodeCheckbox
-								checked={clineWebToolsEnabled?.user}
-								onChange={(e: any) => {
-									const checked = e.target.checked === true
-									updateSetting("clineWebToolsEnabled", checked)
-								}}>
-								{t("settings.features.enableWebTools")}
-							</VSCodeCheckbox>
-							<p className="text-xs text-(--vscode-descriptionForeground)">
-								{t("settings.features.webToolsDescription")}
-							</p>
-						</div>
-					)}
-					<div className="mt-2.5">
-						<VSCodeCheckbox
-							checked={nativeToolCallSetting}
-							onChange={(e) => {
-								const enabled = (e?.target as HTMLInputElement).checked
-								updateSetting("nativeToolCallEnabled", enabled)
-							}}>
-							{t("settings.features.nativeToolCall")}
-						</VSCodeCheckbox>
-						<p className="text-xs text-(--vscode-descriptionForeground)">
-							{t("settings.features.nativeToolCallDescription")}
-						</p>
-					</div>
-					<div className="mt-2.5">
-						<VSCodeCheckbox
-							checked={enableParallelToolCalling}
-							onChange={(e) => {
-								const enabled = (e?.target as HTMLInputElement).checked
-								updateSetting("enableParallelToolCalling", enabled)
-							}}>
-							{t("settings.features.parallelToolCalling")}
-						</VSCodeCheckbox>
-						<p className="text-xs">
-							<span className="text-(--vscode-errorForeground)">{t("settings.features.experimental")}</span>{" "}
-							<span className="text-description">{t("settings.features.parallelToolCallingDescription")}</span>
-						</p>
-					</div>
-					<div className="mt-2.5">
-						<VSCodeCheckbox
-							checked={backgroundEditEnabled}
-							onChange={(e: any) => {
-								const checked = e.target.checked === true
-								updateSetting("backgroundEditEnabled", checked)
-							}}>
-							{t("settings.features.backgroundEdit")}
-						</VSCodeCheckbox>
-						<p className="text-xs">
-							<span className="text-error">{t("settings.features.experimental")}</span>
-							<span className="text-description">{t("settings.features.backgroundEditDescription")}</span>
-						</p>
-					</div>
-					{multiRootSetting.featureFlag && (
-						<div className="mt-2.5">
-							<VSCodeCheckbox
-								checked={multiRootSetting.user}
-								onChange={(e: any) => {
-									const checked = e.target.checked === true
-									updateSetting("multiRootEnabled", checked)
-								}}>
-								{t("settings.features.multiRoot")}
-							</VSCodeCheckbox>
-							<p className="text-xs">
-								<span className="text-error">{t("settings.features.experimental")}</span>{" "}
-								<span className="text-description">{t("settings.features.multiRootDescription")}</span>
-							</p>
-						</div>
-					)}
-					<div className="mt-2.5">
-						<VSCodeCheckbox
-							checked={hooksEnabled}
-							disabled={!isMacOSOrLinux()}
-							onChange={(e: any) => {
-								const checked = e.target.checked === true
-								updateSetting("hooksEnabled", checked)
-							}}>
-							{t("settings.features.enableHooks")}
-						</VSCodeCheckbox>
-						{!isMacOSOrLinux() ? (
-							<p className="text-xs mt-1" style={{ color: "var(--vscode-inputValidation-warningForeground)" }}>
-								{t("settings.features.hooksNotSupportedWindows")}
-							</p>
-						) : (
-							<p className="text-xs">
-								<span className="text-(--vscode-errorForeground)">{t("settings.features.experimental")}</span>{" "}
-								<span className="text-description">{t("settings.features.hooksDescription")}</span>
-							</p>
-						)}
-					</div>
-					<div style={{ marginTop: 10 }}>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<div className="flex items-center gap-2">
-									<VSCodeCheckbox
-										checked={yoloModeToggled}
-										disabled={remoteConfigSettings?.yoloModeToggled !== undefined}
-										onChange={(e: any) => {
-											const checked = e.target.checked === true
-											updateSetting("yoloModeToggled", checked)
-										}}>
-										{t("settings.features.enableYolo")}
-									</VSCodeCheckbox>
-									{remoteConfigSettings?.yoloModeToggled !== undefined && (
-										<i className="codicon codicon-lock text-description text-sm" />
+						<div
+							className="relative p-3 pt-0 my-3 rounded-md border border-editor-widget-border/50"
+							id="agent-features">
+							{agentFeatures.map((feature) => (
+								<div key={feature.id}>
+									<FeatureRow
+										checked={featureState[feature.stateKey]}
+										description={featureTranslations[feature.id]?.description || feature.description}
+										isVisible={featureVisibility[feature.stateKey] ?? true}
+										key={feature.id}
+										label={featureTranslations[feature.id]?.label || feature.label}
+										onChange={(checked) =>
+											feature.nestedKey === "enabled"
+												? handleFeatureChange(feature, checked)
+												: updateSetting(feature.settingKey, checked)
+										}
+									/>
+									{feature.id === "focus-chain" && featureState[feature.stateKey] && (
+										<SettingsSlider
+											label={t("settings.reminderInterval")}
+											max={10}
+											min={1}
+											onChange={handleFocusChainIntervalChange}
+											step={1}
+											value={focusChainSettings?.remindClineInterval || 6}
+											valueWidth="w-6"
+										/>
 									)}
 								</div>
-							</TooltipTrigger>
-							<TooltipContent
-								className="max-w-xs"
-								hidden={remoteConfigSettings?.yoloModeToggled === undefined}
-								side="top">
-								{t("settings.general.remoteConfigManaged")}
-							</TooltipContent>
-						</Tooltip>
+							))}
+						</div>
+					</div>
 
-						<p className="text-xs text-(--vscode-errorForeground)">{t("settings.features.yoloDescription")}</p>
+					{/* Editor features */}
+					<div>
+						<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
+							{t("featureSettings.editor")}
+						</div>
+						<div
+							className="relative p-3 pt-0 my-3 rounded-md border border-editor-widget-border/50"
+							id="optional-features">
+							{editorFeatures.map((feature) => (
+								<FeatureRow
+									checked={featureState[feature.stateKey]}
+									description={featureTranslations[feature.id]?.description || feature.description}
+									isVisible={featureVisibility[feature.stateKey] ?? true}
+									key={feature.id}
+									label={featureTranslations[feature.id]?.label || feature.label}
+									onChange={(checked) => handleFeatureChange(feature, checked)}
+								/>
+							))}
+						</div>
+					</div>
+
+					{/* Experimental features */}
+					<div>
+						<div className="text-xs font-medium uppercase tracking-wider mb-3 text-warning/80">
+							{t("featureSettings.experimental")}
+						</div>
+						<div
+							className="relative p-3 pt-0 my-3 rounded-md border border-editor-widget-border/50 w-full"
+							id="experimental-features">
+							{experimentalFeatures.map((feature) => (
+								<FeatureRow
+									checked={featureState[feature.stateKey]}
+									description={featureTranslations[feature.id]?.description || feature.description}
+									disabled={feature.id === "yolo" && isYoloRemoteLocked}
+									isRemoteLocked={feature.id === "yolo" && isYoloRemoteLocked}
+									isVisible={featureVisibility[feature.stateKey] ?? true}
+									key={feature.id}
+									label={featureTranslations[feature.id]?.label || feature.label}
+									onChange={(checked) => handleFeatureChange(feature, checked)}
+									remoteTooltip={t("remoteConfig.settingsManagedByOrg")}
+								/>
+							))}
+						</div>
+					</div>
+				</div>
+
+				{/* Advanced */}
+				<div>
+					<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
+						{t("featureSettings.advanced")}
+					</div>
+					<div className="relative p-3 my-3 rounded-md border border-editor-widget-border/50" id="advanced-features">
+						<div className="space-y-3">
+							{advancedFeatures.map((feature) => (
+								<FeatureRow
+									checked={featureState[feature.stateKey]}
+									description={featureTranslations[feature.id]?.description || feature.description}
+									isVisible={featureVisibility[feature.stateKey] ?? true}
+									key={feature.id}
+									label={featureTranslations[feature.id]?.label || feature.label}
+									onChange={(checked) => handleFeatureChange(feature, checked)}
+								/>
+							))}
+
+							{/* MCP Display Mode */}
+							<div className="space-y-2">
+								<Label className="text-sm font-medium text-foreground">
+									{t("featureSettings.mcpDisplayMode")}
+								</Label>
+								<p className="text-xs text-muted-foreground">{t("featureSettings.mcpDisplayModeDescription")}</p>
+								<Select onValueChange={(v) => updateSetting("mcpDisplayMode", v)} value={mcpDisplayMode}>
+									<SelectTrigger className="w-full">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="plain">{t("featureSettings.plainText")}</SelectItem>
+										<SelectItem value="rich">{t("featureSettings.richDisplay")}</SelectItem>
+										<SelectItem value="markdown">{t("featureSettings.markdown")}</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
 					</div>
 				</div>
 			</Section>
 		</div>
 	)
 }
-
 export default memo(FeatureSettingsSection)

@@ -1,8 +1,7 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useCallback, useEffect, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useInterval } from "react-use"
 import UseCustomPromptCheckbox from "@/components/settings/UseCustomPromptCheckbox"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -27,7 +26,7 @@ interface OllamaProviderProps {
  * The Ollama provider configuration component
  */
 export const OllamaProvider = ({ showModelOptions, currentMode }: OllamaProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -43,7 +42,7 @@ export const OllamaProvider = ({ showModelOptions, currentMode }: OllamaProvider
 					value: apiConfiguration?.ollamaBaseUrl || "",
 				}),
 			)
-			if (response && response.values) {
+			if (response?.values) {
 				setOllamaModels(response.values)
 			}
 		} catch (error) {
@@ -62,46 +61,45 @@ export const OllamaProvider = ({ showModelOptions, currentMode }: OllamaProvider
 		<div className="flex flex-col gap-2">
 			<BaseUrlField
 				initialValue={apiConfiguration?.ollamaBaseUrl}
+				label={t("providers.ollama.useCustomBaseUrl")}
 				onChange={(value) => handleFieldChange("ollamaBaseUrl", value)}
-				placeholder={t("settings.apiConfig.ollamaBaseUrlPlaceholder")}
+				placeholder={t("providers.ollama.defaultBaseUrl")}
 			/>
 
 			{apiConfiguration?.ollamaBaseUrl && (
 				<ApiKeyField
-					helpText={t("settings.apiConfig.optionalApiKey")}
+					helpText={t("providers.ollama.optionalApiKey")}
 					initialValue={apiConfiguration?.ollamaApiKey || ""}
 					onChange={(value) => handleFieldChange("ollamaApiKey", value)}
-					placeholder={t("settings.apiConfig.enterApiKeyOptional")}
+					placeholder={t("providers.ollama.enterApiKeyOptional")}
 					providerName="Ollama"
 				/>
 			)}
 
 			{/* Model selection - use filterable picker */}
 			<label htmlFor="ollama-model-selection">
-				<span className="font-semibold">{t("settings.providers.model")}</span>
+				<span className="font-semibold">{t("settings.model")}</span>
 			</label>
 			<OllamaModelPicker
 				ollamaModels={ollamaModels}
 				onModelChange={(modelId) => {
 					handleModeFieldChange({ plan: "planModeOllamaModelId", act: "actModeOllamaModelId" }, modelId, currentMode)
 				}}
-				placeholder={
-					ollamaModels.length > 0 ? t("settings.apiConfig.searchAndSelectModel") : t("settings.apiConfig.modelExample")
-				}
+				placeholder={ollamaModels.length > 0 ? t("settings.searchSelectModel") : t("providers.ollama.modelExample")}
 				selectedModelId={ollamaModelId || ""}
 			/>
 
 			{/* Show status message based on model availability */}
 			{ollamaModels.length === 0 && (
-				<p className="text-sm mt-1 text-description italic">{t("settings.apiConfig.unableToFetchModels")}</p>
+				<p className="text-sm mt-1 text-description italic">{t("providers.ollama.unableToFetch")}</p>
 			)}
 
 			<DebouncedTextField
 				initialValue={apiConfiguration?.ollamaApiOptionsCtxNum || "32768"}
 				onChange={(v) => handleFieldChange("ollamaApiOptionsCtxNum", v || undefined)}
-				placeholder={t("settings.apiConfig.modelContextWindowExample")}
+				placeholder={t("providers.ollama.contextLengthExample")}
 				style={{ width: "100%" }}>
-				<span className="font-semibold">{t("settings.apiConfig.modelContextWindow")}</span>
+				<span className="font-semibold">{t("providers.ollama.modelContextWindow")}</span>
 			</DebouncedTextField>
 
 			{showModelOptions && (
@@ -110,16 +108,16 @@ export const OllamaProvider = ({ showModelOptions, currentMode }: OllamaProvider
 						initialValue={apiConfiguration?.requestTimeoutMs ? apiConfiguration.requestTimeoutMs.toString() : "30000"}
 						onChange={(value) => {
 							// Convert to number, with validation
-							const numValue = parseInt(value, 10)
+							const numValue = Number.parseInt(value, 10)
 							if (!Number.isNaN(numValue) && numValue > 0) {
 								handleFieldChange("requestTimeoutMs", numValue)
 							}
 						}}
-						placeholder={t("settings.apiConfig.requestTimeoutPlaceholder")}
+						placeholder={t("providers.ollama.requestTimeoutDefault")}
 						style={{ width: "100%" }}>
-						<span className="font-semibold">{t("settings.apiConfig.requestTimeout")}</span>
+						<span className="font-semibold">{t("providers.ollama.requestTimeout")}</span>
 					</DebouncedTextField>
-					<p className="text-xs mt-0 text-description">{t("settings.apiConfig.requestTimeoutDescription")}</p>
+					<p className="text-xs mt-0 text-description">{t("providers.ollama.requestTimeoutDescription")}</p>
 				</>
 			)}
 
@@ -131,21 +129,9 @@ export const OllamaProvider = ({ showModelOptions, currentMode }: OllamaProvider
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				<Trans
-					components={{
-						quickstartLink: (
-							<VSCodeLink
-								href="https://github.com/ollama/ollama/blob/main/README.md"
-								style={{ display: "inline", fontSize: "inherit" }}>
-								{t("settings.apiConfig.quickstartGuide")}
-							</VSCodeLink>
-						),
-					}}
-					i18nKey="settings.apiConfig.ollamaDescription"
-				/>{" "}
+				{t("providers.ollama.seeQuickstart")}{" "}
 				<span style={{ color: "var(--vscode-errorForeground)" }}>
-					(<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.note")}</span>{" "}
-					{t("settings.apiConfig.clineBestWithClaude")})
+					{t("providers.openaiCompatible.noteComplexPrompts")}
 				</span>
 			</p>
 		</div>

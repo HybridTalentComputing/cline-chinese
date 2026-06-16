@@ -4,6 +4,7 @@ import { Mode } from "@shared/storage/types"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
 import React, { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
 import { useExtensionState } from "../../context/ExtensionStateContext"
 import { ModelsServiceClient } from "../../services/grpc-client"
@@ -18,6 +19,7 @@ export interface HuggingFaceModelPickerProps {
 }
 
 const HuggingFaceModelPicker: React.FC<HuggingFaceModelPickerProps> = ({ isPopup, currentMode }) => {
+	const { t } = useTranslation("settings")
 	const { apiConfiguration, huggingFaceModels: dynamicModels, setHuggingFaceModels } = useExtensionState()
 	const { handleModeFieldsChange } = useApiConfigurationHandlers()
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
@@ -180,11 +182,12 @@ const HuggingFaceModelPicker: React.FC<HuggingFaceModelPickerProps> = ({ isPopup
 							setSelectedIndex(-1)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder="Search models..."
+						placeholder={t("modelPicker.searchModel")}
+						role="combobox"
 						value={searchTerm}>
 						{searchTerm && (
 							<div
-								aria-label="Clear search"
+								aria-label={t("clearSearch")}
 								className="input-icon-button codicon codicon-close"
 								onClick={() => {
 									setSearchTerm("")
@@ -205,7 +208,8 @@ const HuggingFaceModelPicker: React.FC<HuggingFaceModelPickerProps> = ({ isPopup
 							className={`absolute top-[calc(100%-3px)] left-0 w-[calc(100%-2px)] ${
 								isPopup ? "max-h-[90px]" : "max-h-[200px]"
 							} overflow-y-auto bg-(--vscode-dropdown-background) border border-(--vscode-list-activeSelectionBackground) z-999 rounded-b-[3px]`}
-							ref={dropdownListRef}>
+							ref={dropdownListRef}
+							role="listbox">
 							{modelSearchResults.map((result, index) => (
 								<div
 									className={`p-[5px_10px] cursor-pointer break-all whitespace-normal ${
@@ -217,7 +221,8 @@ const HuggingFaceModelPicker: React.FC<HuggingFaceModelPickerProps> = ({ isPopup
 										setIsDropdownVisible(false)
 									}}
 									onMouseEnter={() => setSelectedIndex(index)}
-									ref={(el: HTMLDivElement | null) => (itemRefs.current[index] = el)}>
+									ref={(el: HTMLDivElement | null) => (itemRefs.current[index] = el)}
+									role="option">
 									<div
 										className="[&_.model-item-highlight]:bg-(--vscode-editor-findMatchHighlightBackground) [&_.model-item-highlight]:text-inherit"
 										dangerouslySetInnerHTML={{ __html: result.html }}

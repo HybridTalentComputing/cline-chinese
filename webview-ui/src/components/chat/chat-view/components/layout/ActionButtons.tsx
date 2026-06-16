@@ -33,7 +33,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 	messageHandlers,
 	scrollBehavior,
 }) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("common")
 	const { inputValue, selectedImages, selectedFiles, setSendingDisabled } = chatState
 	const [isProcessing, setIsProcessing] = useState(false)
 
@@ -71,12 +71,10 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 			}
 			setIsProcessing(true)
 
-			// Special handling for cancel action
-			if (action === "cancel") {
+			void messageHandlers.executeButtonAction(action, text, images, files).catch(() => {
+				// Reset processing state on errors to avoid getting stuck.
 				setIsProcessing(false)
-			}
-
-			messageHandlers.executeButtonAction(action, text, images, files)
+			})
 		},
 		[messageHandlers, isProcessing],
 	)
@@ -87,10 +85,10 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 			if (event.key === "Escape") {
 				event.preventDefault()
 				event.stopPropagation()
-				messageHandlers.executeButtonAction("cancel")
+				handleActionClick("cancel")
 			}
 		},
-		[messageHandlers],
+		[handleActionClick],
 	)
 
 	useEffect(() => {
@@ -108,30 +106,6 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 	const hasButtons = primaryText || secondaryText
 	const isStreaming = task.partial === true
 	const canInteract = enableButtons && !isProcessing
-
-	// 翻译按钮文本
-	const translateButtonText = (text: string | undefined): string | undefined => {
-		if (!text) return undefined
-		const translationMap: Record<string, string> = {
-			"Start New Task": t("chat.newTask.startNewTask"),
-			"Start New Task with Context": t("chat.newTask.startNewTaskWithContext"),
-			"Resume Task": t("chatRow.resumeTask"),
-			Retry: t("chatRow.retry"),
-			"Proceed Anyways": t("chatRow.proceedAnyways"),
-			Approve: t("chatRow.approve"),
-			Reject: t("chatRow.reject"),
-			Save: t("chatRow.save"),
-			"Run Command": t("chatRow.runCommand"),
-			"Proceed While Running": t("chatRow.proceedWhileRunning"),
-			"Condense Conversation": t("chatRow.condense"),
-			"Report GitHub issue": t("chatRow.reportBug"),
-			Cancel: t("chatRow.cancel"),
-		}
-		return translationMap[text] || text
-	}
-
-	const translatedPrimaryText = translateButtonText(primaryText)
-	const translatedSecondaryText = translateButtonText(secondaryText)
 
 	// Early return for scroll button to avoid unnecessary computation
 	if (showScrollToBottom || !hasButtons) {
@@ -160,7 +134,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 			<div className="flex px-3.5">
 				<VSCodeButton
 					appearance="icon"
-					aria-label={showScrollToBottom ? "Scroll to bottom" : "Scroll to top"}
+					aria-label={showScrollToBottom ? t("buttons.scrollToBottom") : t("buttons.scrollToTop")}
 					className="text-lg text-(--vscode-primaryButton-foreground) bg-[color-mix(in_srgb,var(--vscode-toolbar-hoverBackground)_55%,transparent)] rounded-[3px] overflow-hidden cursor-pointer flex justify-center items-center flex-1 h-[25px] hover:bg-[color-mix(in_srgb,var(--vscode-toolbar-hoverBackground)_90%,transparent)] active:bg-[color-mix(in_srgb,var(--vscode-toolbar-hoverBackground)_70%,transparent)] border-0"
 					onClick={showScrollToBottom ? handleScrollToBottom : handleScrollToTop}
 					onKeyDown={(e) => {
@@ -187,22 +161,22 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 
 	return (
 		<div className="flex px-3.5" style={{ opacity }}>
-			{translatedPrimaryText && primaryAction && (
+			{primaryText && primaryAction && (
 				<VSCodeButton
 					appearance="primary"
-					className={translatedSecondaryText ? "flex-1 mr-[6px]" : "flex-2"}
+					className={secondaryText ? "flex-1 mr-[6px]" : "flex-2"}
 					disabled={!canInteract}
 					onClick={() => handleActionClick(primaryAction, inputValue, selectedImages, selectedFiles)}>
-					{translatedPrimaryText}
+					{primaryText}
 				</VSCodeButton>
 			)}
-			{translatedSecondaryText && secondaryAction && (
+			{secondaryText && secondaryAction && (
 				<VSCodeButton
 					appearance="secondary"
-					className={translatedPrimaryText ? "flex-1" : "flex-2"}
+					className={primaryText ? "flex-1" : "flex-2"}
 					disabled={!canInteract}
 					onClick={() => handleActionClick(secondaryAction, inputValue, selectedImages, selectedFiles)}>
-					{translatedSecondaryText}
+					{secondaryText}
 				</VSCodeButton>
 			)}
 		</div>

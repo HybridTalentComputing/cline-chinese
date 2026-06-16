@@ -1,10 +1,11 @@
 import { Anthropic } from "@anthropic-ai/sdk"
+import { createOpenAIClient } from "@shared/net"
 import { ShengSuanYunModelInfo } from "@shared/proto/cline/models"
 import OpenAI from "openai"
 import type { ChatCompletionTool } from "openai/resources/chat/completions"
 import { HostProvider } from "@/hosts/host-provider"
-import { Logger } from "@/services/logging/Logger"
-import { ClineStorageMessage } from "@/shared/messages"
+import { ClineStorageMessage } from "@/shared/messages/content"
+import { Logger } from "@/shared/services/Logger"
 import { calculateApiCostOpenAI } from "@/utils/cost"
 import { shouldSkipReasoningForModel } from "@/utils/model-utils"
 import { shengSuanYunDefaultModelId, shengSuanYunDefaultModelInfo } from "../../../shared/api"
@@ -39,7 +40,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 		}
 
 		try {
-			const callbackUrl = await HostProvider.get().getCallbackUrl()
+			const callbackUrl = await HostProvider.get().getCallbackUrl("ssy")
 			this.httpReferer = `${callbackUrl}/ssy`
 		} catch (error) {
 			// Fallback to default if unable to get callback URL (e.g., in CLI mode)
@@ -56,7 +57,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 				throw new Error("shengsuanyun API key is required")
 			}
 			try {
-				this.client = new OpenAI({
+				this.client = createOpenAIClient({
 					baseURL: "https://router.shengsuanyun.com/api/v1",
 					apiKey: this.options.shengSuanYunApiKey,
 					defaultHeaders: {
@@ -221,7 +222,7 @@ export class ShengSuanYunHandler implements ApiHandler {
 
 		try {
 			// Convert messages to Responses API input format
-			const input = convertToOpenAIResponsesInput(messages)
+			const { input } = convertToOpenAIResponsesInput(messages)
 
 			// Convert ChatCompletion tools to Responses API format if provided
 			const responseTools = tools

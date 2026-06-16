@@ -1,62 +1,67 @@
+import i18next from "i18next"
 import { ActionMetadata } from "./types"
 
-export const ACTION_METADATA: ActionMetadata[] = [
-	{
-		id: "readFiles",
-		label: "读取项目文件",
-		shortName: "读取",
-		icon: "codicon-search",
-		subAction: {
-			id: "readFilesExternally",
-			label: "读取所有文件",
-			shortName: "读取 (所有)",
-			icon: "codicon-folder-opened",
-			parentActionId: "readFiles",
+export function getActionMetadata(): ActionMetadata[] {
+	return [
+		{
+			id: "readFiles",
+			label: i18next.t("autoApprove.readProjectFiles"),
+			shortName: i18next.t("autoApprove.read"),
+			icon: "codicon-search",
+			subAction: {
+				id: "readFilesExternally",
+				label: i18next.t("autoApprove.readAllFiles"),
+				shortName: i18next.t("autoApprove.readAll"),
+				icon: "codicon-folder-opened",
+				parentActionId: "readFiles",
+			},
 		},
-	},
-	{
-		id: "editFiles",
-		label: "编辑项目文件",
-		shortName: "Edit",
-		icon: "codicon-edit",
-		subAction: {
-			id: "editFilesExternally",
-			label: "编辑所有文件",
-			shortName: "编辑 (所有)",
-			icon: "codicon-files",
-			parentActionId: "editFiles",
+		{
+			id: "editFiles",
+			label: i18next.t("autoApprove.editProjectFiles"),
+			shortName: i18next.t("autoApprove.edit"),
+			icon: "codicon-edit",
+			subAction: {
+				id: "editFilesExternally",
+				label: i18next.t("autoApprove.editAllFiles"),
+				shortName: i18next.t("autoApprove.editAll"),
+				icon: "codicon-files",
+				parentActionId: "editFiles",
+			},
 		},
-	},
-	{
-		id: "executeSafeCommands",
-		label: "执行安全命令",
-		shortName: "安全命令",
-		icon: "codicon-terminal",
-		subAction: {
-			id: "executeAllCommands",
-			label: "执行所有命令",
-			shortName: "所有命令",
-			icon: "codicon-terminal-bash",
-			parentActionId: "executeSafeCommands",
+		{
+			id: "executeSafeCommands",
+			label: i18next.t("autoApprove.executeSafeCommands"),
+			shortName: i18next.t("autoApprove.safeCommands"),
+			icon: "codicon-terminal",
+			subAction: {
+				id: "executeAllCommands",
+				label: i18next.t("autoApprove.executeAllCommands"),
+				shortName: i18next.t("autoApprove.allCommands"),
+				icon: "codicon-terminal-bash",
+				parentActionId: "executeSafeCommands",
+			},
 		},
-	},
-	{
-		id: "useBrowser",
-		label: "使用浏览器",
-		shortName: "Browser",
-		icon: "codicon-globe",
-	},
-	{
-		id: "useMcp",
-		label: "使用 MCP 服务器",
-		shortName: "MCP",
-		icon: "codicon-server",
-	},
-]
+		{
+			id: "useBrowser",
+			label: i18next.t("autoApprove.useBrowser"),
+			shortName: i18next.t("autoApprove.browser"),
+			icon: "codicon-globe",
+		},
+		{
+			id: "useMcp",
+			label: i18next.t("autoApprove.useMcpServers"),
+			shortName: i18next.t("autoApprove.mcp"),
+			icon: "codicon-server",
+		},
+	]
+}
 
-export const NOTIFICATIONS_SETTING: ActionMetadata = {
-	id: "enableNotifications",
-	label: "启用通知",
-	shortName: "通知",
-	icon: "codicon-bell",
+export function getNotificationsSetting(): ActionMetadata {
+	return {
+		id: "enableNotifications",
+		label: i18next.t("autoApprove.enableNotifications"),
+		shortName: i18next.t("autoApprove.notifications"),
+		icon: "codicon-bell",
+	}
 }

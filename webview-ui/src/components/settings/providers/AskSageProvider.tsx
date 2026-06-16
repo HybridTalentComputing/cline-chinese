@@ -23,7 +23,7 @@ interface AskSageProviderProps {
  * The AskSage provider configuration component
  */
 export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskSageProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 	const [availableModels, setAvailableModels] = useState<Record<string, ModelInfo>>(askSageModels)
@@ -72,7 +72,7 @@ export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskS
 	return (
 		<div>
 			<ApiKeyField
-				helpText={t("settings.apiConfig.apiKeyStoredLocally")}
+				helpText="This key is stored locally and only used to make API requests from this extension."
 				initialValue={apiConfiguration?.asksageApiKey || ""}
 				onChange={(value) => handleFieldChange("asksageApiKey", value)}
 				providerName="AskSage"
@@ -81,16 +81,16 @@ export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskS
 			<DebouncedTextField
 				initialValue={apiConfiguration?.asksageApiUrl || askSageDefaultURL}
 				onChange={(value) => handleFieldChange("asksageApiUrl", value)}
-				placeholder={t("settings.apiConfig.enterAskSageApiUrl")}
+				placeholder={t("providers.askSage.enterApiUrl")}
 				style={{ width: "100%" }}
 				type="text">
-				<span style={{ fontWeight: 500 }}>{t("settings.apiConfig.askSageApiUrl")}</span>
+				<span style={{ fontWeight: 500 }}>{t("providers.askSage.apiUrl")}</span>
 			</DebouncedTextField>
 
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={availableModels}
 						onChange={(e) =>
 							handleModeFieldChange(

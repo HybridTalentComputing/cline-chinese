@@ -1,16 +1,17 @@
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { getAsVar, VSC_TITLEBAR_INACTIVE_FOREGROUND } from "@/utils/vscStyles"
 import AutoApproveModal from "./AutoApproveModal"
-import { ACTION_METADATA } from "./constants"
+import { getActionMetadata } from "./constants"
 
 interface AutoApproveBarProps {
 	style?: React.CSSProperties
 }
 
 const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("common")
 	const { autoApprovalSettings, yoloModeToggled, navigateToSettings } = useExtensionState()
 
 	const [isModalVisible, setIsModalVisible] = useState(false)
@@ -30,7 +31,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 			(key) => autoApprovalSettings.actions[key as keyof typeof autoApprovalSettings.actions],
 		)
 		const enabledActions = enabledActionsNames.map((action) => {
-			return ACTION_METADATA.flatMap((a) => [a, a.subAction]).find((a) => a?.id === action)
+			return getActionMetadata().flatMap((a) => [a, a.subAction]).find((a) => a?.id === action)
 		})
 
 		// Filter out parent actions if their subaction is also enabled (show only subaction)
@@ -48,38 +49,17 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 		})
 
 		if (actionsToShow.length === 0) {
-			return <span className={baseClasses}>{t("autoApprove.bar.none")}</span>
-		}
-
-		// 根据 action.id 获取翻译键
-		const getShortNameTranslationKey = (id: string): string => {
-			const keyMap: Record<string, string> = {
-				readFiles: "autoApprove.actions.shortNames.readFiles",
-				readFilesExternally: "autoApprove.actions.shortNames.readFilesExternally",
-				editFiles: "autoApprove.actions.shortNames.editFiles",
-				editFilesExternally: "autoApprove.actions.shortNames.editFilesExternally",
-				executeSafeCommands: "autoApprove.actions.shortNames.executeSafeCommands",
-				executeAllCommands: "autoApprove.actions.shortNames.executeAllCommands",
-				useBrowser: "autoApprove.actions.shortNames.useBrowser",
-				useMcp: "autoApprove.actions.shortNames.useMcp",
-			}
-			return keyMap[id] || ""
+			return <span className={baseClasses}>{t("autoApprove.none")}</span>
 		}
 
 		return (
 			<span className={baseClasses}>
-				{actionsToShow.map((action, index) => {
-					const translationKey = getShortNameTranslationKey(action?.id || "")
-					const displayText = translationKey
-						? t(translationKey, { defaultValue: action?.shortName })
-						: action?.shortName
-					return (
-						<span key={action?.id}>
-							{displayText}
-							{index < actionsToShow.length - 1 && ", "}
-						</span>
-					)
-				})}
+				{actionsToShow.map((action, index) => (
+					<span key={action?.id}>
+						{action?.shortName}
+						{index < actionsToShow.length - 1 && ", "}
+					</span>
+				))}
 			</span>
 		)
 	}
@@ -122,11 +102,11 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 				/>
 
 				<div className="pt-4 pb-3.5 px-3.5">
-					<div className="text-sm mb-1">{t("autoApprove.bar.yoloTitle")}</div>
+					<div className="text-sm mb-1">{t("autoApprove.yolo")}</div>
 					<div className="text-muted-foreground text-xs">
-						{t("autoApprove.bar.yoloDescription")}{" "}
+						YOLO mode is enabled.{" "}
 						<span className="underline cursor-pointer hover:text-foreground" onClick={handleNavigateToFeatures}>
-							{t("autoApprove.bar.disableInSettings")}
+							Disable it in Settings
 						</span>
 						.
 					</div>
@@ -166,7 +146,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 			/>
 
 			<div
-				aria-label={isModalVisible ? t("autoApprove.bar.closeSettings") : t("autoApprove.bar.openSettings")}
+				aria-label={isModalVisible ? t("autoApprove.closeSettings") : t("autoApprove.openSettings")}
 				className="group cursor-pointer pt-3 pb-3.5 pr-2 px-3.5 flex items-center justify-between gap-0"
 				onClick={() => {
 					setIsModalVisible((prev) => !prev)
@@ -178,21 +158,16 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 						setIsModalVisible((prev) => !prev)
 					}
 				}}
-				ref={buttonRef}
-				tabIndex={0}>
+				ref={buttonRef}>
 				<div className="flex flex-nowrap items-center gap-1 min-w-0 flex-1">
-					<span className="whitespace-nowrap">{t("autoApprove.bar.title")}</span>
+					<span className="whitespace-nowrap">{t("autoApprove.label")}</span>
 					{getEnabledActionsText()}
 				</div>
-				{isModalVisible ? (
-					<span className="codicon codicon-chevron-down" />
-				) : (
-					<span className="codicon codicon-chevron-up" />
-				)}
+				{isModalVisible ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
 			</div>
 
 			<AutoApproveModal
-				ACTION_METADATA={ACTION_METADATA}
+				ACTION_METADATA={getActionMetadata()}
 				buttonRef={buttonRef}
 				isVisible={isModalVisible}
 				setIsVisible={setIsModalVisible}

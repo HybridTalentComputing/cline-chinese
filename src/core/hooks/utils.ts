@@ -1,5 +1,6 @@
-import os from "os"
+import fs from "fs/promises"
 import path from "path"
+import { getDocumentsPath } from "@/core/storage/disk"
 import { HostProvider } from "@/hosts/host-provider"
 import { getCwd, getDesktopDir } from "@/utils/path"
 
@@ -15,6 +16,7 @@ export const VALID_HOOK_TYPES = [
 	"PreToolUse",
 	"PostToolUse",
 	"UserPromptSubmit",
+	"Notification",
 	"PreCompact",
 ] as const
 
@@ -49,7 +51,12 @@ export async function resolveHooksDirectory(
 	globalHooksDirOverride?: string,
 ): Promise<string> {
 	if (isGlobal) {
-		return globalHooksDirOverride || path.join(os.homedir(), "Documents", "Cline", "Hooks")
+		// Resolve the documents directory via the system-localized path (XDG on
+		// Linux, special folder on Windows) instead of hardcoding "Documents",
+		// so non-English systems store hooks in the correct directory (e.g.
+		// ~/文档/Cline/Hooks). Must match the path used by the hook execution
+		// pipeline (disk.ts ensureHooksDirectoryExists) to stay consistent.
+		return globalHooksDirOverride || path.join(await getDocumentsPath(), "Cline", "Hooks")
 	}
 
 	// For workspace hooks, find the correct workspace
@@ -66,4 +73,47 @@ export async function resolveHooksDirectory(
 	// Single workspace: use getCwd
 	const cwd = await getCwd(getDesktopDir())
 	return path.join(cwd, ".clinerules", "hooks")
+}
+
+/**
+ * Resolves the active hook file path for a given hook name.
+ *
+ * Platform-specific filename rules are intentionally strict:
+ *
+ * On Windows, only PowerShell-native naming is supported:
+ * - <HookName>.ps1
+ *
+ * Why: Windows hooks execute via PowerShell (`powershell -File ...`).
+ * PowerShell cannot execute bash-style extensionless hook files as-is.
+ *
+ * On Unix-like platforms (Linux/macOS), only canonical extensionless names are considered:
+ * - <HookName>
+ *
+ * Why: Unix hooks are discovered/executed as native executable files
+ * (bash scripts, binaries, etc.) using executable-bit semantics.
+ * `.ps1` files are not part of the supported Unix hook contract.
+ *
+ * @param hooksDir Directory containing hook files
+ * @param hookName Hook type/name to resolve
+ * @returns Resolved absolute file path if present, otherwise undefined
+ */
+export async function resolveExistingHookPath(hooksDir: string, hookName: string): Promise<string | undefined> {
+	const candidates = process.platform === "win32" ? [path.join(hooksDir, `${hookName}.ps1`)] : [path.join(hooksDir, hookName)]
+
+	for (const candidate of candidates) {
+		if (await isRegularFile(candidate)) {
+			return candidate
+		}
+	}
+
+	return undefined
+}
+
+async function isRegularFile(filePath: string): Promise<boolean> {
+	try {
+		const stat = await fs.stat(filePath)
+		return stat.isFile()
+	} catch {
+		return false
+	}
 }

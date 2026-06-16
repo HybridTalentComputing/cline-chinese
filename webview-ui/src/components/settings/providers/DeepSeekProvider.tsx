@@ -21,7 +21,7 @@ interface DeepSeekProviderProps {
  * The DeepSeek provider configuration component
  */
 export const DeepSeekProvider = ({ showModelOptions, isPopup, currentMode }: DeepSeekProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -40,7 +40,7 @@ export const DeepSeekProvider = ({ showModelOptions, isPopup, currentMode }: Dee
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={deepSeekModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

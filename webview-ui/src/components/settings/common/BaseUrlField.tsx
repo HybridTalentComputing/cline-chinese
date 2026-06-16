@@ -23,13 +23,12 @@ export const BaseUrlField = ({
 	initialValue,
 	onChange,
 	label,
-	placeholder,
+	placeholder = "Default: https://api.example.com",
 	disabled = false,
 	showLockIcon = false,
 }: BaseUrlFieldProps) => {
-	const { t } = useTranslation()
-	const defaultLabel = label || t("settings.apiConfig.useCustomBaseUrl")
-	const defaultPlaceholder = placeholder || t("settings.apiConfig.defaultBaseUrlPlaceholder")
+	const { t } = useTranslation("settings")
+	const resolvedLabel = label ?? t("settings.useCustomBaseUrl")
 	const [isEnabled, setIsEnabled] = useState(!!initialValue)
 	const [localValue, setLocalValue] = useDebouncedInput(initialValue || "", onChange)
 
@@ -45,7 +44,7 @@ export const BaseUrlField = ({
 		<div>
 			<div className="flex items-center gap-2">
 				<VSCodeCheckbox checked={isEnabled} disabled={disabled} onChange={handleToggle}>
-					{defaultLabel}
+					{resolvedLabel}
 				</VSCodeCheckbox>
 				{showLockIcon && <i className="codicon codicon-lock text-(--vscode-descriptionForeground) text-sm" />}
 			</div>
@@ -54,7 +53,7 @@ export const BaseUrlField = ({
 				<VSCodeTextField
 					disabled={disabled}
 					onInput={(e: any) => setLocalValue(e.target.value.trim())}
-					placeholder={defaultPlaceholder}
+					placeholder={placeholder}
 					style={{ width: "100%", marginTop: 3 }}
 					type="text"
 					value={localValue}

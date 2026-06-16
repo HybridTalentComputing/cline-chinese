@@ -15,5 +15,7 @@ export async function refreshBasetenModelsRpc(
 	_request: EmptyRequest,
 ): Promise<OpenRouterCompatibleModelInfo> {
 	const models = await refreshBasetenModels(controller)
-	return OpenRouterCompatibleModelInfo.create({ models: toProtobufModels(models) })
+	return OpenRouterCompatibleModelInfo.create({
+		models: toProtobufModels(models),
+	})
 }

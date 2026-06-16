@@ -21,7 +21,7 @@ interface CerebrasProviderProps {
  * The Cerebras provider configuration component
  */
 export const CerebrasProvider = ({ showModelOptions, isPopup, currentMode }: CerebrasProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -40,7 +40,7 @@ export const CerebrasProvider = ({ showModelOptions, isPopup, currentMode }: Cer
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={cerebrasModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

@@ -23,7 +23,7 @@ interface ZAiProviderProps {
  * The Z AI provider configuration component
  */
 export const ZAiProvider = ({ showModelOptions, isPopup, currentMode }: ZAiProviderProps) => {
-	const { t } = useTranslation()
+	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
@@ -40,7 +40,7 @@ export const ZAiProvider = ({ showModelOptions, isPopup, currentMode }: ZAiProvi
 		<div>
 			<DropdownContainer className="dropdown-container" style={{ position: "inherit" }}>
 				<label htmlFor="zai-entrypoint">
-					<span style={{ fontWeight: 500, marginTop: 5 }}>{t("settings.apiConfig.zAiEntrypoint")}</span>
+					<span style={{ fontWeight: 500, marginTop: 5 }}>{t("providers.zai.entrypoint")}</span>
 				</label>
 				<VSCodeDropdown
 					id="zai-entrypoint"
@@ -60,7 +60,7 @@ export const ZAiProvider = ({ showModelOptions, isPopup, currentMode }: ZAiProvi
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				{t("settings.apiConfig.zAiEntrypointDescription")}
+				{t("providers.zai.entrypointDescription")}
 			</p>
 			<ApiKeyField
 				initialValue={apiConfiguration?.zaiApiKey || ""}
@@ -76,7 +76,7 @@ export const ZAiProvider = ({ showModelOptions, isPopup, currentMode }: ZAiProvi
 			{showModelOptions && (
 				<>
 					<ModelSelector
-						label={t("settings.providers.model")}
+						label={t("settings.model")}
 						models={zaiModels}
 						onChange={(e: any) =>
 							handleModeFieldChange(

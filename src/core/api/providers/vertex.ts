@@ -1,7 +1,9 @@
 import { Tool as AnthropicTool } from "@anthropic-ai/sdk/resources/index"
 import { AnthropicVertex } from "@anthropic-ai/vertex-sdk"
 import { FunctionDeclaration as GoogleTool } from "@google/genai"
-import { ModelInfo, VertexModelId, vertexDefaultModelId, vertexModels } from "@shared/api"
+import { CLAUDE_SONNET_1M_SUFFIX, ModelInfo, VertexModelId, vertexDefaultModelId, vertexModels } from "@shared/api"
+import { isClaudeOpusAdaptiveThinkingModel, resolveClaudeOpusAdaptiveThinking } from "@shared/utils/reasoning-support"
+import { buildExternalBasicHeaders } from "@/services/EnvUtils"
 import { ClineStorageMessage } from "@/shared/messages/content"
 import { ClineTool } from "@/shared/tools"
 import { ApiHandler, CommonApiHandlerOptions } from "../"
@@ -18,7 +20,7 @@ interface VertexHandlerOptions extends CommonApiHandlerOptions {
 	geminiApiKey?: string
 	geminiBaseUrl?: string
 	ulid?: string
-	thinkingLevel?: string
+	reasoningEffort?: string
 }
 
 export class VertexHandler implements ApiHandler {
@@ -54,11 +56,19 @@ export class VertexHandler implements ApiHandler {
 				throw new Error("Vertex AI region is required")
 			}
 			try {
-				// Initialize Anthropic client for Claude models
+				const externalHeaders = buildExternalBasicHeaders()
+				// Initialize Anthropic client for Claude models.
+				// The AnthropicVertex SDK constructs the base URL as `${region}-aiplatform.googleapis.com`,
+				// but the global endpoint uses `aiplatform.googleapis.com` (no region prefix).
+				// See: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-partner-models#global
 				this.clientAnthropic = new AnthropicVertex({
 					projectId: this.options.vertexProjectId,
 					// https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude#regions
 					region: this.options.vertexRegion,
+					...(this.options.vertexRegion === "global"
+						? { baseURL: "https://aiplatform.googleapis.com/v1" }
+						: {}),
+					defaultHeaders: externalHeaders,
 				})
 			} catch (error: any) {
 				throw new Error(`Error creating Vertex AI Anthropic client: ${error.message}`)
@@ -70,10 +80,14 @@ export class VertexHandler implements ApiHandler {
 	@withRetry()
 	async *createMessage(systemPrompt: string, messages: ClineStorageMessage[], tools?: ClineTool[]): ApiStream {
 		const model = this.getModel()
-		const modelId = model.id
+		const rawModelId = model.id
+		const modelId = rawModelId.endsWith(CLAUDE_SONNET_1M_SUFFIX)
+			? rawModelId.slice(0, -CLAUDE_SONNET_1M_SUFFIX.length)
+			: rawModelId
+		const enable1mContextWindow = rawModelId.endsWith(CLAUDE_SONNET_1M_SUFFIX)
 
 		// For Gemini models, use the GeminiHandler
-		if (!modelId.includes("claude")) {
+		if (!rawModelId.includes("claude")) {
 			const geminiHandler = this.ensureGeminiHandler()
 			yield* geminiHandler.createMessage(systemPrompt, messages, tools as GoogleTool[])
 			return
@@ -86,38 +100,62 @@ export class VertexHandler implements ApiHandler {
 		// Use model metadata to determine if reasoning should be enabled
 		const reasoningOn = (model.info.supportsReasoning ?? false) && budget_tokens !== 0
 
+		// Claude Opus 4.5+ uses adaptive thinking instead of budgeted extended thinking.
+		const isAdaptiveThinkingModel = isClaudeOpusAdaptiveThinkingModel(modelId)
+		const adaptiveThinking = isAdaptiveThinkingModel
+			? resolveClaudeOpusAdaptiveThinking(this.options.reasoningEffort, budget_tokens)
+			: undefined
+		const adaptiveThinkingEnabled = adaptiveThinking?.enabled === true
+		const adaptiveThinkingEffort = adaptiveThinking?.effort
+		const thinkingEnabled = isAdaptiveThinkingModel ? adaptiveThinkingEnabled : reasoningOn
+		const thinkingConfig = thinkingEnabled
+			? isAdaptiveThinkingModel
+				? ({ type: "adaptive" } as any)
+				: { type: "enabled", budget_tokens: budget_tokens }
+			: undefined
+		const outputConfig = isAdaptiveThinkingModel && adaptiveThinkingEffort ? { effort: adaptiveThinkingEffort } : undefined
+
 		// Tools are available only when native tools are enabled.
 		const nativeToolsOn = tools?.length ? tools?.length > 0 : false
 
 		const anthropicMessages = sanitizeAnthropicMessages(messages, model.info.supportsPromptCache ?? false)
 
-		const stream = await clientAnthropic.beta.messages.create(
-			{
-				model: modelId,
-				max_tokens: model.info.maxTokens || 8192,
-				thinking: reasoningOn ? { type: "enabled", budget_tokens: budget_tokens } : undefined,
-				temperature: reasoningOn ? undefined : 0,
-				system: [
-					{
-						text: systemPrompt,
-						type: "text",
-						cache_control: model.info.supportsPromptCache ? { type: "ephemeral" } : undefined,
-					},
-				],
-				messages: anthropicMessages,
-				stream: true,
-				tools: nativeToolsOn ? (tools as AnthropicTool[]) : undefined,
-				// tool_choice options:
-				// - none: disables tool use, even if tools are provided. Claude will not call any tools.
-				// - auto: allows Claude to decide whether to call any provided tools or not. This is the default value when tools are provided.
-				// - any: tells Claude that it must use one of the provided tools, but doesn’t force a particular tool.
-				// NOTE: Forcing tool use when tools are provided will result in error when thinking is also enabled.
-				tool_choice: nativeToolsOn && !reasoningOn ? { type: "any" } : undefined,
-			},
-			{
-				headers: {},
-			},
-		)
+		const requestBody: Record<string, unknown> = {
+			model: modelId,
+			max_tokens: model.info.maxTokens || 8192,
+			thinking: thinkingConfig,
+			temperature: isAdaptiveThinkingModel ? undefined : reasoningOn ? undefined : 0,
+			system: [
+				{
+					text: systemPrompt,
+					type: "text",
+					cache_control: model.info.supportsPromptCache ? { type: "ephemeral" } : undefined,
+				},
+			],
+			messages: anthropicMessages,
+			stream: true,
+			tools: nativeToolsOn ? (tools as AnthropicTool[]) : undefined,
+			// tool_choice options:
+			// - none: disables tool use, even if tools are provided. Claude will not call any tools.
+			// - auto: allows Claude to decide whether to call any provided tools or not. This is the default value when tools are provided.
+			// - any: tells Claude that it must use one of the provided tools, but doesn’t force a particular tool.
+			// NOTE: Forcing tool use when tools are provided will result in error when thinking is also enabled.
+			tool_choice: nativeToolsOn && !thinkingEnabled ? { type: "any" } : undefined,
+		}
+		if (outputConfig) {
+			requestBody.output_config = outputConfig
+		}
+
+		const stream = (await clientAnthropic.beta.messages.create(
+			requestBody as any,
+			enable1mContextWindow
+				? {
+						headers: {
+							"anthropic-beta": "context-1m-2025-08-07",
+						},
+					}
+				: undefined,
+		)) as unknown as AsyncIterable<any>
 
 		const lastStartedToolCall = { id: "", name: "", arguments: "" }
 

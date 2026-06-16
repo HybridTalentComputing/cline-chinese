@@ -3,6 +3,7 @@ import { ResetStateRequest } from "@shared/proto/cline/state"
 import { resetGlobalState, resetWorkspaceState } from "@/core/storage/utils/state-helpers"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
+import { Logger } from "@/shared/services/Logger"
 import { Controller } from ".."
 import { sendChatButtonClickedEvent } from "../ui/subscribeToChatButtonClicked"
 
@@ -17,15 +18,15 @@ export async function resetState(controller: Controller, request: ResetStateRequ
 		if (request.global) {
 			HostProvider.window.showMessage({
 				type: ShowMessageType.INFORMATION,
-				message: "重置全局状态...",
+				message: "Resetting global state...",
 			})
-			await resetGlobalState(controller)
+			await resetGlobalState()
 		} else {
 			HostProvider.window.showMessage({
 				type: ShowMessageType.INFORMATION,
-				message: "重置工作区状态...",
+				message: "Resetting workspace state...",
 			})
-			await resetWorkspaceState(controller)
+			await resetWorkspaceState()
 		}
 
 		if (controller.task) {
@@ -35,7 +36,7 @@ export async function resetState(controller: Controller, request: ResetStateRequ
 
 		HostProvider.window.showMessage({
 			type: ShowMessageType.INFORMATION,
-			message: "重置状态",
+			message: "State reset",
 		})
 		await controller.postStateToWebview()
 
@@ -43,10 +44,10 @@ export async function resetState(controller: Controller, request: ResetStateRequ
 
 		return Empty.create()
 	} catch (error) {
-		console.error("Error resetting state:", error)
+		Logger.error("Error resetting state:", error)
 		HostProvider.window.showMessage({
 			type: ShowMessageType.ERROR,
-			message: `重置状态失败: ${error instanceof Error ? error.message : String(error)}`,
+			message: `Failed to reset state: ${error instanceof Error ? error.message : String(error)}`,
 		})
 		throw error
 	}
