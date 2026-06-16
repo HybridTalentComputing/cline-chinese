@@ -116,6 +116,25 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 					}
 				}
 
+				// Fallback: no branch matched, which means the task is in an
+				// indeterminate state (most commonly after cancelling a task —
+				// there is no pending ask and the task is not streaming, so the
+				// three branches above all miss). Previously the message was
+				// silently dropped here, leaving the input intact and the UI
+				// appearing frozen (only a window reload recovered it). Instead,
+				// start a new task with the user's input so the message is never
+				// lost.
+				if (!messageSent) {
+					await TaskServiceClient.newTask(
+						NewTaskRequest.create({
+							text: messageToSend,
+							images,
+							files,
+						}),
+					)
+					messageSent = true
+				}
+
 				// Only clear input and disable UI if message was actually sent
 				if (messageSent) {
 					setInputValue("")
