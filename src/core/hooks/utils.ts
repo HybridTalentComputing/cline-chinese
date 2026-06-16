@@ -1,6 +1,6 @@
 import fs from "fs/promises"
-import os from "os"
 import path from "path"
+import { getDocumentsPath } from "@/core/storage/disk"
 import { HostProvider } from "@/hosts/host-provider"
 import { getCwd, getDesktopDir } from "@/utils/path"
 
@@ -51,7 +51,12 @@ export async function resolveHooksDirectory(
 	globalHooksDirOverride?: string,
 ): Promise<string> {
 	if (isGlobal) {
-		return globalHooksDirOverride || path.join(os.homedir(), "Documents", "Cline", "Hooks")
+		// Resolve the documents directory via the system-localized path (XDG on
+		// Linux, special folder on Windows) instead of hardcoding "Documents",
+		// so non-English systems store hooks in the correct directory (e.g.
+		// ~/文档/Cline/Hooks). Must match the path used by the hook execution
+		// pipeline (disk.ts ensureHooksDirectoryExists) to stay consistent.
+		return globalHooksDirOverride || path.join(await getDocumentsPath(), "Cline", "Hooks")
 	}
 
 	// For workspace hooks, find the correct workspace
