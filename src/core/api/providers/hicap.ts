@@ -11,6 +11,7 @@ import { ApiStream } from "../transform/stream"
 interface OpenAiHandlerOptions extends CommonApiHandlerOptions {
 	hicapApiKey?: string
 	hicapModelId?: string
+	hicapModelInfo?: ModelInfo
 }
 
 export class HicapHandler implements ApiHandler {
@@ -98,7 +99,7 @@ export class HicapHandler implements ApiHandler {
 	getModel(): { id: string; info: ModelInfo } {
 		return {
 			id: this.options.hicapModelId ?? "",
-			info: hicapModelInfoSaneDefaults,
+			info: { ...hicapModelInfoSaneDefaults, ...this.options.hicapModelInfo },
 		}
 	}
 }

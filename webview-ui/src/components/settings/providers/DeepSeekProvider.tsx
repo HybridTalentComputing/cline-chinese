@@ -3,9 +3,10 @@ import { Mode } from "@shared/storage/types"
 import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ApiKeyField } from "../common/ApiKeyField"
+import { DebouncedTextField } from "../common/DebouncedTextField"
 import { ModelInfoView } from "../common/ModelInfoView"
 import { ModelSelector } from "../common/ModelSelector"
-import { normalizeApiConfiguration } from "../utils/providerUtils"
+import { getModeSpecificFields, normalizeApiConfiguration } from "../utils/providerUtils"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
 
 /**
@@ -23,10 +24,11 @@ interface DeepSeekProviderProps {
 export const DeepSeekProvider = ({ showModelOptions, isPopup, currentMode }: DeepSeekProviderProps) => {
 	const { t } = useTranslation("settings")
 	const { apiConfiguration } = useExtensionState()
-	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
+	const { handleFieldChange, handleModeFieldChange, handleModeFieldsChange } = useApiConfigurationHandlers()
 
 	// Get the normalized configuration
 	const { selectedModelId, selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, currentMode)
+	const { deepSeekModelInfo } = getModeSpecificFields(apiConfiguration, currentMode)
 
 	return (
 		<div>
@@ -42,17 +44,53 @@ export const DeepSeekProvider = ({ showModelOptions, isPopup, currentMode }: Dee
 					<ModelSelector
 						label={t("settings.model")}
 						models={deepSeekModels}
-						onChange={(e: any) =>
-							handleModeFieldChange(
-								{ plan: "planModeApiModelId", act: "actModeApiModelId" },
-								e.target.value,
+						onChange={(e: any) => {
+							const modelId = e.target.value as keyof typeof deepSeekModels
+							handleModeFieldsChange(
+								{
+									modelId: { plan: "planModeApiModelId", act: "actModeApiModelId" },
+									modelInfo: { plan: "planModeDeepSeekModelInfo", act: "actModeDeepSeekModelInfo" },
+								},
+								{ modelId, modelInfo: deepSeekModels[modelId] },
 								currentMode,
 							)
-						}
+						}}
 						selectedModelId={selectedModelId}
 					/>
 
 					<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
+
+					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
+						<DebouncedTextField
+							initialValue={selectedModelInfo.contextWindow?.toString() ?? ""}
+							onChange={(value) => {
+								const modelInfo = deepSeekModelInfo ? { ...deepSeekModelInfo } : { ...selectedModelInfo }
+								modelInfo.contextWindow = Number(value)
+								handleModeFieldChange(
+									{ plan: "planModeDeepSeekModelInfo", act: "actModeDeepSeekModelInfo" },
+									modelInfo,
+									currentMode,
+								)
+							}}
+							style={{ flex: 1 }}>
+							<span style={{ fontWeight: 500 }}>{t("providers.openaiCompatible.contextWindowSize")}</span>
+						</DebouncedTextField>
+
+						<DebouncedTextField
+							initialValue={selectedModelInfo.maxTokens?.toString() ?? ""}
+							onChange={(value) => {
+								const modelInfo = deepSeekModelInfo ? { ...deepSeekModelInfo } : { ...selectedModelInfo }
+								modelInfo.maxTokens = Number(value)
+								handleModeFieldChange(
+									{ plan: "planModeDeepSeekModelInfo", act: "actModeDeepSeekModelInfo" },
+									modelInfo,
+									currentMode,
+								)
+							}}
+							style={{ flex: 1 }}>
+							<span style={{ fontWeight: 500 }}>{t("providers.openaiCompatible.maxOutputTokens")}</span>
+						</DebouncedTextField>
+					</div>
 				</>
 			)}
 		</div>

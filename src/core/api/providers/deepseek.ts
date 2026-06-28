@@ -1,4 +1,4 @@
-import { DeepSeekModelId, deepSeekDefaultModelId, deepSeekModels, ModelInfo } from "@shared/api"
+import { DeepSeekModelId, deepSeekDefaultModelId, deepSeekModels, getDeepSeekModelInfo, ModelInfo } from "@shared/api"
 import { calculateApiCostOpenAI } from "@utils/cost"
 import OpenAI from "openai"
 import type { ChatCompletionTool as OpenAITool } from "openai/resources/chat/completions"
@@ -15,6 +15,7 @@ import { getOpenAIToolParams, ToolCallProcessor } from "../transform/tool-call-p
 interface DeepSeekHandlerOptions extends CommonApiHandlerOptions {
 	deepSeekApiKey?: string
 	apiModelId?: string
+	deepSeekModelInfo?: ModelInfo
 }
 
 export class DeepSeekHandler implements ApiHandler {
@@ -132,11 +133,11 @@ export class DeepSeekHandler implements ApiHandler {
 		const modelId = this.options.apiModelId
 		if (modelId && modelId in deepSeekModels) {
 			const id = modelId as DeepSeekModelId
-			return { id, info: deepSeekModels[id] }
+			return { id, info: getDeepSeekModelInfo(id, this.options.deepSeekModelInfo) }
 		}
 		return {
 			id: deepSeekDefaultModelId,
-			info: deepSeekModels[deepSeekDefaultModelId],
+			info: getDeepSeekModelInfo(deepSeekDefaultModelId, this.options.deepSeekModelInfo),
 		}
 	}
 }

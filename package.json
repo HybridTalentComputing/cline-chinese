@@ -2,7 +2,7 @@
 	"name": "cline-chinese",
 	"displayName": "Cline Chinese",
 	"description": "%cline.description%",
-	"version": "3.86.3",
+	"version": "3.86.4",
 	"icon": "assets/icons/icon.png",
 	"workspaces": [
 		"."

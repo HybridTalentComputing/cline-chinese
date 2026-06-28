@@ -2353,6 +2353,22 @@ export const deepSeekModels = {
 	},
 } as const satisfies Record<string, ModelInfo>
 
+export function getDeepSeekModelInfo(modelId: string, modelInfo?: ModelInfo): ModelInfo {
+	const defaultModelId = modelId in deepSeekModels ? (modelId as DeepSeekModelId) : deepSeekDefaultModelId
+	const defaultInfo = deepSeekModels[defaultModelId]
+	const mergedInfo = { ...defaultInfo, ...modelInfo }
+
+	if (
+		(defaultModelId === "deepseek-v4-flash" || defaultModelId === "deepseek-v4-pro") &&
+		modelInfo?.contextWindow === 128_000 &&
+		defaultInfo.contextWindow === 1_000_000
+	) {
+		mergedInfo.contextWindow = defaultInfo.contextWindow
+	}
+
+	return mergedInfo
+}
+
 // Hugging Face Inference Providers
 // https://huggingface.co/docs/inference-providers/en/index
 export type HuggingFaceModelId = keyof typeof huggingFaceModels

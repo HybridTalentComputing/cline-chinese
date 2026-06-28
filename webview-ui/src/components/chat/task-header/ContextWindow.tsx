@@ -39,7 +39,7 @@ const ConfirmationDialog = memo<{
 					onClick={onCancel}
 					title={t("taskHeader.no")}
 					type="button">
-					Cancel
+					{t("buttons.cancel")}
 				</VSCodeButton>
 				<VSCodeButton
 					appearance="primary"
@@ -48,7 +48,7 @@ const ConfirmationDialog = memo<{
 					onClick={onConfirm}
 					title={t("taskHeader.yes")}
 					type="button">
-					Yes
+					{t("taskHeader.yes")}
 				</VSCodeButton>
 			</span>
 		</div>

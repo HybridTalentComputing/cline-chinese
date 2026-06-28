@@ -6,7 +6,9 @@ import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { DebouncedTextField } from "../common/DebouncedTextField"
+import { ModelInfoView } from "../common/ModelInfoView"
 import HicapModelPicker from "../HicapModelPicker"
+import { getModeSpecificFields, normalizeApiConfiguration } from "../utils/providerUtils"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
 
 /**
@@ -24,7 +26,9 @@ interface HicapProviderProps {
 export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapProviderProps) => {
 	const { t } = useTranslation("settings")
 	const { apiConfiguration, refreshHicapModels } = useExtensionState()
-	const { handleFieldChange } = useApiConfigurationHandlers()
+	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
+	const { selectedModelId, selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, currentMode)
+	const { hicapModelInfo } = getModeSpecificFields(apiConfiguration, currentMode)
 
 	useEffect(() => {
 		if (apiConfiguration?.hicapApiKey && apiConfiguration?.hicapApiKey.length === 32) {
@@ -77,6 +81,40 @@ export const HicapProvider = ({ showModelOptions, isPopup, currentMode }: HicapP
 			{showModelOptions && (
 				<div style={{ margin: "10px 0 0 0" }}>
 					<HicapModelPicker currentMode={currentMode} isPopup={isPopup} />
+
+					<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
+
+					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
+						<DebouncedTextField
+							initialValue={selectedModelInfo.contextWindow?.toString() ?? ""}
+							onChange={(value) => {
+								const modelInfo = hicapModelInfo ? { ...hicapModelInfo } : { ...selectedModelInfo }
+								modelInfo.contextWindow = Number(value)
+								handleModeFieldChange(
+									{ plan: "planModeHicapModelInfo", act: "actModeHicapModelInfo" },
+									modelInfo,
+									currentMode,
+								)
+							}}
+							style={{ flex: 1 }}>
+							<span style={{ fontWeight: 500 }}>{t("providers.openaiCompatible.contextWindowSize")}</span>
+						</DebouncedTextField>
+
+						<DebouncedTextField
+							initialValue={selectedModelInfo.maxTokens?.toString() ?? ""}
+							onChange={(value) => {
+								const modelInfo = hicapModelInfo ? { ...hicapModelInfo } : { ...selectedModelInfo }
+								modelInfo.maxTokens = Number(value)
+								handleModeFieldChange(
+									{ plan: "planModeHicapModelInfo", act: "actModeHicapModelInfo" },
+									modelInfo,
+									currentMode,
+								)
+							}}
+							style={{ flex: 1 }}>
+							<span style={{ fontWeight: 500 }}>{t("providers.openaiCompatible.maxOutputTokens")}</span>
+						</DebouncedTextField>
+					</div>
 				</div>
 			)}
 		</div>

@@ -52,7 +52,7 @@ const HicapModelPicker: React.FC<HicapModelPickerProps> = ({ isPopup, currentMod
 			},
 			{
 				hicapModelId: newModelId,
-				hicapModelInfo: {},
+				hicapModelInfo: hicapModels[newModelId],
 			},
 			currentMode,
 		)

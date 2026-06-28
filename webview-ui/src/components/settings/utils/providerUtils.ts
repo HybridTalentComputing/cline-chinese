@@ -21,6 +21,7 @@ import {
 	fireworksModels,
 	geminiDefaultModelId,
 	geminiModels,
+	getDeepSeekModelInfo,
 	groqDefaultModelId,
 	groqModels,
 	hicapModelInfoSaneDefaults,
@@ -232,7 +233,13 @@ export function normalizeApiConfiguration(
 		case "openai-codex":
 			return getProviderData(openAiCodexModels, openAiCodexDefaultModelId)
 		case "deepseek":
-			return getProviderData(deepSeekModels, deepSeekDefaultModelId)
+			const deepSeekResult = getProviderData(deepSeekModels, deepSeekDefaultModelId)
+			const deepSeekModelInfo =
+				currentMode === "plan" ? apiConfiguration?.planModeDeepSeekModelInfo : apiConfiguration?.actModeDeepSeekModelInfo
+			return {
+				...deepSeekResult,
+				selectedModelInfo: getDeepSeekModelInfo(deepSeekResult.selectedModelId, deepSeekModelInfo),
+			}
 		case "qwen":
 			const qwenModels = apiConfiguration?.qwenApiLine === "china" ? mainlandQwenModels : internationalQwenModels
 			const qwenDefaultId =
@@ -301,10 +308,14 @@ export function normalizeApiConfiguration(
 		case "hicap":
 			const hicapModelId =
 				currentMode === "plan" ? apiConfiguration?.planModeHicapModelId : apiConfiguration?.actModeHicapModelId
+			const hicapModelInfo =
+				currentMode === "plan" ? apiConfiguration?.planModeHicapModelInfo : apiConfiguration?.actModeHicapModelInfo
 			return {
 				selectedProvider: provider,
 				selectedModelId: hicapModelId || "",
-				selectedModelInfo: hicapModelInfoSaneDefaults,
+				selectedModelInfo: hicapModelInfo
+					? { ...hicapModelInfoSaneDefaults, ...hicapModelInfo }
+					: hicapModelInfoSaneDefaults,
 			}
 		case "ollama":
 			const ollamaModelId =
@@ -622,6 +633,8 @@ export function getModeSpecificFields(apiConfiguration: ApiConfiguration | undef
 
 		// Model info objects
 		openAiModelInfo: mode === "plan" ? apiConfiguration.planModeOpenAiModelInfo : apiConfiguration.actModeOpenAiModelInfo,
+		deepSeekModelInfo:
+			mode === "plan" ? apiConfiguration.planModeDeepSeekModelInfo : apiConfiguration.actModeDeepSeekModelInfo,
 		liteLlmModelInfo: mode === "plan" ? apiConfiguration.planModeLiteLlmModelInfo : apiConfiguration.actModeLiteLlmModelInfo,
 		openRouterModelInfo,
 		clineModelInfo,

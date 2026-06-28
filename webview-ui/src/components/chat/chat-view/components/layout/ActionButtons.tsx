@@ -102,7 +102,9 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 
 	const { showScrollToBottom, scrollToBottomSmooth, disableAutoScrollRef } = scrollBehavior
 
-	const { primaryText, secondaryText, primaryAction, secondaryAction, enableButtons } = buttonConfig
+	const { primaryTextKey, secondaryTextKey, primaryAction, secondaryAction, enableButtons } = buttonConfig
+	const primaryText = primaryTextKey ? t(primaryTextKey) : undefined
+	const secondaryText = secondaryTextKey ? t(secondaryTextKey) : undefined
 	const hasButtons = primaryText || secondaryText
 	const isStreaming = task.partial === true
 	const canInteract = enableButtons && !isProcessing

@@ -200,6 +200,7 @@ function createHandlerForProvider(
 				onRetryAttempt: options.onRetryAttempt,
 				deepSeekApiKey: options.deepSeekApiKey,
 				apiModelId: mode === "plan" ? options.planModeApiModelId : options.actModeApiModelId,
+				deepSeekModelInfo: mode === "plan" ? options.planModeDeepSeekModelInfo : options.actModeDeepSeekModelInfo,
 			})
 		case "requesty":
 			return new RequestyHandler({
@@ -450,6 +451,7 @@ function createHandlerForProvider(
 				onRetryAttempt: options.onRetryAttempt,
 				hicapApiKey: options.hicapApiKey,
 				hicapModelId: mode === "plan" ? options.planModeHicapModelId : options.actModeHicapModelId,
+				hicapModelInfo: mode === "plan" ? options.planModeHicapModelInfo : options.actModeHicapModelInfo,
 			})
 		case "nousResearch":
 			return new NousResearchHandler({

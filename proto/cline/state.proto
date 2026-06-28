@@ -292,6 +292,8 @@ message Settings {
   optional OpenRouterModelInfo plan_mode_sheng_suan_yun_model_info = 185;
   optional string act_mode_sheng_suan_yun_model_id = 186;
   optional OpenRouterModelInfo act_mode_sheng_suan_yun_model_info = 187;
+  optional OpenRouterModelInfo plan_mode_deep_seek_model_info = 188;
+  optional OpenRouterModelInfo act_mode_deep_seek_model_info = 189;
 }
 
 message State {
