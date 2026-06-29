@@ -237,7 +237,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		autoApprovalSettings: DEFAULT_AUTO_APPROVAL_SETTINGS,
 		browserSettings: DEFAULT_BROWSER_SETTINGS,
 		focusChainSettings: DEFAULT_FOCUS_CHAIN_SETTINGS,
-		preferredLanguage: "English",
+		preferredLanguage: "Simplified Chinese - 简体中文",
 		mode: "act",
 		platform: DEFAULT_PLATFORM,
 		environment: Environment.production,

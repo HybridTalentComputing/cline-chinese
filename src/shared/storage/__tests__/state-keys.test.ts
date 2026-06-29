@@ -401,10 +401,10 @@ describe("State Keys Type Safety", () => {
 
 		it("should export usable Settings type", () => {
 			const partialSettings: Partial<Settings> = {
-				preferredLanguage: "English",
+				preferredLanguage: "Simplified Chinese - 简体中文",
 				shellIntegrationTimeout: 5000,
 			}
-			expect(partialSettings.preferredLanguage).to.equal("English")
+			expect(partialSettings.preferredLanguage).to.equal("Simplified Chinese - 简体中文")
 		})
 
 		it("should export usable key types", () => {
@@ -425,10 +425,10 @@ describe("State Keys Type Safety", () => {
 				// From GlobalState
 				isNewUser: true,
 				// From Settings
-				preferredLanguage: "English",
+				preferredLanguage: "Simplified Chinese - 简体中文",
 			}
 			expect(combined.isNewUser).to.equal(true)
-			expect(combined.preferredLanguage).to.equal("English")
+			expect(combined.preferredLanguage).to.equal("Simplified Chinese - 简体中文")
 		})
 
 		it("should have LocalState keys map to ClineRulesToggles", () => {
